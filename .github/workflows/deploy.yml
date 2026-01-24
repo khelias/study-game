@@ -43,7 +43,9 @@ jobs:
           set ftp:passive-mode true
           set net:timeout 60
           set net:max-retries 3
-          open -u ${{ secrets.FTP_USERNAME }},${{ secrets.FTP_PASSWORD }} ftps://${{ secrets.FTP_SERVER }}:21
+          set ftp:use-feat false
+          set ftp:use-mdtm false
+          open -u ${{ secrets.FTP_USERNAME }},${{ secrets.FTP_PASSWORD }} -p 21 ${{ secrets.FTP_SERVER }}
           mirror --reverse --delete --verbose --exclude-glob .git* --exclude-glob node_modules* ./dist/ .
           quit
           "
