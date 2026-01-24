@@ -3,7 +3,7 @@ import React from 'react';
 import { TrendingUp, TrendingDown, Target, Award } from 'lucide-react';
 import { getProgressionRecommendation, calculateGameSuccessScore } from '../engine/progression';
 
-export const GameProgressionCard = ({ gameType, stats, level }) => {
+export const GameProgressionCard = ({ gameType, stats }) => {
   const recommendation = getProgressionRecommendation(stats, gameType);
   const successScore = calculateGameSuccessScore(stats, gameType);
   

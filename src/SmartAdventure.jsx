@@ -112,7 +112,7 @@ const SmartAdventure = () => {
         // Uus kasutaja
         setShowTutorial(true);
       }
-    } catch(e) {
+    } catch {
       // Kui laadimine ebaõnnestub, näita tutoriali
       setShowTutorial(true);
     }
@@ -132,10 +132,10 @@ const SmartAdventure = () => {
         hasSeenTutorial: !showTutorial,
         collectedStars
       }));
-    } catch(e) {
+    } catch {
       // Salvestamine ebaõnnestus - vaikselt ignoreerime
     }
-  }, [levels, score, soundEnabled, profile, stats, unlockedAchievements, showTutorial]);
+  }, [levels, score, soundEnabled, profile, stats, unlockedAchievements, showTutorial, collectedStars]);
 
   const makeKey = (prob) => {
     if (!prob) return '';
@@ -187,7 +187,7 @@ const SmartAdventure = () => {
     setShowHint(false);
     setShowLearningTip(true); // Näita uue mängu alguses
     setCurrentStreak(0);
-    setGameStartTime(Date.now());
+    setGameStartTime(() => Date.now());
     // Lähtesta adaptiivne raskusaste uue mängu jaoks
     setAdaptiveDifficulty(createAdaptiveDifficulty());
     playSound('click', soundEnabled);
@@ -206,7 +206,7 @@ const SmartAdventure = () => {
     try { 
         const effectiveLevel = getEffectiveLevel(levels[profile][type], adaptiveDifficulty);
         setProblem(generateUniqueProblemForGame(type, effectiveLevel)); 
-    } catch (e) { 
+    } catch { 
         // Kui ülesande genereerimine ebaõnnestub, naase menüüsse
         setGameState('menu'); 
     }
@@ -373,11 +373,12 @@ const SmartAdventure = () => {
       case 'syllable_builder':
         hintText = `Vihje: Sõna algab silbiga "${problem.parts[0]}"`;
         break;
-      case 'balance_scale':
+      case 'balance_scale': {
         const leftSum = problem.display.left.reduce((a, b) => a + b, 0);
         const rightKnown = problem.display.right.reduce((a, b) => a + b, 0);
         hintText = `Vihje: Vasak pool on ${leftSum}, parem pool on ${rightKnown} + ?`;
         break;
+      }
       case 'pattern':
         hintText = `Vihje: Vaata, mis mustrit järgib rong!`;
         break;
@@ -584,13 +585,13 @@ const SmartAdventure = () => {
         <div className="inline-flex items-center gap-1.5 sm:gap-2 bg-white/80 backdrop-blur-sm px-3 sm:px-4 py-1.5 sm:py-2 rounded-full border-2 border-purple-200 shadow-sm">
           <span className="text-xl sm:text-2xl">🎮</span>
           <span className="font-black text-xs sm:text-base text-slate-700">
-            {Object.entries(GAME_CONFIG).filter(([_, conf]) => !conf.allowedProfiles || conf.allowedProfiles.includes(profile)).length} mängu
+            {Object.entries(GAME_CONFIG).filter(([, conf]) => !conf.allowedProfiles || conf.allowedProfiles.includes(profile)).length} mängu
           </span>
         </div>
       </div>
 
       <div className="grid grid-cols-1 gap-3 sm:gap-5 w-full max-w-md pb-6 sm:pb-10">
-        {Object.entries(GAME_CONFIG).filter(([_, conf]) => !conf.allowedProfiles || conf.allowedProfiles.includes(profile)).map(([key, conf], idx) => {
+        {Object.entries(GAME_CONFIG).filter(([, conf]) => !conf.allowedProfiles || conf.allowedProfiles.includes(profile)).map(([key, conf], idx) => {
           const Icon = ICON_MAP[conf.icon] || Type;
           const gameStats = stats.gamesByType?.[key] || 0;
           const isNew = gameStats === 0;

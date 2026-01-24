@@ -11,7 +11,7 @@ export const GameCard = ({
   badge = null, // Badge tekst (nt "UUS!")
   delay = 0
 }) => {
-  const Icon = gameConfig.iconComponent || (() => null);
+  const IconComponent = gameConfig.iconComponent || (() => null);
   
   return (
     <FadeIn delay={delay}>
@@ -43,7 +43,7 @@ export const GameCard = ({
           ${gameConfig.theme.text}
         `}>
           <div className="absolute inset-0 bg-gradient-to-br from-white/20 to-transparent rounded-2xl"></div>
-          <Icon size={36} className="relative z-10" />
+          <IconComponent size={36} className="relative z-10" />
         </div>
         
         {/* Content - täiustatud */}
