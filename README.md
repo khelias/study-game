@@ -86,6 +86,21 @@ Mäng kasutab adaptiivset raskusastet, mis kohandab ülesannete keerukust automa
    ```
    Ehitamise tulemus on `dist/` kaustas.
 
+### Automaatne Deploy FTP Serverisse
+
+Projekt kasutab GitHub Actions CI/CD töövoogu, mis automaatselt ehitab ja laeb rakenduse FTP serverisse iga `main` branch'i push'i korral.
+
+**Seadistamine:**
+1. Mine GitHub repository → Settings → Secrets and variables → Actions
+2. Lisa järgmised secrets:
+   - `FTP_SERVER` - FTP serveri aadress (nt. `ftp.example.com`)
+   - `FTP_USERNAME` - FTP kasutajanimi
+   - `FTP_PASSWORD` - FTP parool
+3. Muuda `server-dir` väärtust `.github/workflows/deploy.yml` failis vastavalt oma FTP serveri struktuurile
+
+**Käsitsi käivitamine:**
+Workflow saab käivitada ka käsitsi GitHub Actions lehelt.
+
 ## 💻 Kasutamine
 
 ### Arendusrežiim
