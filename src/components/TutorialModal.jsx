@@ -9,7 +9,7 @@ const TUTORIAL_STEPS = [
   },
   {
     title: 'Vali oma vanus 🎯',
-    content: 'Vali menüüs oma vanusegrupp (5+ või alates 1. klass), et saada sobivad ülesanded.',
+    content: 'Vali menüüs oma vanusegrupp (5+ või 7+), et saada sobivad ülesanded.',
     emoji: '👶'
   },
   {

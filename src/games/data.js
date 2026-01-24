@@ -33,7 +33,7 @@ export const GAME_CONFIG = {
 // Profiilid on laiendatavad raskuse nihkega
 export const PROFILES = {
   starter:  { id: 'starter', label: '5+', desc: 'Koolieelik', levelStart: 1, difficultyOffset: 0, emoji: '👧' },
-  advanced: { id: 'advanced', label: 'Alates 1. klass', desc: 'Kool', levelStart: 3, difficultyOffset: 2, emoji: '🧒' }
+  advanced: { id: 'advanced', label: '7+', desc: 'Koolilaps', levelStart: 3, difficultyOffset: 2, emoji: '🧒' }
 };
 
 export const ICONS = {
