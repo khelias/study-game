@@ -30,22 +30,20 @@ jobs:
       - name: Build application
         run: npm run build
 
-      - name: Deploy to FTP
-        uses: SamKirkland/FTP-Deploy-Action@v4.3.6
-        with:
-          server: ${{ secrets.FTP_SERVER }}
-          username: ${{ secrets.FTP_USERNAME }}
-          password: ${{ secrets.FTP_PASSWORD }}
-          local-dir: ./dist/
-          server-dir: /htdocs/
-          protocol: ftps
-          port: 21
-          dangerous-clean-slate: false
-          state-name: .ftp-deploy-sync-state.json
-          log-level: verbose
-          timeout: 300000
-          secure: true
-          exclude: |
-            **/.git*
-            **/.git*/**
-            **/node_modules/**
+      - name: Install lftp
+        run: sudo apt-get update && sudo apt-get install -y lftp
+
+      - name: Deploy to FTP using lftp
+        run: |
+          lftp -c "
+          set ftp:ssl-force true
+          set ftp:ssl-protect-data true
+          set ftp:ssl-protect-list true
+          set ssl:verify-certificate false
+          set ftp:passive-mode true
+          set net:timeout 60
+          set net:max-retries 3
+          open -u ${{ secrets.FTP_USERNAME }},${{ secrets.FTP_PASSWORD }} ftps://${{ secrets.FTP_SERVER }}:21
+          mirror --reverse --delete --verbose --exclude-glob .git* --exclude-glob node_modules* ./dist/ .
+          quit
+          "
