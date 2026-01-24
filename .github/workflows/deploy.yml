@@ -25,22 +25,26 @@ jobs:
 
       - name: Run linter
         run: npm run lint
-        continue-on-error: true # Jätkab isegi kui lint ebaõnnestub
+        continue-on-error: true
 
       - name: Build application
         run: npm run build
 
       - name: Deploy to FTP
-        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        uses: SamKirkland/FTP-Deploy-Action@4.3.5
         with:
-          server: ${{ secrets.FTP_SERVER }} # nt. timir.elkdata.ee
-          username: ${{ secrets.FTP_USERNAME }} # nt. vhost144451f1
+          server: ${{ secrets.FTP_SERVER }}
+          username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
           local-dir: ./dist/
-          server-dir: /htdocs/ # elkdata.ee kasutab /htdocs/
-          protocol: ftps # FTP-SSL (Explicit AUTH TLS) - nõutud elkdata.ee poolt
-          port: 21 # FTPS port
-          dangerous-clean-slate: false # Ära kustuta olemasolevaid faile
+          server-dir: /htdocs/
+          protocol: ftps
+          port: 21
+          dangerous-clean-slate: false
+          state-name: .ftp-deploy-sync-state.json
+          log-level: verbose
+          timeout: 300000
+          secure: true
           exclude: |
             **/.git*
             **/.git*/**
