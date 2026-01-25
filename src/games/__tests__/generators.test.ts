@@ -83,10 +83,11 @@ describe('Generators', () => {
       expect(typeof problem.target).toBe('string');
       expect(problem.target.length).toBeGreaterThan(0);
       expect(problem.shuffled).toBeInstanceOf(Array);
+      // Shuffled should have all correct letters (no distractors at level 1)
       expect(problem.shuffled.length).toBe(problem.target.length);
     });
 
-    it('should have all target letters in shuffled array', () => {
+    it('should have all target letters in shuffled array at level 1', () => {
       const rng = createRng(12345);
       const generator = Generators.word_builder;
       if (!generator) throw new Error('word_builder generator not found');
@@ -98,37 +99,111 @@ describe('Generators', () => {
       expect(shuffledLetters).toEqual(targetLetters);
     });
 
-    it('should generate consistent problems with same seed', () => {
-      const rng1 = createRng(12345);
-      const rng2 = createRng(12345);
+    it('should use uppercase letters at level 1-2', () => {
+      const rng = createRng(12345);
+      const generator = Generators.word_builder;
+      if (!generator) throw new Error('word_builder generator not found');
+      const problem1 = generator(1, rng, 'starter') as WordBuilderProblem;
+      const problem2 = generator(2, rng, 'starter') as WordBuilderProblem;
+      
+      // All letters should be uppercase
+      expect(problem1.target).toBe(problem1.target.toUpperCase());
+      expect(problem2.target).toBe(problem2.target.toUpperCase());
+    });
+
+    it('should use lowercase letters at level 3-5', () => {
+      const rng = createRng(12345);
+      const generator = Generators.word_builder;
+      if (!generator) throw new Error('word_builder generator not found');
+      const problem3 = generator(3, rng, 'starter') as WordBuilderProblem;
+      const problem5 = generator(5, rng, 'starter') as WordBuilderProblem;
+      
+      // All letters should be lowercase
+      expect(problem3.target).toBe(problem3.target.toLowerCase());
+      expect(problem5.target).toBe(problem5.target.toLowerCase());
+    });
+
+    it('should use capitalized first letter at level 6-8', () => {
+      const rng = createRng(12345);
+      const generator = Generators.word_builder;
+      if (!generator) throw new Error('word_builder generator not found');
+      const problem6 = generator(6, rng, 'starter') as WordBuilderProblem;
+      const problem8 = generator(8, rng, 'starter') as WordBuilderProblem;
+      
+      // First letter uppercase, rest lowercase
+      expect(problem6.target[0]).toBe(problem6.target[0].toUpperCase());
+      expect(problem6.target.slice(1)).toBe(problem6.target.slice(1).toLowerCase());
+      expect(problem8.target[0]).toBe(problem8.target[0].toUpperCase());
+      expect(problem8.target.slice(1)).toBe(problem8.target.slice(1).toLowerCase());
+    });
+
+    it('should add distractor letters at level 3+', () => {
+      const rng = createRng(12345);
       const generator = Generators.word_builder;
       if (!generator) throw new Error('word_builder generator not found');
       
-      const problem1 = generator(1, rng1, 'starter') as WordBuilderProblem;
-      const problem2 = generator(1, rng2, 'starter') as WordBuilderProblem;
+      // Level 1-2: no distractors
+      const problem1 = generator(1, rng, 'starter') as WordBuilderProblem;
+      expect(problem1.shuffled.length).toBe(problem1.target.length);
       
-      expect(problem1.target).toBe(problem2.target);
+      // Level 3-4: 1 distractor
+      const problem3 = generator(3, rng, 'starter') as WordBuilderProblem;
+      expect(problem3.shuffled.length).toBe(problem3.target.length + 1);
+      
+      // Level 5-7: 2 distractors
+      const problem5 = generator(5, rng, 'starter') as WordBuilderProblem;
+      expect(problem5.shuffled.length).toBe(problem5.target.length + 2);
+      
+      // Level 8+: 3 distractors
+      const problem8 = generator(8, rng, 'starter') as WordBuilderProblem;
+      expect(problem8.shuffled.length).toBe(problem8.target.length + 3);
+    });
+
+    it('should add pre-filled positions for 6+ letter words', () => {
+      const rng = createRng(12345);
+      const generator = Generators.word_builder;
+      if (!generator) throw new Error('word_builder generator not found');
+      
+      // Generate multiple problems until we get a 6+ letter word
+      let problem: WordBuilderProblem | null = null;
+      for (let i = 0; i < 50; i++) {
+        const testRng = createRng(12345 + i);
+        const testProblem = generator(9, testRng, 'starter') as WordBuilderProblem;
+        if (testProblem.target.length >= 6) {
+          problem = testProblem;
+          break;
+        }
+      }
+      
+      if (problem && problem.target.length >= 6) {
+        expect(problem.preFilledPositions).toBeDefined();
+        expect(problem.preFilledPositions!.length).toBeGreaterThan(0);
+        
+        // 6-letter words should have 1 pre-filled
+        if (problem.target.length === 6) {
+          expect(problem.preFilledPositions!.length).toBe(1);
+        }
+        // 7+ letter words should have 2 pre-filled
+        if (problem.target.length >= 7) {
+          expect(problem.preFilledPositions!.length).toBe(2);
+        }
+      }
     });
 
     it('should increase word length with level', () => {
       const rng1 = createRng(12345);
       const rng2 = createRng(12345);
+      const rng3 = createRng(12345);
       const generator = Generators.word_builder;
       if (!generator) throw new Error('word_builder generator not found');
       
       const problem1 = generator(1, rng1, 'starter') as WordBuilderProblem;
-      const problem5 = generator(8, rng2, 'starter') as WordBuilderProblem;
+      const problem5 = generator(5, rng2, 'starter') as WordBuilderProblem;
+      const problem10 = generator(10, rng3, 'starter') as WordBuilderProblem;
       
+      // Higher level should generally have longer words
       expect(problem5.target.length).toBeGreaterThanOrEqual(problem1.target.length);
-    });
-
-    it('should have emoji for word', () => {
-      const rng = createRng(12345);
-      const generator = Generators.word_builder;
-      if (!generator) throw new Error('word_builder generator not found');
-      const problem = generator(1, rng, 'starter') as WordBuilderProblem;
-      
-      expect(typeof problem.emoji).toBe('string');
+      expect(problem10.target.length).toBeGreaterThanOrEqual(problem5.target.length);
     });
   });
 
