@@ -5,14 +5,13 @@ import { usePlaySessionStore } from '../../stores/playSessionStore';
 import { useGameEngine } from '../../hooks/useGameEngine';
 import { useGameAudio } from '../../hooks/useGameAudio';
 import { GameRenderer } from './GameRenderer';
-import { LevelUpModal, Confetti } from '../../components/GameViews';
-import { AchievementModal } from '../../components/AchievementModal';
+import { Confetti } from '../../components/GameViews';
+import { NotificationSystem } from '../../components/NotificationSystem';
 import { HintButton } from '../../components/HintButton';
-import { FeedbackMessage, getRandomEncouragement as _getRandomEncouragement } from '../../components/FeedbackSystem';
+import { getRandomEncouragement as _getRandomEncouragement } from '../../components/FeedbackSystem';
 import { EnhancedConfetti, PulseEffect } from '../../components/EnhancedAnimations';
 import { ParticleEffect } from '../../components/ParticleEffect';
 import { ProgressIndicator } from '../../components/FeedbackSystem';
-import { LearningTip } from '../../components/LearningTips';
 import { useTranslation } from '../../i18n/useTranslation';
 import { useProfileText } from '../../hooks/useProfileText';
 
@@ -43,23 +42,20 @@ export const GameScreen: React.FC = () => {
   const confetti = usePlaySessionStore(state => state.confetti);
   const enhancedConfetti = usePlaySessionStore(state => state.enhancedConfetti);
   const particleActive = usePlaySessionStore(state => state.particleActive);
-  const showLevelUp = usePlaySessionStore(state => state.showLevelUp);
-  const showAchievement = usePlaySessionStore(state => state.showAchievement);
   const showHint = usePlaySessionStore(state => state.showHint);
-  const feedbackMessage = usePlaySessionStore(state => state.feedbackMessage);
-  const feedbackType = usePlaySessionStore(state => state.feedbackType);
-  const showLearningTip = usePlaySessionStore(state => state.showLearningTip);
   const currentStreak = usePlaySessionStore(state => state.currentStreak);
   const adaptiveDifficulty = usePlaySessionStore(state => state.adaptiveDifficulty);
   const gameStartTime = usePlaySessionStore(state => state.gameStartTime);
+  const notifications = usePlaySessionStore(state => state.notifications);
   
   // Track if we're currently showing an achievement to prevent duplicates
   const achievementShownRef = useRef(false);
   
-  // Update ref when achievement changes
+  // Update ref when achievement notification changes
   useEffect(() => {
-    achievementShownRef.current = Boolean(showAchievement);
-  }, [showAchievement]);
+    const hasAchievement = notifications.some(n => n.type === 'achievement');
+    achievementShownRef.current = hasAchievement;
+  }, [notifications]);
   
   const setProblem = usePlaySessionStore(state => state.setProblem);
   const returnToMenu = usePlaySessionStore(state => state.returnToMenu);
@@ -67,17 +63,15 @@ export const GameScreen: React.FC = () => {
   const setConfetti = usePlaySessionStore(state => state.setConfetti);
   const setEnhancedConfetti = usePlaySessionStore(state => state.setEnhancedConfetti);
   const setParticleActive = usePlaySessionStore(state => state.setParticleActive);
-  const dismissLevelUpModal = usePlaySessionStore(state => state.dismissLevelUpModal);
-  const setShowAchievement = usePlaySessionStore(state => state.setShowAchievement);
   const setShowHint = usePlaySessionStore(state => state.setShowHint);
-  const setFeedbackMessage = usePlaySessionStore(state => state.setFeedbackMessage);
-  const setShowLearningTip = usePlaySessionStore(state => state.setShowLearningTip);
   const incrementStars = usePlaySessionStore(state => state.incrementStars);
   const decrementHearts = usePlaySessionStore(state => state.decrementHearts);
   const endGame = usePlaySessionStore(state => state.endGame);
   const updateAdaptiveDifficulty = usePlaySessionStore(state => state.updateAdaptiveDifficulty);
   const submitAnswer = usePlaySessionStore(state => state.submitAnswer);
-  const showLevelUpModal = usePlaySessionStore(state => state.showLevelUpModal);
+  const addNotification = usePlaySessionStore(state => state.addNotification);
+  const removeNotification = usePlaySessionStore(state => state.removeNotification);
+  const clearNotifications = usePlaySessionStore(state => state.clearNotifications);
   
   const { generateUniqueProblemForGame } = useGameEngine();
   const { playWin } = useGameAudio(soundEnabled);
@@ -112,7 +106,27 @@ export const GameScreen: React.FC = () => {
       // Correct answer
        
       const encouragement = getRandomEncouragement('correct', newStreak);
-      setFeedbackMessage(formatText(encouragement), newStreak >= 2 ? 'streak' : 'correct');
+      
+      // Show correct notification or streak notification
+      if (newStreak >= 2) {
+        addNotification({
+          type: 'streak',
+          message: formatText(encouragement),
+          streakCount: newStreak,
+          duration: 2000,
+          position: 'center',
+          size: 'large',
+        });
+      } else {
+        addNotification({
+          type: 'correct',
+          message: formatText(encouragement),
+          duration: 1500,
+          position: 'center',
+          size: 'large',
+        });
+      }
+      
       setBgClass('bg-green-50');
       setParticleActive(true);
       setTimeout(() => setParticleActive(false), 1500);
@@ -127,7 +141,16 @@ export const GameScreen: React.FC = () => {
       
       // Show only the first achievement if any exist and none is currently showing
       if (allNewAchievements.length > 0 && !achievementShownRef.current) {
-        setShowAchievement(allNewAchievements[0] ?? null);
+        const achievement = allNewAchievements[0];
+        if (achievement) {
+          addNotification({
+            type: 'achievement',
+            achievement: achievement,
+            duration: 3000,
+            position: 'center',
+            size: 'large',
+          });
+        }
         achievementShownRef.current = true;
       }
       
@@ -140,7 +163,22 @@ export const GameScreen: React.FC = () => {
         setEnhancedConfetti(true);
         setTimeout(() => {
           setConfetti(true);
-          showLevelUpModal();
+          
+          // Show level up notification
+          if (gameType) {
+            const currentLevel = levels[profile]?.[gameType] || 1;
+            const gameConfig = GAME_CONFIG[gameType] ?? GAME_CONFIG['word_builder']!;
+            addNotification({
+              type: 'levelUp',
+              title: `${t.levelUp.level} ${currentLevel + 1}`,
+              emoji: gameConfig.emoji,
+              message: t.levelUp.greatWork,
+              duration: 3000,
+              position: 'center',
+              size: 'large',
+            });
+          }
+          
           setEnhancedConfetti(false);
         }, 800);
       } else {
@@ -153,10 +191,17 @@ export const GameScreen: React.FC = () => {
           t.gameScreen.starProgress.last,
         ];
         setTimeout(() => {
-          setFeedbackMessage(formatText(progressMessages[nextStars - 1] || ''), 'info');
+          // Show progress info
+          addNotification({
+            type: 'info',
+            message: formatText(progressMessages[nextStars - 1] || ''),
+            duration: 1200,
+            position: 'top',
+            size: 'medium',
+          });
+          
           setTimeout(() => {
             setBgClass('bg-slate-50');
-            setFeedbackMessage(null);
             // Generate next problem
             if (gameType) {
               const currentLevel = levels[profile]?.[gameType] || 1;
@@ -169,13 +214,29 @@ export const GameScreen: React.FC = () => {
     } else {
       // Show achievement from recordAnswer even for wrong answers (if any)
       if (allNewAchievements.length > 0 && !achievementShownRef.current) {
-        setShowAchievement(allNewAchievements[0] ?? null);
+        const achievement = allNewAchievements[0];
+        if (achievement) {
+          addNotification({
+            type: 'achievement',
+            achievement: achievement,
+            duration: 3000,
+            position: 'center',
+            size: 'large',
+          });
+        }
         achievementShownRef.current = true;
       }
       // Wrong answer
        
       const encouragement = getRandomEncouragement('wrong');
-      setFeedbackMessage(formatText(encouragement), 'wrong');
+      addNotification({
+        type: 'wrong',
+        message: formatText(encouragement),
+        duration: 2000,
+        position: 'top',
+        size: 'medium',
+      });
+      
       setBgClass('bg-red-50');
       setShowHint(true);
       
@@ -195,38 +256,48 @@ export const GameScreen: React.FC = () => {
       } else {
         setTimeout(() => {
           setBgClass('bg-slate-50');
-          setFeedbackMessage(null);
         }, 1500);
       }
     }
   }, [
-    currentStreak, recordAnswer, setShowAchievement, setFeedbackMessage, setBgClass,
+    currentStreak, recordAnswer, addNotification, setBgClass,
     setParticleActive, addScore, addCollectedStars, setShowHint, incrementStars,
     decrementHearts, endGame, gameStartTime, updateAdaptiveDifficulty, submitAnswer,
-    playWin, setEnhancedConfetti, setConfetti, showLevelUpModal, gameType, levels,
-    profile, adaptiveDifficulty, generateUniqueProblemForGame, setProblem, updateStats, t
+    playWin, setEnhancedConfetti, setConfetti, gameType, levels,
+    profile, adaptiveDifficulty, generateUniqueProblemForGame, setProblem, updateStats, t,
+    formatText
   ]);
   
   const handleNextLevel = useCallback(() => {
     if (!gameType) return;
     
-    dismissLevelUpModal();
+    // Clear level up notification
+    clearNotifications();
+    setConfetti(false);
     
     const newLevel = (levels[profile]?.[gameType] || 1) + 1;
     const { newAchievements } = recordLevelUp(gameType, newLevel);
     
     if (newAchievements.length > 0) {
-      setShowAchievement(newAchievements[0] ?? null);
+      const achievement = newAchievements[0];
+      if (achievement) {
+        addNotification({
+          type: 'achievement',
+          achievement: achievement,
+          duration: 3000,
+          position: 'center',
+          size: 'large',
+        });
+      }
     }
     
     setTimeout(() => {
       const newProblem = generateUniqueProblemForGame(gameType, newLevel, profile, adaptiveDifficulty);
       setProblem(newProblem);
       setBgClass('bg-slate-50');
-      setFeedbackMessage(null);
     }, 100);
-  }, [gameType, levels, profile, recordLevelUp, setShowAchievement, dismissLevelUpModal, 
-      generateUniqueProblemForGame, adaptiveDifficulty, setProblem, setBgClass, setFeedbackMessage]);
+  }, [gameType, levels, profile, recordLevelUp, addNotification, clearNotifications, setConfetti,
+      generateUniqueProblemForGame, adaptiveDifficulty, setProblem, setBgClass]);
   
   const handleHint = useCallback(() => {
     if (!problem) return;
@@ -279,13 +350,49 @@ export const GameScreen: React.FC = () => {
         hintText = t.gameScreen.hints.default;
     }
     
-    setFeedbackMessage(formatText(hintText), 'hint');
+    addNotification({
+      type: 'hint',
+      message: formatText(hintText),
+      duration: 3000,
+      position: 'top',
+      size: 'medium',
+    });
     setBgClass('bg-yellow-50');
     setTimeout(() => {
       setBgClass('bg-slate-50');
-      setFeedbackMessage(null);
     }, 3000);
-  }, [problem, setFeedbackMessage, setBgClass, t, formatText]);
+  }, [problem, addNotification, setBgClass, t, formatText]);
+  
+  // Show learning tip on first problem
+  useEffect(() => {
+    if (gameType && problem && notifications.length === 0) {
+      // Show learning tip for the game type
+      const tipMessages: Record<string, string> = {
+        word_builder: '💡 Vihje: Proovi mõelda, mis sõna võiks emoji järgi olla!',
+        syllable_builder: '💡 Vihje: Silbid on sõna osad - proovi neid kokku panna!',
+        pattern: '💡 Vihje: Vaata, mis mustrit järgib rong!',
+        sentence_logic: '💡 Vihje: Loe lauset hoolikalt läbi!',
+        memory_math: '💡 Vihje: Pööra kaardid ümber ja leia paarid!',
+        balance_scale: '💡 Vihje: Arvuta, kui palju on vasakul pool!',
+        robo_path: '💡 Vihje: Mõtle, kuidas robot peab liikuma!',
+        time_match: '💡 Vihje: Vaata kella osuteid!',
+        letter_match: '💡 Vihje: Vaata suurt tähte ja leia väike!',
+        unit_conversion: '💡 Vihje: Loe küsimust hoolikalt ja mõtle ühikute vahekordadele!',
+      };
+      
+      const gameTypeBase = gameType.replace('_adv', '');
+      const tipMessage = tipMessages[gameTypeBase];
+      
+      if (tipMessage) {
+        addNotification({
+          type: 'tip',
+          message: tipMessage,
+          position: 'bottom',
+          size: 'small',
+        });
+      }
+    }
+  }, [gameType, problem, notifications, addNotification]);
   
   if (!gameType) {
     return null;
@@ -297,32 +404,17 @@ export const GameScreen: React.FC = () => {
       {enhancedConfetti && <EnhancedConfetti active={enhancedConfetti} onComplete={() => setEnhancedConfetti(false)} />}
       <ParticleEffect type="success" active={particleActive} />
       
-      {showLevelUp && gameType && (
-        <LevelUpModal 
-          level={(levels[profile]?.[gameType] || 1) + 1} 
-          onNext={handleNextLevel} 
-          gameConfig={GAME_CONFIG[gameType] ?? GAME_CONFIG['word_builder']!} 
-        />
-      )}
-      
-      {showAchievement && (
-        <AchievementModal 
-          key={showAchievement.id}
-          achievement={showAchievement} 
-          onClose={() => {
-            setShowAchievement(null);
-            achievementShownRef.current = false;
-          }} 
-          soundEnabled={soundEnabled} 
-        />
-      )}
-      
-      <FeedbackMessage 
-        message={feedbackMessage} 
-        type={feedbackType} 
-        duration={2500}
-        onComplete={() => setFeedbackMessage(null)}
-        soundEnabled={soundEnabled}
+      {/* Unified Notification System */}
+      <NotificationSystem 
+        notifications={notifications}
+        onDismiss={(id) => {
+          removeNotification(id);
+          // If it was a level up notification, handle next level
+          const notification = notifications.find(n => n.id === id);
+          if (notification?.type === 'levelUp') {
+            handleNextLevel();
+          }
+        }}
       />
       
       {/* Header */}
@@ -377,13 +469,6 @@ export const GameScreen: React.FC = () => {
                 onHint={handleHint} 
                 soundEnabled={soundEnabled}
                 disabled={false}
-              />
-            )}
-            
-            {gameType && !showHint && showLearningTip && (
-              <LearningTip 
-                gameType={gameType.replace('_adv', '')} 
-                onClose={() => setShowLearningTip(false)}
               />
             )}
           </div>
