@@ -494,7 +494,7 @@ export const Generators: Record<string, GeneratorFunction> = {
       safety++; 
     }
     // Build grid
-    const grid: number[][] = Array.from({ length: gridSize }, () => Array(gridSize).fill(0));
+    const grid: number[][] = Array.from({ length: gridSize }, () => Array(gridSize).fill(0) as number[]);
     for (const obs of obstacles) {
       const row = grid[obs.y];
       if (row) {

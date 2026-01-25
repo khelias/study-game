@@ -73,7 +73,7 @@ export const playSound = (type: SoundType, active = true): void => {
       osc.start(now);
       osc.stop(now + 0.6);
     }
-  } catch (e) {
+  } catch {
     // Audio playback failed - ignore silently
   }
 };

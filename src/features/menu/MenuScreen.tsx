@@ -269,7 +269,7 @@ export const MenuScreen: React.FC = () => {
                     const Icon = ICON_MAP[conf.icon as keyof typeof ICON_MAP] || Type;
                     const gameStats = stats.gamesByType?.[key] || 0;
                     const isNew = gameStats === 0;
-                    const currentLevel = levels[profile as keyof typeof levels][key];
+                    const currentLevel = levels[profile][key];
                     return (
                       <GameCard
                         key={key}
