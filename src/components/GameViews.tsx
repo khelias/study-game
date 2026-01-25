@@ -366,7 +366,7 @@ export const StandardGameView: React.FC<StandardGameViewProps> = ({ problem, onA
   };
 
   const renderOptionContent = (opt: string | { text: string; pos?: string; answer?: boolean; a?: { n?: string; e?: string }; s?: { n?: string; e?: string }; sceneName?: string; [key: string]: unknown }, optIdx: number): React.ReactNode => {
-    if (problem.type === 'sentence_logic' && typeof opt === 'object') {
+    if (problem.type === 'sentence_logic' && typeof opt === 'object' && opt !== null) {
         const sceneBg = (opt.bg as string | undefined) || 'bg-gray-100';
         let transformClass = '';
         let zIndex = 'z-10';
@@ -551,7 +551,7 @@ export const WordGameView: React.FC<WordGameViewProps> = ({ problem, onAnswer, s
         setTimeout(() => { 
           onAnswer(false); 
           setUserWord([]); 
-          setPool(problem.shuffled); 
+          setPool(problem.shuffled || []); 
         }, 500);
       }
     }
@@ -656,7 +656,7 @@ export const SyllableGameView: React.FC<SyllableGameViewProps> = ({ problem, onA
 
   return (
     <div className="flex flex-col items-center mt-2 sm:mt-4 w-full animate-in fade-in slide-in-from-right-4 duration-500 px-2">
-      <div className="text-3xl sm:text-4xl mb-1 sm:mb-2">{problem.hint || '🧩'}</div>
+      <div className="text-3xl sm:text-4xl mb-1 sm:mb-2">{problem.emoji || problem.hint || '🧩'}</div>
       <div className="text-xs sm:text-sm font-semibold text-slate-600 mb-2 px-2 text-center uppercase">PANE SILBID ÕIGESSE JÄRJEKORDA, ET SAADA SÕNA</div>
       {ghost && (
         <div className="mb-2 text-[10px] sm:text-xs font-semibold text-slate-400">
@@ -681,7 +681,7 @@ export const SyllableGameView: React.FC<SyllableGameViewProps> = ({ problem, onA
             onClick={() => handleSelect(item)} 
             className={`px-2 sm:px-4 h-12 sm:h-14 bg-white rounded-xl sm:rounded-2xl border-b-[4px] sm:border-b-[6px] text-lg sm:text-2xl font-black shadow-sm active:translate-y-2 active:border-b-0 hover:brightness-105 transition-colors ${colors[idx % colors.length]}`}
           >
-            {item.part}
+            {item.part.text}
           </button>
         ))}
       </div>
@@ -845,7 +845,9 @@ export const MemoryGameView: React.FC<MemoryGameViewProps> = ({ problem, onAnswe
     playSound('click', soundEnabled);
     
     const newCards = [...cards]; 
-    newCards[index].flipped = true;
+    if (newCards[index]) {
+      newCards[index] = { ...newCards[index], flipped: true };
+    }
     setCards(newCards); 
     
     const newFlipped = [...flipped, index]; 
@@ -855,15 +857,17 @@ export const MemoryGameView: React.FC<MemoryGameViewProps> = ({ problem, onAnswe
       const i1 = newFlipped[0];
       const i2 = newFlipped[1];
       if (i1 !== undefined && i2 !== undefined) {
-        const card1 = cards[i1];
-        const card2 = cards[i2];
+        const card1 = newCards[i1];
+        const card2 = newCards[i2];
         if (card1 && card2 && card1.matchId === card2.matchId) {
         playSound('correct', soundEnabled);
         setMatchedPairs(prev => prev + 1);
         setTimeout(() => {
           const solvedCards = [...newCards];
-          solvedCards[i1] = { ...solvedCards[i1], solved: true };
-          solvedCards[i2] = { ...solvedCards[i2], solved: true };
+          if (solvedCards[i1] && solvedCards[i2]) {
+            solvedCards[i1] = { ...solvedCards[i1], solved: true } as typeof solvedCards[0];
+            solvedCards[i2] = { ...solvedCards[i2], solved: true } as typeof solvedCards[0];
+          }
           setCards(solvedCards); 
           setFlipped([]);
           
@@ -880,8 +884,10 @@ export const MemoryGameView: React.FC<MemoryGameViewProps> = ({ problem, onAnswe
       } else {
         setTimeout(() => { 
           const resetCards = [...newCards];
-          resetCards[i1] = { ...resetCards[i1], flipped: false };
-          resetCards[i2] = { ...resetCards[i2], flipped: false };
+          if (resetCards[i1] && resetCards[i2]) {
+            resetCards[i1] = { ...resetCards[i1], flipped: false } as typeof resetCards[0];
+            resetCards[i2] = { ...resetCards[i2], flipped: false } as typeof resetCards[0];
+          }
           setCards(resetCards); 
           setFlipped([]); 
         }, 1200);

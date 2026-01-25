@@ -199,9 +199,10 @@ export const Generators: Record<string, GeneratorFunction> = {
       const a = Math.floor(rng() * (sum - 1)) + 1;
       const eq = `${a} + ${sum-a}`;
       const id = pairs.length; 
+      const matchId = `pair-${id}`;
       pairs.push({ eq, ans: sum });
-      cards.push({ id: `q-${id}`, content: eq });
-      cards.push({ id: `a-${id}`, content: `${sum}` });
+      cards.push({ id: `q-${id}`, content: eq, type: 'math', matchId });
+      cards.push({ id: `a-${id}`, content: `${sum}`, type: 'answer', matchId });
     }
     return { type: 'memory_math', cards: cards.sort(() => rng() - 0.5), pairs, uid: uid(rng) };
   },
@@ -386,45 +387,59 @@ export const Generators: Record<string, GeneratorFunction> = {
     const caseType: 'adess' | 'iness' = correctPos === 'SEES' ? 'iness' : 'adess';
     const sentence = `${subject.n} ON ${caseType === 'iness' ? anchor.iness : anchor.adess} ${correctPos}.`;
     
-    // Map options to strings for the SentenceLogicProblem
-    const optionStrings = validatedOptions.map((_opt, i) => `option-${i}`);
+    // Map options to objects with text property for the SentenceLogicProblem
+    const optionObjects = validatedOptions.map((opt, i) => ({
+      text: opt.id === 'correct' ? 'correct' : `option-${i}`,
+      pos: opt.pos,
+      answer: opt.id === 'correct',
+      a: opt.a,
+      s: opt.s,
+      bg: opt.bg,
+      sceneName: opt.sceneName,
+      id: opt.id
+    }));
     
     return { 
       type: 'sentence_logic', 
       scene: sceneKey,
+      sceneName: scene.name,
       subject,
       anchor,
       position: correctPos,
       caseType,
       sentence,
-      options: optionStrings, 
+      display: sentence,
+      options: optionObjects, 
       answer: 'correct',
       uid: uid(rng) 
     };
   },
 
   letter_match: (level: number, rng: RngFunction = Math.random, _profile: ProfileType = 'starter'): LetterMatchProblem => {
-    // Kõrgematel tasemetel kasuta sarnasemaid tähti (raskem)
-    const target = getRandom(ALPHABET, rng);
-    if (!target) {
+    // Vali suur täht - see on see, mida näidatakse
+    const targetUpper = getRandom(ALPHABET, rng);
+    if (!targetUpper) {
       throw new Error('No letter found for letter_match game');
     }
-    const opts = new Set([target]);
+    const targetLower = targetUpper.toLowerCase();
     
-    // Level 1-2: suvalised tähed
-    // Level 3-4: sarnased tähed (näiteks A, Ä, E)
-    // Level 5+: väga sarnased tähed
+    // Genereeri valeid valikuid - väikesed tähed
+    const opts = new Set([targetLower]);
+    
+    // Level 1-2: suvalised väikesed tähed
+    // Level 3-4: sarnased väikesed tähed
+    // Level 5+: väga sarnased väikesed tähed
     const similarLetters = level >= 5 
       ? ALPHABET.filter(l => {
           // Leia tähed, mis on tähestikus lähedal
-          const targetIdx = ALPHABET.indexOf(target);
-          return Math.abs(ALPHABET.indexOf(l) - targetIdx) <= 2 && l !== target;
+          const targetIdx = ALPHABET.indexOf(targetUpper);
+          return Math.abs(ALPHABET.indexOf(l) - targetIdx) <= 2 && l !== targetUpper;
         })
       : level >= 3
       ? ALPHABET.filter(l => {
           // Leia tähed, mis on tähestikus lähedal (laiem)
-          const targetIdx = ALPHABET.indexOf(target);
-          return Math.abs(ALPHABET.indexOf(l) - targetIdx) <= 5 && l !== target;
+          const targetIdx = ALPHABET.indexOf(targetUpper);
+          return Math.abs(ALPHABET.indexOf(l) - targetIdx) <= 5 && l !== targetUpper;
         })
       : ALPHABET;
     
@@ -432,31 +447,31 @@ export const Generators: Record<string, GeneratorFunction> = {
     const optionCount = level >= 3 ? 4 : 3;
     while(opts.size < optionCount) { 
       const r = getRandom(similarLetters.length > 0 ? similarLetters : ALPHABET, rng); 
-      if(r && r !== target) opts.add(r); 
+      if(r && r !== targetUpper) opts.add(r.toLowerCase()); 
     }
     
-    // Find a word that contains the target letter
+    // Find a word that contains the target letter (for emoji)
     let wordObj = null;
     for (const len of Object.keys(WORD_DB)) {
       const words = WORD_DB[parseInt(len)];
       if (words && words.length > 0) {
-        wordObj = getRandom(words.filter(w => w.w.includes(target)), rng);
+        wordObj = getRandom(words.filter(w => w.w.includes(targetUpper)), rng);
         if (wordObj) break;
       }
     }
     if (!wordObj) {
-      wordObj = { w: target, e: '❓' };
+      wordObj = { w: targetUpper, e: '❓' };
     }
-    
-    const targetPosition = wordObj.w.indexOf(target);
     
     return { 
       type: 'letter_match',
       word: wordObj.w,
       emoji: wordObj.e,
-      targetLetter: target,
-      targetPosition,
-      options: Array.from(opts).map(l => l.toLowerCase()).sort(() => rng() - 0.5), 
+      display: targetUpper, // Näita suurt tähte
+      targetLetter: targetLower, // Õige vastus on väike täht
+      targetPosition: 0, // Ei ole enam vajalik, aga jätame kompatiilsuseks
+      options: Array.from(opts).sort(() => rng() - 0.5), 
+      answer: targetLower,
       uid: uid(rng) 
     };
   },
@@ -509,11 +524,13 @@ export const Generators: Record<string, GeneratorFunction> = {
     return { 
       type: 'robo_path',
       grid,
+      gridSize,
       start: [start.x, start.y],
       goal: [end.x, end.y],
       obstacles: obstacles.map(o => [o.x, o.y] as [number, number]),
       correctPath,
       options: optionCommands,
+      maxCommands: Math.max(6, Math.floor(gridSize * 1.5) + obstacleCount),
       uid: uid(rng) 
     };
   },

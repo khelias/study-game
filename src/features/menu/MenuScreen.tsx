@@ -28,8 +28,10 @@ export const MenuScreen: React.FC = () => {
   const toggleSound = useGameStore(state => state.toggleSound);
   const resetGame = useGameStore(state => state.resetGame);
   const markTutorialSeen = useGameStore(state => state.markTutorialSeen);
+  const recordGameStart = useGameStore(state => state.recordGameStart);
   
   const startGame = usePlaySessionStore(state => state.startGame);
+  const setShowAchievement = usePlaySessionStore(state => state.setShowAchievement);
   
   const { playClick } = useGameAudio(soundEnabled);
   
@@ -40,6 +42,13 @@ export const MenuScreen: React.FC = () => {
 
   const handleStartGame = (gameType: string) => {
     playClick();
+    
+    // Record game start and check for achievements
+    const { newAchievements } = recordGameStart(gameType);
+    if (newAchievements.length > 0) {
+      setShowAchievement(newAchievements[0]);
+    }
+    
     startGame(gameType);
   };
 

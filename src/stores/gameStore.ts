@@ -89,6 +89,12 @@ export const useGameStore = create<GameStore>()(
         
         // Check for new achievements
         const newAchievements = checkAchievements(updatedStats, state.unlockedAchievements);
+        const achievementData: AchievementData[] = newAchievements.map(a => ({
+          id: a.id,
+          title: a.title,
+          desc: a.desc,
+          icon: a.icon
+        }));
         
         set({ 
           stats: updatedStats,
@@ -97,7 +103,7 @@ export const useGameStore = create<GameStore>()(
             : state.unlockedAchievements
         });
         
-        return { newAchievements };
+        return { newAchievements: achievementData };
       },
       
       recordGameStart: (gameType: string) => {
@@ -106,6 +112,12 @@ export const useGameStore = create<GameStore>()(
         
         // Check for new achievements
         const newAchievements = checkAchievements(updatedStats, state.unlockedAchievements);
+        const achievementData: AchievementData[] = newAchievements.map(a => ({
+          id: a.id,
+          title: a.title,
+          desc: a.desc,
+          icon: a.icon
+        }));
         
         set({ 
           stats: updatedStats,
@@ -114,7 +126,7 @@ export const useGameStore = create<GameStore>()(
             : state.unlockedAchievements
         });
         
-        return { newAchievements };
+        return { newAchievements: achievementData };
       },
       
       recordLevelUp: (gameType: string, newLevel: number) => {
@@ -134,6 +146,12 @@ export const useGameStore = create<GameStore>()(
         
         // Check for new achievements
         const newAchievements = checkAchievements(updatedStats, state.unlockedAchievements);
+        const achievementData: AchievementData[] = newAchievements.map(a => ({
+          id: a.id,
+          title: a.title,
+          desc: a.desc,
+          icon: a.icon
+        }));
         
         set({ 
           levels: updatedLevels,
@@ -143,7 +161,7 @@ export const useGameStore = create<GameStore>()(
             : state.unlockedAchievements
         });
         
-        return { newAchievements };
+        return { newAchievements: achievementData };
       },
       
       unlockAchievement: (id: string) => {
@@ -184,6 +202,12 @@ export const useGameStore = create<GameStore>()(
         
         // Check for new achievements
         const newAchievements = checkAchievements(updatedStats, state.unlockedAchievements);
+        const achievementData: AchievementData[] = newAchievements.map(a => ({
+          id: a.id,
+          title: a.title,
+          desc: a.desc,
+          icon: a.icon
+        }));
         
         set({ 
           collectedStars: newCollectedStars,
@@ -193,7 +217,7 @@ export const useGameStore = create<GameStore>()(
             : state.unlockedAchievements
         });
         
-        return { newAchievements };
+        return { newAchievements: achievementData };
       },
       
       setScore: (score: number) => {
