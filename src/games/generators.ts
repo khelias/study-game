@@ -1,5 +1,7 @@
 import { ALPHABET, WORD_DB, SCENE_DB, PROFILES } from './data';
 import { getRandom, uid } from '../engine/rng';
+import { getLocale } from '../i18n/index';
+import { generateSentence, getSceneName } from './sentenceTranslations';
 import type { 
   RngFunction, 
   ProfileType, 
@@ -210,212 +212,111 @@ export const Generators: Record<string, GeneratorFunction> = {
   },
 
   sentence_logic: (level: number, rng: RngFunction = Math.random, _profile: ProfileType = 'starter'): SentenceLogicProblem => {
+    // 1. Select scene based on level progression
     const allScenes = Object.keys(SCENE_DB);
-    
-    // Progression: Level 1-2 = simpler scenes (3-4 positions), Level 3-5 = medium (4-5), Level 6+ = all
     const sceneKeys = level <= 2
-      ? allScenes.filter(k => {
-          const scene = SCENE_DB[k];
-          return scene && scene.positions && scene.positions.length <= 4;
-        }) // Lihtsamad: forest, space
+      ? allScenes.filter(k => (SCENE_DB[k]?.positions?.length ?? 0) <= 4)
       : level <= 5
-      ? allScenes.filter(k => {
-          const scene = SCENE_DB[k];
-          return scene && scene.positions && scene.positions.length <= 5;
-        }) // Keskmised: room, park, beach
-      : allScenes; // All scenes
+      ? allScenes.filter(k => (SCENE_DB[k]?.positions?.length ?? 0) <= 5)
+      : allScenes;
     
-    const sceneKey = getRandom(sceneKeys, rng) || getRandom(allScenes, rng);
-    if (!sceneKey) {
-      throw new Error('No scene found for sentence_logic game');
-    }
+    const sceneKey = getRandom(sceneKeys, rng);
+    if (!sceneKey) throw new Error('No scene found for sentence_logic game');
+    
     const scene = SCENE_DB[sceneKey];
-    if (!scene) {
-      throw new Error('Scene not found in SCENE_DB');
-    }
+    if (!scene) throw new Error('Scene not found in SCENE_DB');
     
-    // Vali subject ja anchor, mis loogiliselt sobivad kokku
+    // 2. Select objects
     const subject = getRandom(scene.subjects, rng);
-    if (!subject) {
-      throw new Error('No subject found for sentence_logic game');
-    }
+    if (!subject) throw new Error('No subject found for sentence_logic game');
+    
     const anchor = getRandom(scene.anchors, rng);
-    if (!anchor) {
-      throw new Error('No anchor found for sentence_logic game');
-    }
+    if (!anchor) throw new Error('No anchor found for sentence_logic game');
+    
+    // 3. Select correct position
     const validPositions = scene.positions;
     const correctPos = getRandom(validPositions, rng);
-    if (!correctPos) {
-      throw new Error('No position found for sentence_logic game');
-    }
+    if (!correctPos) throw new Error('No position found for sentence_logic game');
     
-    const correctOption = { 
-      id: 'correct', 
-      scene: sceneKey, 
-      sceneName: scene.name,
-      bg: scene.bg, 
-      s: subject, 
-      a: anchor, 
-      pos: correctPos 
-    };
+    // 4. Generate wrong positions (same objects, different positions)
+    const usedPositions = new Set([correctPos]);
+    const wrongPositions: string[] = [];
     
-    // Generate wrong choices - CLEARLY DIFFERENT, ANCHOR ALWAYS VISIBLE
-    const wrongOptions = [];
+    // Determine number of wrong options based on level
+    const numWrongOptions = level >= 4 ? 3 : level >= 3 ? 2 : level >= 2 ? 2 : 1;
     
-    // Vale 1: Erinev objekt + erinev positsioon
-    // Level 1-2: same anchor (to make it easier and anchor visible)
-    // Level 3+: erinev anchor (raskem)
-    const subjectPool1 = scene.subjects.filter(s => s.n !== subject.n && s.e !== subject.e);
-    const wrongSubject1 = getRandom(subjectPool1.length > 0 ? subjectPool1 : scene.subjects.filter(s => s.n !== subject.n), rng);
-    let wrongPos1 = getRandom(validPositions, rng);
-    if (!wrongPos1) wrongPos1 = correctPos;
-    let attempts = 0;
-    while (wrongPos1 === correctPos && validPositions.length > 1 && attempts < 10) {
-      wrongPos1 = getRandom(validPositions, rng);
-      attempts++;
-    }
-    // Lower levels same anchor (clearer), higher levels different
-    const anchorPool1 = scene.anchors.filter(a => a.n !== anchor.n);
-    const wrongAnchor1 = (level >= 3 && anchorPool1.length > 0 
-      ? getRandom(anchorPool1, rng) 
-      : null) || anchor; // Level 1-2: sama anchor
-    
-    wrongOptions.push({ 
-      id: 'wrong1', 
-      scene: sceneKey, 
-      sceneName: scene.name,
-      bg: scene.bg, 
-      s: wrongSubject1 || subject, 
-      a: wrongAnchor1, 
-      pos: wrongPos1 
-    });
-    
-    // Wrong 2: Different object + correct position, but different anchor (Level 3+)
-    if (level >= 3) {
-      const subjectPool2 = scene.subjects.filter(s => s.n !== subject.n && s.e !== subject.e);
-      const wrongSubject2 = getRandom(subjectPool2.length > 0 ? subjectPool2 : scene.subjects.filter(s => s.n !== subject.n), rng);
-      const anchorPool2 = scene.anchors.filter(a => a.n !== anchor.n);
-      const wrongAnchor2 = (anchorPool2.length > 0 ? getRandom(anchorPool2, rng) : null) || anchor;
+    for (let i = 0; i < numWrongOptions && wrongPositions.length < validPositions.length - 1; i++) {
+      const available = validPositions.filter(p => !usedPositions.has(p));
+      if (available.length === 0) break;
       
-      wrongOptions.push({ 
-        id: 'wrong2', 
-        scene: sceneKey, 
+      const wrongPos = getRandom(available, rng);
+      if (wrongPos) {
+        wrongPositions.push(wrongPos);
+        usedPositions.add(wrongPos);
+      }
+    }
+    
+    // 5. Build options array
+    const options = [
+      { id: 'correct', pos: correctPos, answer: true, subject, anchor, sceneKey, sceneName: scene.name, bg: scene.bg },
+      ...wrongPositions.map((pos, idx) => ({
+        id: `wrong-${idx}`,
+        pos,
+        answer: false,
+        subject,
+        anchor,
+        sceneKey,
         sceneName: scene.name,
-        bg: scene.bg, 
-        s: wrongSubject2 || subject, 
-        a: wrongAnchor2, 
-        pos: correctPos 
-      });
+        bg: scene.bg
+      }))
+    ];
+    
+    // Shuffle options
+    const shuffledOptions = [...options].sort(() => rng() - 0.5);
+    
+    // 6. Generate sentence in current language
+    // Ensure locale is properly initialized (fallback to 'et' if window is not available)
+    let locale: 'et' | 'en' = 'et';
+    try {
+      locale = getLocale();
+      // Validate locale
+      if (locale !== 'et' && locale !== 'en') {
+        locale = 'et';
+      }
+    } catch (error) {
+      console.warn('Error getting locale, defaulting to Estonian:', error);
+      locale = 'et';
     }
     
-    // Wrong 3: Correct object, but different anchor + different position (Level 5+)
-    if (level >= 5) {
-      const anchorPool3 = scene.anchors.filter(a => a.n !== anchor.n);
-      const wrongAnchor3 = (anchorPool3.length > 0 ? getRandom(anchorPool3, rng) : null) || anchor;
-      let wrongPos3 = getRandom(validPositions, rng);
-      if (!wrongPos3) wrongPos3 = correctPos;
-      attempts = 0;
-      while ((wrongPos3 === correctPos || wrongPos3 === wrongPos1) && validPositions.length > 2 && attempts < 10) {
-        wrongPos3 = getRandom(validPositions, rng);
-        attempts++;
-      }
-      
-      wrongOptions.push({ 
-        id: 'wrong3', 
-        scene: sceneKey, 
-        sceneName: scene.name,
-        bg: scene.bg, 
-        s: subject, 
-        a: wrongAnchor3, 
-        pos: wrongPos3 
-      });
-    }
+    const sentence = generateSentence(subject, anchor, correctPos, locale);
+    const isInside = correctPos === 'INSIDE';
+    const translatedSceneName = getSceneName(scene.name, locale);
     
-    // Level 7+ - lisa neljas valik (veel raskem)
-    const options = level >= 7 && wrongOptions.length >= 3
-      ? [
-          correctOption,
-          ...wrongOptions,
-          // Wrong 4: Completely different object + different anchor + different position
-          (() => {
-            const subjectPool4 = scene.subjects.filter(s => s.n !== subject.n && s.e !== subject.e);
-            const wrongSubject4 = getRandom(subjectPool4.length > 0 ? subjectPool4 : scene.subjects.filter(s => s.n !== subject.n), rng);
-            const anchorPool4 = scene.anchors.filter(a => a.n !== anchor.n);
-            const wrongAnchor4 = (anchorPool4.length > 0 ? getRandom(anchorPool4, rng) : null) || anchor;
-            let wrongPos4 = getRandom(validPositions, rng);
-            if (!wrongPos4) wrongPos4 = correctPos;
-            attempts = 0;
-            while ((wrongPos4 === correctPos || wrongPos4 === wrongPos1) && validPositions.length > 2 && attempts < 10) {
-              wrongPos4 = getRandom(validPositions, rng);
-              attempts++;
-            }
-            return {
-              id: 'wrong4',
-              scene: sceneKey,
-              sceneName: scene.name,
-              bg: scene.bg,
-              s: wrongSubject4 || subject,
-              a: wrongAnchor4,
-              pos: wrongPos4
-            };
-          })()
-        ]
-      : [correctOption, ...wrongOptions];
-    
-    // TAGAME, et õige vastus on alati valikute seas
-    const hasCorrect = options.some(opt => opt.id === 'correct');
-    if (!hasCorrect) {
-      // If correct answer is missing, replace first wrong choice with correct answer
-      if (options.length > 0) {
-        options[0] = correctOption;
-      } else {
-        options.push(correctOption);
-      }
-    }
-    
-    // ENSURE all choices are logical (contain both subject and anchor)
-    const validatedOptions = options.map(opt => {
-      if (!opt.s || !opt.a) {
-        // If missing, use correct values
-        return {
-          ...opt,
-          s: opt.s || subject,
-          a: opt.a || anchor
-        };
-      }
-      return opt;
-    });
-    
-    const caseType: 'adess' | 'iness' = correctPos === 'SEES' ? 'iness' : 'adess';
-    const sentence = `${subject.n} ON ${caseType === 'iness' ? anchor.iness : anchor.adess} ${correctPos}.`;
-    
-    // Map options to objects with text property for the SentenceLogicProblem
-    // Note: The actual rendering uses the full objects, but TypeScript expects simpler type
-    const optionObjects = validatedOptions.map((opt, i) => ({
-      text: opt.id === 'correct' ? 'correct' : `option-${i}`,
-      pos: opt.pos ?? undefined,
-      answer: opt.id === 'correct',
-      // Store additional data for rendering (not in type, but used at runtime)
-      a: opt.a,
-      s: opt.s,
+    // 7. Map to expected format
+    const optionObjects = shuffledOptions.map(opt => ({
+      text: opt.id === 'correct' ? 'correct' : opt.id,
+      pos: opt.pos,
+      answer: opt.answer,
+      a: opt.anchor,
+      s: opt.subject,
       bg: opt.bg,
-      sceneName: opt.sceneName,
+      sceneName: translatedSceneName,
       id: opt.id
     })) as Array<string | { text: string; pos?: string; answer?: boolean; a?: SceneAnchor; s?: SceneSubject; bg?: string; sceneName?: string; id?: string }>;
     
-    return { 
-      type: 'sentence_logic', 
+    return {
+      type: 'sentence_logic',
       scene: sceneKey,
-      sceneName: scene.name,
+      sceneName: translatedSceneName,
       subject,
       anchor,
       position: correctPos,
-      caseType,
+      caseType: isInside ? 'iness' : 'adess',
       sentence,
       display: sentence,
-      options: optionObjects, 
+      options: optionObjects,
       answer: 'correct',
-      uid: uid(rng) 
+      uid: uid(rng)
     };
   },
 

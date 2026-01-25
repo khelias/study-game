@@ -332,6 +332,7 @@ interface StandardGameViewProps {
 }
 
 export const StandardGameView: React.FC<StandardGameViewProps> = ({ problem, onAnswer, soundEnabled }) => {
+  const t = useTranslation();
   const [disabled, setDisabled] = useState<string[]>([]);
   const problemUid: string = problem.uid;
   
@@ -340,19 +341,6 @@ export const StandardGameView: React.FC<StandardGameViewProps> = ({ problem, onA
     return () => clearTimeout(timer);
   }, [problemUid]);
 
-  // Cache random offset per problem to avoid calling Math.random during render
-  const sideOffsets = useMemo((): Record<number, number> => {
-    if (problem.type !== 'sentence_logic') return {};
-    // Create a stable seed from problem.uid to ensure consistent offsets per problem
-    const seed = problem.uid ? problem.uid.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0) : 0;
-    return problem.options.reduce((acc: Record<number, number>, opt, idx) => {
-      if (typeof opt === 'object' && 'pos' in opt && opt.pos === 'KÕRVAL') {
-        // Use seeded pseudo-random value instead of Math.random()
-        acc[idx] = ((seed + idx) % 2 === 0) ? 50 : -50;
-      }
-      return acc;
-    }, {});
-  }, [problem.type, problem.options, problem.uid]);
 
   const handleChoice = (opt: string | { text: string; pos?: string; answer?: boolean; id?: string }): void => {
     playSound('click', soundEnabled);
@@ -371,106 +359,154 @@ export const StandardGameView: React.FC<StandardGameViewProps> = ({ problem, onA
 
   const renderOptionContent = (opt: string | { text: string; pos?: string; answer?: boolean; a?: { n?: string; e?: string }; s?: { n?: string; e?: string }; sceneName?: string; [key: string]: unknown }, optIdx: number): React.ReactNode => {
     if (problem.type === 'sentence_logic' && typeof opt === 'object' && opt !== null) {
-        const sceneBg = (opt.bg as string | undefined) || 'bg-gray-100';
-        let transformClass = '';
-        let zIndex = 'z-10';
-        let anchorTransform = '';
-        let sideOffset = 0; // Juhuslik offset KÕRVAL jaoks
-        
-        // Parem 3D efekt positsioonidele - ANCHOR ALATI NÄHTAV
-        switch(opt.pos) {
-          case 'PEAL': 
-            transformClass = 'translate-y-[-35px] scale-120'; 
-            zIndex = 'z-30';
-            // Anchor suurem ja selgem, et oleks nähtav
-            anchorTransform = 'scale-100 translate-y-[10px] opacity-100';
-            break;
-          case 'ALL': 
-            transformClass = 'translate-y-[30px] scale-95 opacity-95'; 
-            zIndex = 'z-20';
-            // Anchor üleval, selgelt nähtav
-            anchorTransform = 'scale-110 translate-y-[-5px] opacity-100';
-            break;
-          case 'EES': 
-            transformClass = 'translate-y-[-5px] scale-130 drop-shadow-2xl brightness-120'; 
-            zIndex = 'z-40';
-            // Anchor taga, aga ikka nähtav - suurem ja selgem, veidi vasakule/paremale
-            anchorTransform = 'scale-110 translate-y-[12px] translate-x-[-20px] opacity-100';
-            break;
-          case 'TAGA': 
-            transformClass = 'translate-y-[-20px] translate-x-[15px] scale-65 opacity-75 blur-[1.5px]'; 
-            zIndex = 'z-10';
-            // Anchor ees, selgelt nähtav
-            anchorTransform = 'scale-120 translate-y-[-10px] opacity-100';
-            break;
-          case 'KÕRVAL': 
-            // Use pre-calculated random offset instead of Math.random() during render
-            sideOffset = sideOffsets[optIdx] || 0;
-            transformClass = 'translate-y-[5px] scale-115'; 
-            zIndex = 'z-25';
-            // Anchor keskel, selgelt nähtav
-            anchorTransform = 'scale-105 opacity-100';
-            break;
-          case 'SEES': 
-            transformClass = 'scale-55 translate-y-[8px] opacity-85'; 
-            zIndex = 'z-30';
-            // Anchor ümber, suurem ja selgem
-            anchorTransform = 'scale-130 translate-y-[-8px] opacity-100';
-            break;
-          default: 
-            transformClass = '';
-            anchorTransform = 'scale-100 opacity-100';
-        }
-
+      const sceneBg = (opt.bg as string | undefined) || 'bg-gray-100';
+      const position = String(opt.pos || '').trim();
+      const subjectEmoji = opt.s?.e || '❓';
+      const anchorEmoji = opt.a?.e || '📦';
+      
+      // Container for the visual scene
+      const containerClasses = `relative w-full h-48 sm:h-64 ${sceneBg} rounded-lg sm:rounded-xl overflow-hidden group transition-all duration-300 shadow-inner border-2 border-white/30 hover:shadow-lg hover:scale-[1.02]`;
+      
+      // NEXT_TO: Side-by-side layout using flexbox
+      // Use same size as other positions
+      if (position === 'NEXT_TO') {
+        const isSubjectLeft = (optIdx % 2) === 0; // Alternate left/right per option
+        const baseSize = 'text-6xl sm:text-8xl'; // Same size as other positions
         return (
-            <div className={`relative w-full h-32 sm:h-44 ${sceneBg} flex items-center justify-center rounded-lg sm:rounded-xl overflow-hidden group transition-all duration-300 shadow-inner border-2 border-white/30`}>
-                {/* Taust efekt - EI näita, mis on õige/vale */}
-                <div className="absolute inset-0 bg-gradient-to-b from-white/15 to-black/8 rounded-lg sm:rounded-xl"></div>
-                
-                {/* Anchor (kohapealne objekt) - ALATI SUUR JA SELGE, ALATI NÄHTAV, väiksem mobiilil */}
-                <div 
-                  className={`absolute text-5xl sm:text-7xl transition-all duration-500 filter drop-shadow-2xl ${anchorTransform} z-10`}
-                  style={{ 
-                    minWidth: '60px',
-                    minHeight: '60px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    // Tagame, et anchor on alati nähtav
-                    opacity: 1,
-                    visibility: 'visible' as const
-                  }}
-                  title={opt.a?.n || 'Kohapealne objekt'}
-                >
-                    {opt.a?.e || '📦'}
-                </div>
-                
-                {/* Subject (liikuv objekt) - SUUREM, väiksem mobiilil */}
-                <div 
-                  className={`absolute text-4xl sm:text-6xl transition-all duration-500 filter drop-shadow-2xl ${transformClass} ${zIndex}`}
-                  style={{
-                    minWidth: '50px',
-                    minHeight: '50px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    ...(opt.pos === 'KÕRVAL' ? { transform: `translateX(${sideOffset}px) translateY(5px) scale(1.15)` } : {})
-                  }}
-                  title={opt.s?.n || 'Liikuv objekt'}
-                >
-                  {opt.s?.e || '❓'}
-                </div>
-                
-                {/* Stseeni nimi (näita alati väikselt) */}
-                {opt.sceneName && (
-                  <div className="absolute bottom-1 sm:bottom-2 left-1/2 -translate-x-1/2 text-[10px] sm:text-xs font-bold text-white/90 bg-black/40 px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-full backdrop-blur-sm">
-                    {opt.sceneName}
-                  </div>
-                )}
+          <div className={containerClasses}>
+            <div className="absolute inset-0 bg-gradient-to-b from-white/15 to-black/8 rounded-lg sm:rounded-xl"></div>
+            <div className="relative w-full h-full flex items-center justify-center gap-2 sm:gap-4 px-2 sm:px-4">
+              <div className={`${baseSize} filter drop-shadow-2xl animate-pulse-slow flex-shrink-0 ${isSubjectLeft ? 'order-2' : 'order-1'}`}>
+                {anchorEmoji}
+              </div>
+              <div className={`${baseSize} filter drop-shadow-2xl animate-bounce-subtle flex-shrink-0 ${isSubjectLeft ? 'order-1' : 'order-2'}`}>
+                {subjectEmoji}
+              </div>
             </div>
+          </div>
         );
+      }
+      
+      // Use CSS Grid for precise positioning - much more reliable than absolute positioning
+      // Create a 5x5 grid where anchor is always in center (3,3) and subject moves relative to it
+      const getGridPosition = (pos: string) => {
+        const baseSize = 'text-6xl sm:text-8xl';
+        
+        // Anchor is ALWAYS at grid position (3, 3) - center of 5x5 grid
+        const anchorGridArea = '3 / 3 / 4 / 4';
+        
+        switch (pos) {
+          case 'ON':
+            // Subject above anchor
+            return {
+              subjectGridArea: '2 / 3 / 3 / 4', // Row 2, Column 3 (above center)
+              anchorGridArea,
+              subjectZIndex: 'z-30',
+              anchorZIndex: 'z-10',
+              sizes: { subject: baseSize, anchor: baseSize }
+            };
+          
+          case 'UNDER':
+            // Subject below anchor
+            return {
+              subjectGridArea: '4 / 3 / 5 / 4', // Row 4, Column 3 (below center)
+              anchorGridArea,
+              subjectZIndex: 'z-10',
+              anchorZIndex: 'z-30', // Anchor on top
+              sizes: { subject: baseSize, anchor: baseSize }
+            };
+          
+          case 'IN_FRONT':
+            // Subject IN FRONT of anchor - subject overlaps anchor from left
+            // Anchor is behind (larger, semi-transparent), subject is in front (normal size)
+            return {
+              subjectGridArea: '3 / 2 / 4 / 4', // Row 3, spans columns 2-3 (left, overlaps center)
+              anchorGridArea,
+              subjectZIndex: 'z-40',
+              anchorZIndex: 'z-10',
+              anchorOpacity: 0.4, // Anchor behind is semi-transparent
+              anchorScale: 'scale(1.2)', // Anchor behind is larger
+              sizes: { subject: baseSize, anchor: baseSize }
+            };
+          
+          case 'BEHIND':
+            // Subject BEHIND anchor - same position, anchor covers subject
+            // Subject is behind (larger, semi-transparent), anchor is in front (normal size)
+            return {
+              subjectGridArea: '3 / 3 / 4 / 4', // Same position as anchor (center)
+              anchorGridArea,
+              subjectZIndex: 'z-10',
+              anchorZIndex: 'z-30', // Anchor on top
+              subjectOpacity: 0.4, // Subject behind is semi-transparent
+              subjectScale: 'scale(1.2)', // Subject behind is larger
+              sizes: { subject: baseSize, anchor: baseSize }
+            };
+          
+          case 'INSIDE':
+            // Subject inside anchor (both centered, different sizes)
+            return {
+              subjectGridArea: '3 / 3 / 4 / 4', // Same as anchor
+              anchorGridArea,
+              subjectZIndex: 'z-30',
+              anchorZIndex: 'z-10',
+              subjectScale: 'scale(0.4)',
+              anchorScale: 'scale(1.3)',
+              sizes: { subject: baseSize, anchor: baseSize }
+            };
+          
+          default:
+            return {
+              subjectGridArea: '3 / 3 / 4 / 4',
+              anchorGridArea,
+              subjectZIndex: 'z-20',
+              anchorZIndex: 'z-10',
+              sizes: { subject: baseSize, anchor: baseSize }
+            };
+        }
+      };
+      
+      const gridPos = getGridPosition(position);
+      
+      return (
+        <div className={containerClasses}>
+          <div className="absolute inset-0 bg-gradient-to-b from-white/15 to-black/8 rounded-lg sm:rounded-xl"></div>
+          
+          {/* CSS Grid container - 5x5 grid for precise positioning */}
+          <div 
+            className="absolute inset-0 grid grid-cols-5 grid-rows-5"
+            style={{ gridTemplateColumns: 'repeat(5, 1fr)', gridTemplateRows: 'repeat(5, 1fr)' }}
+          >
+            {/* Anchor - ALWAYS in center (3,3) */}
+            <div
+              className={`${gridPos.sizes.anchor} filter drop-shadow-2xl ${gridPos.anchorZIndex} animate-pulse-slow flex items-center justify-center`}
+              style={{
+                gridArea: gridPos.anchorGridArea,
+                transform: (gridPos as { anchorScale?: string }).anchorScale || 'scale(1)',
+                opacity: (gridPos as { anchorOpacity?: number }).anchorOpacity ?? 1,
+                pointerEvents: 'none'
+              }}
+            >
+              {anchorEmoji}
+            </div>
+            
+            {/* Subject - position varies based on spatial relationship */}
+            <div
+              className={`${gridPos.sizes.subject} filter drop-shadow-2xl ${gridPos.subjectZIndex} animate-bounce-subtle flex items-center justify-center`}
+              style={{
+                gridArea: gridPos.subjectGridArea,
+                transform: (gridPos as { subjectScale?: string }).subjectScale || 'scale(1)',
+                opacity: (gridPos as { subjectOpacity?: number }).subjectOpacity ?? 1,
+                pointerEvents: 'none'
+              }}
+            >
+              {subjectEmoji}
+            </div>
+          </div>
+        </div>
+      );
     }
-    // For non-sentence_logic types, return the option as-is (string or ReactNode)
+    
+    // For non-sentence_logic types
     return typeof opt === 'string' ? opt : String(opt.text ?? '');
   };
 
@@ -484,12 +520,12 @@ export const StandardGameView: React.FC<StandardGameViewProps> = ({ problem, onA
           ) : problem.type === 'sentence_logic' ? (
             <div>
               <div className="text-xs sm:text-sm font-bold text-slate-500 mb-1 sm:mb-2 uppercase tracking-wider">
-                {problem.sceneName || 'Stseen'}
+                {problem.sceneName || t.gameScreen.sentenceLogic.scene}
               </div>
               <h2 className="text-base sm:text-xl font-black text-green-700 uppercase leading-snug tracking-wide px-2">
                 {problem.display ?? ''}
               </h2>
-              <div className="text-[10px] sm:text-xs text-slate-400 mt-1 sm:mt-2">Vali õige pilt</div>
+              <div className="text-[10px] sm:text-xs text-slate-400 mt-1 sm:mt-2">{t.gameScreen.sentenceLogic.selectCorrectPicture}</div>
             </div>
           ) : null
          }
@@ -508,11 +544,11 @@ export const StandardGameView: React.FC<StandardGameViewProps> = ({ problem, onA
               className={`
                 rounded-xl sm:rounded-2xl border-b-4 sm:border-b-[6px] text-2xl sm:text-3xl font-bold flex items-center justify-center transition-all p-1 shadow-sm
                 ${problem.type === 'sentence_logic' 
-                  ? `col-span-1 h-32 sm:h-40 bg-white border-slate-200 ${problem.options.length === 5 ? 'col-span-1' : ''}` 
+                  ? `col-span-1 h-48 sm:h-64 bg-white border-slate-200 ${problem.options.length === 5 ? 'col-span-1' : ''}` 
                   : problem.type === 'letter_match' && problem.options.length === 4 
                     ? 'col-span-1 h-20 sm:h-24 bg-white border-pink-200 text-slate-700' 
                     : 'h-20 sm:h-24 bg-white border-pink-200 text-slate-700'}
-                ${isDisabled ? 'bg-slate-100 border-slate-100 opacity-40 cursor-not-allowed scale-95' : 'hover:border-blue-400 hover:-translate-y-1 hover:shadow-lg active:scale-95 active:border-b-0 active:translate-y-1'}
+                ${isDisabled ? 'bg-slate-100 border-slate-100 opacity-40 cursor-not-allowed scale-95' : 'hover:border-green-400 hover:-translate-y-1 hover:shadow-xl hover:scale-[1.02] active:scale-95 active:border-b-0 active:translate-y-1 transition-all duration-200'}
               `}
             >
               {renderOptionContent(opt, idx)}
@@ -606,6 +642,7 @@ interface SyllableGameViewProps {
 }
 
 export const SyllableGameView: React.FC<SyllableGameViewProps> = ({ problem, onAnswer, soundEnabled }) => {
+  const t = useTranslation();
   interface SyllablePart {
     part: { text: string; id: string };
     id: string;
@@ -664,10 +701,10 @@ export const SyllableGameView: React.FC<SyllableGameViewProps> = ({ problem, onA
   return (
     <div className="flex flex-col items-center mt-2 sm:mt-4 w-full animate-in fade-in slide-in-from-right-4 duration-500 px-2">
       <div className="text-3xl sm:text-4xl mb-1 sm:mb-2">{problem.emoji || problem.hint || '🧩'}</div>
-      <div className="text-xs sm:text-sm font-semibold text-slate-600 mb-2 px-2 text-center uppercase">PANE SILBID ÕIGESSE JÄRJEKORDA, ET SAADA SÕNA</div>
+      <div className="text-xs sm:text-sm font-semibold text-slate-600 mb-2 px-2 text-center uppercase">{t.gameScreen.syllableBuilder.instruction}</div>
       {ghost && (
         <div className="mb-2 text-[10px] sm:text-xs font-semibold text-slate-400">
-          ÕIGE: {problem.syllables.join('-')}
+          {t.gameScreen.syllableBuilder.correct} {problem.syllables.join('-')}
         </div>
       )}
       <div className="flex gap-1.5 sm:gap-2 mb-4 sm:mb-6 min-h-[3rem] sm:min-h-[3.5rem] flex-wrap justify-center">
@@ -728,7 +765,7 @@ export const PatternTrainView: React.FC<PatternTrainViewProps> = ({ problem, onA
     playSound('click', soundEnabled);
     setSelectedOption(idx);
     
-    // Kontrolli, kas vastus on õige - võrdle emoji'dega
+    // Check if answer is correct - compare with emojis
     const isCorrect = opt === problem.answer;
     
     if (isCorrect) { 
@@ -1376,6 +1413,7 @@ interface TimeGameViewProps {
 }
 
 export const TimeGameView: React.FC<TimeGameViewProps> = ({ problem, onAnswer, soundEnabled }) => {
+  const t = useTranslation();
   const [disabled, setDisabled] = useState<string[]>([]);
   const [feedback, setFeedback] = useState<string | null>(null);
 
@@ -1395,7 +1433,7 @@ export const TimeGameView: React.FC<TimeGameViewProps> = ({ problem, onAnswer, s
       onAnswer(true);
     } else {
       setDisabled(prev => [...prev, opt]);
-      setFeedback(`Õige aeg on ${problem.answer}`);
+      setFeedback(`${t.gameScreen.timeMatch.correctTimeIs} ${problem.answer}`);
       onAnswer(false);
     }
   };
@@ -1403,7 +1441,7 @@ export const TimeGameView: React.FC<TimeGameViewProps> = ({ problem, onAnswer, s
   return (
     <div className="flex flex-col items-center gap-4 sm:gap-6 w-full px-2">
       <TimeDisplay hour={problem.display.hour} minute={problem.display.minute} />
-      <div className="text-xs sm:text-sm font-semibold text-slate-500 mb-1 sm:mb-2">Vali õige kellaaeg</div>
+      <div className="text-xs sm:text-sm font-semibold text-slate-500 mb-1 sm:mb-2">{t.gameScreen.timeMatch.selectCorrectTime}</div>
       {feedback && <div className="text-[10px] sm:text-xs font-semibold text-red-500 -mt-1 sm:-mt-2 px-2 text-center">{feedback}</div>}
       <div className="grid grid-cols-3 gap-2 sm:gap-3 w-full max-w-sm">
         {problem.options.map((opt, idx) => (

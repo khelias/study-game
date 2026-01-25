@@ -222,6 +222,26 @@ export const et = {
       four: '4/5 tähte! ⭐⭐⭐⭐',
       last: 'Viimane täht! ⭐⭐⭐⭐⭐',
     },
+    sentenceLogic: {
+      selectCorrectPicture: 'Vali õige pilt',
+      scene: 'Stseen',
+      positions: {
+        NEXT_TO: 'kõrval',
+        ON: 'kohal',
+        UNDER: 'all',
+        IN_FRONT: 'ees',
+        BEHIND: 'taga',
+        INSIDE: 'sees',
+      },
+    },
+    syllableBuilder: {
+      instruction: 'PANE SILBID ÕIGESSE JÄRJEKORDA, ET SAADA SÕNA',
+      correct: 'ÕIGE:',
+    },
+    timeMatch: {
+      selectCorrectTime: 'Vali õige kellaaeg',
+      correctTimeIs: 'Õige aeg on',
+    },
     hints: {
       wordBuilder: 'Vihje: Sõna algab tähega',
       syllableBuilder: 'Vihje: Sõna algab silbiga',
@@ -270,6 +290,60 @@ export const et = {
     greatWork: 'Suurepärane töö! Oled tõeline meister. ⭐',
     nextLevel: 'JÄRGMINE TASE',
   },
+
+  // Game names and descriptions
+  games: {
+    word_builder: {
+      title: 'SÕNAMEISTER',
+      desc: 'Lao tähtedest sõna kokku',
+    },
+    syllable_builder: {
+      title: 'SILBIMEISTER',
+      desc: 'Pane silbid sõnaks kokku',
+    },
+    pattern: {
+      title: 'MUSTRI-RONG',
+      desc: 'Jätka mustrit',
+    },
+    sentence_logic: {
+      title: 'LAUSE-DETEKTIIV',
+      desc: 'Kus asub ese?',
+    },
+    memory_math: {
+      title: 'MATEMAATIKA MÄLU',
+      desc: 'Leia tehe ja vastus',
+    },
+    robo_path: {
+      title: 'ROBO-RADA',
+      desc: 'Programmeerirobot',
+    },
+    letter_match: {
+      title: 'TÄHE-DETEKTIIV',
+      desc: 'Leia õige täht',
+    },
+    unit_conversion: {
+      title: 'MÕÕTÜHIKUD',
+      desc: 'Muunda ühikuid',
+    },
+    balance_scale: {
+      title: 'KAALUD',
+      desc: 'Tasakaalusta kaalud',
+    },
+    time_match: {
+      title: 'KELLAMÄNG',
+      desc: 'Määra kellaaeg',
+    },
+  },
+
+  // Difficulty levels
+  difficulty: {
+    easy: '⭐ Lihtne',
+    medium: '⭐⭐ Keskmine',
+    hard: '⭐⭐⭐ Raske',
+  },
+
+  // Level label
+  level: 'Tase',
 } as const;
 
 export type TranslationKey = typeof et;

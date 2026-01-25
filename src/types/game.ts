@@ -26,6 +26,18 @@ export type Difficulty = 'easy' | 'medium' | 'hard';
 // Profile types
 export type ProfileType = 'starter' | 'advanced';
 
+// Position constants for sentence logic game (English keys, translated to Estonian in UI)
+export const POSITION = {
+  NEXT_TO: 'NEXT_TO',    // KÕRVAL
+  ON: 'ON',               // PEAL
+  UNDER: 'UNDER',         // ALL
+  IN_FRONT: 'IN_FRONT',   // EES
+  BEHIND: 'BEHIND',       // TAGA
+  INSIDE: 'INSIDE'        // SEES
+} as const;
+
+export type PositionType = typeof POSITION[keyof typeof POSITION];
+
 // Game configuration
 export interface GameConfig {
   id: string;
@@ -61,6 +73,7 @@ export interface SceneAnchor {
   n: string;
   adess: string;
   iness: string;
+  genitive: string; // Genitive case for postpositions (all, peal, kõrval, ees, taga)
   e: string;
 }
 

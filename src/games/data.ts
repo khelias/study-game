@@ -205,14 +205,14 @@ export const SCENE_DB: Record<string, Scene> = {
       {n:'HIRV', e:'🦌'}, {n:'KONN', e:'🐸'}
     ], 
     anchors: [
-      {n:'PUU', adess:'PUUL', iness:'PUUS', e:'🌳'}, 
-      {n:'KIVI', adess:'KIVIL', iness:'KIVIS', e:'🪨'}, 
-      {n:'PÕÕSAS', adess:'PÕÕSAL', iness:'PÕÕSAS', e:'🌿'}, 
-      {n:'SEEN', adess:'SEENEL', iness:'SEENES', e:'🍄'}, 
-      {n:'KÄND', adess:'KÄNUL', iness:'KÄNNUS', e:'🪵'}, 
-      {n:'JÕGI', adess:'JÕEL', iness:'JÕES', e:'🏞️'}
+      {n:'PUU', adess:'PUUL', iness:'PUUS', genitive:'PUU', e:'🌳'}, 
+      {n:'KIVI', adess:'KIVIL', iness:'KIVIS', genitive:'KIVI', e:'🪨'}, 
+      {n:'PÕÕSAS', adess:'PÕÕSAL', iness:'PÕÕSAS', genitive:'PÕÕSA', e:'🌿'}, 
+      {n:'SEEN', adess:'SEENEL', iness:'SEENES', genitive:'SEENE', e:'🍄'}, 
+      {n:'KÄND', adess:'KÄNUL', iness:'KÄNNUS', genitive:'KÄNU', e:'🪵'}, 
+      {n:'JÕGI', adess:'JÕEL', iness:'JÕES', genitive:'JÕE', e:'🏞️'}
     ], 
-    positions: ['EES', 'TAGA', 'KÕRVAL', 'PEAL', 'ALL'] 
+    positions: ['IN_FRONT', 'BEHIND', 'NEXT_TO', 'ON', 'UNDER'] 
   },
   space: { 
     bg: 'bg-gradient-to-b from-slate-800 via-purple-900 to-slate-900', 
@@ -222,12 +222,12 @@ export const SCENE_DB: Record<string, Scene> = {
       {n:'PLANEET', e:'🪐'}, {n:'KOMEET', e:'☄️'}, {n:'SATELLIIT', e:'🛰️'}
     ], 
     anchors: [
-      {n:'MAA', adess:'MAAL', iness:'MAAS', e:'🌍'}, 
-      {n:'KUU', adess:'KUUL', iness:'KUUS', e:'🌙'}, 
-      {n:'PÄIKE', adess:'PÄIKESEL', iness:'PÄIKESES', e:'☀️'}, 
-      {n:'PLANEET', adess:'PLANEEDIL', iness:'PLANEEDIS', e:'🪐'}
+      {n:'MAA', adess:'MAAL', iness:'MAAS', genitive:'MAA', e:'🌍'}, 
+      {n:'KUU', adess:'KUUL', iness:'KUUS', genitive:'KUU', e:'🌙'}, 
+      {n:'PÄIKE', adess:'PÄIKESEL', iness:'PÄIKESES', genitive:'PÄIKESE', e:'☀️'}, 
+      {n:'PLANEET', adess:'PLANEEDIL', iness:'PLANEEDIS', genitive:'PLANEEDI', e:'🪐'}
     ], 
-    positions: ['PEAL', 'ALL', 'KÕRVAL', 'EES'] 
+    positions: ['ON', 'UNDER', 'NEXT_TO', 'IN_FRONT'] 
   },
   room: { 
     bg: 'bg-gradient-to-b from-orange-50 to-yellow-50', 
@@ -237,15 +237,15 @@ export const SCENE_DB: Record<string, Scene> = {
       {n:'KOER', e:'🐶'}, {n:'ROBOT', e:'🤖'}, {n:'PUSLE', e:'🧩'}, {n:'RAAMAT', e:'📖'}
     ], 
     anchors: [
-      {n:'KARP', adess:'KARBIL', iness:'KARBIS', e:'📦'}, 
-      {n:'VOODI', adess:'VOODIL', iness:'VOODIS', e:'🛏️'}, 
-      {n:'TOOL', adess:'TOOLIL', iness:'TOOLIS', e:'🪑'}, 
-      {n:'DIIVAN', adess:'DIIVANIL', iness:'DIIVANIS', e:'🛋️'}, 
-      {n:'KAPP', adess:'KAPIL', iness:'KAPIS', e:'🚪'}, 
-      {n:'LAUD', adess:'LAUAL', iness:'LAUAS', e:'🪑'}, 
-      {n:'RIIUL', adess:'RIIULIL', iness:'RIIULIS', e:'📚'}
+      {n:'KARP', adess:'KARBIL', iness:'KARBIS', genitive:'KARBI', e:'📦'}, 
+      {n:'VOODI', adess:'VOODIL', iness:'VOODIS', genitive:'VOODI', e:'🛏️'}, 
+      {n:'TOOL', adess:'TOOLIL', iness:'TOOLIS', genitive:'TOOLI', e:'🪑'}, 
+      {n:'DIIVAN', adess:'DIIVANIL', iness:'DIIVANIS', genitive:'DIIVANI', e:'🛋️'}, 
+      {n:'KAPP', adess:'KAPIL', iness:'KAPIS', genitive:'KAPI', e:'📦'}, 
+      {n:'AKEN', adess:'AKNAL', iness:'AKNAS', genitive:'AKNA', e:'🪟'}, 
+      {n:'RIIUL', adess:'RIIULIL', iness:'RIIULIS', genitive:'RIIULI', e:'📚'}
     ], 
-    positions: ['SEES', 'PEAL', 'ALL', 'KÕRVAL', 'EES', 'TAGA'] 
+    positions: ['INSIDE', 'ON', 'UNDER', 'NEXT_TO', 'IN_FRONT', 'BEHIND'] 
   },
   school: {
     bg: 'bg-gradient-to-b from-blue-100 to-blue-200',
@@ -255,14 +255,14 @@ export const SCENE_DB: Record<string, Scene> = {
       {n:'KALKULAATOR', e:'🔢'}, {n:'KUSTUTI', e:'🧹'}, {n:'ÕPIK', e:'📘'}
     ],
     anchors: [
-      {n:'LAUD', adess:'LAUAL', iness:'LAUAS', e:'🪑'}, 
-      {n:'TAHVEL', adess:'TAHVLIL', iness:'TAHVLIS', e:'📺'}, 
-      {n:'TABEL', adess:'TABELIL', iness:'TABELIS', e:'📋'}, 
-      {n:'KAPP', adess:'KAPIL', iness:'KAPIS', e:'🚪'},
-      {n:'TOOL', adess:'TOOLIL', iness:'TOOLIS', e:'🪑'}, 
-      {n:'RIIUL', adess:'RIIULIL', iness:'RIIULIS', e:'📚'}
+      {n:'AKEN', adess:'AKNAL', iness:'AKNAS', genitive:'AKNA', e:'🪟'}, 
+      {n:'TAHVEL', adess:'TAHVLIL', iness:'TAHVLIS', genitive:'TAHVLI', e:'📺'}, 
+      {n:'TABEL', adess:'TABELIL', iness:'TABELIS', genitive:'TABELI', e:'📋'}, 
+      {n:'KAPP', adess:'KAPIL', iness:'KAPIS', genitive:'KAPI', e:'📦'},
+      {n:'TOOL', adess:'TOOLIL', iness:'TOOLIS', genitive:'TOOLI', e:'🪑'}, 
+      {n:'RIIUL', adess:'RIIULIL', iness:'RIIULIS', genitive:'RIIULI', e:'📚'}
     ],
-    positions: ['PEAL', 'ALL', 'KÕRVAL', 'EES', 'TAGA', 'SEES']
+    positions: ['ON', 'UNDER', 'NEXT_TO', 'IN_FRONT', 'BEHIND', 'INSIDE']
   },
   park: {
     bg: 'bg-gradient-to-b from-emerald-100 to-emerald-200',
@@ -272,14 +272,14 @@ export const SCENE_DB: Record<string, Scene> = {
       {n:'ÕHUPALL', e:'🎈'}, {n:'KELK', e:'🛷'}, {n:'JÄNES', e:'🐰'}
     ],
     anchors: [
-      {n:'TOOL', adess:'TOOLIL', iness:'TOOLIS', e:'🪑'}, 
-      {n:'PUU', adess:'PUUL', iness:'PUUS', e:'🌳'}, 
-      {n:'LILL', adess:'LILLEL', iness:'LILLES', e:'🌸'}, 
-      {n:'TEKK', adess:'TEKIL', iness:'TEKIS', e:'🛌'},
-      {n:'KIVI', adess:'KIVIL', iness:'KIVIS', e:'🪨'}, 
-      {n:'KÄND', adess:'KÄNUL', iness:'KÄNNUS', e:'🪵'}
+      {n:'TOOL', adess:'TOOLIL', iness:'TOOLIS', genitive:'TOOLI', e:'🪑'}, 
+      {n:'PUU', adess:'PUUL', iness:'PUUS', genitive:'PUU', e:'🌳'}, 
+      {n:'LILL', adess:'LILLEL', iness:'LILLES', genitive:'LILLE', e:'🌸'}, 
+      {n:'TEKK', adess:'TEKIL', iness:'TEKIS', genitive:'TEKI', e:'🛌'},
+      {n:'KIVI', adess:'KIVIL', iness:'KIVIS', genitive:'KIVI', e:'🪨'}, 
+      {n:'KÄND', adess:'KÄNUL', iness:'KÄNNUS', genitive:'KÄNU', e:'🪵'}
     ],
-    positions: ['PEAL', 'ALL', 'KÕRVAL', 'EES', 'TAGA', 'SEES']
+    positions: ['ON', 'UNDER', 'NEXT_TO', 'IN_FRONT', 'BEHIND', 'INSIDE']
   },
   beach: {
     bg: 'bg-gradient-to-b from-cyan-200 to-blue-300',
@@ -289,12 +289,12 @@ export const SCENE_DB: Record<string, Scene> = {
       {n:'KREVETT', e:'🦐'}, {n:'KRABI', e:'🦀'}
     ],
     anchors: [
-      {n:'LIIV', adess:'LIIIVAL', iness:'LIIIVAS', e:'🏖️'}, 
-      {n:'MERI', adess:'MEREL', iness:'MERES', e:'🌊'}, 
-      {n:'KIVI', adess:'KIVIL', iness:'KIVIS', e:'🪨'},
-      {n:'PÄIKESEVARI', adess:'PÄIKESEVARJU', iness:'PÄIKESEVARJU', e:'⛱️'}
+      {n:'LIIV', adess:'LIIIVAL', iness:'LIIIVAS', genitive:'LIIVA', e:'🏖️'}, 
+      {n:'MERI', adess:'MEREL', iness:'MERES', genitive:'MERE', e:'🌊'}, 
+      {n:'KIVI', adess:'KIVIL', iness:'KIVIS', genitive:'KIVI', e:'🪨'},
+      {n:'PÄIKESEVARI', adess:'PÄIKESEVARJU', iness:'PÄIKESEVARJU', genitive:'PÄIKESEVARJU', e:'⛱️'}
     ],
-    positions: ['PEAL', 'ALL', 'KÕRVAL', 'EES', 'SEES']
+    positions: ['ON', 'UNDER', 'NEXT_TO', 'IN_FRONT', 'INSIDE']
   },
   kitchen: {
     bg: 'bg-gradient-to-b from-yellow-50 to-orange-50',
@@ -304,14 +304,14 @@ export const SCENE_DB: Record<string, Scene> = {
       {n:'KARTUL', e:'🥔'}, {n:'TOMAT', e:'🍅'}, {n:'MUNA', e:'🥚'}
     ],
     anchors: [
-      {n:'LAUD', adess:'LAUAL', iness:'LAUAS', e:'🪑'}, 
-      {n:'PLIIT', adess:'PLIIDIL', iness:'PLIIDIS', e:'🍳'}, 
-      {n:'KAPP', adess:'KAPIL', iness:'KAPIS', e:'🚪'}, 
-      {n:'KÜLMIK', adess:'KÜLMIKUL', iness:'KÜLMIKUS', e:'❄️'},
-      {n:'RIIUL', adess:'RIIULIL', iness:'RIIULIS', e:'📚'}, 
-      {n:'KARP', adess:'KARBIL', iness:'KARBIS', e:'📦'}
+      {n:'AKEN', adess:'AKNAL', iness:'AKNAS', genitive:'AKNA', e:'🪟'}, 
+      {n:'PLIIT', adess:'PLIIDIL', iness:'PLIIDIS', genitive:'PLIIDI', e:'🍳'}, 
+      {n:'KAPP', adess:'KAPIL', iness:'KAPIS', genitive:'KAPI', e:'📦'}, 
+      {n:'KÜLMIK', adess:'KÜLMIKUL', iness:'KÜLMIKUS', genitive:'KÜLMIKU', e:'❄️'},
+      {n:'RIIUL', adess:'RIIULIL', iness:'RIIULIS', genitive:'RIIULI', e:'📚'}, 
+      {n:'KARP', adess:'KARBIL', iness:'KARBIS', genitive:'KARBI', e:'📦'}
     ],
-    positions: ['PEAL', 'ALL', 'KÕRVAL', 'EES', 'TAGA', 'SEES']
+    positions: ['ON', 'UNDER', 'NEXT_TO', 'IN_FRONT', 'BEHIND', 'INSIDE']
   },
   street: {
     bg: 'bg-gradient-to-b from-gray-200 to-gray-300',
@@ -321,11 +321,11 @@ export const SCENE_DB: Record<string, Scene> = {
       {n:'KOER', e:'🐶'}, {n:'PALL', e:'⚽'}
     ],
     anchors: [
-      {n:'MAA', adess:'MAAL', iness:'MAAS', e:'🛣️'}, 
-      {n:'KIVI', adess:'KIVIL', iness:'KIVIS', e:'🪨'}, 
-      {n:'PUIESTEE', adess:'PUIESTEEL', iness:'PUIESTEES', e:'🌳'}, 
-      {n:'FOOR', adess:'FOORIL', iness:'FOORIS', e:'🚦'}
+      {n:'MAA', adess:'MAAL', iness:'MAAS', genitive:'MAA', e:'🛣️'}, 
+      {n:'KIVI', adess:'KIVIL', iness:'KIVIS', genitive:'KIVI', e:'🪨'}, 
+      {n:'LAMP', adess:'LAMBIL', iness:'LAMBIS', genitive:'LAMBI', e:'💡'}, 
+      {n:'FOOR', adess:'FOORIL', iness:'FOORIS', genitive:'FOORI', e:'🚦'}
     ],
-    positions: ['PEAL', 'ALL', 'KÕRVAL', 'EES', 'TAGA']
+    positions: ['ON', 'UNDER', 'NEXT_TO', 'IN_FRONT', 'BEHIND']
   }
 };

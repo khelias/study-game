@@ -222,6 +222,18 @@ export const en = {
       four: '4/5 stars! ⭐⭐⭐⭐',
       last: 'Last star! ⭐⭐⭐⭐⭐',
     },
+    sentenceLogic: {
+      selectCorrectPicture: 'Select the correct picture',
+      scene: 'Scene',
+      positions: {
+        NEXT_TO: 'next to',
+        ON: 'on',
+        UNDER: 'under',
+        IN_FRONT: 'in front of',
+        BEHIND: 'behind',
+        INSIDE: 'inside',
+      },
+    },
     hints: {
       wordBuilder: 'Hint: The word starts with letter',
       syllableBuilder: 'Hint: The word starts with syllable',
@@ -270,4 +282,58 @@ export const en = {
     greatWork: 'Great work! You are a true master. ⭐',
     nextLevel: 'NEXT LEVEL',
   },
+
+  // Game names and descriptions
+  games: {
+    word_builder: {
+      title: 'WORD MASTER',
+      desc: 'Build a word from letters',
+    },
+    syllable_builder: {
+      title: 'SYLLABLE MASTER',
+      desc: 'Put syllables together into a word',
+    },
+    pattern: {
+      title: 'PATTERN TRAIN',
+      desc: 'Continue the pattern',
+    },
+    sentence_logic: {
+      title: 'SENTENCE DETECTIVE',
+      desc: 'Where is the object?',
+    },
+    memory_math: {
+      title: 'MATH MEMORY',
+      desc: 'Find the equation and answer',
+    },
+    robo_path: {
+      title: 'ROBO PATH',
+      desc: 'Program the robot',
+    },
+    letter_match: {
+      title: 'LETTER DETECTIVE',
+      desc: 'Find the correct letter',
+    },
+    unit_conversion: {
+      title: 'UNITS',
+      desc: 'Convert units',
+    },
+    balance_scale: {
+      title: 'SCALES',
+      desc: 'Balance the scales',
+    },
+    time_match: {
+      title: 'CLOCK GAME',
+      desc: 'Set the time',
+    },
+  },
+
+  // Difficulty levels
+  difficulty: {
+    easy: '⭐ Easy',
+    medium: '⭐⭐ Medium',
+    hard: '⭐⭐⭐ Hard',
+  },
+
+  // Level label
+  level: 'Level',
 } as const;
