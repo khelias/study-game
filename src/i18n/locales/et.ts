@@ -156,6 +156,120 @@ export const et = {
     locked: 'Lukustatud',
     progress: 'Progress',
   },
+
+  // Menu specific
+  menuSpecific: {
+    subtitle: 'HARJUTA JA ÕPI',
+    starsLabel: 'tähte',
+    achievementsCount: 'saavutust - kliki, et näha kõiki',
+    showAchievements: 'Näita saavutusi',
+    showStats: 'Näita statistikat',
+    toggleSoundOn: 'Lülita heli sisse',
+    toggleSoundOff: 'Lülita heli välja',
+    deleteProgress: 'Kustuta salvestatud progress',
+    showTutorial: 'Näita juhendit',
+    tutorial: 'Juhend',
+    starterDescription: '👶 Vali mäng ja harjuta lugemist ja loogikat!',
+    advancedDescription: '🧒 Vali mäng ja harjuta matemaatikat ja mõtlemist!',
+    gamesCount: 'mängu',
+    starCollector: '⭐ Tähtede koguja!',
+    starMaster: '⭐⭐ Tähtede meister!',
+    starLegend: '✨ Tähtede legenda!',
+    newGame: 'UUS!',
+    language: 'Keel',
+    selectLanguage: 'Vali keel',
+  },
+
+  // Tutorial
+  tutorial: {
+    welcome: {
+      title: 'Tere tulemast! 🎮',
+      content: 'See on õppemäng, kus saad harjutada lugemist, matemaatikat ja loogikat!',
+    },
+    selectAge: {
+      title: 'Vali oma vanus 🎯',
+      content: 'Vali menüüs oma vanusegrupp (5+ või 7+), et saada sobivad ülesanded.',
+    },
+    selectGame: {
+      title: 'Vali mäng 🎲',
+      content: 'Vali mäng, mida soovid mängida. Igal mängul on oma teema ja raskusaste.',
+    },
+    answerCorrectly: {
+      title: 'Vasta õigesti ⭐',
+      content: 'Iga õige vastus annab sulle tähe. Kui kogud 5 tähte, tõused taseme võrra!',
+    },
+    beCareful: {
+      title: 'Ole ettevaatlik ❤️',
+      content: 'Iga vale vastus võtab ühe südame ära. Kui südamed otsa saavad, mäng lõppeb.',
+    },
+    collectAchievements: {
+      title: 'Kogu saavutusi 🏅',
+      content: 'Kogu medaleid ja jälgi oma statistikat menüü ülevalt!',
+    },
+    close: 'Sulge juhend',
+    back: 'Tagasi',
+    next: 'Järgmine',
+    startGame: 'Alusta mängu!',
+  },
+
+  // Game screen
+  gameScreen: {
+    returnToMenu: 'Tagasi menüüsse',
+    starProgress: {
+      one: '1/5 tähte! 🌟',
+      two: '2/5 tähte! ⭐⭐',
+      three: '3/5 tähte! ⭐⭐⭐',
+      four: '4/5 tähte! ⭐⭐⭐⭐',
+      last: 'Viimane täht! ⭐⭐⭐⭐⭐',
+    },
+    hints: {
+      wordBuilder: 'Vihje: Sõna algab tähega',
+      syllableBuilder: 'Vihje: Sõna algab silbiga',
+      balanceScale: 'Vihje: Vasak pool on',
+      balanceScaleRight: 'parem pool on',
+      pattern: 'Vihje: Vaata, mis mustrit järgib rong!',
+      memoryMath: 'Vihje: Pööra kaardid ümber ja leia paarid!',
+      sentenceLogic: 'Vihje: Vaata, kus asub',
+      sentenceLogicScene: 'stseenis!',
+      roboPath: 'Vihje: Robot peab jõudma rohelise aknaga lahtrisse!',
+      timeMatch: 'Vihje: Vaata kella osuteid!',
+      unitConversion: 'Vihje: Arvuta ümber!',
+      default: 'Proovi veel!',
+    },
+  },
+
+  // Stats modal
+  statsModal: {
+    title: 'Statistika 📊',
+    close: 'Sulge statistika',
+    highestLevels: 'Kõrgeimad tasemed',
+  },
+
+  // Progression
+  progression: {
+    startGame: 'Alusta seda mängu!',
+    doingGreat: 'Sul läheb väga hästi! Proovi kõrgemat taset.',
+    maybeTooHard: 'Võib-olla on mäng liiga raske? Proovi lihtsamat taset.',
+    keepPracticing: 'Jätka harjutamist!',
+  },
+
+  // Robo path game
+  roboPath: {
+    addCommandUp: 'Lisa käsk: üles',
+    addCommandDown: 'Lisa käsk: alla',
+    addCommandLeft: 'Lisa käsk: vasakule',
+    addCommandRight: 'Lisa käsk: paremale',
+    removeCommand: 'Eemalda viimane käsk',
+    runRobot: 'Käivita robot',
+    addCommands: 'Lisa käsud...',
+  },
+
+  // Level up modal
+  levelUp: {
+    level: 'TASE',
+    greatWork: 'Suurepärane töö! Oled tõeline meister. ⭐',
+    nextLevel: 'JÄRGMINE TASE',
+  },
 } as const;
 
 export type TranslationKey = typeof et;

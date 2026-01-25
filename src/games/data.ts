@@ -45,7 +45,7 @@ export const CATEGORIES: Record<string, Category> = {
 };
 
 export const GAME_CONFIG: Record<string, GameConfig> = {
-  // 5+ mängud - lihtsamad, visuaalsed (7 mängu - lisatud letter_match)
+  // 5+ games - simpler, visual (7 games - added letter_match)
   word_builder:    { id: 'word_builder', title: 'SÕNAMEISTER', theme: THEME.orange!, icon: 'Type', desc: 'Lao tähtedest sõna kokku', allowedProfiles: ['starter'], difficulty: 'easy', category: 'language' },
   syllable_builder:{ id: 'syllable_builder', title: 'SILBIMEISTER', theme: THEME.orange!, icon: 'Type', desc: 'Pane silbid sõnaks kokku', allowedProfiles: ['starter'], difficulty: 'easy', category: 'language' },
   pattern:         { id: 'pattern', title: 'MUSTRI-RONG', theme: THEME.teal!, icon: 'TrainFront', desc: 'Jätka mustrit', allowedProfiles: ['starter'], difficulty: 'easy', category: 'logic' },
@@ -55,7 +55,7 @@ export const GAME_CONFIG: Record<string, GameConfig> = {
   letter_match:    { id: 'letter_match', title: 'TÄHE-DETEKTIIV', theme: THEME.pink!, icon: 'Type', desc: 'Leia õige täht', allowedProfiles: ['starter'], difficulty: 'easy', category: 'language' },
   unit_conversion: { id: 'unit_conversion', title: 'MÕÕTÜHIKUD', theme: THEME.teal!, icon: 'Ruler', desc: 'Muunda ühikuid', allowedProfiles: ['starter'], difficulty: 'medium', category: 'math' },
   
-  // 8+ mängud - raskemad, loogilised (7 mängu - lisatud letter_match_adv)
+  // 8+ games - harder, logical (7 games - added letter_match_adv)
   balance_scale:   { id: 'balance_scale', title: 'KAALUD', theme: THEME.blue!, icon: 'Scale', desc: 'Tasakaalusta kaalud', allowedProfiles: ['advanced'], difficulty: 'hard', category: 'math' },
   time_match:      { id: 'time_match', title: 'KELLAMÄNG', theme: THEME.blue!, icon: 'Clock3', desc: 'Määra kellaaeg', allowedProfiles: ['advanced'], difficulty: 'hard', category: 'math' },
   memory_math_adv: { id: 'memory_math', title: 'MATEMAATIKA MÄLU', theme: THEME.purple!, icon: 'Brain', desc: 'Leia tehe ja vastus', allowedProfiles: ['advanced'], difficulty: 'hard', category: 'math' },
@@ -66,7 +66,7 @@ export const GAME_CONFIG: Record<string, GameConfig> = {
   unit_conversion_adv: { id: 'unit_conversion', title: 'MÕÕTÜHIKUD', theme: THEME.teal!, icon: 'Ruler', desc: 'Muunda ühikuid', allowedProfiles: ['advanced'], difficulty: 'hard', category: 'math' },
 };
 
-// Profiilid on laiendatavad raskuse nihkega
+// Profiles are extensible with difficulty offset
 export const PROFILES: Record<ProfileType, Profile> = {
   starter:  { id: 'starter', label: '5+', desc: 'Koolieelik', levelStart: 1, difficultyOffset: 0, emoji: '👧' },
   advanced: { id: 'advanced', label: '7+', desc: 'Koolilaps', levelStart: 3, difficultyOffset: 2, emoji: '🧒' }
@@ -86,9 +86,9 @@ export const ICONS: Record<string, string> = {
 
 export const ALPHABET: string[] = 'ABCDEFGHIJKLMNOPRSŠZŽTUVÕÄÖÜ'.split('');
 
-// Lähtume emojodest; ainult eestikeelsed sõnad, valdavalt <=7 tähte
+// Based on emojis; only Estonian words, mostly <=7 letters
 const BASE_WORDS: WordObject[] = [
-  // loodus ja ilm
+  // nature and weather
   { w: 'PUU', e: '🌳' }, { w: 'PÕÕSAS', e: '🌿' }, { w: 'LILL', e: '🌸' }, { w: 'LEHT', e: '🍃' },
   { w: 'METS', e: '🌲' }, { w: 'MÄGI', e: '⛰️' }, { w: 'JÕGI', e: '🏞️' }, { w: 'JÄRV', e: '🏝️' },
   { w: 'MERI', e: '🌊' }, { w: 'LIIV', e: '🏖️' }, { w: 'KIVI', e: '🪨' }, { w: 'PILV', e: '☁️' },
@@ -104,7 +104,7 @@ const BASE_WORDS: WordObject[] = [
   { w: 'KONN', e: '🐸' }, { w: 'KALA', e: '🐟' }, { w: 'HAI', e: '🦈' }, { w: 'DRAAKON', e: '🐉' },
   { w: 'ÄMBLIK', e: '🕷️' }, { w: 'SIIL', e: '🦔' }, { w: 'TIGU', e: '🐌' },
 
-  // toit ja joogid
+  // food and drinks
   { w: 'SAI', e: '🍞' }, { w: 'LEIB', e: '🥖' }, { w: 'JUUST', e: '🧀' }, { w: 'PIIM', e: '🥛' },
   { w: 'PITSA', e: '🍕' }, { w: 'BURGER', e: '🍔' }, { w: 'LIHA', e: '🥩' }, { w: 'MUNA', e: '🥚' },
   { w: 'KARTUL', e: '🥔' }, { w: 'PORGAND', e: '🥕' }, { w: 'TOMAT', e: '🍅' }, { w: 'KURK', e: '🥒' },
@@ -113,7 +113,7 @@ const BASE_WORDS: WordObject[] = [
   { w: 'KOMPVEK', e: '🍬' }, { w: 'JÄÄTIS', e: '🍦' }, { w: 'KÜPSIS', e: '🍪' }, { w: 'KOOK', e: '🍰' },
   { w: 'MESI', e: '🍯' }, { w: 'KOHV', e: '☕' }, { w: 'TEE', e: '🫖' },
 
-  // kodu ja esemed
+  // home and items
   { w: 'KODU', e: '🏡' }, { w: 'TUBA', e: '🛏️' }, { w: 'VOODI', e: '🛌' }, { w: 'LAUD', e: '🪑' },
   { w: 'TOOL', e: '🪑' }, { w: 'LAMP', e: '💡' }, { w: 'KARDIN', e: '🪟' }, { w: 'UKS', e: '🚪' },
   { w: 'KAPP', e: '📦' }, { w: 'RAAMAT', e: '📖' }, { w: 'PLIIATS', e: '✏️' }, { w: 'VÄRV', e: '🎨' },
@@ -127,63 +127,63 @@ const BASE_WORDS: WordObject[] = [
   { w: 'LAEV', e: '⛵' }, { w: 'PAAT', e: '🛶' }, { w: 'LENNUK', e: '✈️' }, { w: 'KOPTER', e: '🚁' },
   { w: 'RATAS', e: '🚲' }, { w: 'RULA', e: '🛹' },
 
-  // inimesed ja tunded
+  // people and emotions
   { w: 'EMA', e: '👩' }, { w: 'ISA', e: '👨' }, { w: 'LAPS', e: '🧒' }, { w: 'SÕBER', e: '🤝' },
   { w: 'ÕPETAJA', e: '🧑‍🏫' }, { w: 'ARST', e: '🧑‍⚕️' }, { w: 'POLITSEI', e: '👮' }, { w: 'PÄÄSTJA', e: '🧑‍🚒' },
   { w: 'KOKK', e: '👨‍🍳' }, { w: 'MUUSIK', e: '🎵' }, { w: 'TANTS', e: '💃' }, { w: 'RÕÕM', e: '😄' },
   { w: 'KURBUS', e: '😢' }, { w: 'ÜLLATUS', e: '😮' }, { w: 'UNI', e: '😴' },
 
-  // sport ja mängud
+  // sports and games
   { w: 'PALL', e: '⚽' }, { w: 'KORV', e: '🏀' }, { w: 'TENNIS', e: '🎾' }, { w: 'GOLF', e: '⛳' },
   { w: 'MALE', e: '♟️' }, { w: 'KAARDID', e: '🃏' }, { w: 'UISK', e: '⛸️' }, { w: 'KELK', e: '🛷' },
   { w: 'MAADLUS', e: '🤼' }, { w: 'VIBU', e: '🏹' },
 
-  // kool ja õpe
+  // school and learning
   { w: 'KOOL', e: '🏫' }, { w: 'KLASS', e: '🏫' }, { w: 'KIRJUTUS', e: '✍️' }, { w: 'NUMBRID', e: '🔢' },
   { w: 'TÄHED', e: '🔤' }, { w: 'ÕPIK', e: '📘' }, { w: 'MUUSIKA', e: '🎼' },
   
-  // lisatud sõnad - rohkem variatsioone
-  // loodus (lisatud)
+  // added words - more variations
+  // nature (added)
   { w: 'MARI', e: '🫐' }, { w: 'SEEN', e: '🍄' }, { w: 'ROHI', e: '🌱' },
   { w: 'PÕDER', e: '🫎' }, { w: 'HIRV', e: '🦌' },
   
-  // loomad (lisatud)
+  // animals (added)
   { w: 'KANA', e: '🐔' }, { w: 'KALKUN', e: '🦃' }, { w: 'KROKODILL', e: '🐊' },
   { w: 'KILPKONN', e: '🐢' }, { w: 'HAMSTER', e: '🐹' }, { w: 'KAAMEL', e: '🐫' },
   
-  // toit (lisatud)
+  // food (added)
   { w: 'BANAAN', e: '🍌' }, { w: 'APELSIN', e: '🍊' }, { w: 'VIINAMARI', e: '🍇' }, { w: 'ANANASS', e: '🍍' },
   { w: 'MANGO', e: '🥭' }, { w: 'KOKOS', e: '🥥' }, { w: 'PIRN', e: '🍐' }, { w: 'VÕI', e: '🧈' },
   { w: 'SUPP', e: '🍲' }, { w: 'SALAT', e: '🥗' }, { w: 'PRAAD', e: '🍖' },
   { w: 'KREVETT', e: '🦐' }, { w: 'KRABI', e: '🦀' },
   
-  // kodu (lisatud)
+  // home (added)
   { w: 'AKEN', e: '🪟' }, { w: 'PÕRAND', e: '🪵' }, { w: 'LAGI', e: '🏠' }, { w: 'SEIN', e: '🧱' },
   { w: 'KÖÖK', e: '🍳' }, { w: 'VANNITUBA', e: '🛁' }, { w: 'MAGAMISTUBA', e: '🛏️' },
   { w: 'RIIUL', e: '📚' }, { w: 'KIRJUTUSLAUD', e: '🪑' }, { w: 'TELEVISIOON', e: '📺' },
   { w: 'PADJ', e: '🛏️' }, { w: 'TEKK', e: '🛌' },
   
-  // transport (lisatud)
+  // transportation (added)
   { w: 'MOPEED', e: '🛵' }, { w: 'MOTORRATAS', e: '🏍️' }, { w: 'VEOK', e: '🚚' },
   { w: 'TROLLIBUSS', e: '🚎' },
   
-  // inimesed (lisatud)
+  // people (added)
   { w: 'ÕDE', e: '👧' }, { w: 'VEND', e: '👦' }, { w: 'VANAEMA', e: '👵' }, { w: 'VANAISA', e: '👴' },
   { w: 'ÕPETUS', e: '📚' }, { w: 'ÕPILANE', e: '👨‍🎓' },
   
-  // sport (lisatud)
+  // sports (added)
   { w: 'JALGPALL', e: '⚽' }, { w: 'KORVPALL', e: '🏀' }, { w: 'VÕRKPALL', e: '🏐' },
   { w: 'JÕUSAAL', e: '🏋️' }, { w: 'JOOKSMINE', e: '🏃' }, { w: 'UJUMINE', e: '🏊' },
   
-  // värvid ja kujundid
+  // colors and shapes
   { w: 'PUNANE', e: '🔴' }, { w: 'SININE', e: '🔵' }, { w: 'ROHELINE', e: '🟢' }, { w: 'KOLLANE', e: '🟡' },
   { w: 'VALGE', e: '⚪' }, { w: 'MUST', e: '⚫' }, { w: 'LILLA', e: '🟣' }, { w: 'ORANŽ', e: '🟠' },
   
-  // kehaosad
+  // body parts
   { w: 'PEA', e: '👤' }, { w: 'KÄSI', e: '✋' }, { w: 'JALG', e: '🦵' }, { w: 'SILM', e: '👁️' },
   { w: 'KÕRV', e: '👂' }, { w: 'NINA', e: '👃' }, { w: 'SUU', e: '👄' },
   
-  // loodusnähtused
+  // natural phenomena
   { w: 'VIHM', e: '🌧️' }, { w: 'LUMESADU', e: '❄️' }, { w: 'TUISK', e: '🌨️' },
   { w: 'PÄIKE', e: '☀️' }, { w: 'PILVED', e: '☁️' }, { w: 'VIHMAVARJUD', e: '🌦️' }
 ];

@@ -13,6 +13,7 @@ import { EnhancedConfetti, PulseEffect } from '../../components/EnhancedAnimatio
 import { ParticleEffect } from '../../components/ParticleEffect';
 import { ProgressIndicator } from '../../components/FeedbackSystem';
 import { LearningTip } from '../../components/LearningTips';
+import { useTranslation } from '../../i18n/useTranslation';
 
 // Type-safe wrapper for getRandomEncouragement
 const getRandomEncouragement = (type: string, streak?: number): string => 
@@ -20,6 +21,7 @@ const getRandomEncouragement = (type: string, streak?: number): string =>
 import { GAME_CONFIG } from '../../games/data';
 
 export const GameScreen: React.FC = () => {
+  const t = useTranslation();
   // Global state
   const profile = useGameStore(state => state.profile);
   const levels = useGameStore(state => state.levels);
@@ -128,11 +130,11 @@ export const GameScreen: React.FC = () => {
       } else {
         // Next problem
         const progressMessages = [
-          '1/5 tähte! 🌟', 
-          '2/5 tähte! ⭐⭐', 
-          '3/5 tähte! ⭐⭐⭐', 
-          '4/5 tähte! ⭐⭐⭐⭐', 
-          'Viimane täht! ⭐⭐⭐⭐⭐'
+          t.gameScreen.starProgress.one,
+          t.gameScreen.starProgress.two,
+          t.gameScreen.starProgress.three,
+          t.gameScreen.starProgress.four,
+          t.gameScreen.starProgress.last,
         ];
         setTimeout(() => {
           setFeedbackMessage(progressMessages[nextStars - 1] || '', 'info');
@@ -181,7 +183,7 @@ export const GameScreen: React.FC = () => {
     setParticleActive, addScore, addCollectedStars, setShowHint, incrementStars,
     decrementHearts, endGame, gameStartTime, updateAdaptiveDifficulty, submitAnswer,
     playWin, setEnhancedConfetti, setConfetti, showLevelUpModal, gameType, levels,
-    profile, adaptiveDifficulty, generateUniqueProblemForGame, setProblem, updateStats
+    profile, adaptiveDifficulty, generateUniqueProblemForGame, setProblem, updateStats, t
   ]);
   
   const handleNextLevel = useCallback(() => {
@@ -212,48 +214,48 @@ export const GameScreen: React.FC = () => {
     switch(problem.type) {
       case 'word_builder':
         if (problem.type === 'word_builder') {
-          hintText = problem.target ? `Vihje: Sõna algab tähega "${problem.target[0] ?? ''}"` : '';
+          hintText = problem.target ? `${t.gameScreen.hints.wordBuilder} "${problem.target[0] ?? ''}"` : '';
         }
         break;
       case 'syllable_builder':
         if (problem.type === 'syllable_builder') {
           const firstSyllable = problem.shuffled?.[0];
-          hintText = firstSyllable ? `Vihje: Sõna algab silbiga "${firstSyllable.text ?? ''}"` : '';
+          hintText = firstSyllable ? `${t.gameScreen.hints.syllableBuilder} "${firstSyllable.text ?? ''}"` : '';
         }
         break;
       case 'balance_scale': {
         if (problem.type === 'balance_scale') {
           const leftSum = problem.display.left.reduce((a, b) => a + b, 0);
           const rightKnown = problem.display.right.reduce((a, b) => a + b, 0);
-          hintText = `Vihje: Vasak pool on ${leftSum}, parem pool on ${rightKnown} + ?`;
+          hintText = `${t.gameScreen.hints.balanceScale} ${leftSum}, ${t.gameScreen.hints.balanceScaleRight} ${rightKnown} + ?`;
         }
         break;
       }
       case 'pattern':
-        hintText = `Vihje: Vaata, mis mustrit järgib rong!`;
+        hintText = t.gameScreen.hints.pattern;
         break;
       case 'memory_math':
-        hintText = `Vihje: Pööra kaardid ümber ja leia paarid!`;
+        hintText = t.gameScreen.hints.memoryMath;
         break;
       case 'sentence_logic':
         if (problem.type === 'sentence_logic') {
           const firstWord = problem.sentence.split(' ')[0];
-          hintText = `Vihje: Vaata, kus asub ${firstWord} stseenis!`;
+          hintText = `${t.gameScreen.hints.sentenceLogic} ${firstWord} ${t.gameScreen.hints.sentenceLogicScene}`;
         }
         break;
       case 'robo_path':
-        hintText = `Vihje: Robot peab jõudma rohelise aknaga lahtrisse!`;
+        hintText = t.gameScreen.hints.roboPath;
         break;
       case 'time_match':
-        hintText = `Vihje: Vaata kella osuteid!`;
+        hintText = t.gameScreen.hints.timeMatch;
         break;
       case 'unit_conversion':
         if (problem.type === 'unit_conversion') {
-          hintText = problem.question || 'Vihje: Arvuta ümber!';
+          hintText = problem.question || t.gameScreen.hints.unitConversion;
         }
         break;
       default:
-        hintText = 'Proovi veel!';
+        hintText = t.gameScreen.hints.default;
     }
     
     setFeedbackMessage(hintText, 'hint');
@@ -262,7 +264,7 @@ export const GameScreen: React.FC = () => {
       setBgClass('bg-slate-50');
       setFeedbackMessage(null);
     }, 3000);
-  }, [problem, setFeedbackMessage, setBgClass]);
+  }, [problem, setFeedbackMessage, setBgClass, t]);
   
   if (!gameType) {
     return null;
@@ -302,7 +304,7 @@ export const GameScreen: React.FC = () => {
       <div className="flex justify-between items-center p-2 sm:p-3 bg-white/80 backdrop-blur-md border-b-3 sm:border-b-4 border-slate-200 sticky top-0 z-40 shadow-sm">
         <button 
           onClick={returnToMenu} 
-          aria-label="Tagasi menüüsse"
+          aria-label={t.gameScreen.returnToMenu}
           className="bg-slate-100 hover:bg-slate-200 p-2 sm:p-3 rounded-lg sm:rounded-xl transition-colors active:scale-90">
           <Home size={18} className="sm:w-5 sm:h-5 text-slate-600"/>
         </button>

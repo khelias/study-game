@@ -63,17 +63,17 @@ export const Generators: Record<string, GeneratorFunction> = {
   
   word_builder: (level: number, rng: RngFunction = Math.random, profile: ProfileType = 'starter'): WordBuilderProblem => {
     const meta = profileMeta(profile);
-    // Parandatud progressioon: Level 1-2 = 3 tähte, Level 3-4 = 4 tähte, Level 5-7 = 5 tähte, Level 8+ = 6-7 tähte
-    // Advanced profiil alustab veidi pikemate sõnadega
+    // Improved progression: Level 1-2 = 3 letters, Level 3-4 = 4 letters, Level 5-7 = 5 letters, Level 8+ = 6-7 letters
+    // Advanced profile starts with slightly longer words
     const baseLen = meta.difficultyOffset > 0 ? 4 : 3;
     const levelGrowth = Math.floor((level - 1) / 2.5); // Sujuvam kasv
     let len = Math.min(baseLen + levelGrowth, 7);
     if (len < 3) len = 3; 
     
-    // Eelista sõnu, mida pole hiljuti kasutatud (parem variatsioon)
+    // Prefer words that haven't been used recently (better variation)
     let list = WORD_DB[len] || WORD_DB[4];
     if (!list || list.length === 0) {
-      // Fallback - otsi lähimat pikkust
+      // Fallback - find closest length
       for (let i = len - 1; i >= 3 && (!list || list.length === 0); i--) {
         list = WORD_DB[i];
       }
@@ -90,7 +90,7 @@ export const Generators: Record<string, GeneratorFunction> = {
       id: `char-${i}-${uid(rng)}` 
     }));
     
-    // Parem segamine - tagame, et sõna on tõesti segatud
+    // Better shuffling - ensure the word is truly shuffled
     let shuffled; 
     let attempts = 0;
     do { 
@@ -125,46 +125,46 @@ export const Generators: Record<string, GeneratorFunction> = {
     
     let seq: string[] = [];
     let ans = '';
-    // Sujuvam progressioon leveli järgi - parandatud loogika
+    // Smoother progression by level - improved logic
     if (harder) {
       // Advanced profiil - raskemad mustrid
       if (level <= 2) { 
         seq = [A, B, A, B, A]; 
-        ans = B; // Järgmine peaks olema B (A, B, A, B, A, B)
+        ans = B; // Next should be B (A, B, A, B, A, B)
       } 
       else if (level <= 4) { 
         seq = [A, B, A, C, A, B]; 
-        ans = C; // Järgmine peaks olema C (A, B, A, C, A, B, C)
+        ans = C; // Next should be C (A, B, A, C, A, B, C)
       } 
       else if (level <= 6) { 
         seq = [A, B, C, A, B, C]; 
-        ans = A; // Järgmine peaks olema A (A, B, C, A, B, C, A)
+        ans = A; // Next should be A (A, B, C, A, B, C, A)
       } 
       else { 
         seq = [A, B, B, C, A, B]; 
-        ans = C; // Järgmine peaks olema C (A, B, B, C, A, B, C)
+        ans = C; // Next should be C (A, B, B, C, A, B, C)
       }
     } else {
       // Starter profiil - lihtsamad mustrid
       if (level <= 2) { 
         seq = [A, B, A, B]; 
-        ans = A; // Järgmine peaks olema A (A, B, A, B, A)
+        ans = A; // Next should be A (A, B, A, B, A)
       } 
       else if (level <= 4) { 
         seq = [A, A, B, A, A]; 
-        ans = B; // Järgmine peaks olema B (A, A, B, A, A, B)
+        ans = B; // Next should be B (A, A, B, A, A, B)
       } 
       else if (level <= 6) { 
         seq = [A, B, C, A, B]; 
-        ans = C; // Järgmine peaks olema C (A, B, C, A, B, C)
+        ans = C; // Next should be C (A, B, C, A, B, C)
       } 
       else { 
         seq = [A, B, B, A, B]; 
-        ans = B; // Järgmine peaks olema B (A, B, B, A, B, B)
+        ans = B; // Next should be B (A, B, B, A, B, B)
       }
     }
 
-    // Tagame, et õige vastus on alati valikute seas
+    // Ensure the correct answer is always among the choices
     const opts = new Set([ans]); 
     while(opts.size < 3) {
       const randomItem = getRandom(items, rng);
@@ -212,7 +212,7 @@ export const Generators: Record<string, GeneratorFunction> = {
   sentence_logic: (level: number, rng: RngFunction = Math.random, _profile: ProfileType = 'starter'): SentenceLogicProblem => {
     const allScenes = Object.keys(SCENE_DB);
     
-    // Progressioon: Level 1-2 = lihtsamad stseenid (3-4 positsiooni), Level 3-5 = keskmised (4-5), Level 6+ = kõik
+    // Progression: Level 1-2 = simpler scenes (3-4 positions), Level 3-5 = medium (4-5), Level 6+ = all
     const sceneKeys = level <= 2
       ? allScenes.filter(k => {
           const scene = SCENE_DB[k];
@@ -223,7 +223,7 @@ export const Generators: Record<string, GeneratorFunction> = {
           const scene = SCENE_DB[k];
           return scene && scene.positions && scene.positions.length <= 5;
         }) // Keskmised: room, park, beach
-      : allScenes; // Kõik stseenid
+      : allScenes; // All scenes
     
     const sceneKey = getRandom(sceneKeys, rng) || getRandom(allScenes, rng);
     if (!sceneKey) {
@@ -259,11 +259,11 @@ export const Generators: Record<string, GeneratorFunction> = {
       pos: correctPos 
     };
     
-    // Genereeri valeid valikuid - SELGEMALT ERINEVAD, ANCHOR ALATI NÄHTAV
+    // Generate wrong choices - CLEARLY DIFFERENT, ANCHOR ALWAYS VISIBLE
     const wrongOptions = [];
     
     // Vale 1: Erinev objekt + erinev positsioon
-    // Level 1-2: sama anchor (et oleks lihtsam ja anchor nähtav)
+    // Level 1-2: same anchor (to make it easier and anchor visible)
     // Level 3+: erinev anchor (raskem)
     const subjectPool1 = scene.subjects.filter(s => s.n !== subject.n && s.e !== subject.e);
     const wrongSubject1 = getRandom(subjectPool1.length > 0 ? subjectPool1 : scene.subjects.filter(s => s.n !== subject.n), rng);
@@ -274,7 +274,7 @@ export const Generators: Record<string, GeneratorFunction> = {
       wrongPos1 = getRandom(validPositions, rng);
       attempts++;
     }
-    // Madalamatel tasemetel sama anchor (selgem), kõrgematel erinev
+    // Lower levels same anchor (clearer), higher levels different
     const anchorPool1 = scene.anchors.filter(a => a.n !== anchor.n);
     const wrongAnchor1 = (level >= 3 && anchorPool1.length > 0 
       ? getRandom(anchorPool1, rng) 
@@ -290,7 +290,7 @@ export const Generators: Record<string, GeneratorFunction> = {
       pos: wrongPos1 
     });
     
-    // Vale 2: Erinev objekt + õige positsioon, aga erinev anchor (Level 3+)
+    // Wrong 2: Different object + correct position, but different anchor (Level 3+)
     if (level >= 3) {
       const subjectPool2 = scene.subjects.filter(s => s.n !== subject.n && s.e !== subject.e);
       const wrongSubject2 = getRandom(subjectPool2.length > 0 ? subjectPool2 : scene.subjects.filter(s => s.n !== subject.n), rng);
@@ -308,7 +308,7 @@ export const Generators: Record<string, GeneratorFunction> = {
       });
     }
     
-    // Vale 3: Õige objekt, aga erinev anchor + erinev positsioon (Level 5+)
+    // Wrong 3: Correct object, but different anchor + different position (Level 5+)
     if (level >= 5) {
       const anchorPool3 = scene.anchors.filter(a => a.n !== anchor.n);
       const wrongAnchor3 = (anchorPool3.length > 0 ? getRandom(anchorPool3, rng) : null) || anchor;
@@ -336,7 +336,7 @@ export const Generators: Record<string, GeneratorFunction> = {
       ? [
           correctOption,
           ...wrongOptions,
-          // Vale 4: Täiesti erinev objekt + erinev anchor + erinev positsioon
+          // Wrong 4: Completely different object + different anchor + different position
           (() => {
             const subjectPool4 = scene.subjects.filter(s => s.n !== subject.n && s.e !== subject.e);
             const wrongSubject4 = getRandom(subjectPool4.length > 0 ? subjectPool4 : scene.subjects.filter(s => s.n !== subject.n), rng);
@@ -365,7 +365,7 @@ export const Generators: Record<string, GeneratorFunction> = {
     // TAGAME, et õige vastus on alati valikute seas
     const hasCorrect = options.some(opt => opt.id === 'correct');
     if (!hasCorrect) {
-      // Kui õige vastus puudub, asenda esimene vale valik õige vastusega
+      // If correct answer is missing, replace first wrong choice with correct answer
       if (options.length > 0) {
         options[0] = correctOption;
       } else {
@@ -373,10 +373,10 @@ export const Generators: Record<string, GeneratorFunction> = {
       }
     }
     
-    // TAGAME, et kõik valikud on loogilised (sisaldavad nii subjecti kui anchorit)
+    // ENSURE all choices are logical (contain both subject and anchor)
     const validatedOptions = options.map(opt => {
       if (!opt.s || !opt.a) {
-        // Kui puudub, kasuta õigeid väärtusi
+        // If missing, use correct values
         return {
           ...opt,
           s: opt.s || subject,
@@ -420,34 +420,34 @@ export const Generators: Record<string, GeneratorFunction> = {
   },
 
   letter_match: (level: number, rng: RngFunction = Math.random, _profile: ProfileType = 'starter'): LetterMatchProblem => {
-    // Vali suur täht - see on see, mida näidatakse
+    // Select uppercase letter - this is what is shown
     const targetUpper = getRandom(ALPHABET, rng);
     if (!targetUpper) {
       throw new Error('No letter found for letter_match game');
     }
     const targetLower = targetUpper.toLowerCase();
     
-    // Genereeri valeid valikuid - väikesed tähed
+    // Generate wrong choices - lowercase letters
     const opts = new Set([targetLower]);
     
-    // Level 1-2: suvalised väikesed tähed
-    // Level 3-4: sarnased väikesed tähed
-    // Level 5+: väga sarnased väikesed tähed
+    // Level 1-2: random lowercase letters
+    // Level 3-4: similar lowercase letters
+    // Level 5+: very similar lowercase letters
     const similarLetters = level >= 5 
       ? ALPHABET.filter(l => {
-          // Leia tähed, mis on tähestikus lähedal
+          // Find letters that are close in alphabet
           const targetIdx = ALPHABET.indexOf(targetUpper);
           return Math.abs(ALPHABET.indexOf(l) - targetIdx) <= 2 && l !== targetUpper;
         })
       : level >= 3
       ? ALPHABET.filter(l => {
-          // Leia tähed, mis on tähestikus lähedal (laiem)
+          // Find letters that are close in alphabet (laiem)
           const targetIdx = ALPHABET.indexOf(targetUpper);
           return Math.abs(ALPHABET.indexOf(l) - targetIdx) <= 5 && l !== targetUpper;
         })
       : ALPHABET;
     
-    // Level 3+ - näita rohkem valikuid (4 asemel 3)
+    // Level 3+ - show more choices (4 instead of 3)
     const optionCount = level >= 3 ? 4 : 3;
     while(opts.size < optionCount) { 
       const r = getRandom(similarLetters.length > 0 ? similarLetters : ALPHABET, rng); 
@@ -471,9 +471,9 @@ export const Generators: Record<string, GeneratorFunction> = {
       type: 'letter_match',
       word: wordObj.w,
       emoji: wordObj.e,
-      display: targetUpper, // Näita suurt tähte
-      targetLetter: targetLower, // Õige vastus on väike täht
-      targetPosition: 0, // Ei ole enam vajalik, aga jätame kompatiilsuseks
+      display: targetUpper, // Show uppercase letter
+      targetLetter: targetLower, // Correct answer is lowercase letter
+      targetPosition: 0, // No longer needed, but kept for compatibility
       options: Array.from(opts).sort(() => rng() - 0.5), 
       answer: targetLower,
       uid: uid(rng) 
@@ -488,9 +488,9 @@ export const Generators: Record<string, GeneratorFunction> = {
     const gridGrowth = level >= 4 ? 1 : 0; // Level 4+ = +1 grid size
     const gridSize = Math.min(baseGrid + gridGrowth, 5);
     
-    // Parandatud obstacle count progressioon - advanced profiilil alati vähemalt 1 takistus
+    // Improved obstacle count progression - advanced profile always has at least 1 obstacle
     const baseObstacles = level === 1 ? 0 : Math.floor((level - 1) / 2); // Iga 2 level = +1 takistus
-    const minObstacles = harder ? Math.max(1, Math.floor(level / 2)) : 0; // Advanced: vähemalt 1, level 2+ = vähemalt 2, jne
+    const minObstacles = harder ? Math.max(1, Math.floor(level / 2)) : 0; // Advanced: at least 1, level 2+ = at least 2, etc.
     const obstacleCount = Math.min(Math.max(baseObstacles, minObstacles) + (harder ? 1 : 0), 5);
     
     const start = {x:0,y:0, dir:'N'}; 
@@ -541,7 +541,7 @@ export const Generators: Record<string, GeneratorFunction> = {
 
   syllable_builder: (level: number, rng: RngFunction = Math.random, profile: ProfileType = 'starter'): SyllableBuilderProblem => {
     const words = [
-      // 2 silpi - õigesti silbitatud eesti keeles
+      // 2 syllables - correctly syllabified in Estonian
       { w: 'AU-TO', hint: '🚗', parts: 2 },
       { w: 'KA-LA', hint: '🐟', parts: 2 },
       { w: 'KO-ER', hint: '🐶', parts: 2 },
@@ -624,7 +624,7 @@ export const Generators: Record<string, GeneratorFunction> = {
       { w: 'ÕPI-KU', hint: '📘', parts: 2 },
       { w: 'MUUSI-KA', hint: '🎼', parts: 2 },
       
-      // 3 silpi - õigesti silbitatud
+      // 3 syllables - correctly syllabified
       { w: 'LI-MO-NAAD', hint: '🥤', parts: 3 },
       { w: 'PO-LIT-SEI', hint: '👮', parts: 3 },
       { w: 'LU-ME-IN-GEL', hint: '❄️', parts: 4 },
@@ -715,14 +715,14 @@ export const Generators: Record<string, GeneratorFunction> = {
       { w: 'MO-TOOR-RA-TAS', hint: '🏍️', parts: 4 },
       { w: 'VAN-NI-TU-BA', hint: '🛁', parts: 4 },
     ];
-    // Filtreeri leveli järgi - kõrgematel tasemetel pikemad sõnad
+    // Filter by level - higher levels have longer words
     const meta = profileMeta(profile);
     // Sujuvam progressioon: Level 1-2 = 2 silpi, Level 3-5 = 3 silpi, Level 6+ = 3-4 silpi
     const targetParts = level <= 2 ? 2 : level <= 5 ? 3 : level <= 7 ? 3 : 4;
     const filtered = words.filter(item => {
       const partsCount = item.parts || item.w.split('-').length;
       if (meta.difficultyOffset > 0) {
-        // Advanced profiil - võib olla veidi raskem
+        // Advanced profile - can be slightly harder
         return partsCount >= Math.max(2, targetParts - (level <= 3 ? 0 : 1));
       }
       return partsCount <= targetParts;

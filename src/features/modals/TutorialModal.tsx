@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { X, ArrowRight, ArrowLeft } from 'lucide-react';
+import { useTranslation } from '../../i18n/useTranslation';
 
 interface TutorialStep {
   title: string;
@@ -7,45 +8,46 @@ interface TutorialStep {
   emoji: string;
 }
 
-const TUTORIAL_STEPS: TutorialStep[] = [
-  {
-    title: 'Tere tulemast! 🎮',
-    content: 'See on õppemäng, kus saad harjutada lugemist, matemaatikat ja loogikat!',
-    emoji: '👋'
-  },
-  {
-    title: 'Vali oma vanus 🎯',
-    content: 'Vali menüüs oma vanusegrupp (5+ või 7+), et saada sobivad ülesanded.',
-    emoji: '👶'
-  },
-  {
-    title: 'Vali mäng 🎲',
-    content: 'Vali mäng, mida soovid mängida. Igal mängul on oma teema ja raskusaste.',
-    emoji: '🎪'
-  },
-  {
-    title: 'Vasta õigesti ⭐',
-    content: 'Iga õige vastus annab sulle tähe. Kui kogud 5 tähte, tõused taseme võrra!',
-    emoji: '⭐'
-  },
-  {
-    title: 'Ole ettevaatlik ❤️',
-    content: 'Iga vale vastus võtab ühe südame ära. Kui südamed otsa saavad, mäng lõppeb.',
-    emoji: '❤️'
-  },
-  {
-    title: 'Kogu saavutusi 🏅',
-    content: 'Kogu medaleid ja jälgi oma statistikat menüü ülevalt!',
-    emoji: '🏅'
-  }
-];
-
 interface TutorialModalProps {
   onClose: () => void;
 }
 
 export const TutorialModal: React.FC<TutorialModalProps> = ({ onClose }) => {
+  const t = useTranslation();
   const [currentStep, setCurrentStep] = useState<number>(0);
+
+  const TUTORIAL_STEPS: TutorialStep[] = useMemo(() => [
+    {
+      title: t.tutorial.welcome.title,
+      content: t.tutorial.welcome.content,
+      emoji: '👋'
+    },
+    {
+      title: t.tutorial.selectAge.title,
+      content: t.tutorial.selectAge.content,
+      emoji: '👶'
+    },
+    {
+      title: t.tutorial.selectGame.title,
+      content: t.tutorial.selectGame.content,
+      emoji: '🎪'
+    },
+    {
+      title: t.tutorial.answerCorrectly.title,
+      content: t.tutorial.answerCorrectly.content,
+      emoji: '⭐'
+    },
+    {
+      title: t.tutorial.beCareful.title,
+      content: t.tutorial.beCareful.content,
+      emoji: '❤️'
+    },
+    {
+      title: t.tutorial.collectAchievements.title,
+      content: t.tutorial.collectAchievements.content,
+      emoji: '🏅'
+    }
+  ], [t]);
 
   const nextStep = (): void => {
     if (currentStep < TUTORIAL_STEPS.length - 1) {
@@ -81,7 +83,7 @@ export const TutorialModal: React.FC<TutorialModalProps> = ({ onClose }) => {
             onClose();
           }}
           className="absolute top-4 right-4 p-2 rounded-full bg-slate-100 hover:bg-slate-200 transition-colors z-10"
-          aria-label="Sulge juhend"
+          aria-label={t.tutorial.close}
           type="button"
         >
           <X size={20} className="text-slate-600" />
@@ -108,7 +110,7 @@ export const TutorialModal: React.FC<TutorialModalProps> = ({ onClose }) => {
               className="flex-1 py-3 px-4 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl font-bold transition-colors flex items-center justify-center gap-2"
             >
               <ArrowLeft size={20} />
-              Tagasi
+              {t.tutorial.back}
             </button>
           )}
           <button
@@ -119,7 +121,7 @@ export const TutorialModal: React.FC<TutorialModalProps> = ({ onClose }) => {
                 : 'bg-blue-500 hover:bg-blue-600'
             }`}
           >
-            {isLast ? 'Alusta mängu!' : 'Järgmine'}
+            {isLast ? t.tutorial.startGame : t.tutorial.next}
             {!isLast && <ArrowRight size={20} />}
           </button>
         </div>

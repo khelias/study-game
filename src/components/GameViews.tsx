@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useMemo, useCallback } from 'react';
 import { ArrowRight, ArrowUp, ArrowDown, ArrowLeft, RotateCcw, Play } from 'lucide-react';
 import { playSound } from '../engine/audio';
+import { useTranslation } from '../i18n/useTranslation';
 import { GameConfig } from '../types/game';
 import type { 
   BalanceScaleProblem, 
@@ -22,26 +23,29 @@ interface LevelUpModalProps {
   gameConfig: GameConfig;
 }
 
-export const LevelUpModal: React.FC<LevelUpModalProps> = ({ level, onNext, gameConfig }) => (
-  <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 animate-in fade-in duration-300">
-    <div className="bg-gradient-to-br from-white to-slate-50 rounded-3xl p-8 max-w-sm w-full shadow-2xl text-center transform scale-100 animate-bounce-short border-4 border-yellow-400">
-      <div className="mx-auto w-24 h-24 bg-gradient-to-br from-yellow-100 to-orange-100 rounded-full flex items-center justify-center mb-4 text-6xl shadow-inner animate-star-collect">
-        🏆
+export const LevelUpModal: React.FC<LevelUpModalProps> = ({ level, onNext, gameConfig }) => {
+  const t = useTranslation();
+  return (
+    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 animate-in fade-in duration-300">
+      <div className="bg-gradient-to-br from-white to-slate-50 rounded-3xl p-8 max-w-sm w-full shadow-2xl text-center transform scale-100 animate-bounce-short border-4 border-yellow-400">
+        <div className="mx-auto w-24 h-24 bg-gradient-to-br from-yellow-100 to-orange-100 rounded-full flex items-center justify-center mb-4 text-6xl shadow-inner animate-star-collect">
+          🏆
+        </div>
+        <h2 className="text-3xl font-black text-slate-800 mb-2 bg-gradient-to-r from-yellow-600 to-orange-600 bg-clip-text text-transparent">
+          {t.levelUp.level} {level}!
+        </h2>
+        <p className="text-slate-600 mb-8 font-bold">{t.levelUp.greatWork}</p>
+        
+        <button 
+          onClick={onNext}
+          className={`w-full py-4 rounded-xl text-xl font-black text-white shadow-lg active:scale-95 transition-all hover:scale-105 flex items-center justify-center gap-2 ${gameConfig.theme.accent} hover:brightness-110`}
+        >
+          {t.levelUp.nextLevel} <ArrowRight />
+        </button>
       </div>
-      <h2 className="text-3xl font-black text-slate-800 mb-2 bg-gradient-to-r from-yellow-600 to-orange-600 bg-clip-text text-transparent">
-        TASE {level}!
-      </h2>
-      <p className="text-slate-600 mb-8 font-bold">Suurepärane töö! Oled tõeline meister. ⭐</p>
-      
-      <button 
-        onClick={onNext}
-        className={`w-full py-4 rounded-xl text-xl font-black text-white shadow-lg active:scale-95 transition-all hover:scale-105 flex items-center justify-center gap-2 ${gameConfig.theme.accent} hover:brightness-110`}
-      >
-        JÄRGMINE TASE <ArrowRight />
-      </button>
     </div>
-  </div>
-);
+  );
+};
 
 // Move SvgWeight outside the component to avoid creating it during render
 interface SvgWeightProps {
@@ -995,6 +999,7 @@ interface RoboPathViewProps {
 }
 
 export const RoboPathView: React.FC<RoboPathViewProps> = ({ problem, onAnswer, soundEnabled }) => {
+  const t = useTranslation();
   const [commands, setCommands] = useState<string[]>([]);
   const [robotPos, setRobotPos] = useState<[number, number]>(problem.start);
   const [status, setStatus] = useState<string>('planning');
@@ -1267,19 +1272,19 @@ export const RoboPathView: React.FC<RoboPathViewProps> = ({ problem, onAnswer, s
        
        {/* Käsud - kompaktne */}
        <div className="flex gap-1 h-10 sm:h-12 w-full bg-slate-100 rounded-lg sm:rounded-xl mb-2 sm:mb-4 items-center px-2 overflow-x-auto border-inner shadow-inner no-scrollbar">
-           {commands.length === 0 && <span className="text-slate-400 text-xs sm:text-sm ml-2">Lisa käsud...</span>}
+           {commands.length === 0 && <span className="text-slate-400 text-xs sm:text-sm ml-2">{t.roboPath.addCommands}</span>}
            {commands.map((c, i) => <div key={i} className="min-w-[1.5rem] sm:min-w-[2rem] h-7 sm:h-8 bg-white rounded flex items-center justify-center text-indigo-600 font-black shadow-sm text-base sm:text-lg animate-in fade-in zoom-in">{c === 'UP' ? '⬆' : c === 'DOWN' ? '⬇' : c === 'LEFT' ? '⬅' : '➡'}</div>)}
        </div>
        
        {/* Nupud - kompaktne väikestel ekraanidel */}
        <div className="grid grid-cols-3 gap-1.5 sm:gap-2 w-full">
-           <div className="col-start-2"><button onClick={() => addCommand('UP')} aria-label="Lisa käsk: üles" disabled={status !== 'planning'} className="w-full h-12 sm:h-14 bg-white border-b-3 sm:border-b-4 border-indigo-200 rounded-lg sm:rounded-xl flex items-center justify-center active:translate-y-1 hover:bg-indigo-50 transition-colors"><ArrowUp size={18} className="sm:w-5 sm:h-5" /></button></div>
-           <div className="col-start-1 row-start-2"><button onClick={() => addCommand('LEFT')} aria-label="Lisa käsk: vasakule" disabled={status !== 'planning'} className="w-full h-12 sm:h-14 bg-white border-b-3 sm:border-b-4 border-indigo-200 rounded-lg sm:rounded-xl flex items-center justify-center active:translate-y-1 hover:bg-indigo-50 transition-colors"><ArrowLeft size={18} className="sm:w-5 sm:h-5" /></button></div>
-           <div className="col-start-2 row-start-2"><button onClick={() => addCommand('DOWN')} aria-label="Lisa käsk: alla" disabled={status !== 'planning'} className="w-full h-12 sm:h-14 bg-white border-b-3 sm:border-b-4 border-indigo-200 rounded-lg sm:rounded-xl flex items-center justify-center active:translate-y-1 hover:bg-indigo-50 transition-colors"><ArrowDown size={18} className="sm:w-5 sm:h-5" /></button></div>
-           <div className="col-start-3 row-start-2"><button onClick={() => addCommand('RIGHT')} aria-label="Lisa käsk: paremale" disabled={status !== 'planning'} className="w-full h-12 sm:h-14 bg-white border-b-3 sm:border-b-4 border-indigo-200 rounded-lg sm:rounded-xl flex items-center justify-center active:translate-y-1 hover:bg-indigo-50 transition-colors"><ArrowRight size={18} className="sm:w-5 sm:h-5" /></button></div>
+           <div className="col-start-2"><button onClick={() => addCommand('UP')} aria-label={t.roboPath.addCommandUp} disabled={status !== 'planning'} className="w-full h-12 sm:h-14 bg-white border-b-3 sm:border-b-4 border-indigo-200 rounded-lg sm:rounded-xl flex items-center justify-center active:translate-y-1 hover:bg-indigo-50 transition-colors"><ArrowUp size={18} className="sm:w-5 sm:h-5" /></button></div>
+           <div className="col-start-1 row-start-2"><button onClick={() => addCommand('LEFT')} aria-label={t.roboPath.addCommandLeft} disabled={status !== 'planning'} className="w-full h-12 sm:h-14 bg-white border-b-3 sm:border-b-4 border-indigo-200 rounded-lg sm:rounded-xl flex items-center justify-center active:translate-y-1 hover:bg-indigo-50 transition-colors"><ArrowLeft size={18} className="sm:w-5 sm:h-5" /></button></div>
+           <div className="col-start-2 row-start-2"><button onClick={() => addCommand('DOWN')} aria-label={t.roboPath.addCommandDown} disabled={status !== 'planning'} className="w-full h-12 sm:h-14 bg-white border-b-3 sm:border-b-4 border-indigo-200 rounded-lg sm:rounded-xl flex items-center justify-center active:translate-y-1 hover:bg-indigo-50 transition-colors"><ArrowDown size={18} className="sm:w-5 sm:h-5" /></button></div>
+           <div className="col-start-3 row-start-2"><button onClick={() => addCommand('RIGHT')} aria-label={t.roboPath.addCommandRight} disabled={status !== 'planning'} className="w-full h-12 sm:h-14 bg-white border-b-3 sm:border-b-4 border-indigo-200 rounded-lg sm:rounded-xl flex items-center justify-center active:translate-y-1 hover:bg-indigo-50 transition-colors"><ArrowRight size={18} className="sm:w-5 sm:h-5" /></button></div>
            
-           <div className="col-start-1 row-start-3"><button onClick={removeCommand} aria-label="Eemalda viimane käsk" disabled={status !== 'planning'} className="w-full h-12 sm:h-14 bg-red-100 border-b-3 sm:border-b-4 border-red-300 text-red-500 rounded-lg sm:rounded-xl flex items-center justify-center active:translate-y-1"><RotateCcw size={16} className="sm:w-5 sm:h-5" /></button></div>
-           <div className="col-start-2 col-end-4 row-start-3"><button onClick={() => void runSimulation()} aria-label="Käivita robot" disabled={status !== 'planning' || commands.length === 0} className="w-full h-12 sm:h-14 bg-green-500 border-b-3 sm:border-b-4 border-green-700 text-white font-black rounded-lg sm:rounded-xl flex items-center justify-center active:translate-y-1 shadow-lg gap-1 sm:gap-2 text-sm sm:text-lg hover:bg-green-600 transition-colors">START <Play size={16} fill="white" className="sm:w-5 sm:h-5" /></button></div>
+           <div className="col-start-1 row-start-3"><button onClick={removeCommand} aria-label={t.roboPath.removeCommand} disabled={status !== 'planning'} className="w-full h-12 sm:h-14 bg-red-100 border-b-3 sm:border-b-4 border-red-300 text-red-500 rounded-lg sm:rounded-xl flex items-center justify-center active:translate-y-1"><RotateCcw size={16} className="sm:w-5 sm:h-5" /></button></div>
+           <div className="col-start-2 col-end-4 row-start-3"><button onClick={() => void runSimulation()} aria-label={t.roboPath.runRobot} disabled={status !== 'planning' || commands.length === 0} className="w-full h-12 sm:h-14 bg-green-500 border-b-3 sm:border-b-4 border-green-700 text-white font-black rounded-lg sm:rounded-xl flex items-center justify-center active:translate-y-1 shadow-lg gap-1 sm:gap-2 text-sm sm:text-lg hover:bg-green-600 transition-colors">START <Play size={16} fill="white" className="sm:w-5 sm:h-5" /></button></div>
         </div>
     </div>
   );

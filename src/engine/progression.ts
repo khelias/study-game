@@ -1,4 +1,5 @@
 import { PROFILES } from '../games/data';
+import { getTranslations } from '../i18n';
 import type { ProfileType } from '../types/game';
 import type { DifficultyResult, ProgressionRecommendation } from '../types/profile';
 import type { Stats, PerformanceMetrics } from '../types/stats';
@@ -70,13 +71,14 @@ export const getProgressionRecommendation = (
   stats: Stats,
   gameType: string
 ): ProgressionRecommendation => {
+  const t = getTranslations();
   const gameStats = stats.gamesByType[gameType] || 0;
   const maxLevel = stats.maxLevels[gameType] || 1;
   const accuracy = stats.correctAnswers / (stats.correctAnswers + stats.wrongAnswers) || 0;
   
   if (gameStats === 0) {
     return {
-      message: 'Alusta seda mängu!',
+      message: t.progression.startGame,
       action: 'start',
       priority: 'high'
     };
@@ -84,7 +86,7 @@ export const getProgressionRecommendation = (
   
   if (accuracy > 0.8 && maxLevel < 5) {
     return {
-      message: 'Sul läheb väga hästi! Proovi kõrgemat taset.',
+      message: t.progression.doingGreat,
       action: 'level_up',
       priority: 'medium'
     };
@@ -92,14 +94,14 @@ export const getProgressionRecommendation = (
   
   if (accuracy < 0.5 && maxLevel > 3) {
     return {
-      message: 'Võib-olla on mäng liiga raske? Proovi lihtsamat taset.',
+      message: t.progression.maybeTooHard,
       action: 'level_down',
       priority: 'low'
     };
   }
   
   return {
-    message: 'Jätka harjutamist!',
+    message: t.progression.keepPracticing,
     action: 'continue',
     priority: 'low'
   };

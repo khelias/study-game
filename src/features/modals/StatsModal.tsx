@@ -3,6 +3,7 @@ import { X } from 'lucide-react';
 import { GAME_CONFIG } from '../../games/data';
 import { StatsDashboard, GameTypeStats } from '../../components/StatsDashboard';
 import { FocusTrap } from '../../components/AccessibilityHelpers';
+import { useTranslation } from '../../i18n/useTranslation';
 import { Stats } from '../../types/stats';
 import { AchievementUnlock } from '../../types/achievement';
 
@@ -13,7 +14,7 @@ interface StatsModalProps {
 }
 
 export const StatsModal: React.FC<StatsModalProps> = ({ stats, unlockedAchievements, onClose }) => {
-  // Removed unused accuracy calculation
+  const t = useTranslation();
 
   return (
     <div 
@@ -23,11 +24,11 @@ export const StatsModal: React.FC<StatsModalProps> = ({ stats, unlockedAchieveme
       <FocusTrap active={true}>
         <div className="bg-white rounded-3xl p-6 max-w-4xl w-full shadow-2xl max-h-[90vh] overflow-y-auto">
           <div className="flex justify-between items-center mb-6">
-            <h2 className="text-2xl font-black text-slate-800">Statistika 📊</h2>
+            <h2 className="text-2xl font-black text-slate-800">{t.statsModal.title}</h2>
             <button
               onClick={onClose}
               className="p-2 rounded-full bg-slate-100 hover:bg-slate-200 transition-colors"
-              aria-label="Sulge statistika"
+              aria-label={t.statsModal.close}
             >
               <X size={20} className="text-slate-600" />
             </button>
@@ -45,7 +46,7 @@ export const StatsModal: React.FC<StatsModalProps> = ({ stats, unlockedAchieveme
             {/* Max levels */}
             {stats.maxLevels && Object.keys(stats.maxLevels).length > 0 && (
               <div className="bg-slate-50 p-6 rounded-2xl border-2 border-slate-200">
-                <h3 className="text-lg font-black text-slate-800 mb-4">Kõrgeimad tasemed</h3>
+                <h3 className="text-lg font-black text-slate-800 mb-4">{t.statsModal.highestLevels}</h3>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   {Object.entries(stats.maxLevels).map(([gameType, level]) => {
                     const config = GAME_CONFIG[gameType];

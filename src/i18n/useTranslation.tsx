@@ -4,7 +4,7 @@
  * This hook provides reactive translations that update when locale changes.
  */
 import { useState, useEffect } from 'react';
-import { getTranslations, subscribeToLocaleChanges, type Translations } from './index';
+import { getTranslations, subscribeToLocaleChanges, getLocale, type Translations } from './index';
 
 /**
  * React hook for translations
@@ -16,11 +16,11 @@ import { getTranslations, subscribeToLocaleChanges, type Translations } from './
  * ```
  */
 export function useTranslation(): Translations {
-  const [, forceUpdate] = useState({});
+  const [, setLocaleState] = useState(getLocale());
   
   useEffect(() => {
     const unsubscribe = subscribeToLocaleChanges(() => {
-      forceUpdate({});
+      setLocaleState(getLocale());
     });
     
     return unsubscribe;

@@ -1,37 +1,37 @@
-# Arhitektuuri Dokumentatsioon
+# Architecture Documentation
 
-## Ülevaade
+## Overview
 
-**Tarkade Mängud** on hariduslik veebimäng, mis on loodud laiendatavaks, testitavaks ja hästi struktureeritud arhitektuuriga. See dokument kirjeldab projekti arhitektuuri, disainipõhimõtteid ja parimaid praktikaid.
+**Smart Games** is an educational web game built with extensible, testable, and well-structured architecture. This document describes the project architecture, design principles, and best practices.
 
-## Tehnoloogiline Stack
+## Technology Stack
 
 ### Core Technologies
-- **React 19.2** - UI raamistik
-- **TypeScript 5.9** - Tüübiturvaline JavaScript
-- **Vite 7.2** - Build tool ja dev server
+- **React 19.2** - UI framework
+- **TypeScript 5.9** - Type-safe JavaScript
+- **Vite 7.2** - Build tool and dev server
 - **Zustand 4.5** - State management
-- **Tailwind CSS 3.4** - Utility-first CSS raamistik
-- **Vitest 1.6** - Testiraamistik
-- **ESLint 9.39** - Koodi kvaliteedi kontroll
+- **Tailwind CSS 3.4** - Utility-first CSS framework
+- **Vitest 1.6** - Testing framework
+- **ESLint 9.39** - Code quality control
 
-### Arendustööriistad
+### Development Tools
 - **TypeScript ESLint** - TypeScript linting
-- **React Testing Library** - Komponentide testimine
-- **Happy DOM** - DOM implementatsioon testide jaoks
+- **React Testing Library** - Component testing
+- **Happy DOM** - DOM implementation for tests
 
-## Projekti Struktuur
+## Project Structure
 
 ```
 src/
-├── components/          # Üldised React komponendid
+├── components/          # General React components
 │   ├── AccessibilityHelpers.tsx
 │   ├── AchievementModal.tsx
 │   ├── FeedbackSystem.tsx
 │   ├── GameCard.tsx
 │   └── ...
-├── engine/             # Mängu mootor (core logic)
-│   ├── __tests__/      # Engine testid
+├── engine/             # Game engine (core logic)
+│   ├── __tests__/      # Engine tests
 │   ├── achievements.ts
 │   ├── adaptiveDifficulty.ts
 │   ├── audio.ts
@@ -39,21 +39,21 @@ src/
 │   ├── progression.ts
 │   ├── rng.ts
 │   └── stats.ts
-├── features/           # Feature-based struktuur
-│   ├── gameplay/       # Mängu funktsioonid
+├── features/           # Feature-based structure
+│   ├── gameplay/       # Game functions
 │   │   ├── GameOverScreen.tsx
 │   │   ├── GameRenderer.tsx
 │   │   └── GameScreen.tsx
-│   ├── menu/          # Menüü funktsioonid
+│   ├── menu/          # Menu functions
 │   │   └── MenuScreen.tsx
-│   └── modals/        # Modal komponendid
+│   └── modals/        # Modal components
 │       ├── AchievementsModal.tsx
 │       ├── StatsModal.tsx
 │       └── TutorialModal.tsx
-├── games/             # Mängu andmed ja loogika
+├── games/             # Game data and logic
 │   ├── __tests__/
-│   ├── data.ts        # Mängu konfiguratsioon
-│   └── generators.ts  # Ülesannete genereerimine
+│   ├── data.ts        # Game configuration
+│   └── generators.ts  # Problem generation
 ├── hooks/             # React hooks
 │   ├── __tests__/
 │   ├── useAchievements.ts
@@ -62,104 +62,104 @@ src/
 │   ├── useGameState.ts
 │   └── useLocalStorage.ts
 ├── i18n/              # Internationalization
-│   ├── locales/       # Tõlked
-│   │   ├── et.ts      # Eesti keel
-│   │   └── en.ts      # Inglise keel
+│   ├── locales/       # Translations
+│   │   ├── et.ts      # Estonian (default)
+│   │   └── en.ts      # English
 │   ├── index.ts       # i18n core
 │   └── useTranslation.tsx
-├── monetization/      # Monetization süsteem (tulevikuks)
+├── monetization/      # Monetization system (for future)
 │   ├── config.ts
 │   ├── hooks.ts
 │   ├── store.ts
 │   └── types.ts
 ├── stores/            # Zustand stores
 │   ├── __tests__/
-│   ├── gameStore.ts   # Põhiline mängu state
-│   └── playSessionStore.ts  # Sessiooni state
-├── types/             # TypeScript tüübid
+│   ├── gameStore.ts   # Main game state
+│   └── playSessionStore.ts  # Session state
+├── types/             # TypeScript types
 │   ├── achievement.ts
 │   ├── game.ts
 │   ├── profile.ts
 │   └── stats.ts
-├── utils/             # Utiliidid
+├── utils/             # Utilities
 │   ├── __tests__/
 │   ├── errorHandler.ts
 │   ├── performance.ts
 │   └── performanceOptimizations.ts
-├── test/              # Test utiliidid
+├── test/              # Test utilities
 │   ├── setup.ts
 │   └── utils.tsx
-├── App.tsx            # Põhikomponent
+├── App.tsx            # Main component
 └── main.tsx           # Entry point
 ```
 
-## Arhitektuuri Põhimõtted
+## Architecture Principles
 
 ### 1. Separation of Concerns
 
-Projekt on jaotatud selgelt erinevateks kihtideks:
+The project is clearly divided into different layers:
 
-- **Presentation Layer** (`components/`, `features/`) - UI komponendid
-- **Business Logic Layer** (`engine/`, `games/`) - Äriloogika
-- **State Management Layer** (`stores/`) - State haldus
-- **Data Layer** (`games/data.ts`) - Andmed ja konfiguratsioon
+- **Presentation Layer** (`components/`, `features/`) - UI components
+- **Business Logic Layer** (`engine/`, `games/`) - Business logic
+- **State Management Layer** (`stores/`) - State management
+- **Data Layer** (`games/data.ts`) - Data and configuration
 
 ### 2. Feature-Based Structure
 
-Suuremad funktsioonid on organiseeritud `features/` kausta alla:
-- Iga feature on iseseisev ja sisaldab kõiki vajalikke komponente
-- See võimaldab lihtsat laiendamist ja testi
+Larger features are organized under `features/` folder:
+- Each feature is independent and contains all necessary components
+- This allows easy extension and testing
 
 ### 3. Type Safety
 
-- Kõik failid kasutavad TypeScript'i
-- Range type checking (`strict: true`)
-- Tüübid on defineeritud `types/` kaustas
-- No `any` types (ESLint reegel)
+- All files use TypeScript
+- Strict type checking (`strict: true`)
+- Types are defined in `types/` folder
+- No `any` types (ESLint rule)
 
 ### 4. Testability
 
-- **Engine testid** - Kriitiline äriloogika on testitud
-- **Komponentide testid** - UI komponendid on testitud
+- **Engine tests** - Critical business logic is tested
+- **Component tests** - UI components are tested
 - **Test coverage** - 70%+ threshold
-- **Deterministlikud testid** - Seeded RNG
+- **Deterministic tests** - Seeded RNG
 
 ### 5. Internationalization (i18n)
 
-- Tõlke süsteem on valmis mitme keele toetamiseks
-- Kõik stringid on eraldatud tõlke failidesse
-- Type-safe tõlked
-- Lihtne uute keelte lisamine
+- Translation system is ready for multiple languages
+- All strings are separated into translation files
+- Type-safe translations
+- Easy addition of new languages
 
 ### 6. Monetization Ready
 
-- Monetization struktuur on valmis
-- Feature flags süsteem
+- Monetization structure is ready
+- Feature flags system
 - Subscription tiers
-- Kõik funktsioonid on praegu tasuta
+- All features are currently free
 
 ## State Management
 
 ### Zustand Stores
 
-Projekt kasutab kahte peamist store'i:
+The project uses two main stores:
 
 #### `gameStore` (Persistent)
-- **Profiil** - Valitud vanuseprofiil
-- **Tasemed** - Iga mängu tase
-- **Statistika** - Mängu statistika
-- **Saavutused** - Avatud saavutused
-- **Seaded** - Heli, skoor, jne.
+- **Profile** - Selected age profile
+- **Levels** - Each game's level
+- **Statistics** - Game statistics
+- **Achievements** - Unlocked achievements
+- **Settings** - Sound, score, etc.
 
 **Persistence**: LocalStorage (Zustand persist middleware)
 
 #### `playSessionStore` (Session)
-- **Mängu olek** - menu/playing/game_over
-- **Praegune ülesanne** - Hetkel mängitav ülesanne
-- **Sessiooni andmed** - Skoor, südamed, tähed
-- **Adaptiivne raskus** - Sessiooni raskusaste
+- **Game state** - menu/playing/game_over
+- **Current problem** - Currently played problem
+- **Session data** - Score, hearts, stars
+- **Adaptive difficulty** - Session difficulty level
 
-**Persistence**: Ei salvestata (ainult sessiooni ajal)
+**Persistence**: Not saved (only during session)
 
 ### State Flow
 
@@ -167,67 +167,67 @@ Projekt kasutab kahte peamist store'i:
 User Action → Component → Store Action → State Update → Component Re-render
 ```
 
-## Mängu Mootor (Engine)
+## Game Engine
 
 ### Core Modules
 
-#### `rng.ts` - Juhuslikkuse genereerimine
-- Deterministlik RNG (seeded)
-- Testitav ja reprodutseeritav
-- Kasutatakse ülesannete genereerimiseks
+#### `rng.ts` - Random Number Generation
+- Deterministic RNG (seeded)
+- Testable and reproducible
+- Used for problem generation
 
-#### `adaptiveDifficulty.ts` - Adaptiivne raskusaste
-- Jälgib mängija jõudlust
-- Kohandab raskust automaatselt
-- Põhineb täpsuse ja vastuste seeriadel
+#### `adaptiveDifficulty.ts` - Adaptive Difficulty
+- Tracks player performance
+- Automatically adjusts difficulty
+- Based on accuracy and answer streaks
 
-#### `progression.ts` - Progressiooni loogika
-- Arvutab optimaalse raskusastme
-- Soovitab progressiooni
-- Edukuse skoori arvutamine
+#### `progression.ts` - Progression Logic
+- Calculates optimal difficulty level
+- Recommends progression
+- Success score calculation
 
-#### `stats.ts` - Statistika
-- Mängude arvestus
-- Vastuste salvestamine
-- Seeriaid jälgimine
-- Tasemete ja skooride jälgimine
+#### `stats.ts` - Statistics
+- Game counting
+- Answer saving
+- Streak tracking
+- Level and score tracking
 
-#### `achievements.ts` - Saavutused
-- Saavutuste avamine
-- Tingimuste kontroll
-- Dubleeritud avamiste vältimine
+#### `achievements.ts` - Achievements
+- Achievement unlocking
+- Condition checking
+- Duplicate unlocking prevention
 
-#### `audio.ts` - Heli süsteem
-- Helide mängimine
-- Heli seadete haldus
+#### `audio.ts` - Audio System
+- Sound playback
+- Audio settings management
 
-## Mängu Andmed
+## Game Data
 
 ### `games/data.ts`
-- Mängu konfiguratsioon
-- Profiilid
-- Kategooriad
-- Sõnade andmebaas
+- Game configuration
+- Profiles
+- Categories
+- Word database
 
 ### `games/generators.ts`
-- Ülesannete genereerimise funktsioonid
-- Iga mängutüüp on oma genereerimise funktsioon
-- Raskusastme progressioon
+- Problem generation functions
+- Each game type has its own generation function
+- Difficulty progression
 
 ## Internationalization (i18n)
 
-### Struktuur
+### Structure
 
 ```
 i18n/
 ├── locales/
-│   ├── et.ts    # Eesti keel (default)
-│   └── en.ts    # Inglise keel
+│   ├── et.ts    # Estonian (default)
+│   └── en.ts    # English
 ├── index.ts     # Core i18n logic
 └── useTranslation.tsx  # React hook
 ```
 
-### Kasutamine
+### Usage
 
 ```tsx
 import { useTranslation } from '../i18n/useTranslation';
@@ -238,172 +238,172 @@ function MyComponent() {
 }
 ```
 
-### Uue keele lisamine
+### Adding a New Language
 
-1. Loo uus fail `locales/XX.ts`
-2. Lisa keel `SupportedLocale` tüüpi
-3. Lisa tõlked `translations` objekti
+1. Create new file `locales/XX.ts`
+2. Add language to `SupportedLocale` type
+3. Add translations to `translations` object
 
 ## Monetization
 
-### Struktuur
+### Structure
 
-Monetization süsteem on valmis, aga praegu kõik funktsioonid on tasuta.
+Monetization system is ready, but currently all features are free.
 
 ```
 monetization/
-├── types.ts      # TypeScript tüübid
-├── config.ts     # Konfiguratsioon
+├── types.ts      # TypeScript types
+├── config.ts     # Configuration
 ├── store.ts      # Zustand store
 └── hooks.ts      # React hooks
 ```
 
 ### Feature Flags
 
-Funktsioonid on määratletud feature flag'idega:
-- `all_games` - Kõik mängud
-- `unlimited_play` - Piiramatu mängimine
-- `progress_tracking` - Progressi jälgimine
-- `achievements` - Saavutused
-- jne.
+Features are defined with feature flags:
+- `all_games` - All games
+- `unlimited_play` - Unlimited play
+- `progress_tracking` - Progress tracking
+- `achievements` - Achievements
+- etc.
 
-### Tulevikus
+### Future
 
-Kui monetization on vaja, saab:
-- Lisada subscription tiers
-- Aktiveerida feature flags
-- Integreerida maksesüsteemid
+When monetization is needed, you can:
+- Add subscription tiers
+- Activate feature flags
+- Integrate payment systems
 
-## Testimine
+## Testing
 
-### Testi Struktuur
+### Test Structure
 
-- **Engine testid** - Kriitiline loogika
-- **Komponentide testid** - UI komponendid
-- **Utility testid** - Utiliidid
+- **Engine tests** - Critical logic
+- **Component tests** - UI components
+- **Utility tests** - Utilities
 
 ### Test Coverage
 
-- **Engine**: 76.58% (eesmärk: 80%+)
-- **Komponendid**: 100%
-- **Kogu**: Keskendutud kriitilisele funktsionaalsusele
+- **Engine**: 76.58% (goal: 80%+)
+- **Components**: 100%
+- **Overall**: Focused on critical functionality
 
-### Testimise Filosoofia
+### Testing Philosophy
 
-- **Käitumine, mitte implementatsioon** - Testid kontrollivad, mida kood teeb
-- **Kiired ja isoleeritud** - Testid töötavad kiiresti
-- **Deterministlikud** - Seeded RNG
-- **AAA muster** - Arrange-Act-Assert
+- **Behavior, not implementation** - Tests check what code does
+- **Fast and isolated** - Tests run quickly
+- **Deterministic** - Seeded RNG
+- **AAA pattern** - Arrange-Act-Assert
 
-## Koodi Kvaliteet
+## Code Quality
 
 ### ESLint
 
-- **Strict rules** - Range reeglid
+- **Strict rules** - Strict rules
 - **TypeScript ESLint** - Type checking
-- **React hooks** - Hooks reeglid
-- **No unused vars** - Kasutamata muutujad
+- **React hooks** - Hooks rules
+- **No unused vars** - Unused variables
 
 ### TypeScript
 
-- **Strict mode** - Range type checking
-- **No any** - Ei luba `any` tüüpe
-- **No unused locals** - Ei luba kasutamata muutujaid
-- **No unchecked indexed access** - Turvaline array access
+- **Strict mode** - Strict type checking
+- **No any** - Doesn't allow `any` types
+- **No unused locals** - Doesn't allow unused variables
+- **No unchecked indexed access** - Safe array access
 
 ### Code Style
 
-- **Consistent naming** - Järjekindel nimetamine
-- **Comments** - Dokumenteeritud funktsioonid
-- **Type safety** - Tüübiturvaline kood
+- **Consistent naming** - Consistent naming
+- **Comments** - Documented functions
+- **Type safety** - Type-safe code
 
-## Laiendatavus
+## Extensibility
 
-### Uue Mängu Lisamine
+### Adding a New Game
 
-1. **Lisa mängu konfiguratsioon** `games/data.ts`
-2. **Lisa genereerimise loogika** `games/generators.ts`
-3. **Lisa mängu vaade** `components/GameViews.tsx`
-4. **Integreeri** `features/gameplay/GameRenderer.tsx`
+1. **Add game configuration** `games/data.ts`
+2. **Add generation logic** `games/generators.ts`
+3. **Add game view** `components/GameViews.tsx`
+4. **Integrate** `features/gameplay/GameRenderer.tsx`
 
-### Uue Funktsiooni Lisamine
+### Adding a New Feature
 
-1. **Loo feature kaust** `features/new-feature/`
-2. **Lisa vajalikud komponendid**
-3. **Lisa state management** (vajadusel)
-4. **Lisa testid**
+1. **Create feature folder** `features/new-feature/`
+2. **Add necessary components**
+3. **Add state management** (if needed)
+4. **Add tests**
 
-### Uue Keele Lisamine
+### Adding a New Language
 
-1. **Loo tõlke fail** `i18n/locales/XX.ts`
-2. **Lisa keel** `SupportedLocale` tüüpi
-3. **Lisa tõlked** `translations` objekti
+1. **Create translation file** `i18n/locales/XX.ts`
+2. **Add language** to `SupportedLocale` type
+3. **Add translations** to `translations` object
 
 ## Performance
 
 ### Optimizations
 
-- **React.memo** - Komponentide memoization
-- **useCallback** - Funktsioonide memoization
-- **useMemo** - Väärtuste memoization
-- **Code splitting** - Vite automaatne code splitting
-- **Lazy loading** - Vajadusel
+- **React.memo** - Component memoization
+- **useCallback** - Function memoization
+- **useMemo** - Value memoization
+- **Code splitting** - Vite automatic code splitting
+- **Lazy loading** - When needed
 
 ### Performance Utilities
 
-- `utils/performance.ts` - Performance utiliidid
+- `utils/performance.ts` - Performance utilities
 - `utils/performanceOptimizations.ts` - Optimizations
 
 ## Accessibility
 
 ### WCAG 2.1 AA Compliance
 
-- **Keyboard navigation** - Klaviatuuritugi
+- **Keyboard navigation** - Keyboard support
 - **Screen reader support** - ARIA labels
-- **Focus management** - Fookuse haldus
-- **Reduced motion** - Animatsioonide kontroll
-- **High contrast** - Kõrge kontrastsus
+- **Focus management** - Focus management
+- **Reduced motion** - Animation control
+- **High contrast** - High contrast
 
 ## Deployment
 
 ### Build Process
 
-1. **Lint** - Koodi kvaliteedi kontroll
+1. **Lint** - Code quality check
 2. **Build** - Vite build
-3. **Test** - Testide käivitamine (vajadusel)
+3. **Test** - Run tests (if needed)
 
 ### CI/CD
 
 GitHub Actions workflow:
-- Automaatne build
-- Lint kontroll
+- Automatic build
+- Lint check
 - FTP deploy
 
-## Tuleviku Plaanid
+## Future Plans
 
-### Võimalikud Laiendused
+### Possible Extensions
 
-1. **Mitme keele tugi** - ✅ Valmis (i18n süsteem)
-2. **Monetization** - ✅ Struktuur valmis
-3. **Backend integratsioon** - Võimalik tulevikus
-4. **Multiplayer** - Võimalik tulevikus
-5. **Analytics** - Võimalik tulevikus
+1. **Multi-language support** - ✅ Ready (i18n system)
+2. **Monetization** - ✅ Structure ready
+3. **Backend integration** - Possible in future
+4. **Multiplayer** - Possible in future
+5. **Analytics** - Possible in future
 
-### Parandused
+### Improvements
 
-- Suurenda test coverage (80%+ engine)
-- Lisa rohkem accessibility funktsioone
-- Optimeeri performance
-- Lisa rohkem mänge
+- Increase test coverage (80%+ engine)
+- Add more accessibility features
+- Optimize performance
+- Add more games
 
-## Järeldus
+## Conclusion
 
-Projekt on hästi struktureeritud, laiendatav ja testitav. Arhitektuur toetab:
-- ✅ Mitme keele tuge (i18n)
-- ✅ Monetization süsteemi (struktuur)
-- ✅ Laiendatavust
-- ✅ Testitavust
-- ✅ Koodi kvaliteeti
+The project is well-structured, extensible, and testable. The architecture supports:
+- ✅ Multi-language support (i18n)
+- ✅ Monetization system (structure)
+- ✅ Extensibility
+- ✅ Testability
+- ✅ Code quality
 - ✅ Accessibility
 
-Kõik on valmis tulevikuks arendamiseks ja laiendamiseks!
+Everything is ready for future development and expansion!

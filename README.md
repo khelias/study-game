@@ -1,184 +1,190 @@
-# Tarkade Mängud 🎮
+# Smart Games 🎮
 
-Hariduslik veebimäng 5-8 aastastele lastele, mis aitab harjutada lugemist, matemaatikat ja loogikat mängulises vormis.
+Educational web game for children aged 5-8, helping them practice reading, math, and logic in a playful way.
 
-## 📋 Sisu
+## 📋 Contents
 
-- [Ülevaade](#ülevaade)
-- [Funktsioonid](#funktsioonid)
-- [Mängud](#mängud)
-- [Paigaldamine](#paigaldamine)
-- [Kasutamine](#kasutamine)
-- [Arendamine](#arendamine)
-- [Projekti Struktuur](#projekti-struktuur)
-- [Tehnoloogiad](#tehnoloogiad)
+- [Overview](#overview)
+- [Features](#features)
+- [Games](#games)
+- [Installation](#installation)
+- [Usage](#usage)
+- [Development](#development)
+- [Project Structure](#project-structure)
+- [Technologies](#technologies)
 
-## 🎯 Ülevaade
+## 🎯 Overview
 
-**Tarkade Mängud** on interaktiivne hariduslik mäng, mis pakub 14 erinevat mängu kahes vanuseprofiilis:
-- **5+ (Starter)** - Koolieelikutele ja 1. klassi algajatele
-- **Alates 1. klass (Advanced)** - Kogenumatele õpilastele
+**Smart Games** is an interactive educational game offering 14 different games across two age profiles:
+- **5+ (Starter)** - For preschoolers and 1st grade beginners
+- **1st Grade+ (Advanced)** - For more experienced students
 
-Mäng kasutab adaptiivset raskusastet, mis kohandab ülesannete keerukust automaatselt mängija jõudluse põhjal.
+The game uses adaptive difficulty that automatically adjusts task complexity based on player performance.
 
-## ✨ Funktsioonid
+## ✨ Features
 
-### 🎮 Mängud
+### 🎮 Games
 
-#### Starter profiil (5+)
-1. **SÕNAMEISTER** - Tähtedest sõnade kokkupanemine
-2. **SILBIMEISTER** - Silpidest sõnade kokkupanemine
-3. **MUSTRI-RONG** - Mustrite äratundmine ja jätkamine
-4. **LAUSE-DETEKTIIV** - Loogilise mõtlemise harjutamine
-5. **MATEMAATIKA MÄLU** - Matemaatika mälumäng
-6. **ROBO-RADA** - Programmeerimise põhitõed
-7. **TÄHE-DETEKTIIV** - Tähtede äratundmine
+#### Starter profile (5+)
+1. **WORD MASTER** - Building words from letters
+2. **SYLLABLE MASTER** - Building words from syllables
+3. **PATTERN TRAIN** - Pattern recognition and continuation
+4. **SENTENCE DETECTIVE** - Logical thinking practice
+5. **MATH MEMORY** - Math memory game
+6. **ROBO PATH** - Programming basics
+7. **LETTER DETECTIVE** - Letter recognition
 
-#### Advanced profiil (alates 1. klass)
-1. **KAALUD** - Matemaatilise loogika harjutamine
-2. **KELLAMÄNG** - Kellaaegade õppimine
-3. **MATEMAATIKA MÄLU** (täiustatud) - Raskemad matemaatika ülesanded
-4. **ROBO-RADA** (täiustatud) - Keerukamad programmeerimise ülesanded
-5. **LAUSE-DETEKTIIV** (täiustatud) - Keerukamad loogikaülesanded
-6. **MUSTRI-RONG** (täiustatud) - Keerukamad mustrid
-7. **TÄHE-DETEKTIIV** (täiustatud) - Keerukamad tähtede ülesanded
+#### Advanced profile (1st grade+)
+1. **BALANCE SCALE** - Mathematical logic practice
+2. **CLOCK GAME** - Learning to tell time
+3. **MATH MEMORY** (enhanced) - Harder math tasks
+4. **ROBO PATH** (enhanced) - More complex programming tasks
+5. **SENTENCE DETECTIVE** (enhanced) - More complex logic tasks
+6. **PATTERN TRAIN** (enhanced) - More complex patterns
+7. **LETTER DETECTIVE** (enhanced) - More complex letter tasks
 
-### 🌟 Peamised Täiustused
+### 🌟 Key Enhancements
 
-- **Adaptiivne raskusaste** - Mäng jälgib mängija jõudlust ja kohandab raskust automaatselt
-- **Progressiooni süsteem** - Iga õige vastus annab tähe, 5 tähte tõstab taset
-- **Achievement süsteem** - Medalid ja saavutused julgustavad edasi mängima
-- **Statistika** - Detailne jälgimine mängitud mängude, täpsuse ja progressi kohta
-- **Hariduslikud näpunäited** - Õpetused ja vihjed mängude mängimiseks
-- **Täiustatud tagasiside** - Mitmekesine julgustus ja positiivne tagasiside
-- **Accessibility** - WCAG 2.1 AA compliance, klaviatuuritugi, screen reader support
-- **Responsive disain** - Töötab kõigil seadmetel (arvuti, tahvel, telefon)
+- **Adaptive difficulty** - The game tracks player performance and automatically adjusts difficulty
+- **Progression system** - Each correct answer gives a star, 5 stars level up
+- **Achievement system** - Medals and achievements encourage continued play
+- **Statistics** - Detailed tracking of games played, accuracy, and progress
+- **Educational tips** - Instructions and hints for playing games
+- **Enhanced feedback** - Diverse encouragement and positive feedback
+- **Accessibility** - WCAG 2.1 AA compliance, keyboard support, screen reader support
+- **Responsive design** - Works on all devices (computer, tablet, phone)
+- **Internationalization** - Supports Estonian (default) and English with easy language switching
 
-## 🚀 Paigaldamine
+## 🚀 Installation
 
-### Nõuded
+### Requirements
 
-- **Node.js** 18 või uuem
-- **npm** või **yarn** paketihaldur
+- **Node.js** 18 or newer
+- **npm** or **yarn** package manager
 
-### Sammud
+### Steps
 
-1. **Klooni repositoorium**
+1. **Clone repository**
    ```bash
    git clone https://github.com/khelias/study-game.git
    cd study-game
    ```
 
-2. **Paigalda sõltuvused**
+2. **Install dependencies**
    ```bash
    npm install
    ```
 
-3. **Käivita arendusserver**
+3. **Run development server**
    ```bash
    npm run dev
    ```
-   Mäng avaneb brauseris aadressil `http://localhost:5173`
+   The game opens in browser at `http://localhost:5173`
 
-4. **Ehitamine tootmiseks**
+4. **Build for production**
    ```bash
    npm run build
    ```
-   Ehitamise tulemus on `dist/` kaustas.
+   Build result is in `dist/` folder.
 
-### Automaatne Deploy FTP Serverisse
+### Automatic Deploy to FTP Server
 
-Projekt kasutab GitHub Actions CI/CD töövoogu, mis automaatselt ehitab ja laeb rakenduse FTP serverisse iga `main` branch'i push'i korral.
+The project uses GitHub Actions CI/CD workflow that automatically builds and uploads the application to FTP server on every `main` branch push.
 
-**Seadistamine:**
-1. Mine GitHub repository → Settings → Secrets and variables → Actions
-2. Lisa järgmised secrets:
-   - `FTP_SERVER` - FTP serveri aadress (nt. `ftp.example.com`)
-   - `FTP_USERNAME` - FTP kasutajanimi
-   - `FTP_PASSWORD` - FTP parool
-3. Muuda `server-dir` väärtust `.github/workflows/deploy.yml` failis vastavalt oma FTP serveri struktuurile
+**Setup:**
+1. Go to GitHub repository → Settings → Secrets and variables → Actions
+2. Add the following secrets:
+   - `FTP_SERVER` - FTP server address (e.g., `ftp.example.com`)
+   - `FTP_USERNAME` - FTP username
+   - `FTP_PASSWORD` - FTP password
+3. Change `server-dir` value in `.github/workflows/deploy.yml` file according to your FTP server structure
 
-**Käsitsi käivitamine:**
-Workflow saab käivitada ka käsitsi GitHub Actions lehelt.
+**Manual execution:**
+Workflow can also be run manually from GitHub Actions page.
 
-## 💻 Kasutamine
+## 💻 Usage
 
-### Arendusrežiim
+### Development mode
 
 ```bash
 npm run dev
 ```
 
-### Tootmisversioon
+### Production version
 
 ```bash
 npm run build
 npm run preview
 ```
 
-### Testimine
+### Testing
 
-Projekt kasutab **Vitest** testiraamistikku koos **React Testing Library**-ga.
+The project uses **Vitest** testing framework with **React Testing Library**.
 
 ```bash
-# Käivita testid watch-režiimis
+# Run tests in watch mode
 npm run test
 
-# Käivita testid ühekordselt
+# Run tests once
 npm run test:run
 
-# Käivita testid UI-ga (vajab @vitest/ui installimist)
+# Run tests with UI (requires @vitest/ui installation)
 npm run test:ui
 
-# Käivita testid coverage-ga
+# Run tests with coverage
 npm run test:coverage
 ```
 
 **Test Coverage:**
-- Engine (kriitiline loogika): 76.58% ✅
-- Testitud komponendid: 100% ✅
-- Testimise eesmärgid: Engine 80%+, Komponendid 60%+
+- Engine (critical logic): 76.58% ✅
+- Tested components: 100% ✅
+- Testing goals: Engine 80%+, Components 60%+
 
-### Koodi kvaliteet
+### Code quality
 
 ```bash
 npm run lint
 ```
 
-## 🔧 Arendamine
+## 🔧 Development
 
-### Projekti Struktuur
+### Project Structure
 
 ```
 study-game/
-├── public/                 # Staatilised failid
+├── public/                 # Static files
 │   └── vite.svg
 ├── src/
-│   ├── components/         # React komponendid
-│   │   ├── GameViews.jsx   # Mängu vaated
-│   │   ├── FeedbackSystem.jsx  # Tagasiside süsteem
-│   │   ├── EnhancedAnimations.jsx  # Animatsioonid
-│   │   ├── AchievementModal.jsx  # Achievement modaal
-│   │   ├── StatsModal.jsx  # Statistika modaal
+│   ├── components/         # React components
+│   │   ├── GameViews.tsx   # Game views
+│   │   ├── FeedbackSystem.tsx  # Feedback system
+│   │   ├── EnhancedAnimations.tsx  # Animations
+│   │   ├── AchievementModal.tsx  # Achievement modal
+│   │   ├── StatsModal.tsx  # Statistics modal
 │   │   └── ...
-│   ├── engine/            # Mängu mootor
-│   │   ├── adaptiveDifficulty.js  # Adaptiivne raskusaste
-│   │   ├── achievements.js  # Achievement süsteem
-│   │   ├── stats.js        # Statistika
-│   │   ├── audio.js        # Heli süsteem
-│   │   ├── progression.js  # Progressiooni loogika
-│   │   └── rng.js          # Juhuslikkuse genereerimine
-│   ├── games/             # Mängu andmed
-│   │   ├── data.js        # Mängu konfiguratsioon
-│   │   └── generators.js  # Ülesannete genereerimine
-│   ├── hooks/             # React hook'id
-│   │   └── useGameState.js  # State management
+│   ├── engine/            # Game engine
+│   │   ├── adaptiveDifficulty.ts  # Adaptive difficulty
+│   │   ├── achievements.ts  # Achievement system
+│   │   ├── stats.ts        # Statistics
+│   │   ├── audio.ts        # Audio system
+│   │   ├── progression.ts  # Progression logic
+│   │   └── rng.ts          # Random number generation
+│   ├── games/             # Game data
+│   │   ├── data.ts        # Game configuration
+│   │   └── generators.ts  # Problem generation
+│   ├── hooks/             # React hooks
+│   │   └── useGameState.ts  # State management
 │   ├── utils/             # Utils
-│   │   ├── errorHandler.js  # Veakäsitlus
-│   │   └── performanceOptimizations.js  # Performance optimizations
-│   ├── App.jsx            # Põhikomponent
-│   ├── SmartAdventure.jsx # Peamine mängu komponent
-│   └── main.jsx           # Entry point
+│   │   ├── errorHandler.ts  # Error handling
+│   │   └── performanceOptimizations.ts  # Performance optimizations
+│   ├── i18n/              # Internationalization
+│   │   ├── locales/       # Translations
+│   │   │   ├── et.ts      # Estonian (default)
+│   │   │   └── en.ts      # English
+│   │   └── useTranslation.tsx
+│   ├── App.tsx            # Main component
+│   ├── SmartAdventure.tsx # Main game component
+│   └── main.tsx           # Entry point
 ├── .gitignore
 ├── index.html
 ├── package.json
@@ -187,72 +193,75 @@ study-game/
 └── README.md
 ```
 
-### Uue Mängu Lisamine
+### Adding a New Game
 
-1. **Lisa mängu konfiguratsioon** `src/games/data.js`
-   ```javascript
-   uus_mang: {
-     id: 'uus_mang',
-     title: 'UUS MÄNG',
+1. **Add game configuration** `src/games/data.ts`
+   ```typescript
+   new_game: {
+     id: 'new_game',
+     title: 'NEW GAME',
      theme: THEME.blue,
      icon: 'Icon',
-     desc: 'Mängu kirjeldus',
+     desc: 'Game description',
      allowedProfiles: ['starter'],
      difficulty: 'easy'
    }
    ```
 
-2. **Lisa genereerimise loogika** `src/games/generators.js`
-   ```javascript
-   generateUusMang(level, rng) {
-     // Genereeri ülesanne
+2. **Add generation logic** `src/games/generators.ts`
+   ```typescript
+   generateNewGame(level, rng) {
+     // Generate problem
    }
    ```
 
-3. **Lisa mängu vaade** `src/components/GameViews.jsx`
-   ```javascript
-   export const UusMangView = ({ problem, onAnswer, ... }) => {
-     // Mängu UI
+3. **Add game view** `src/components/GameViews.tsx`
+   ```typescript
+   export const NewGameView = ({ problem, onAnswer, ... }) => {
+     // Game UI
    }
    ```
 
-4. **Integreeri** `src/SmartAdventure.jsx`
-   - Lisa mängu tüüp `startGame` funktsioonisse
-   - Lisa vaate renderimine
+4. **Integrate** `src/SmartAdventure.tsx`
+   - Add game type to `startGame` function
+   - Add view rendering
 
-### Adaptiivne Raskusaste
+### Adaptive Difficulty
 
-Mäng kasutab adaptiivset raskusastet, mis töötab järgmiselt:
+The game uses adaptive difficulty that works as follows:
 
-- **Raskuse suurendamine:**
-  - Täpsus > 80% + 3+ järjestikust õiget vastust
-  - Tõstab efektiivset taset
+- **Increasing difficulty:**
+  - Accuracy > 80% + 3+ consecutive correct answers
+  - Raises effective level
 
-- **Raskuse vähendamine:**
-  - Täpsus < 50% või 3+ järjestikust vale vastust
-  - Langetab efektiivset taset
+- **Decreasing difficulty:**
+  - Accuracy < 50% or 3+ consecutive wrong answers
+  - Lowers effective level
 
 ### State Management
 
-Mäng kasutab:
-- **React useState** - Komponentide state
-- **LocalStorage** - Progressi ja statistika salvestamine
-- **Custom hooks** - `useGameState` state haldamiseks
+The game uses:
+- **Zustand** - State management library
+- **LocalStorage** - Saving progress and statistics
+- **Custom hooks** - `useGameState` for state management
 
-## 🎨 Tehnoloogiad
+## 🎨 Technologies
 
 ### Frontend
 
-- **React 19.2** - UI raamistik
-- **Vite 7.2** - Build tool ja dev server
-- **Tailwind CSS 3.4** - CSS raamistik
-- **Lucide React** - Ikoonid
+- **React 19.2** - UI framework
+- **TypeScript 5.9** - Type-safe JavaScript
+- **Vite 7.2** - Build tool and dev server
+- **Tailwind CSS 3.4** - CSS framework
+- **Lucide React** - Icons
+- **Zustand 4.5** - State management
 
-### Arendustööriistad
+### Development Tools
 
-- **ESLint** - Koodi kvaliteedi kontroll
-- **PostCSS** - CSS töötlemine
-- **Autoprefixer** - CSS vendor prefixid
+- **ESLint** - Code quality control
+- **PostCSS** - CSS processing
+- **Autoprefixer** - CSS vendor prefixes
+- **Vitest** - Testing framework
 
 ### Accessibility
 
@@ -263,124 +272,124 @@ Mäng kasutab:
 - **Reduced motion support**
 - **High contrast support**
 
-## 📊 Statistika ja Progressioon
+## 📊 Statistics and Progression
 
-Mäng jälgib:
-- Mängitud mängude arv
-- Õiged/valed vastused
-- Parim seeria
-- Kõrgeimad tasemed
-- Mänguaeg
-- Kogutud tähed
-- Avatud saavutused
+The game tracks:
+- Number of games played
+- Correct/wrong answers
+- Best streak
+- Highest levels
+- Play time
+- Collected stars
+- Unlocked achievements
 
-Kõik andmed salvestatakse LocalStorage'i ja säilivad brauseri sessioonide vahel.
+All data is saved to LocalStorage and persists across browser sessions.
 
-## 🧪 Testimine
+## 🧪 Testing
 
-### Testimise Filosoofia
+### Testing Philosophy
 
-Projekt järgib parimaid testimise praktikaid:
-- **Käitumine, mitte implementatsioon** - Testid kontrollivad, mida kood teeb, mitte kuidas
-- **Kiiret ja isoleeritud** - Testid töötavad kiiresti (alla 10 sekundi) ja ei sõltu üksteisest
-- **Deterministlikud** - Testid kasutavad seededitud RNG-d ennustatavuse tagamiseks
-- **AAA muster** - Testid järgivad Arrange-Act-Assert struktuuri
+The project follows best testing practices:
+- **Behavior, not implementation** - Tests check what code does, not how
+- **Fast and isolated** - Tests run quickly (under 10 seconds) and don't depend on each other
+- **Deterministic** - Tests use seeded RNG for predictability
+- **AAA pattern** - Tests follow Arrange-Act-Assert structure
 
-### Testikomplekt
+### Test Suite
 
-#### Engine Testid (Ühiktestid)
-Kõrgeima prioriteediga testid kriitilise äriloogika jaoks:
+#### Engine Tests (Unit Tests)
+Highest priority tests for critical business logic:
 
-- **rng.test.ts** (16 testi)
-  - Deterministlik juhuarvude genereerimine
-  - Seededitud RNG järjepidevus
-  - Massiivi elementide valik
-  - Unikaalsete ID-de genereerimine
+- **rng.test.ts** (16 tests)
+  - Deterministic random number generation
+  - Seeded RNG consistency
+  - Array element selection
+  - Unique ID generation
 
-- **stats.test.ts** (25 testi)
-  - Statistika loomine ja uuendamine
-  - Mängude arvestus
-  - Vastuste salvestamine ja seeriaid
-  - Tasemete ja skooride jälgimine
+- **stats.test.ts** (25 tests)
+  - Statistics creation and updating
+  - Game counting
+  - Answer saving and streaks
+  - Level and score tracking
 
-- **achievements.test.ts** (19 testi)
-  - Saavutuste avamine
-  - Saavutuste tingimuste kontroll
-  - Dubleeritud avamiste vältimine
+- **achievements.test.ts** (19 tests)
+  - Achievement unlocking
+  - Achievement condition checking
+  - Duplicate unlocking prevention
 
-- **adaptiveDifficulty.test.ts** (28 testi)
-  - Raskusastme kohandamine jõudluse põhjal
-  - Järjestikused õiged/valed vastused
-  - Raskusastme piirangud
+- **adaptiveDifficulty.test.ts** (28 tests)
+  - Difficulty adjustment based on performance
+  - Consecutive correct/wrong answers
+  - Difficulty limits
 
-- **progression.test.ts** (26 testi)
-  - Optimaalse raskusastme arvutamine
-  - Progressiooni soovitused
-  - Edukuse skoori arvutamine
+- **progression.test.ts** (26 tests)
+  - Optimal difficulty calculation
+  - Progression recommendations
+  - Success score calculation
 
-#### Mängu Loogika Testid
+#### Game Logic Tests
 
-- **generators.test.ts** (20 testi)
-  - Ülesannete genereerimine (balance_scale, word_builder, pattern)
-  - Raskusastme progressioon
-  - Seededitud RNG järjepidevus
-  - Vastuse valideerimise loogika
+- **generators.test.ts** (20 tests)
+  - Problem generation (balance_scale, word_builder, pattern)
+  - Difficulty progression
+  - Seeded RNG consistency
+  - Answer validation logic
 
-#### Komponendi Testid (Integratsioonitestid)
+#### Component Tests (Integration Tests)
 
-- **GameCard.test.tsx** (13 testi)
-  - Mängu info kuvamine
-  - Klikkimise käsitlemine
-  - Lukustatud seisundi käsitlemine
-  - Progressi kuvamine
+- **GameCard.test.tsx** (13 tests)
+  - Game info display
+  - Click handling
+  - Locked state handling
+  - Progress display
 
-- **StatsModal.test.tsx** (10 testi)
-  - Statistika kuvamine
-  - Sulgemise nupu töö
-  - Saavutuste renderdamine
+- **StatsModal.test.tsx** (10 tests)
+  - Statistics display
+  - Close button functionality
+  - Achievement rendering
 
-- **AchievementsModal.test.tsx** (14 testi)
-  - Lukustatud/avatud saavutuste kuvamine
-  - Progressi kuvamine
+- **AchievementsModal.test.tsx** (14 tests)
+  - Locked/unlocked achievement display
+  - Progress display
 
-#### Utility Testid
+#### Utility Tests
 
-- **performance.test.ts** (16 testi)
-  - Debounce funktsioon
-  - Throttle funktsioon
-  - Seadme tuvastamise utiliidid
+- **performance.test.ts** (16 tests)
+  - Debounce function
+  - Throttle function
+  - Device detection utilities
 
-### Testimise Käivitamine
+### Running Tests
 
 ```bash
-# Watch režiim (arendamiseks)
+# Watch mode (for development)
 npm run test
 
-# Ühekordselt (CI jaoks)
+# Once (for CI)
 npm run test:run
 
-# Coverage raportiga
+# With coverage report
 npm run test:coverage
 
-# UI-ga (interaktiivne)
+# With UI (interactive)
 npm run test:ui
 ```
 
-### Coverage Eesmärgid
+### Coverage Goals
 
-- **Engine**: 80%+ (saavutatud: 76.58%) ✅
-- **Testitud Komponendid**: 100% ✅
-- **Kogu**: Keskendutud kriitilisele funktsionaalsusele
+- **Engine**: 80%+ (achieved: 76.58%) ✅
+- **Tested Components**: 100% ✅
+- **Overall**: Focused on critical functionality
 
-### Uue Testi Lisamine
+### Adding a New Test
 
-1. Loo test fail `__tests__` kaustasse
-2. Kasuta järjekindlat nimetamist: `<component>.test.tsx` või `<module>.test.ts`
-3. Kasuta test utiliite: `src/test/utils.tsx`
-4. Järgi AAA mustrit (Arrange-Act-Assert)
-5. Lisa kirjeldavad test nimed
+1. Create test file in `__tests__` folder
+2. Use consistent naming: `<component>.test.tsx` or `<module>.test.ts`
+3. Use test utilities: `src/test/utils.tsx`
+4. Follow AAA pattern (Arrange-Act-Assert)
+5. Add descriptive test names
 
-**Näide:**
+**Example:**
 ```typescript
 import { describe, it, expect } from 'vitest';
 import { createRng } from '../rng';
@@ -401,28 +410,36 @@ describe('createRng', () => {
 });
 ```
 
-## 🎯 Hariduslik Väärtus
+## 🎯 Educational Value
 
-Mäng arendab:
-- **Lugemist** - Tähtede, silpide ja sõnade harjutamine
-- **Matemaatikat** - Arvutused, loogika, kellaajad
-- **Loogikat** - Mustrite äratundmine, programmeerimise põhitõed
-- **Mälu** - Mälumängud
+The game develops:
+- **Reading** - Letter, syllable, and word practice
+- **Math** - Calculations, logic, telling time
+- **Logic** - Pattern recognition, programming basics
+- **Memory** - Memory games
 
-## 🐛 Probleemide Teavitamine
+## 🌍 Internationalization
 
-Kui leiad vea või soovid soovitust, palun ava [issue GitHub'is](https://github.com/khelias/study-game/issues).
+The game supports multiple languages:
+- **Estonian** (default) - `et.ts`
+- **English** - `en.ts`
 
-## 📝 Muudatused
+Language can be changed from the menu. All user-facing strings are translated through the i18n system.
 
-Vaata [CHANGELOG.md](CHANGELOG.md) faili kõigi muudatuste kohta.
+## 🐛 Reporting Issues
 
-## 📄 Litsents
+If you find a bug or want to suggest something, please open an [issue on GitHub](https://github.com/khelias/study-game/issues).
 
-Privaatne projekt - kõik õigused kaitstud.
+## 📝 Changes
+
+See [CHANGELOG.md](CHANGELOG.md) file for all changes.
+
+## 📄 License
+
+Private project - all rights reserved.
 
 ---
 
-**Versioon:** 2.1  
-**Loodud:** 2026  
-**Viimati uuendatud:** 2026-01-24
+**Version:** 2.1  
+**Created:** 2026  
+**Last updated:** 2026-01-25
