@@ -19,6 +19,7 @@ export const GAME_CONFIG = {
   memory_math:     { id: 'memory_math', title: 'MATEMAATIKA MÄLU', theme: THEME.purple, icon: 'Brain', desc: 'Leia tehe ja vastus', allowedProfiles: ['starter'], difficulty: 'medium' },
   robo_path:       { id: 'robo_path', title: 'ROBO-RADA', theme: THEME.indigo, icon: 'Bot', desc: 'Programmeerirobot', allowedProfiles: ['starter'], difficulty: 'medium' },
   letter_match:    { id: 'letter_match', title: 'TÄHE-DETEKTIIV', theme: THEME.pink, icon: 'Type', desc: 'Leia õige täht', allowedProfiles: ['starter'], difficulty: 'easy' },
+  unit_conversion: { id: 'unit_conversion', title: 'MÕÕTÜHIKUD', theme: THEME.teal, icon: 'Ruler', desc: 'Muunda ühikuid', allowedProfiles: ['starter'], difficulty: 'medium' },
   
   // 8+ mängud - raskemad, loogilised (7 mängu - lisatud letter_match_adv)
   balance_scale:   { id: 'balance_scale', title: 'KAALUD', theme: THEME.blue, icon: 'Scale', desc: 'Tasakaalusta kaalud', allowedProfiles: ['advanced'], difficulty: 'hard' },
@@ -28,6 +29,7 @@ export const GAME_CONFIG = {
   sentence_logic_adv: { id: 'sentence_logic', title: 'LAUSE-DETEKTIIV', theme: THEME.green, icon: 'BookOpen', desc: 'Kus asub ese?', allowedProfiles: ['advanced'], difficulty: 'hard' },
   pattern_adv:      { id: 'pattern', title: 'MUSTRI-RONG', theme: THEME.teal, icon: 'TrainFront', desc: 'Jätka mustrit', allowedProfiles: ['advanced'], difficulty: 'hard' },
   letter_match_adv: { id: 'letter_match', title: 'TÄHE-DETEKTIIV', theme: THEME.pink, icon: 'Type', desc: 'Leia õige täht', allowedProfiles: ['advanced'], difficulty: 'medium' },
+  unit_conversion_adv: { id: 'unit_conversion', title: 'MÕÕTÜHIKUD', theme: THEME.teal, icon: 'Ruler', desc: 'Muunda ühikuid', allowedProfiles: ['advanced'], difficulty: 'hard' },
 };
 
 // Profiilid on laiendatavad raskuse nihkega
@@ -44,7 +46,8 @@ export const ICONS = {
   GraduationCap: 'GraduationCap',
   TrainFront: 'TrainFront',
   Bot: 'Bot',
-  Clock3: 'Clock3'
+  Clock3: 'Clock3',
+  Ruler: 'Ruler'
 };
 
 export const ALPHABET = 'ABCDEFGHIJKLMNOPRSŠZŽTUVÕÄÖÜ'.split('');
