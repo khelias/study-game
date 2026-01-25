@@ -22,6 +22,7 @@ export const MenuScreen: React.FC = () => {
   const soundEnabled = useGameStore(state => state.soundEnabled);
   const stats = useGameStore(state => state.stats);
   const hasSeenTutorial = useGameStore(state => state.hasSeenTutorial);
+  const levels = useGameStore(state => state.levels);
   
   const setProfile = useGameStore(state => state.setProfile);
   const toggleSound = useGameStore(state => state.toggleSound);
