@@ -393,7 +393,7 @@ const SmartAdventure = () => {
         hintText = `Vihje: Robot peab jõudma rohelise aknaga lahtrisse!`;
         break;
       case 'time_match':
-        hintText = `Vihje: Vaata kella osutiid!`;
+        hintText = `Vihje: Vaata kella osuteid!`;
         break;
       case 'unit_conversion':
         hintText = problem.hint || `Vihje: ${problem.question}`;

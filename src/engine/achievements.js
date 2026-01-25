@@ -37,14 +37,14 @@ export const ACHIEVEMENTS = {
   },
   score_100: {
     id: 'score_100',
-    title: 'Sajapunkter',
+    title: '100-punkter',
     desc: 'Kogu 100 punkti',
     icon: '💯',
     check: (stats) => stats.totalScore >= 100
   },
   score_500: {
     id: 'score_500',
-    title: 'Viissajapunkter',
+    title: '500-punkter',
     desc: 'Kogu 500 punkti',
     icon: '🏆',
     check: (stats) => stats.totalScore >= 500

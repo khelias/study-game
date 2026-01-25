@@ -31,7 +31,7 @@ const LEARNING_TIPS = {
   balance_scale: [
     '💡 Vihje: Arvuta, kui palju on vasakul pool!',
     '💡 Vihje: Mõtle, mis arv tasakaalustab kaalud!',
-    '💡 Vihje: Vaata, kui palju on paremal pool nähtav!',
+    '💡 Vihje: Vaata, kui palju on paremal pool!',
   ],
   robo_path: [
     '💡 Vihje: Mõtle, kuidas robot peab liikuma!',
