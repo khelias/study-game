@@ -153,6 +153,8 @@ export interface RoboPathProblem extends BaseProblem {
   correctPath: string[];
   options: string[];
   maxCommands?: number;
+  optimalMoves?: number;
+  coins?: Array<[number, number]>;
 }
 
 // Time match problem
