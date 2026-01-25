@@ -77,7 +77,8 @@ export const requestAnimFrame = (callback: FrameRequestCallback): number => {
   if (typeof window !== 'undefined' && window.requestAnimationFrame) {
     return window.requestAnimationFrame(callback);
   }
-  return setTimeout(callback, 16) as unknown as number;
+  // In environments without requestAnimationFrame, use setTimeout
+  return window.setTimeout(callback, 16);
 };
 
 /**
