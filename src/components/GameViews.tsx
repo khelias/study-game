@@ -995,6 +995,8 @@ export const RoboPathView: React.FC<RoboPathViewProps> = ({ problem, onAnswer, s
   const [bestTime, setBestTime] = useState<number | null>(null);
   const [bestMoves, setBestMoves] = useState<number | null>(null);
   
+  // Reset state when problem changes - intentional cascading updates
+  /* eslint-disable react-hooks/set-state-in-effect */
   useEffect(() => { 
       setCommands([]); 
       setRobotPos(problem.start); 
@@ -1017,6 +1019,7 @@ export const RoboPathView: React.FC<RoboPathViewProps> = ({ problem, onAnswer, s
         // Ignore
       }
   }, [problem.uid, problem.gridSize, problem.obstacles.length, problem.start]);
+  /* eslint-enable react-hooks/set-state-in-effect */
 
   // Timer - näitab aega
   useEffect(() => {
@@ -1082,9 +1085,10 @@ export const RoboPathView: React.FC<RoboPathViewProps> = ({ problem, onAnswer, s
     
     const goalPos = problem.end || problem.goal;
     if (currentPos[0] === goalPos[0] && currentPos[1] === goalPos[1]) { 
-        setStatus('win');
         const finalTime = Math.floor((Date.now() - (startTime || 0)) / 1000);
         const finalMoves = commands.length;
+        setElapsedTime(finalTime);
+        setStatus('win');
         
         // Salvesta parimad tulemused
         const storageKey = `robo_best_${problem.gridSize}_${problem.obstacles.length}`;
@@ -1182,10 +1186,10 @@ export const RoboPathView: React.FC<RoboPathViewProps> = ({ problem, onAnswer, s
     return () => window.removeEventListener('keydown', handleKeyPress);
   }, [status, commands.length, problem.uid, problem.maxCommands, soundEnabled, addCommand, removeCommand, runSimulation]);
 
-  const renderCell = (x, y) => {
-     const isRobot = robotPos.x === x && robotPos.y === y;
-     const isEnd = problem.end.x === x && problem.end.y === y;
-     const isRock = problem.obstacles.some(o => o.x === x && o.y === y);
+  const renderCell = (x: number, y: number): React.ReactNode => {
+     const isRobot = robotPos[0] === x && robotPos[1] === y;
+     const isEnd = problem.end[0] === x && problem.end[1] === y;
+     const isRock = problem.obstacles.some(o => o[0] === x && o[1] === y);
      
      return (
         <div key={`${x}-${y}`} className={`relative w-full aspect-square bg-white border-2 border-indigo-50 rounded-lg flex items-center justify-center text-3xl shadow-sm overflow-hidden ${status === 'crash' && isRobot ? 'bg-red-100 animate-pulse' : ''}`}>
@@ -1242,8 +1246,7 @@ export const RoboPathView: React.FC<RoboPathViewProps> = ({ problem, onAnswer, s
          <div className="mb-2 sm:mb-3 text-center animate-bounce">
            <div className="text-3xl sm:text-4xl mb-1 sm:mb-2">🎉</div>
            <div className="text-xs sm:text-sm font-bold text-green-600">
-              {/* eslint-disable-next-line react-hooks/purity */}
-             {Math.floor((Date.now() - startTime) / 1000)}s | {commands.length} käiku
+             {elapsedTime}s | {commands.length} käiku
            </div>
          </div>
        )}
