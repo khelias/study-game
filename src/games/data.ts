@@ -1,6 +1,9 @@
+import type { Theme, Category, GameConfig, WordObject, Scene, ProfileType } from '../types/game';
+import type { Profile } from '../types/profile';
+
 export const APP_KEY = 'smart_adv_v45_pro';
 
-export const THEME = {
+export const THEME: Record<string, Theme> = {
   orange: { bg: 'bg-orange-50', border: 'border-orange-500', text: 'text-orange-600', iconBg: 'bg-orange-100', accent: 'bg-orange-500' },
   purple: { bg: 'bg-purple-50', border: 'border-purple-500', text: 'text-purple-600', iconBg: 'bg-purple-100', accent: 'bg-purple-500' },
   green:  { bg: 'bg-green-50',  border: 'border-green-500',  text: 'text-green-600',  iconBg: 'bg-green-100', accent: 'bg-green-500' },
@@ -10,7 +13,7 @@ export const THEME = {
   indigo: { bg: 'bg-indigo-50', border: 'border-indigo-500', text: 'text-indigo-600', iconBg: 'bg-indigo-100', accent: 'bg-indigo-500' },
 };
 
-export const CATEGORIES = {
+export const CATEGORIES: Record<string, Category> = {
   language: { 
     id: 'language', 
     name: 'Keele mängud', 
@@ -41,7 +44,7 @@ export const CATEGORIES = {
   }
 };
 
-export const GAME_CONFIG = {
+export const GAME_CONFIG: Record<string, GameConfig> = {
   // 5+ mängud - lihtsamad, visuaalsed (7 mängu - lisatud letter_match)
   word_builder:    { id: 'word_builder', title: 'SÕNAMEISTER', theme: THEME.orange, icon: 'Type', desc: 'Lao tähtedest sõna kokku', allowedProfiles: ['starter'], difficulty: 'easy', category: 'language' },
   syllable_builder:{ id: 'syllable_builder', title: 'SILBIMEISTER', theme: THEME.orange, icon: 'Type', desc: 'Pane silbid sõnaks kokku', allowedProfiles: ['starter'], difficulty: 'easy', category: 'language' },
@@ -64,12 +67,12 @@ export const GAME_CONFIG = {
 };
 
 // Profiilid on laiendatavad raskuse nihkega
-export const PROFILES = {
+export const PROFILES: Record<ProfileType, Profile> = {
   starter:  { id: 'starter', label: '5+', desc: 'Koolieelik', levelStart: 1, difficultyOffset: 0, emoji: '👧' },
   advanced: { id: 'advanced', label: '7+', desc: 'Koolilaps', levelStart: 3, difficultyOffset: 2, emoji: '🧒' }
 };
 
-export const ICONS = {
+export const ICONS: Record<string, string> = {
   Type: 'Type',
   Brain: 'Brain',
   BookOpen: 'BookOpen',
@@ -81,10 +84,10 @@ export const ICONS = {
   Ruler: 'Ruler'
 };
 
-export const ALPHABET = 'ABCDEFGHIJKLMNOPRSŠZŽTUVÕÄÖÜ'.split('');
+export const ALPHABET: string[] = 'ABCDEFGHIJKLMNOPRSŠZŽTUVÕÄÖÜ'.split('');
 
 // Lähtume emojodest; ainult eestikeelsed sõnad, valdavalt <=7 tähte
-const BASE_WORDS = [
+const BASE_WORDS: WordObject[] = [
   // loodus ja ilm
   { w: 'PUU', e: '🌳' }, { w: 'PÕÕSAS', e: '🌿' }, { w: 'LILL', e: '🌸' }, { w: 'LEHT', e: '🍃' },
   { w: 'METS', e: '🌲' }, { w: 'MÄGI', e: '⛰️' }, { w: 'JÕGI', e: '🏞️' }, { w: 'JÄRV', e: '🏝️' },
@@ -185,14 +188,14 @@ const BASE_WORDS = [
   { w: 'PÄIKE', e: '☀️' }, { w: 'PILVED', e: '☁️' }, { w: 'VIHMAVARJUD', e: '🌦️' }
 ];
 
-export const WORD_DB = BASE_WORDS.reduce((acc, item) => {
+export const WORD_DB: Record<number, WordObject[]> = BASE_WORDS.reduce<Record<number, WordObject[]>>((acc, item) => {
   const len = item.w.length;
   if (!acc[len]) acc[len] = [];
   acc[len].push(item);
   return acc;
 }, {});
 
-export const SCENE_DB = {
+export const SCENE_DB: Record<string, Scene> = {
   forest: { 
     bg: 'bg-gradient-to-b from-green-200 to-green-300', 
     name: 'Mets',
