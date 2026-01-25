@@ -1,25 +1,40 @@
 // Täiustatud statistika dashboard - parem visualiseerimine
 import React from 'react';
 import { BarChart3, Trophy, Target, TrendingUp, Clock, Star } from 'lucide-react';
+import { Stats } from '../types/stats';
+import { AchievementUnlock } from '../types/achievement';
 
-export const StatsDashboard = ({ stats, unlockedAchievements = [] }) => {
-  const accuracy = stats.gamesPlayed > 0
+interface StatsDashboardProps {
+  stats: Stats;
+  unlockedAchievements?: AchievementUnlock[];
+}
+
+export const StatsDashboard: React.FC<StatsDashboardProps> = ({ stats, unlockedAchievements = [] }) => {
+  const accuracy: number = stats.gamesPlayed > 0
     ? Math.round((stats.correctAnswers / (stats.correctAnswers + stats.wrongAnswers)) * 100)
     : 0;
   
-  const totalAnswers = stats.correctAnswers + stats.wrongAnswers;
-  const avgTimePerGame = stats.gamesPlayed > 0
+  const totalAnswers: number = stats.correctAnswers + stats.wrongAnswers;
+  const avgTimePerGame: number = stats.gamesPlayed > 0
     ? Math.floor(stats.totalTimePlayed / stats.gamesPlayed)
     : 0;
   
-  const formatTime = (seconds) => {
+  const formatTime = (seconds: number): string => {
     if (seconds < 60) return `${seconds}s`;
-    const minutes = Math.floor(seconds / 60);
-    const secs = seconds % 60;
+    const minutes: number = Math.floor(seconds / 60);
+    const secs: number = seconds % 60;
     return `${minutes}m ${secs}s`;
   };
   
-  const statCards = [
+  interface StatCard {
+    icon: React.ComponentType<{ size?: number }>;
+    label: string;
+    value: string | number;
+    color: string;
+    subtitle?: string;
+  }
+  
+  const statCards: StatCard[] = [
     {
       icon: Trophy,
       label: 'Kokku mänge',
@@ -94,9 +109,13 @@ export const StatsDashboard = ({ stats, unlockedAchievements = [] }) => {
 };
 
 // Game type statistics
-export const GameTypeStats = ({ stats }) => {
-  const gameTypes = stats.gamesByType || {};
-  const totalGames = Object.values(gameTypes).reduce((a, b) => a + b, 0);
+interface GameTypeStatsProps {
+  stats: Stats;
+}
+
+export const GameTypeStats: React.FC<GameTypeStatsProps> = ({ stats }) => {
+  const gameTypes: Record<string, number> = stats.gamesByType || {};
+  const totalGames: number = Object.values(gameTypes).reduce((a, b) => a + b, 0);
   
   if (totalGames === 0) {
     return (
@@ -106,7 +125,7 @@ export const GameTypeStats = ({ stats }) => {
     );
   }
   
-  const sortedTypes = Object.entries(gameTypes)
+  const sortedTypes: [string, number][] = Object.entries(gameTypes)
     .sort((a, b) => b[1] - a[1])
     .slice(0, 5);
   
@@ -114,7 +133,7 @@ export const GameTypeStats = ({ stats }) => {
     <div className="space-y-3">
       <h3 className="text-lg font-black text-slate-800 mb-4">Kõige rohkem mängitud mängud</h3>
       {sortedTypes.map(([type, count]) => {
-        const percentage = (count / totalGames) * 100;
+        const percentage: number = (count / totalGames) * 100;
         return (
           <div key={type} className="space-y-1">
             <div className="flex justify-between items-center text-sm">

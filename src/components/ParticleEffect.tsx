@@ -1,7 +1,26 @@
 import React, { useEffect, useState } from 'react';
 
-export const ParticleEffect = ({ type = 'success', active = false }) => {
-  const [particles, setParticles] = useState([]);
+type ParticleType = 'success' | 'star' | 'celebration';
+
+interface Particle {
+  id: number;
+  x: number;
+  y: number;
+  delay: number;
+  duration: number;
+  size: number;
+  offsetX: string;
+  offsetXAmount: number;
+  offsetY: number;
+}
+
+interface ParticleEffectProps {
+  type?: ParticleType;
+  active?: boolean;
+}
+
+export const ParticleEffect: React.FC<ParticleEffectProps> = ({ type = 'success', active = false }) => {
+  const [particles, setParticles] = useState<Particle[]>([]);
 
   useEffect(() => {
     if (!active) {
@@ -9,7 +28,7 @@ export const ParticleEffect = ({ type = 'success', active = false }) => {
       return;
     }
 
-    const newParticles = Array.from({ length: 20 }, (_, i) => ({
+    const newParticles: Particle[] = Array.from({ length: 20 }, (_, i) => ({
       id: i,
       x: Math.random() * 100,
       y: Math.random() * 100,
@@ -32,10 +51,10 @@ export const ParticleEffect = ({ type = 'success', active = false }) => {
 
   if (!active || particles.length === 0) return null;
 
-  const emoji = type === 'success' ? '✨' : type === 'star' ? '⭐' : '🎉';
+  const emoji: string = type === 'success' ? '✨' : type === 'star' ? '⭐' : '🎉';
 
   // Generate unique keyframe names for each particle with different offsets
-  const keyframes = particles
+  const keyframes: string = particles
     .map((particle) => {
       const offsetX = particle.offsetX === '-' ? `-${particle.offsetXAmount}` : `${particle.offsetXAmount}`;
       return `
@@ -53,7 +72,7 @@ export const ParticleEffect = ({ type = 'success', active = false }) => {
     })
     .join('\n');
 
-  const animationStyle = particles
+  const animationStyle: string = particles
     .map((particle) => {
       return `.particle-${particle.id} { animation: particle-${particle.id} linear forwards; }`;
     })

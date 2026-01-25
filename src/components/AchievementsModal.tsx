@@ -2,9 +2,14 @@ import React from 'react';
 import { X } from 'lucide-react';
 import { ACHIEVEMENTS } from '../engine/achievements';
 
-export const AchievementsModal = ({ unlockedAchievements, onClose }) => {
+interface AchievementsModalProps {
+  unlockedAchievements: string[];
+  onClose: () => void;
+}
+
+export const AchievementsModal: React.FC<AchievementsModalProps> = ({ unlockedAchievements, onClose }) => {
   const allAchievements = Object.values(ACHIEVEMENTS);
-  const unlockedSet = new Set(unlockedAchievements);
+  const unlockedSet: Set<string> = new Set(unlockedAchievements);
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-300">
@@ -29,7 +34,7 @@ export const AchievementsModal = ({ unlockedAchievements, onClose }) => {
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           {allAchievements.map((achievement) => {
-            const isUnlocked = unlockedSet.has(achievement.id);
+            const isUnlocked: boolean = unlockedSet.has(achievement.id);
             return (
               <div
                 key={achievement.id}

@@ -1,29 +1,41 @@
 // Õppimise progressi jälgimise komponent - hariduslik väärtus
 import React from 'react';
 import { TrendingUp, Target, BookOpen, Award } from 'lucide-react';
+import { Stats } from '../types/stats';
 
-export const LearningProgress = ({ stats, gameType }) => {
-  const gameStats = stats.gamesByType?.[gameType] || 0;
-  const maxLevel = stats.maxLevels?.[gameType] || 1;
-  const accuracy = stats.gamesPlayed > 0
+interface LearningProgressProps {
+  stats: Stats;
+  gameType: string;
+}
+
+export const LearningProgress: React.FC<LearningProgressProps> = ({ stats, gameType }) => {
+  const gameStats: number = stats.gamesByType?.[gameType] || 0;
+  const maxLevel: number = stats.maxLevels?.[gameType] || 1;
+  const accuracy: number = stats.gamesPlayed > 0
     ? Math.round((stats.correctAnswers / (stats.correctAnswers + stats.wrongAnswers)) * 100)
     : 0;
   
   // Arvuta õppimise skoor
-  const learningScore = Math.min(100, Math.round(
+  const learningScore: number = Math.min(100, Math.round(
     (accuracy * 0.4) + 
     (maxLevel * 5) + 
     (gameStats * 2)
   ));
   
-  const getLearningStage = () => {
+  interface LearningStage {
+    label: string;
+    emoji: string;
+    color: string;
+  }
+  
+  const getLearningStage = (): LearningStage => {
     if (learningScore >= 80) return { label: 'Meister', emoji: '🏆', color: 'text-yellow-600' };
     if (learningScore >= 60) return { label: 'Edasijõudnud', emoji: '⭐', color: 'text-blue-600' };
     if (learningScore >= 40) return { label: 'Harjutaja', emoji: '📚', color: 'text-green-600' };
     return { label: 'Algaja', emoji: '🌱', color: 'text-slate-600' };
   };
   
-  const stage = getLearningStage();
+  const stage: LearningStage = getLearningStage();
   
   return (
     <div className="bg-gradient-to-br from-purple-50 to-pink-50 rounded-2xl p-6 border-2 border-purple-200">
@@ -93,8 +105,18 @@ export const LearningProgress = ({ stats, gameType }) => {
 };
 
 // Skill breakdown komponent
-export const SkillBreakdown = ({ stats }) => {
-  const skills = [
+interface SkillBreakdownProps {
+  stats: Stats;
+}
+
+interface Skill {
+  name: string;
+  games: string[];
+  icon: string;
+}
+
+export const SkillBreakdown: React.FC<SkillBreakdownProps> = ({ stats }) => {
+  const skills: Skill[] = [
     {
       name: 'Lugemine',
       games: ['word_builder', 'syllable_builder', 'letter_match', 'sentence_logic'],
@@ -112,11 +134,11 @@ export const SkillBreakdown = ({ stats }) => {
     },
   ];
   
-  const calculateSkillLevel = (skillGames) => {
-    const totalGames = skillGames.reduce((sum, gameType) => {
+  const calculateSkillLevel = (skillGames: string[]): { totalGames: number; maxLevel: number } => {
+    const totalGames: number = skillGames.reduce((sum, gameType) => {
       return sum + (stats.gamesByType?.[gameType] || 0);
     }, 0);
-    const maxLevel = Math.max(...skillGames.map(gt => stats.maxLevels?.[gt] || 1));
+    const maxLevel: number = Math.max(...skillGames.map(gt => stats.maxLevels?.[gt] || 1));
     return { totalGames, maxLevel };
   };
   
@@ -125,7 +147,7 @@ export const SkillBreakdown = ({ stats }) => {
       <h3 className="text-lg font-black text-slate-800 mb-4">Oskuste ülevaade</h3>
       {skills.map((skill, idx) => {
         const { totalGames, maxLevel } = calculateSkillLevel(skill.games);
-        const skillScore = Math.min(100, (totalGames * 5) + (maxLevel * 10));
+        const skillScore: number = Math.min(100, (totalGames * 5) + (maxLevel * 10));
         
         return (
           <div key={idx} className="bg-white rounded-xl p-4 border-2 border-slate-200">

@@ -1,9 +1,20 @@
 import React, { useEffect, useRef } from 'react';
 import { X } from 'lucide-react';
 import { playSound } from '../engine/audio';
+import { AchievementUnlock } from '../types/achievement';
 
-export const AchievementModal = ({ achievement, onClose, soundEnabled }) => {
-  const timerRef = useRef(null);
+interface AchievementModalProps {
+  achievement: AchievementUnlock | null;
+  onClose: () => void;
+  soundEnabled: boolean;
+}
+
+export const AchievementModal: React.FC<AchievementModalProps> = ({ 
+  achievement, 
+  onClose, 
+  soundEnabled 
+}) => {
+  const timerRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     if (achievement) {

@@ -1,8 +1,27 @@
 import React, { useEffect, useState, useMemo, useCallback } from 'react';
 import { ArrowRight, ArrowUp, ArrowDown, ArrowLeft, RotateCcw, Play } from 'lucide-react';
 import { playSound } from '../engine/audio';
+import { GameConfig } from '../types/game';
+import type { 
+  BalanceScaleProblem, 
+  WordBuilderProblem, 
+  SyllableBuilderProblem,
+  PatternProblem,
+  SentenceLogicProblem,
+  MemoryMathProblem,
+  RoboPathProblem,
+  TimeMatchProblem,
+  LetterMatchProblem,
+  UnitConversionProblem
+} from '../types/game';
 
-export const LevelUpModal = ({ level, onNext, gameConfig }) => (
+interface LevelUpModalProps {
+  level: number;
+  onNext: () => void;
+  gameConfig: GameConfig;
+}
+
+export const LevelUpModal: React.FC<LevelUpModalProps> = ({ level, onNext, gameConfig }) => (
   <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 animate-in fade-in duration-300">
     <div className="bg-gradient-to-br from-white to-slate-50 rounded-3xl p-8 max-w-sm w-full shadow-2xl text-center transform scale-100 animate-bounce-short border-4 border-yellow-400">
       <div className="mx-auto w-24 h-24 bg-gradient-to-br from-yellow-100 to-orange-100 rounded-full flex items-center justify-center mb-4 text-6xl shadow-inner animate-star-collect">
@@ -24,8 +43,15 @@ export const LevelUpModal = ({ level, onNext, gameConfig }) => (
 );
 
 // Move SvgWeight outside the component to avoid creating it during render
-const SvgWeight = ({ x, y, num, color }) => {
-  const isBlue = color === 'blue';
+interface SvgWeightProps {
+  x: number;
+  y: number;
+  num: number;
+  color: 'blue' | 'red';
+}
+
+const SvgWeight: React.FC<SvgWeightProps> = ({ x, y, num, color }) => {
+  const isBlue: boolean = color === 'blue';
   return (
     <g transform={`translate(${x}, ${y})`}>
       {/* 3D efekt - ülemine osa */}
@@ -79,11 +105,17 @@ const SvgWeight = ({ x, y, num, color }) => {
   );
 };
 
-export const BalanceScaleView = ({ problem, onAnswer, soundEnabled }) => {
-  const problemUid = problem.uid;
-  const [disabled, setDisabled] = useState([]);
-  const [tilt, setTilt] = useState(-10);
-  const [prevUid, setPrevUid] = useState(problemUid);
+interface BalanceScaleViewProps {
+  problem: BalanceScaleProblem;
+  onAnswer: (answer: number) => void;
+  soundEnabled: boolean;
+}
+
+export const BalanceScaleView: React.FC<BalanceScaleViewProps> = ({ problem, onAnswer, soundEnabled }) => {
+  const problemUid: string = problem.uid;
+  const [disabled, setDisabled] = useState<number[]>([]);
+  const [tilt, setTilt] = useState<number>(-10);
+  const [prevUid, setPrevUid] = useState<string>(problemUid);
 
   // Reset state when problem changes (derived state pattern)
   if (problemUid !== prevUid) {
@@ -92,11 +124,11 @@ export const BalanceScaleView = ({ problem, onAnswer, soundEnabled }) => {
     setPrevUid(problemUid);
   }
 
-  const handleChoice = (weight) => {
+  const handleChoice = (weight: number): void => {
     playSound('click', soundEnabled);
-    const leftSum = problem.display.left.reduce((a, b) => a + b, 0);
-    const rightKnown = problem.display.right.reduce((a, b) => a + b, 0);
-    const totalRight = rightKnown + weight;
+    const leftSum: number = problem.display.left.reduce((a, b) => a + b, 0);
+    const rightKnown: number = problem.display.right.reduce((a, b) => a + b, 0);
+    const totalRight: number = rightKnown + weight;
 
     let newTilt = 0;
     if (leftSum > totalRight) newTilt = -20;
@@ -107,11 +139,11 @@ export const BalanceScaleView = ({ problem, onAnswer, soundEnabled }) => {
 
     setTimeout(() => {
       if (leftSum === totalRight) {
-        onAnswer(true);
+        onAnswer(leftSum === totalRight);
       } else {
-        setDisabled((prev) => [...prev, weight]);
+        setDisabled((prev: number[]) => [...prev, weight]);
         setTimeout(() => setTilt(newTilt > 0 ? 15 : -15), 300); 
-        onAnswer(false);
+        onAnswer(leftSum === totalRight);
       }
     }, 1000);
   };
@@ -288,9 +320,15 @@ export const BalanceScaleView = ({ problem, onAnswer, soundEnabled }) => {
   );
 };
 
-export const StandardGameView = ({ problem, onAnswer, soundEnabled }) => {
-  const [disabled, setDisabled] = useState([]);
-  const problemUid = problem.uid;
+interface StandardGameViewProps {
+  problem: SentenceLogicProblem | LetterMatchProblem;
+  onAnswer: (answer: boolean) => void;
+  soundEnabled: boolean;
+}
+
+export const StandardGameView: React.FC<StandardGameViewProps> = ({ problem, onAnswer, soundEnabled }) => {
+  const [disabled, setDisabled] = useState<string[]>([]);
+  const problemUid: string = problem.uid;
   
   useEffect(() => { 
     const timer = setTimeout(() => setDisabled([]), 0);
@@ -476,10 +514,16 @@ export const StandardGameView = ({ problem, onAnswer, soundEnabled }) => {
   );
 };
 
-export const WordGameView = ({ problem, onAnswer, soundEnabled }) => {
-  const [userWord, setUserWord] = useState([]);
-  const [pool, setPool] = useState(problem.shuffled || []);
-  const problemUid = problem.uid;
+interface WordGameViewProps {
+  problem: WordBuilderProblem;
+  onAnswer: (answer: boolean) => void;
+  soundEnabled: boolean;
+}
+
+export const WordGameView: React.FC<WordGameViewProps> = ({ problem, onAnswer, soundEnabled }) => {
+  const [userWord, setUserWord] = useState<Array<{ char: string; id: string }>>([]);
+  const [pool, setPool] = useState<Array<{ char: string; id: string }>>(problem.shuffled || []);
+  const problemUid: string = problem.uid;
   
   useEffect(() => { 
     const timer = setTimeout(() => {
@@ -545,13 +589,24 @@ export const WordGameView = ({ problem, onAnswer, soundEnabled }) => {
   );
 };
 
-export const SyllableGameView = ({ problem, onAnswer, soundEnabled }) => {
-  const poolFromProblem = () => problem.shuffled.map((p, i) => ({ part: p, id: `${p}-${i}` }));
-  const [current, setCurrent] = useState([]);
-  const [pool, setPool] = useState(poolFromProblem());
-  const [ghost, setGhost] = useState(false);
-  const colors = ['bg-orange-100 text-orange-700 border-orange-300', 'bg-teal-100 text-teal-700 border-teal-300', 'bg-blue-100 text-blue-700 border-blue-300', 'bg-pink-100 text-pink-700 border-pink-300'];
-  const problemUid = problem.uid;
+interface SyllableGameViewProps {
+  problem: SyllableBuilderProblem;
+  onAnswer: (answer: boolean) => void;
+  soundEnabled: boolean;
+}
+
+export const SyllableGameView: React.FC<SyllableGameViewProps> = ({ problem, onAnswer, soundEnabled }) => {
+  interface SyllablePart {
+    part: { text: string; id: string };
+    id: string;
+  }
+  
+  const poolFromProblem = (): SyllablePart[] => problem.shuffled.map((p, i) => ({ part: p, id: `${p}-${i}` }));
+  const [current, setCurrent] = useState<Array<{ text: string; id: string } | null>>([]);
+  const [pool, setPool] = useState<SyllablePart[]>(poolFromProblem());
+  const [ghost, setGhost] = useState<boolean>(false);
+  const colors: string[] = ['bg-orange-100 text-orange-700 border-orange-300', 'bg-teal-100 text-teal-700 border-teal-300', 'bg-blue-100 text-blue-700 border-blue-300', 'bg-pink-100 text-pink-700 border-pink-300'];
+  const problemUid: string = problem.uid;
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -628,10 +683,16 @@ export const SyllableGameView = ({ problem, onAnswer, soundEnabled }) => {
 };
 
 
-export const PatternTrainView = ({ problem, onAnswer, soundEnabled }) => {
-  const [disabled, setDisabled] = useState([]);
-  const [trainState, setTrainState] = useState('enter'); 
-  const [selectedOption, setSelectedOption] = useState(null);
+interface PatternTrainViewProps {
+  problem: PatternProblem;
+  onAnswer: (answer: boolean) => void;
+  soundEnabled: boolean;
+}
+
+export const PatternTrainView: React.FC<PatternTrainViewProps> = ({ problem, onAnswer, soundEnabled }) => {
+  const [disabled, setDisabled] = useState<string[]>([]);
+  const [trainState, setTrainState] = useState<string>('enter'); 
+  const [selectedOption, setSelectedOption] = useState<string | null>(null);
   const problemUid = problem.uid;
   
   useEffect(() => { 
@@ -749,7 +810,13 @@ export const PatternTrainView = ({ problem, onAnswer, soundEnabled }) => {
   );
 };
 
-export const MemoryGameView = ({ problem, onAnswer, soundEnabled }) => {
+interface MemoryGameViewProps {
+  problem: MemoryMathProblem;
+  onAnswer: (answer: boolean) => void;
+  soundEnabled: boolean;
+}
+
+export const MemoryGameView: React.FC<MemoryGameViewProps> = ({ problem, onAnswer, soundEnabled }) => {
   const [cards, setCards] = useState(problem.cards || []);
   const [flipped, setFlipped] = useState([]); 
   const [matchedPairs, setMatchedPairs] = useState(0);
@@ -900,7 +967,13 @@ export const MemoryGameView = ({ problem, onAnswer, soundEnabled }) => {
   );
 };
 
-export const RoboPathView = ({ problem, onAnswer, soundEnabled }) => {
+interface RoboPathViewProps {
+  problem: RoboPathProblem;
+  onAnswer: (answer: boolean) => void;
+  soundEnabled: boolean;
+}
+
+export const RoboPathView: React.FC<RoboPathViewProps> = ({ problem, onAnswer, soundEnabled }) => {
   const [commands, setCommands] = useState([]);
   const [robotPos, setRobotPos] = useState(problem.start);
   const [status, setStatus] = useState('planning');
@@ -1187,7 +1260,7 @@ export const RoboPathView = ({ problem, onAnswer, soundEnabled }) => {
   );
 };
 
-export const Confetti = () => {
+export const Confetti: React.FC = () => {
   // Generate stable random positions for confetti using index-based seed (memoized to prevent recalculation)
   const confettiItems = useMemo(() => [...Array(30)].map((_, i) => {
     const seed = i * 12345;
@@ -1209,7 +1282,12 @@ export const Confetti = () => {
   );
 };
 
-export const TimeDisplay = ({ hour, minute }) => {
+interface TimeDisplayProps {
+  hour: number;
+  minute: number;
+}
+
+export const TimeDisplay: React.FC<TimeDisplayProps> = ({ hour, minute }) => {
   const angleH = ((hour % 12) + minute / 60) * 30;
   const angleM = minute * 6;
   const hourLen = 46;
@@ -1261,7 +1339,13 @@ export const TimeDisplay = ({ hour, minute }) => {
   );
 };
 
-export const TimeGameView = ({ problem, onAnswer, soundEnabled }) => {
+interface TimeGameViewProps {
+  problem: TimeMatchProblem;
+  onAnswer: (answer: boolean) => void;
+  soundEnabled: boolean;
+}
+
+export const TimeGameView: React.FC<TimeGameViewProps> = ({ problem, onAnswer, soundEnabled }) => {
   const [disabled, setDisabled] = useState([]);
   const [feedback, setFeedback] = useState(null);
 
@@ -1311,7 +1395,13 @@ export const TimeGameView = ({ problem, onAnswer, soundEnabled }) => {
   );
 };
 
-export const UnitConversionView = ({ problem, onAnswer, soundEnabled }) => {
+interface UnitConversionViewProps {
+  problem: UnitConversionProblem;
+  onAnswer: (answer: boolean) => void;
+  soundEnabled: boolean;
+}
+
+export const UnitConversionView: React.FC<UnitConversionViewProps> = ({ problem, onAnswer, soundEnabled }) => {
   const [disabled, setDisabled] = useState([]);
   
   useEffect(() => { 

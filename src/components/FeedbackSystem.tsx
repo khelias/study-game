@@ -22,10 +22,26 @@ const ENCOURAGEMENTS = {
   ]
 };
 
-export const FeedbackMessage = ({ message, type = 'info', duration = 2000, onComplete, soundEnabled }) => {
+type FeedbackType = 'correct' | 'wrong' | 'hint' | 'levelUp' | 'streak' | 'info';
+
+interface FeedbackMessageProps {
+  message: string | null;
+  type?: FeedbackType;
+  duration?: number;
+  onComplete?: () => void;
+  soundEnabled: boolean;
+}
+
+export const FeedbackMessage: React.FC<FeedbackMessageProps> = ({ 
+  message, 
+  type = 'info', 
+  duration = 2000, 
+  onComplete, 
+  soundEnabled 
+}) => {
   const [visible, setVisible] = useState(Boolean(message));
   const [animating, setAnimating] = useState(Boolean(message));
-  const messageRef = useRef(message);
+  const messageRef = useRef<string | null>(message);
 
   useEffect(() => {
     if (message && message !== messageRef.current) {
@@ -69,7 +85,7 @@ export const FeedbackMessage = ({ message, type = 'info', duration = 2000, onCom
 
   if (!visible || !message) return null;
 
-  const getStyles = () => {
+  const getStyles = (): string => {
     switch (type) {
       case 'correct':
         return 'bg-gradient-to-r from-green-500 to-emerald-500 border-green-600 text-white';
@@ -105,32 +121,42 @@ export const FeedbackMessage = ({ message, type = 'info', duration = 2000, onCom
 // Helper function (not a component)
 /**
  * Get a random encouragement message for the given type
- * @param {string} type - The type of encouragement ('correct', 'wrong', 'levelUp')
- * @param {number} streak - Optional streak count for correct answers
- * @returns {string} - The encouragement message
+ * @param type - The type of encouragement ('correct', 'wrong', 'levelUp')
+ * @param streak - Optional streak count for correct answers
+ * @returns The encouragement message
  */
 // eslint-disable-next-line react-refresh/only-export-components
-export const getRandomEncouragement = (type, streak = 0) => {
+export const getRandomEncouragement = (type: FeedbackType, streak = 0): string => {
   if (type === 'correct') {
-    if (streak >= 7) return ENCOURAGEMENTS.streak[5];
-    if (streak >= 6) return ENCOURAGEMENTS.streak[4];
-    if (streak >= 5) return ENCOURAGEMENTS.streak[3];
-    if (streak >= 4) return ENCOURAGEMENTS.streak[2];
-    if (streak >= 3) return ENCOURAGEMENTS.streak[1];
-    if (streak >= 2) return ENCOURAGEMENTS.streak[0];
-    return ENCOURAGEMENTS.correct[Math.floor(Math.random() * ENCOURAGEMENTS.correct.length)];
+    if (streak >= 7) return ENCOURAGEMENTS.streak[5] ?? '';
+    if (streak >= 6) return ENCOURAGEMENTS.streak[4] ?? '';
+    if (streak >= 5) return ENCOURAGEMENTS.streak[3] ?? '';
+    if (streak >= 4) return ENCOURAGEMENTS.streak[2] ?? '';
+    if (streak >= 3) return ENCOURAGEMENTS.streak[1] ?? '';
+    if (streak >= 2) return ENCOURAGEMENTS.streak[0] ?? '';
+    return ENCOURAGEMENTS.correct[Math.floor(Math.random() * ENCOURAGEMENTS.correct.length)] ?? '';
   }
   if (type === 'wrong') {
-    return ENCOURAGEMENTS.wrong[Math.floor(Math.random() * ENCOURAGEMENTS.wrong.length)];
+    return ENCOURAGEMENTS.wrong[Math.floor(Math.random() * ENCOURAGEMENTS.wrong.length)] ?? '';
   }
   if (type === 'levelUp') {
-    return ENCOURAGEMENTS.levelUp[Math.floor(Math.random() * ENCOURAGEMENTS.levelUp.length)];
+    return ENCOURAGEMENTS.levelUp[Math.floor(Math.random() * ENCOURAGEMENTS.levelUp.length)] ?? '';
   }
   return '';
 };
 
+interface ProgressIndicatorProps {
+  current: number;
+  total: number;
+  label?: string;
+}
+
 // Progress indicator komponent
-const ProgressIndicator = ({ current, total, label = '' }) => {
+const ProgressIndicator: React.FC<ProgressIndicatorProps> = ({ 
+  current, 
+  total, 
+  label = '' 
+}) => {
   const percentage = (current / total) * 100;
   
   return (
@@ -152,3 +178,5 @@ const ProgressIndicator = ({ current, total, label = '' }) => {
     </div>
   );
 };
+
+export { ProgressIndicator };

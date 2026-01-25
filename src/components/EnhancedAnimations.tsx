@@ -1,8 +1,18 @@
 // Täiustatud animatsioonid ja visuaalsed efektid
-import React from 'react';
+import React, { ReactNode } from 'react';
+
+interface Position {
+  x: number;
+  y: number;
+}
+
+interface StarCollectAnimationProps {
+  position: Position;
+  onComplete?: () => void;
+}
 
 // Tähe kogumise animatsioon
-export const StarCollectAnimation = ({ position, onComplete }) => {
+export const StarCollectAnimation: React.FC<StarCollectAnimationProps> = ({ position, onComplete }) => {
   return (
     <div
       className="fixed pointer-events-none z-50"
@@ -36,9 +46,14 @@ export const StarCollectAnimation = ({ position, onComplete }) => {
   );
 };
 
+interface EffectWrapperProps {
+  active: boolean;
+  children: ReactNode;
+}
+
 // Pulseeriv efekt õige vastuse jaoks
-export const PulseEffect = ({ active, children }) => {
-  if (!active) return children;
+export const PulseEffect: React.FC<EffectWrapperProps> = ({ active, children }) => {
+  if (!active) return <>{children}</>;
   
   return (
     <div className="relative">
@@ -60,8 +75,8 @@ export const PulseEffect = ({ active, children }) => {
 };
 
 // Shake animatsioon vale vastuse jaoks
-export const ShakeEffect = ({ active, children }) => {
-  if (!active) return children;
+export const ShakeEffect: React.FC<EffectWrapperProps> = ({ active, children }) => {
+  if (!active) return <>{children}</>;
   
   return (
     <div className={active ? 'animate-shake' : ''}>
@@ -80,8 +95,13 @@ export const ShakeEffect = ({ active, children }) => {
   );
 };
 
+interface FadeInProps {
+  children: ReactNode;
+  delay?: number;
+}
+
 // Fade in animatsioon uute ülesannete jaoks
-export const FadeIn = ({ children, delay = 0 }) => {
+export const FadeIn: React.FC<FadeInProps> = ({ children, delay = 0 }) => {
   return (
     <div 
       className="animate-fade-in"
@@ -107,11 +127,16 @@ export const FadeIn = ({ children, delay = 0 }) => {
   );
 };
 
+interface BounceOnClickProps {
+  children: ReactNode;
+  onClick?: (e: React.MouseEvent<HTMLDivElement>) => void;
+}
+
 // Bounce animatsioon nuppude jaoks
-export const BounceOnClick = ({ children, onClick }) => {
+export const BounceOnClick: React.FC<BounceOnClickProps> = ({ children, onClick }) => {
   const [bouncing, setBouncing] = React.useState(false);
   
-  const handleClick = (e) => {
+  const handleClick = (e: React.MouseEvent<HTMLDivElement>): void => {
     setBouncing(true);
     setTimeout(() => setBouncing(false), 300);
     if (onClick) onClick(e);
@@ -136,15 +161,28 @@ export const BounceOnClick = ({ children, onClick }) => {
   );
 };
 
+interface Particle {
+  id: number;
+  emoji: string;
+  left: number;
+  delay: number;
+  duration: number;
+}
+
+interface EnhancedConfettiProps {
+  active: boolean;
+  onComplete?: () => void;
+}
+
 // Confetti efekt täiustatud versioon
-export const EnhancedConfetti = ({ active, onComplete }) => {
-  const [particles, setParticles] = React.useState([]);
+export const EnhancedConfetti: React.FC<EnhancedConfettiProps> = ({ active, onComplete }) => {
+  const [particles, setParticles] = React.useState<Particle[]>([]);
   
   React.useEffect(() => {
     if (active) {
-      const newParticles = Array.from({ length: 50 }, (_, i) => ({
+      const newParticles: Particle[] = Array.from({ length: 50 }, (_, i) => ({
         id: i,
-        emoji: ['🎉', '🎊', '⭐', '🌟', '✨', '🎈', '🎁'][Math.floor(Math.random() * 7)],
+        emoji: ['🎉', '🎊', '⭐', '🌟', '✨', '🎈', '🎁'][Math.floor(Math.random() * 7)] as string,
         left: Math.random() * 100,
         delay: Math.random() * 2,
         duration: 2 + Math.random() * 2,

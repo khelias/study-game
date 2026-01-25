@@ -110,19 +110,21 @@ export interface PatternProblem extends BaseProblem {
 export interface SentenceLogicProblem extends BaseProblem {
   type: 'sentence_logic';
   scene: string;
+  sceneName?: string;
   subject: SceneSubject;
   anchor: SceneAnchor;
   position: string;
   caseType: 'adess' | 'iness';
   sentence: string;
-  options: string[];
+  display?: string;
+  options: Array<string | { text: string; pos?: string; answer?: boolean }>;
   answer: string;
 }
 
 // Memory math problem
 export interface MemoryMathProblem extends BaseProblem {
   type: 'memory_math';
-  cards: Array<{ id: string; content: string; matched?: boolean }>;
+  cards: Array<{ id: string; content: string; matched?: boolean; flipped?: boolean; solved?: boolean; matchId?: string; type?: string }>;
   pairs: Array<{ eq: string; ans: number }>;
 }
 
@@ -130,11 +132,14 @@ export interface MemoryMathProblem extends BaseProblem {
 export interface RoboPathProblem extends BaseProblem {
   type: 'robo_path';
   grid: number[][];
+  gridSize: number;
   start: [number, number];
   goal: [number, number];
+  end?: [number, number];
   obstacles: Array<[number, number]>;
   correctPath: string[];
   options: string[];
+  maxCommands?: number;
 }
 
 // Time match problem
@@ -142,7 +147,7 @@ export interface TimeMatchProblem extends BaseProblem {
   type: 'time_match';
   hours: number;
   minutes: number;
-  display: string;
+  display: { hour: number; minute: number };
   options: string[];
   answer: string;
 }
@@ -152,6 +157,8 @@ export interface SyllableBuilderProblem extends BaseProblem {
   type: 'syllable_builder';
   target: string;
   emoji: string;
+  hint?: string;
+  parts?: number;
   syllables: string[];
   shuffled: Array<{ text: string; id: string }>;
 }
@@ -161,9 +168,11 @@ export interface LetterMatchProblem extends BaseProblem {
   type: 'letter_match';
   word: string;
   emoji: string;
+  display?: string;
   targetLetter: string;
   targetPosition: number;
   options: string[];
+  answer?: string;
 }
 
 // Unit conversion problem

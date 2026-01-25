@@ -1,16 +1,35 @@
 // Täiustatud mängukaart komponent - parem UI/UX
 import React, { useMemo } from 'react';
 import { FadeIn } from './EnhancedAnimations';
+import { GameConfig } from '../types/game';
+import { LucideIcon } from 'lucide-react';
 
 const DefaultIcon = () => null;
 
-export const GameCard = ({ 
+interface Progress {
+  current: number;
+  total: number;
+}
+
+interface GameCardProps {
+  gameConfig: GameConfig & {
+    iconComponent?: LucideIcon | React.ComponentType<{ size?: number; className?: string }>;
+  };
+  level: number;
+  onClick: () => void;
+  isLocked?: boolean;
+  progress?: Progress | null;
+  badge?: string | null;
+  delay?: number;
+}
+
+export const GameCard: React.FC<GameCardProps> = ({ 
   gameConfig, 
   level, 
   onClick, 
   isLocked = false,
-  progress = null, // { current, total } või null
-  badge = null, // Badge tekst (nt "UUS!")
+  progress = null,
+  badge = null,
   delay = 0
 }) => {
   const IconComponent = useMemo(
