@@ -1,0 +1,217 @@
+import { create } from 'zustand';
+import { createAdaptiveDifficulty, updateAdaptiveDifficulty as updateDifficulty, getEffectiveLevel } from '../engine/adaptiveDifficulty';
+
+type GameState = 'menu' | 'playing' | 'game_over';
+
+interface Problem {
+  type: string;
+  answer: any;
+  uid?: string;
+  [key: string]: any;
+}
+
+interface AdaptiveDifficulty {
+  recentAccuracy: boolean[];
+  averageResponseTime: number[];
+  consecutiveCorrect: number;
+  consecutiveWrong: number;
+  difficultyMultiplier: number;
+  levelAdjustment: number;
+}
+
+interface AchievementData {
+  id: string;
+  title: string;
+  desc: string;
+  icon: string;
+}
+
+export interface PlaySessionStore {
+  // State
+  gameState: GameState;
+  gameType: string | null;
+  problem: Problem | null;
+  score: number;
+  hearts: number;
+  stars: number;
+  currentStreak: number;
+  adaptiveDifficulty: AdaptiveDifficulty;
+  showLevelUp: boolean;
+  showAchievement: AchievementData | null;
+  bgClass: string;
+  confetti: boolean;
+  enhancedConfetti: boolean;
+  particleActive: boolean;
+  gameStartTime: number | null;
+  showHint: boolean;
+  feedbackMessage: string | null;
+  feedbackType: 'info' | 'correct' | 'wrong' | 'streak' | 'hint';
+  showLearningTip: boolean;
+  
+  // Actions
+  startGame: (gameType: string) => void;
+  setProblem: (problem: Problem | null) => void;
+  submitAnswer: (isCorrect: boolean) => void;
+  endGame: () => void;
+  returnToMenu: () => void;
+  showLevelUpModal: () => void;
+  dismissLevelUpModal: () => void;
+  setShowAchievement: (achievement: AchievementData | null) => void;
+  setBgClass: (bgClass: string) => void;
+  setConfetti: (confetti: boolean) => void;
+  setEnhancedConfetti: (enhanced: boolean) => void;
+  setParticleActive: (active: boolean) => void;
+  setShowHint: (show: boolean) => void;
+  setFeedbackMessage: (message: string | null, type?: 'info' | 'correct' | 'wrong' | 'streak' | 'hint') => void;
+  setShowLearningTip: (show: boolean) => void;
+  updateAdaptiveDifficulty: (isCorrect: boolean, responseTime?: number) => void;
+  incrementStars: () => number;
+  decrementHearts: () => number;
+  setScore: (score: number) => void;
+  addScore: (points: number) => void;
+  resetSessionState: () => void;
+}
+
+const initialState = {
+  gameState: 'menu' as GameState,
+  gameType: null,
+  problem: null,
+  score: 0,
+  hearts: 3,
+  stars: 0,
+  currentStreak: 0,
+  adaptiveDifficulty: createAdaptiveDifficulty(),
+  showLevelUp: false,
+  showAchievement: null,
+  bgClass: 'bg-slate-50',
+  confetti: false,
+  enhancedConfetti: false,
+  particleActive: false,
+  gameStartTime: null,
+  showHint: false,
+  feedbackMessage: null,
+  feedbackType: 'info' as const,
+  showLearningTip: true,
+};
+
+export const usePlaySessionStore = create<PlaySessionStore>((set, get) => ({
+  ...initialState,
+  
+  // Actions
+  startGame: (gameType: string) => {
+    set({
+      gameType,
+      gameState: 'playing',
+      bgClass: 'bg-slate-50',
+      feedbackMessage: null,
+      stars: 0,
+      hearts: 3,
+      showHint: false,
+      showLearningTip: true,
+      currentStreak: 0,
+      gameStartTime: Date.now(),
+      adaptiveDifficulty: createAdaptiveDifficulty(),
+    });
+  },
+  
+  setProblem: (problem: Problem | null) => {
+    set({ problem });
+  },
+  
+  submitAnswer: (isCorrect: boolean) => {
+    const state = get();
+    const newStreak = isCorrect ? state.currentStreak + 1 : 0;
+    
+    set({ currentStreak: newStreak });
+  },
+  
+  endGame: () => {
+    set({ gameState: 'game_over' });
+  },
+  
+  returnToMenu: () => {
+    set({
+      gameState: 'menu',
+      gameType: null,
+      problem: null,
+      bgClass: 'bg-slate-50',
+      feedbackMessage: null,
+    });
+  },
+  
+  showLevelUpModal: () => {
+    set({ showLevelUp: true });
+  },
+  
+  dismissLevelUpModal: () => {
+    set({ 
+      showLevelUp: false,
+      confetti: false,
+      stars: 0,
+    });
+  },
+  
+  setShowAchievement: (achievement: AchievementData | null) => {
+    set({ showAchievement: achievement });
+  },
+  
+  setBgClass: (bgClass: string) => {
+    set({ bgClass });
+  },
+  
+  setConfetti: (confetti: boolean) => {
+    set({ confetti });
+  },
+  
+  setEnhancedConfetti: (enhanced: boolean) => {
+    set({ enhancedConfetti: enhanced });
+  },
+  
+  setParticleActive: (active: boolean) => {
+    set({ particleActive: active });
+  },
+  
+  setShowHint: (show: boolean) => {
+    set({ showHint: show });
+  },
+  
+  setFeedbackMessage: (message: string | null, type: 'info' | 'correct' | 'wrong' | 'streak' | 'hint' = 'info') => {
+    set({ feedbackMessage: message, feedbackType: type });
+  },
+  
+  setShowLearningTip: (show: boolean) => {
+    set({ showLearningTip: show });
+  },
+  
+  updateAdaptiveDifficulty: (isCorrect: boolean, responseTime?: number) => {
+    const state = get();
+    const updated = updateDifficulty(state.adaptiveDifficulty, isCorrect, responseTime || null);
+    set({ adaptiveDifficulty: updated });
+  },
+  
+  incrementStars: () => {
+    const currentStars = get().stars;
+    const newStars = currentStars + 1;
+    set({ stars: newStars });
+    return newStars;
+  },
+  
+  decrementHearts: () => {
+    const currentHearts = get().hearts;
+    const newHearts = currentHearts - 1;
+    set({ hearts: newHearts });
+    return newHearts;
+  },
+  
+  setScore: (score: number) => {
+    set({ score });
+  },
+  
+  addScore: (points: number) => {
+    set((state) => ({ score: state.score + points }));
+  },
+  
+  resetSessionState: () => {
+    set(initialState);
+  },
+}));
