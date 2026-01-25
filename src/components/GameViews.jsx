@@ -1188,14 +1188,14 @@ export const RoboPathView = ({ problem, onAnswer, soundEnabled }) => {
 };
 
 export const Confetti = () => {
-  // Generate stable random positions for confetti using index-based seed
-  const confettiItems = [...Array(30)].map((_, i) => {
+  // Generate stable random positions for confetti using index-based seed (memoized to prevent recalculation)
+  const confettiItems = useMemo(() => [...Array(30)].map((_, i) => {
     const seed = i * 12345;
     const left = ((seed * 9301 + 49297) % 233280) / 2332.8;
     const duration = 2 + ((seed * 48271) % 100) / 50;
     const delay = ((seed * 1103515245 + 12345) % 100) / 100;
     return { left, duration, delay };
-  });
+  }), []);
   
   return (
     <div className="fixed inset-0 pointer-events-none z-[50] overflow-hidden">
