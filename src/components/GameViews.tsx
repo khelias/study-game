@@ -1188,7 +1188,7 @@ export const RoboPathView: React.FC<RoboPathViewProps> = ({ problem, onAnswer, s
 
   const renderCell = (x: number, y: number): React.ReactNode => {
      const isRobot = robotPos[0] === x && robotPos[1] === y;
-     const isEnd = problem.end[0] === x && problem.end[1] === y;
+     const isEnd = (problem.end?.[0] ?? problem.goal?.[0]) === x && (problem.end?.[1] ?? problem.goal?.[1]) === y;
      const isRock = problem.obstacles.some(o => o[0] === x && o[1] === y);
      
      return (
@@ -1418,13 +1418,13 @@ interface UnitConversionViewProps {
 }
 
 export const UnitConversionView: React.FC<UnitConversionViewProps> = ({ problem, onAnswer, soundEnabled }) => {
-  const [disabled, setDisabled] = useState([]);
+  const [disabled, setDisabled] = useState<number[]>([]);
   
   useEffect(() => { 
     setTimeout(() => setDisabled([]), 0);
   }, [problem.uid]);
 
-  const handleChoice = (opt) => {
+  const handleChoice = (opt: number): void => {
     playSound('click', soundEnabled);
     const isCorrect = opt === problem.answer;
     
