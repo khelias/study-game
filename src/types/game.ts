@@ -109,6 +109,7 @@ export interface WordBuilderProblem extends BaseProblem {
   target: string;
   emoji: string;
   shuffled: LetterObject[];
+  preFilledPositions?: number[]; // Indices of pre-filled positions for longer words
 }
 
 // Pattern problem

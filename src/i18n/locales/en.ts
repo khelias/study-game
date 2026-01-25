@@ -234,6 +234,11 @@ export const en = {
         INSIDE: 'inside',
       },
     },
+    wordBuilder: {
+      preFilled: 'Hint: some letters are already in place!',
+      useAllLetters: 'Use all correct letters',
+      watchCase: 'Watch upper and lower case!',
+    },
     hints: {
       wordBuilder: 'Hint: The word starts with letter',
       syllableBuilder: 'Hint: The word starts with syllable',

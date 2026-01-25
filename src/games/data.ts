@@ -195,6 +195,50 @@ export const WORD_DB: Record<number, WordObject[]> = BASE_WORDS.reduce<Record<nu
   return acc;
 }, {});
 
+// English word database for word builder game
+const BASE_WORDS_EN: WordObject[] = [
+  // 3-letter words - animals, nature, food
+  { w: 'CAT', e: '🐱' }, { w: 'DOG', e: '🐶' }, { w: 'BAT', e: '🦇' }, { w: 'BEE', e: '🐝' },
+  { w: 'FOX', e: '🦊' }, { w: 'PIG', e: '🐷' }, { w: 'COW', e: '🐄' }, { w: 'OWL', e: '🦉' },
+  { w: 'ANT', e: '🐜' }, { w: 'SUN', e: '☀️' }, { w: 'SKY', e: '🌤️' }, { w: 'SEA', e: '🌊' },
+  { w: 'ICE', e: '🧊' }, { w: 'EGG', e: '🥚' }, { w: 'PIE', e: '🥧' }, { w: 'TEA', e: '☕' },
+  
+  // 4-letter words - animals, nature, food, objects
+  { w: 'BIRD', e: '🐦' }, { w: 'FISH', e: '🐟' }, { w: 'LION', e: '🦁' }, { w: 'BEAR', e: '🐻' },
+  { w: 'FROG', e: '🐸' }, { w: 'DUCK', e: '🦆' }, { w: 'CRAB', e: '🦀' }, { w: 'DEER', e: '🦌' },
+  { w: 'GOAT', e: '🐐' }, { w: 'TREE', e: '🌳' }, { w: 'LEAF', e: '🍃' }, { w: 'ROSE', e: '🌹' },
+  { w: 'SNOW', e: '❄️' }, { w: 'RAIN', e: '🌧️' }, { w: 'MOON', e: '🌙' }, { w: 'STAR', e: '⭐' },
+  { w: 'CAKE', e: '🍰' }, { w: 'MILK', e: '🥛' }, { w: 'PEAR', e: '🍐' }, { w: 'CORN', e: '🌽' },
+  { w: 'BALL', e: '⚽' }, { w: 'BOOK', e: '📖' }, { w: 'LAMP', e: '💡' }, { w: 'DOOR', e: '🚪' },
+  
+  // 5-letter words - animals, nature, food, objects
+  { w: 'APPLE', e: '🍎' }, { w: 'BREAD', e: '🍞' }, { w: 'PIZZA', e: '🍕' }, { w: 'LEMON', e: '🍋' },
+  { w: 'GRAPE', e: '🍇' }, { w: 'PEACH', e: '🍑' }, { w: 'WATER', e: '💧' }, { w: 'HONEY', e: '🍯' },
+  { w: 'HORSE', e: '🐴' }, { w: 'MOUSE', e: '🐭' }, { w: 'WHALE', e: '🐋' }, { w: 'SHARK', e: '🦈' },
+  { w: 'SNAKE', e: '🐍' }, { w: 'SHEEP', e: '🐑' }, { w: 'TIGER', e: '🐯' }, { w: 'ZEBRA', e: '🦓' },
+  { w: 'CLOUD', e: '☁️' }, { w: 'OCEAN', e: '🌊' }, { w: 'RIVER', e: '🏞️' }, { w: 'PLANT', e: '🌱' },
+  { w: 'CHAIR', e: '🪑' }, { w: 'TABLE', e: '🪑' }, { w: 'HOUSE', e: '🏡' }, { w: 'CLOCK', e: '🕐' },
+  
+  // 6-letter words
+  { w: 'BANANA', e: '🍌' }, { w: 'ORANGE', e: '🍊' }, { w: 'CARROT', e: '🥕' }, { w: 'POTATO', e: '🥔' },
+  { w: 'BURGER', e: '🍔' }, { w: 'COOKIE', e: '🍪' }, { w: 'CHEESE', e: '🧀' }, { w: 'BUTTER', e: '🧈' },
+  { w: 'RABBIT', e: '🐰' }, { w: 'TURTLE', e: '🐢' }, { w: 'MONKEY', e: '🐵' }, { w: 'PIGEON', e: '🕊️' },
+  { w: 'SPIDER', e: '🕷️' }, { w: 'DRAGON', e: '🐉' }, { w: 'FLOWER', e: '🌸' }, { w: 'GARDEN', e: '🌻' },
+  { w: 'WINTER', e: '❄️' }, { w: 'SUMMER', e: '☀️' }, { w: 'SPRING', e: '🌱' }, { w: 'PENCIL', e: '✏️' },
+  
+  // 7-letter words
+  { w: 'CHICKEN', e: '🐔' }, { w: 'DOLPHIN', e: '🐬' }, { w: 'GIRAFFE', e: '🦒' }, { w: 'PENGUIN', e: '🐧' },
+  { w: 'OCTOPUS', e: '🐙' }, { w: 'RAINBOW', e: '🌈' }, { w: 'COCONUT', e: '🥥' }, { w: 'CABBAGE', e: '🥬' },
+  { w: 'BROCCOLI', e: '🥦' }, { w: 'PUMPKIN', e: '🎃' }, { w: 'AVOCADO', e: '🥑' }, { w: 'PRETZEL', e: '🥨' }
+];
+
+export const WORD_DB_EN: Record<number, WordObject[]> = BASE_WORDS_EN.reduce<Record<number, WordObject[]>>((acc, item) => {
+  const len = item.w.length;
+  if (!acc[len]) acc[len] = [];
+  acc[len].push(item);
+  return acc;
+}, {});
+
 export const SCENE_DB: Record<string, Scene> = {
   forest: { 
     bg: 'bg-gradient-to-b from-green-200 to-green-300', 
