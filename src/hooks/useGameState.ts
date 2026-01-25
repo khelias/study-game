@@ -1,16 +1,31 @@
-// Custom hook mängu state'i haldamiseks - parem state management
-import { useState, useCallback, useRef } from 'react';
+/**
+ * Custom hooks for game state management
+ */
+import { useState, useCallback, useRef, useEffect } from 'react';
+import type { GameSession } from '../types/stats';
 
-export const useGameState = (initialState = {}) => {
-  const [state, setState] = useState(initialState);
-  const stateRef = useRef(state);
-  stateRef.current = state;
+type StateUpdater<T> = Partial<T> | ((prev: T) => T);
+
+/**
+ * Custom hook for managing game state with synchronous access
+ * @param initialState - Initial state object
+ * @returns Tuple of [state, updateState, getState]
+ */
+export const useGameState = <T extends Record<string, unknown>>(
+  initialState: T = {} as T
+): [T, (updater: StateUpdater<T>) => void, () => T] => {
+  const [state, setState] = useState<T>(initialState);
+  const stateRef = useRef<T>(state);
+  
+  // Update ref when state changes
+  useEffect(() => {
+    stateRef.current = state;
+  }, [state]);
 
   // Thread-safe state update
-  const updateState = useCallback((updater) => {
+  const updateState = useCallback((updater: StateUpdater<T>) => {
     setState(prev => {
       const next = typeof updater === 'function' ? updater(prev) : { ...prev, ...updater };
-      stateRef.current = next;
       return next;
     });
   }, []);
@@ -21,9 +36,17 @@ export const useGameState = (initialState = {}) => {
   return [state, updateState, getState];
 };
 
-// Hook mängu sessiooni haldamiseks
-export const useGameSession = () => {
-  const [session, setSession] = useState({
+/**
+ * Hook for managing game session state
+ * @returns Object with session state and control functions
+ */
+export const useGameSession = (): {
+  session: GameSession;
+  startSession: (gameType: string) => void;
+  recordAnswer: (isCorrect: boolean) => void;
+  endSession: () => GameSession & { duration: number };
+} => {
+  const [session, setSession] = useState<GameSession>({
     startTime: null,
     gameType: null,
     problemsSolved: 0,
@@ -33,7 +56,7 @@ export const useGameSession = () => {
     maxStreak: 0,
   });
 
-  const startSession = useCallback((gameType) => {
+  const startSession = useCallback((gameType: string) => {
     setSession({
       startTime: Date.now(),
       gameType,
@@ -45,7 +68,7 @@ export const useGameSession = () => {
     });
   }, []);
 
-  const recordAnswer = useCallback((isCorrect) => {
+  const recordAnswer = useCallback((isCorrect: boolean) => {
     setSession(prev => {
       const newStreak = isCorrect ? prev.currentStreak + 1 : 0;
       return {

@@ -1,8 +1,14 @@
-let audioContext = null;
+type SoundType = 'correct' | 'wrong' | 'click' | 'win';
 
-const getAudioContext = () => {
+let audioContext: AudioContext | null = null;
+
+/**
+ * Gets or creates the global AudioContext
+ * @returns AudioContext instance or null if not supported
+ */
+const getAudioContext = (): AudioContext | null => {
   if (!audioContext) {
-    const AudioCtor = window.AudioContext || window.webkitAudioContext;
+    const AudioCtor = window.AudioContext || (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
     if (AudioCtor) {
       audioContext = new AudioCtor();
     }
@@ -10,7 +16,12 @@ const getAudioContext = () => {
   return audioContext;
 };
 
-export const playSound = (type, active = true) => {
+/**
+ * Plays a sound effect
+ * @param type - Type of sound to play
+ * @param active - Whether sound is enabled
+ */
+export const playSound = (type: SoundType, active = true): void => {
   if (!active) return;
   try {
     const ctx = getAudioContext();
