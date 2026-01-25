@@ -1,5 +1,5 @@
 import React from 'react';
-import { X, Trophy, Target, Clock, TrendingUp } from 'lucide-react';
+import { X } from 'lucide-react';
 import { GAME_CONFIG } from '../../games/data';
 import { StatsDashboard, GameTypeStats } from '../../components/StatsDashboard';
 import { FocusTrap } from '../../components/AccessibilityHelpers';

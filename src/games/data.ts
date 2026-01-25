@@ -46,24 +46,24 @@ export const CATEGORIES: Record<string, Category> = {
 
 export const GAME_CONFIG: Record<string, GameConfig> = {
   // 5+ mängud - lihtsamad, visuaalsed (7 mängu - lisatud letter_match)
-  word_builder:    { id: 'word_builder', title: 'SÕNAMEISTER', theme: THEME.orange, icon: 'Type', desc: 'Lao tähtedest sõna kokku', allowedProfiles: ['starter'], difficulty: 'easy', category: 'language' },
-  syllable_builder:{ id: 'syllable_builder', title: 'SILBIMEISTER', theme: THEME.orange, icon: 'Type', desc: 'Pane silbid sõnaks kokku', allowedProfiles: ['starter'], difficulty: 'easy', category: 'language' },
-  pattern:         { id: 'pattern', title: 'MUSTRI-RONG', theme: THEME.teal, icon: 'TrainFront', desc: 'Jätka mustrit', allowedProfiles: ['starter'], difficulty: 'easy', category: 'logic' },
-  sentence_logic:  { id: 'sentence_logic', title: 'LAUSE-DETEKTIIV', theme: THEME.green, icon: 'BookOpen', desc: 'Kus asub ese?', allowedProfiles: ['starter'], difficulty: 'medium', category: 'language' },
-  memory_math:     { id: 'memory_math', title: 'MATEMAATIKA MÄLU', theme: THEME.purple, icon: 'Brain', desc: 'Leia tehe ja vastus', allowedProfiles: ['starter'], difficulty: 'medium', category: 'math' },
-  robo_path:       { id: 'robo_path', title: 'ROBO-RADA', theme: THEME.indigo, icon: 'Bot', desc: 'Programmeerirobot', allowedProfiles: ['starter'], difficulty: 'medium', category: 'logic' },
-  letter_match:    { id: 'letter_match', title: 'TÄHE-DETEKTIIV', theme: THEME.pink, icon: 'Type', desc: 'Leia õige täht', allowedProfiles: ['starter'], difficulty: 'easy', category: 'language' },
-  unit_conversion: { id: 'unit_conversion', title: 'MÕÕTÜHIKUD', theme: THEME.teal, icon: 'Ruler', desc: 'Muunda ühikuid', allowedProfiles: ['starter'], difficulty: 'medium', category: 'math' },
+  word_builder:    { id: 'word_builder', title: 'SÕNAMEISTER', theme: THEME.orange!, icon: 'Type', desc: 'Lao tähtedest sõna kokku', allowedProfiles: ['starter'], difficulty: 'easy', category: 'language' },
+  syllable_builder:{ id: 'syllable_builder', title: 'SILBIMEISTER', theme: THEME.orange!, icon: 'Type', desc: 'Pane silbid sõnaks kokku', allowedProfiles: ['starter'], difficulty: 'easy', category: 'language' },
+  pattern:         { id: 'pattern', title: 'MUSTRI-RONG', theme: THEME.teal!, icon: 'TrainFront', desc: 'Jätka mustrit', allowedProfiles: ['starter'], difficulty: 'easy', category: 'logic' },
+  sentence_logic:  { id: 'sentence_logic', title: 'LAUSE-DETEKTIIV', theme: THEME.green!, icon: 'BookOpen', desc: 'Kus asub ese?', allowedProfiles: ['starter'], difficulty: 'medium', category: 'language' },
+  memory_math:     { id: 'memory_math', title: 'MATEMAATIKA MÄLU', theme: THEME.purple!, icon: 'Brain', desc: 'Leia tehe ja vastus', allowedProfiles: ['starter'], difficulty: 'medium', category: 'math' },
+  robo_path:       { id: 'robo_path', title: 'ROBO-RADA', theme: THEME.indigo!, icon: 'Bot', desc: 'Programmeerirobot', allowedProfiles: ['starter'], difficulty: 'medium', category: 'logic' },
+  letter_match:    { id: 'letter_match', title: 'TÄHE-DETEKTIIV', theme: THEME.pink!, icon: 'Type', desc: 'Leia õige täht', allowedProfiles: ['starter'], difficulty: 'easy', category: 'language' },
+  unit_conversion: { id: 'unit_conversion', title: 'MÕÕTÜHIKUD', theme: THEME.teal!, icon: 'Ruler', desc: 'Muunda ühikuid', allowedProfiles: ['starter'], difficulty: 'medium', category: 'math' },
   
   // 8+ mängud - raskemad, loogilised (7 mängu - lisatud letter_match_adv)
-  balance_scale:   { id: 'balance_scale', title: 'KAALUD', theme: THEME.blue, icon: 'Scale', desc: 'Tasakaalusta kaalud', allowedProfiles: ['advanced'], difficulty: 'hard', category: 'math' },
-  time_match:      { id: 'time_match', title: 'KELLAMÄNG', theme: THEME.blue, icon: 'Clock3', desc: 'Määra kellaaeg', allowedProfiles: ['advanced'], difficulty: 'hard', category: 'math' },
-  memory_math_adv: { id: 'memory_math', title: 'MATEMAATIKA MÄLU', theme: THEME.purple, icon: 'Brain', desc: 'Leia tehe ja vastus', allowedProfiles: ['advanced'], difficulty: 'hard', category: 'math' },
-  robo_path_adv:   { id: 'robo_path', title: 'ROBO-RADA', theme: THEME.indigo, icon: 'Bot', desc: 'Programmeerirobot', allowedProfiles: ['advanced'], difficulty: 'hard', category: 'logic' },
-  sentence_logic_adv: { id: 'sentence_logic', title: 'LAUSE-DETEKTIIV', theme: THEME.green, icon: 'BookOpen', desc: 'Kus asub ese?', allowedProfiles: ['advanced'], difficulty: 'hard', category: 'language' },
-  pattern_adv:      { id: 'pattern', title: 'MUSTRI-RONG', theme: THEME.teal, icon: 'TrainFront', desc: 'Jätka mustrit', allowedProfiles: ['advanced'], difficulty: 'hard', category: 'logic' },
-  letter_match_adv: { id: 'letter_match', title: 'TÄHE-DETEKTIIV', theme: THEME.pink, icon: 'Type', desc: 'Leia õige täht', allowedProfiles: ['advanced'], difficulty: 'medium', category: 'language' },
-  unit_conversion_adv: { id: 'unit_conversion', title: 'MÕÕTÜHIKUD', theme: THEME.teal, icon: 'Ruler', desc: 'Muunda ühikuid', allowedProfiles: ['advanced'], difficulty: 'hard', category: 'math' },
+  balance_scale:   { id: 'balance_scale', title: 'KAALUD', theme: THEME.blue!, icon: 'Scale', desc: 'Tasakaalusta kaalud', allowedProfiles: ['advanced'], difficulty: 'hard', category: 'math' },
+  time_match:      { id: 'time_match', title: 'KELLAMÄNG', theme: THEME.blue!, icon: 'Clock3', desc: 'Määra kellaaeg', allowedProfiles: ['advanced'], difficulty: 'hard', category: 'math' },
+  memory_math_adv: { id: 'memory_math', title: 'MATEMAATIKA MÄLU', theme: THEME.purple!, icon: 'Brain', desc: 'Leia tehe ja vastus', allowedProfiles: ['advanced'], difficulty: 'hard', category: 'math' },
+  robo_path_adv:   { id: 'robo_path', title: 'ROBO-RADA', theme: THEME.indigo!, icon: 'Bot', desc: 'Programmeerirobot', allowedProfiles: ['advanced'], difficulty: 'hard', category: 'logic' },
+  sentence_logic_adv: { id: 'sentence_logic', title: 'LAUSE-DETEKTIIV', theme: THEME.green!, icon: 'BookOpen', desc: 'Kus asub ese?', allowedProfiles: ['advanced'], difficulty: 'hard', category: 'language' },
+  pattern_adv:      { id: 'pattern', title: 'MUSTRI-RONG', theme: THEME.teal!, icon: 'TrainFront', desc: 'Jätka mustrit', allowedProfiles: ['advanced'], difficulty: 'hard', category: 'logic' },
+  letter_match_adv: { id: 'letter_match', title: 'TÄHE-DETEKTIIV', theme: THEME.pink!, icon: 'Type', desc: 'Leia õige täht', allowedProfiles: ['advanced'], difficulty: 'medium', category: 'language' },
+  unit_conversion_adv: { id: 'unit_conversion', title: 'MÕÕTÜHIKUD', theme: THEME.teal!, icon: 'Ruler', desc: 'Muunda ühikuid', allowedProfiles: ['advanced'], difficulty: 'hard', category: 'math' },
 };
 
 // Profiilid on laiendatavad raskuse nihkega

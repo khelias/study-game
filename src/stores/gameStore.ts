@@ -4,6 +4,7 @@ import { APP_KEY, PROFILES, GAME_CONFIG } from '../games/data';
 import { createStats, recordGameStart, recordAnswer as recordStatsAnswer, recordLevelUp as recordStatsLevelUp, recordScore } from '../engine/stats';
 import { checkAchievements } from '../engine/achievements';
 import { getTranslations } from '../i18n';
+import type { ProfileType } from '../types/game';
 
 interface AchievementData {
   id: string;
@@ -12,16 +13,12 @@ interface AchievementData {
   icon: string;
 }
 
-interface ProfileData {
-  levelStart?: number;
-  [key: string]: unknown;
-}
 
 // Build default levels for all profiles and game types
 const buildDefaultLevels = () => {
   const base: Record<string, Record<string, number>> = {};
-  Object.keys(PROFILES).forEach(pid => {
-    const profile = PROFILES[pid] as ProfileData;
+  (Object.keys(PROFILES) as ProfileType[]).forEach(pid => {
+    const profile = PROFILES[pid];
     const start = profile.levelStart || 1;
     base[pid] = Object.keys(GAME_CONFIG).reduce((acc, g) => ({ ...acc, [g]: start }), {} as Record<string, number>);
   });
@@ -58,7 +55,7 @@ export const useGameStore = create<GameStore>()(
   persist(
     (set, get) => ({
       // Initial state
-      profile: Object.keys(PROFILES)[0],
+      profile: (Object.keys(PROFILES)[0] as ProfileType) ?? 'starter',
       levels: buildDefaultLevels(),
       stats: createStats(),
       unlockedAchievements: [],
@@ -69,8 +66,8 @@ export const useGameStore = create<GameStore>()(
       
       // Actions
       setProfile: (profile: string) => {
-        if (PROFILES[profile]) {
-          set({ profile });
+        if (profile in PROFILES) {
+          set({ profile: profile as ProfileType });
         }
       },
       
@@ -253,7 +250,7 @@ export const useGameStore = create<GameStore>()(
         if (persistedState && typeof persistedState === 'object') {
           const stateObj = persistedState as Record<string, unknown>;
           const defaults = {
-            profile: Object.keys(PROFILES)[0],
+            profile: (Object.keys(PROFILES)[0] as ProfileType) ?? 'starter',
             levels: buildDefaultLevels(),
             stats: createStats(),
             unlockedAchievements: [],

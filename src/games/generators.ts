@@ -13,7 +13,9 @@ import type {
   SyllableBuilderProblem,
   LetterMatchProblem,
   UnitConversionProblem,
-  GeneratorFunction
+  GeneratorFunction,
+  SceneAnchor,
+  SceneSubject
 } from '../types/game';
 
 const profileMeta = (profileId: ProfileType) => PROFILES[profileId] || PROFILES.starter;
@@ -201,8 +203,8 @@ export const Generators: Record<string, GeneratorFunction> = {
       const id = pairs.length; 
       const matchId = `pair-${id}`;
       pairs.push({ eq, ans: sum });
-      cards.push({ id: `q-${id}`, content: eq, type: 'math', matchId });
-      cards.push({ id: `a-${id}`, content: `${sum}`, type: 'answer', matchId });
+      cards.push({ id: `q-${id}`, content: eq, type: 'math', matchId } as MemoryMathProblem['cards'][0]);
+      cards.push({ id: `a-${id}`, content: `${sum}`, type: 'answer', matchId } as MemoryMathProblem['cards'][0]);
     }
     return { type: 'memory_math', cards: cards.sort(() => rng() - 0.5), pairs, uid: uid(rng) };
   },
@@ -388,16 +390,18 @@ export const Generators: Record<string, GeneratorFunction> = {
     const sentence = `${subject.n} ON ${caseType === 'iness' ? anchor.iness : anchor.adess} ${correctPos}.`;
     
     // Map options to objects with text property for the SentenceLogicProblem
+    // Note: The actual rendering uses the full objects, but TypeScript expects simpler type
     const optionObjects = validatedOptions.map((opt, i) => ({
       text: opt.id === 'correct' ? 'correct' : `option-${i}`,
-      pos: opt.pos,
+      pos: opt.pos ?? undefined,
       answer: opt.id === 'correct',
+      // Store additional data for rendering (not in type, but used at runtime)
       a: opt.a,
       s: opt.s,
       bg: opt.bg,
       sceneName: opt.sceneName,
       id: opt.id
-    }));
+    })) as Array<string | { text: string; pos?: string; answer?: boolean; a?: SceneAnchor; s?: SceneSubject; bg?: string; sceneName?: string; id?: string }>;
     
     return { 
       type: 'sentence_logic', 
@@ -762,7 +766,7 @@ export const Generators: Record<string, GeneratorFunction> = {
       type: 'time_match',
       hours: hour24,
       minutes: minute,
-      display: `${(hour24 % 12 || 12).toString().padStart(2,'0')}:${minute.toString().padStart(2,'0')}`,
+      display: { hour: hour24 % 12 || 12, minute },
       answer: correct,
       options: Array.from(opts).sort(() => rng() - 0.5),
       uid: uid(rng)

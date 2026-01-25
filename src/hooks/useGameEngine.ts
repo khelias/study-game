@@ -2,7 +2,7 @@ import { useState, useCallback } from 'react';
 import { Generators } from '../games/generators';
 import { getEffectiveLevel } from '../engine/adaptiveDifficulty';
 import { createRng } from '../engine/rng';
-import type { Problem } from '../types/game';
+import type { Problem, ProfileType } from '../types/game';
 
 interface AdaptiveDifficulty {
   recentAccuracy: boolean[];
@@ -26,7 +26,10 @@ const makeKey = (prob: Problem | null): string => {
     case 'robo_path': return `robo:${prob.grid.length}:${prob.goal[0]},${prob.goal[1]}:${prob.obstacles.map((o) => `${o[0]},${o[1]}`).join(';')}`;
     case 'time_match': return `time:${prob.answer}`;
     case 'unit_conversion': return `unit:${prob.value}${prob.fromUnit}=${prob.answer}${prob.toUnit}`;
-    default: return `${prob.type}:${prob.uid}`;
+    default: {
+      // TypeScript narrowing - this should never happen but satisfies type checker
+      return `${String((prob as Problem).type)}:${(prob as Problem).uid}`;
+    }
   }
 };
 
@@ -35,7 +38,7 @@ export function useGameEngine() {
     const params = new URLSearchParams(window.location.search);
     const seedParam = params.get('seed');
     const parsed = seedParam ? parseInt(seedParam, 10) : null;
-    return createRng(Number.isFinite(parsed) ? parsed : Date.now());
+    return createRng(Number.isFinite(parsed) && parsed !== null ? parsed : Date.now());
   });
   
   const [lastKeys, setLastKeys] = useState<Record<string, string[]>>({});
@@ -46,9 +49,15 @@ export function useGameEngine() {
     let prob: Problem;
     let key: string;
     
+    const generator = Generators[type];
+    if (!generator) {
+      console.error(`Generator not found for type: ${type}`);
+      return null;
+    }
+    
     // Try up to 15 times to generate a unique problem
     do {
-      prob = Generators[type](level, rng, profile);
+      prob = generator(level, rng, profile as ProfileType);
       key = makeKey(prob);
       attempt++;
     } while (attempt < 15 && buffer.includes(key));
@@ -82,18 +91,26 @@ export function useGameEngine() {
     // This is a placeholder for any additional validation logic
     switch(problem.type) {
       case 'word_builder':
+        return userAnswer === problem.target;
       case 'syllable_builder':
+        return userAnswer === problem.target;
       case 'letter_match':
+        return userAnswer === (problem.answer ?? problem.targetLetter);
       case 'sentence_logic':
       case 'pattern':
       case 'time_match':
         return userAnswer === problem.answer;
       case 'balance_scale':
-        return userAnswer === problem.answer;
       case 'unit_conversion':
         return userAnswer === problem.answer;
-      default:
+      case 'memory_math':
+      case 'robo_path':
+        // These don't have simple answer validation
         return false;
+      default: {
+        // TypeScript narrowing - this should never happen
+        return false;
+      }
     }
   }, []);
 

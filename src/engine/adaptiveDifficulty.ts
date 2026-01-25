@@ -96,7 +96,7 @@ export const getEffectiveLevel = (baseLevel: number, adaptive: AdaptiveDifficult
  * @returns Game difficulty parameters
  */
 export const getDifficultyForGame = (
-  gameType: string,
+  _gameType: string,
   baseLevel: number,
   adaptive: AdaptiveDifficulty,
   _profile: ProfileType

@@ -62,6 +62,7 @@ export const FeedbackMessage: React.FC<FeedbackMessageProps> = ({
       }, 0);
       return () => clearTimeout(timer);
     }
+    return undefined;
   }, [message, type, duration, onComplete, soundEnabled]);
 
   if (!visible || !message) return null;

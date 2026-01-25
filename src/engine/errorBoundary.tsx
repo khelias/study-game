@@ -1,5 +1,5 @@
 // Error boundary komponent React'i jaoks
-import React, { Component, ErrorInfo, ReactNode } from 'react';
+import { Component, ErrorInfo, ReactNode } from 'react';
 import { getTranslations } from '../i18n';
 
 interface ErrorBoundaryProps {

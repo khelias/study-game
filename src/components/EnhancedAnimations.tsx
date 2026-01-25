@@ -196,6 +196,7 @@ export const EnhancedConfetti: React.FC<EnhancedConfettiProps> = ({ active, onCo
       
       return () => clearTimeout(timer);
     }
+    return undefined;
   }, [active, onComplete]);
   
   if (!active || particles.length === 0) return null;

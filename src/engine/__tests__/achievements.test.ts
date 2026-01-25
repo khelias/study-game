@@ -39,7 +39,7 @@ describe('checkAchievements', () => {
     const newUnlocks = checkAchievements(stats, unlocked);
     
     expect(newUnlocks).toHaveLength(1);
-    expect(newUnlocks[0].id).toBe('first_game');
+    expect(newUnlocks[0]?.id).toBe('first_game');
   });
 
   it('should not return already unlocked achievements', () => {

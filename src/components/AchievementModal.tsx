@@ -26,6 +26,7 @@ export const AchievementModal: React.FC<AchievementModalProps> = ({
         if (timerRef.current) clearTimeout(timerRef.current);
       };
     }
+    return undefined;
   }, [achievement, onClose, soundEnabled]);
 
   if (!achievement) return null;

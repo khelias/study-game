@@ -24,7 +24,7 @@ export type Translations = typeof et;
 
 const translations: Record<SupportedLocale, Translations> = {
   et,
-  en,
+  en: en as unknown as Translations,
 };
 
 // Default locale

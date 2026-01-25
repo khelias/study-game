@@ -13,7 +13,6 @@ import { EnhancedConfetti, PulseEffect } from '../../components/EnhancedAnimatio
 import { ParticleEffect } from '../../components/ParticleEffect';
 import { ProgressIndicator } from '../../components/FeedbackSystem';
 import { LearningTip } from '../../components/LearningTips';
-import type { BalanceScaleProblem } from '../../types/game';
 
 // Type-safe wrapper for getRandomEncouragement
 const getRandomEncouragement = (type: string, streak?: number): string => 
@@ -96,7 +95,7 @@ export const GameScreen: React.FC = () => {
     const { newAchievements } = recordAnswer(isCorrect, points);
     
     if (newAchievements.length > 0) {
-      setShowAchievement(newAchievements[0]);
+      setShowAchievement(newAchievements[0] ?? null);
     }
     
     if (isCorrect) {
@@ -111,7 +110,7 @@ export const GameScreen: React.FC = () => {
       
       const { newAchievements: starAchievements } = addCollectedStars(1);
       if (starAchievements.length > 0) {
-        setShowAchievement(starAchievements[0]);
+        setShowAchievement(starAchievements[0] ?? null);
       }
       
       setShowHint(false);
@@ -194,7 +193,7 @@ export const GameScreen: React.FC = () => {
     const { newAchievements } = recordLevelUp(gameType, newLevel);
     
     if (newAchievements.length > 0) {
-      setShowAchievement(newAchievements[0]);
+      setShowAchievement(newAchievements[0] ?? null);
     }
     
     setTimeout(() => {
@@ -212,16 +211,20 @@ export const GameScreen: React.FC = () => {
     let hintText = '';
     switch(problem.type) {
       case 'word_builder':
-        hintText = problem.type === 'word_builder' && problem.target ? `Vihje: Sõna algab tähega "${problem.target[0]}"` : '';
+        if (problem.type === 'word_builder') {
+          hintText = problem.target ? `Vihje: Sõna algab tähega "${problem.target[0] ?? ''}"` : '';
+        }
         break;
       case 'syllable_builder':
-        hintText = problem.type === 'syllable_builder' && problem.shuffled?.[0] ? `Vihje: Sõna algab silbiga "${problem.shuffled[0]}"` : '';
+        if (problem.type === 'syllable_builder') {
+          const firstSyllable = problem.shuffled?.[0];
+          hintText = firstSyllable ? `Vihje: Sõna algab silbiga "${firstSyllable.text ?? ''}"` : '';
+        }
         break;
       case 'balance_scale': {
         if (problem.type === 'balance_scale') {
-          const balanceProblem = problem as BalanceScaleProblem;
-          const leftSum = balanceProblem.display.left.reduce((a, b) => a + b, 0);
-          const rightKnown = balanceProblem.display.right.reduce((a, b) => a + b, 0);
+          const leftSum = problem.display.left.reduce((a, b) => a + b, 0);
+          const rightKnown = problem.display.right.reduce((a, b) => a + b, 0);
           hintText = `Vihje: Vasak pool on ${leftSum}, parem pool on ${rightKnown} + ?`;
         }
         break;
@@ -233,8 +236,10 @@ export const GameScreen: React.FC = () => {
         hintText = `Vihje: Pööra kaardid ümber ja leia paarid!`;
         break;
       case 'sentence_logic':
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
-        hintText = problem.type === 'sentence_logic' ? `Vihje: Vaata, kus asub ${problem.sentence.split(' ')[0]} stseenis!` : '';
+        if (problem.type === 'sentence_logic') {
+          const firstWord = problem.sentence.split(' ')[0];
+          hintText = `Vihje: Vaata, kus asub ${firstWord} stseenis!`;
+        }
         break;
       case 'robo_path':
         hintText = `Vihje: Robot peab jõudma rohelise aknaga lahtrisse!`;
@@ -243,7 +248,9 @@ export const GameScreen: React.FC = () => {
         hintText = `Vihje: Vaata kella osuteid!`;
         break;
       case 'unit_conversion':
-        hintText = problem.type === 'unit_conversion' ? (problem.question || 'Vihje: Arvuta ümber!') : '';
+        if (problem.type === 'unit_conversion') {
+          hintText = problem.question || 'Vihje: Arvuta ümber!';
+        }
         break;
       default:
         hintText = 'Proovi veel!';
@@ -271,7 +278,7 @@ export const GameScreen: React.FC = () => {
         <LevelUpModal 
           level={(levels[profile]?.[gameType] || 1) + 1} 
           onNext={handleNextLevel} 
-          gameConfig={GAME_CONFIG[gameType]} 
+          gameConfig={GAME_CONFIG[gameType] ?? GAME_CONFIG['word_builder']!} 
         />
       )}
       

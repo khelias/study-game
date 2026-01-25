@@ -97,7 +97,7 @@ describe('gameStore', () => {
       recordLevelUp('word_builder', 2);
       
       const state = useGameStore.getState();
-      expect(state.levels[state.profile]['word_builder']).toBe(2);
+      expect(state.levels[state.profile]?.['word_builder']).toBe(2);
       expect(state.stats.maxLevels['word_builder']).toBe(2);
     });
 

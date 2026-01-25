@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { 
-  Heart, Trophy, Trash2, Volume2, VolumeX, BarChart3,
+  Trophy, Trash2, Volume2, VolumeX, BarChart3,
   Type, Brain, Scale, BookOpen, GraduationCap, TrainFront, Bot, Clock3, Ruler, ChevronDown, ChevronUp
 } from 'lucide-react';
 import { useGameStore } from '../../stores/gameStore';
@@ -11,6 +11,9 @@ import { StatsModal } from '../modals/StatsModal';
 import { AchievementsModal } from '../modals/AchievementsModal';
 import { TutorialModal } from '../modals/TutorialModal';
 import { GAME_CONFIG, PROFILES, CATEGORIES } from '../../games/data';
+import { ACHIEVEMENTS } from '../../engine/achievements';
+import type { ProfileType } from '../../types/game';
+import type { AchievementUnlock } from '../../types/achievement';
 
 const ICON_MAP = { Type, Brain, Scale, BookOpen, GraduationCap, TrainFront, Bot, Clock3, Ruler };
 
@@ -46,7 +49,7 @@ export const MenuScreen: React.FC = () => {
     // Record game start and check for achievements
     const { newAchievements } = recordGameStart(gameType);
     if (newAchievements.length > 0) {
-      setShowAchievement(newAchievements[0]);
+      setShowAchievement(newAchievements[0] ?? null);
     }
     
     startGame(gameType);
@@ -122,7 +125,16 @@ export const MenuScreen: React.FC = () => {
       {showStats && (
         <StatsModal 
           stats={stats} 
-          unlockedAchievements={unlockedAchievements}
+          unlockedAchievements={unlockedAchievements.map(id => {
+            const achievement = ACHIEVEMENTS[id];
+            if (!achievement) return null;
+            return {
+              id: achievement.id,
+              title: achievement.title,
+              desc: achievement.desc,
+              icon: achievement.icon
+            };
+          }).filter((a): a is AchievementUnlock => a !== null)}
           onClose={() => setShowStats(false)} 
         />
       )}
@@ -137,7 +149,6 @@ export const MenuScreen: React.FC = () => {
       {showTutorial && (
         <TutorialModal 
           onClose={handleCloseTutorial}
-          soundEnabled={soundEnabled}
         />
       )}
       
@@ -226,7 +237,7 @@ export const MenuScreen: React.FC = () => {
         <div className="inline-flex items-center gap-1.5 sm:gap-2 bg-white/80 backdrop-blur-sm px-3 sm:px-4 py-1.5 sm:py-2 rounded-full border-2 border-purple-200 shadow-sm">
           <span className="text-xl sm:text-2xl">🎮</span>
           <span className="font-black text-xs sm:text-base text-slate-700">
-            {Object.entries(GAME_CONFIG).filter(([, conf]) => !conf.allowedProfiles || conf.allowedProfiles.includes(profile)).length} mängu
+            {Object.entries(GAME_CONFIG).filter(([, conf]) => !conf.allowedProfiles || conf.allowedProfiles.includes(profile as ProfileType)).length} mängu
           </span>
         </div>
       </div>
@@ -237,7 +248,7 @@ export const MenuScreen: React.FC = () => {
           const categoryGames = Object.entries(GAME_CONFIG)
             .filter(([, conf]) => 
               conf.category === category.id && 
-              (!conf.allowedProfiles || conf.allowedProfiles.includes(profile))
+              (!conf.allowedProfiles || conf.allowedProfiles.includes(profile as ProfileType))
             );
           
           if (categoryGames.length === 0) return null;
@@ -278,7 +289,7 @@ export const MenuScreen: React.FC = () => {
                     const Icon = ICON_MAP[conf.icon as keyof typeof ICON_MAP] || Type;
                     const gameStats = stats.gamesByType?.[key] || 0;
                     const isNew = gameStats === 0;
-                    const currentLevel = levels[profile][key];
+                    const currentLevel = levels[profile]?.[key] ?? 1;
                     return (
                       <GameCard
                         key={key}

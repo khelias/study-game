@@ -108,7 +108,7 @@ const SvgWeight: React.FC<SvgWeightProps> = ({ x, y, num, color }) => {
 
 interface BalanceScaleViewProps {
   problem: BalanceScaleProblem;
-  onAnswer: (answer: number) => void;
+  onAnswer: (isCorrect: boolean) => void;
   soundEnabled: boolean;
 }
 
@@ -222,8 +222,8 @@ export const BalanceScaleView: React.FC<BalanceScaleViewProps> = ({ problem, onA
                         <path d="M -45 90 Q 0 125 45 90 Z" fill="url(#bowlBlue)" stroke="#3b82f6" strokeWidth="3.5" filter="url(#shadow)" />
                         <path d="M -45 90 Q 0 120 45 90" fill="none" stroke="#60a5fa" strokeWidth="1.5" opacity="0.6" />
                         
-                        <SvgWeight x={-15} y={110} num={problem.display.left[0]} color="blue" />
-                        <SvgWeight x={15} y={110} num={problem.display.left[1]} color="blue" />
+                        <SvgWeight x={-15} y={110} num={problem.display.left[0] ?? 0} color="blue" />
+                        <SvgWeight x={15} y={110} num={problem.display.left[1] ?? 0} color="blue" />
                     </g>
                 </g>
                 <g transform="translate(280, 60)">
@@ -245,7 +245,7 @@ export const BalanceScaleView: React.FC<BalanceScaleViewProps> = ({ problem, onA
                         <path d="M -45 90 Q 0 125 45 90 Z" fill="url(#bowlRed)" stroke="#ef4444" strokeWidth="3.5" filter="url(#shadow)" />
                         <path d="M -45 90 Q 0 120 45 90" fill="none" stroke="#f87171" strokeWidth="1.5" opacity="0.6" />
                         
-                        <SvgWeight x={-15} y={110} num={problem.display.right[0]} color="red" />
+                        <SvgWeight x={-15} y={110} num={problem.display.right[0] ?? 0} color="red" />
                         
                         {/* Täiustatud küsimärgi kaal */}
                         <g transform="translate(15, 110)">
@@ -433,8 +433,8 @@ export const StandardGameView: React.FC<StandardGameViewProps> = ({ problem, onA
                     alignItems: 'center',
                     justifyContent: 'center',
                     // Tagame, et anchor on alati nähtav
-                    opacity: '1 !important',
-                    visibility: 'visible !important'
+                    opacity: 1,
+                    visibility: 'visible' as const
                   }}
                   title={opt.a?.n || 'Kohapealne objekt'}
                 >
@@ -466,27 +466,28 @@ export const StandardGameView: React.FC<StandardGameViewProps> = ({ problem, onA
             </div>
         );
     }
-    return opt;
+    // For non-sentence_logic types, return the option as-is (string or ReactNode)
+    return typeof opt === 'string' ? opt : String(opt.text ?? '');
   };
 
   return (
     <div className="w-full mt-2 sm:mt-4 flex flex-col items-center animate-in fade-in zoom-in duration-300 px-2">
       <div className="mb-4 sm:mb-6 p-3 sm:p-6 bg-white rounded-2xl sm:rounded-3xl border-b-6 sm:border-b-8 border-green-200 shadow-sm text-center w-full">
-         {problem.type === 'letter_match' 
-            ? <div className="flex justify-center items-center gap-2 sm:gap-4 text-4xl sm:text-6xl font-black text-pink-500">{problem.display} <ArrowRight size={32} className="sm:w-12 sm:h-12 text-slate-300"/> ?</div>
-            : problem.type === 'sentence_logic' ? (
-              <div>
-                <div className="text-xs sm:text-sm font-bold text-slate-500 mb-1 sm:mb-2 uppercase tracking-wider">
-                  {problem.sceneName || 'Stseen'}
-                </div>
-                <h2 className="text-base sm:text-xl font-black text-green-700 uppercase leading-snug tracking-wide px-2">
-                  {problem.display}
-                </h2>
-                <div className="text-[10px] sm:text-xs text-slate-400 mt-1 sm:mt-2">Vali õige pilt</div>
+         {problem.type === 'letter_match' ? (
+            <div className="flex justify-center items-center gap-2 sm:gap-4 text-4xl sm:text-6xl font-black text-pink-500">
+              {problem.display ?? ''} <ArrowRight size={32} className="sm:w-12 sm:h-12 text-slate-300"/> ?
+            </div>
+          ) : problem.type === 'sentence_logic' ? (
+            <div>
+              <div className="text-xs sm:text-sm font-bold text-slate-500 mb-1 sm:mb-2 uppercase tracking-wider">
+                {problem.sceneName || 'Stseen'}
               </div>
-            ) : (
-              <h2 className="text-base sm:text-xl font-black text-green-700 uppercase leading-snug tracking-wide px-2">{problem.display}</h2>
-            )
+              <h2 className="text-base sm:text-xl font-black text-green-700 uppercase leading-snug tracking-wide px-2">
+                {problem.display ?? ''}
+              </h2>
+              <div className="text-[10px] sm:text-xs text-slate-400 mt-1 sm:mt-2">Vali õige pilt</div>
+            </div>
+          ) : null
          }
       </div>
       <div className={`grid ${problem.type === 'sentence_logic' 
@@ -630,7 +631,7 @@ export const SyllableGameView: React.FC<SyllableGameViewProps> = ({ problem, onA
     setCurrent(next);
     setPool(pool.filter(p => p.id !== item.id));
     if (next.length === problem.syllables.length) {
-      const word = next.map(p => p.text).join('');
+      const word = next.map(p => p?.text ?? '').join('');
       if (word === problem.target) {
         onAnswer(true);
       } else {
@@ -1448,14 +1449,9 @@ export const UnitConversionView: React.FC<UnitConversionViewProps> = ({ problem,
     <div className="w-full flex flex-col items-center animate-in fade-in zoom-in duration-300 px-2">
       {/* Ülesande kuvamine */}
       <div className="mb-4 sm:mb-6 p-4 sm:p-6 bg-white rounded-2xl sm:rounded-3xl border-b-6 sm:border-b-8 border-teal-200 shadow-lg text-center w-full max-w-md">
-        {/* Emoji */}
-        <div className="text-5xl sm:text-7xl mb-3 sm:mb-4 animate-bounce-short">
-          {problem.emoji}
-        </div>
-        
         {/* Küsimus */}
         <h2 className="text-lg sm:text-2xl font-black text-teal-700 mb-2 sm:mb-3">
-          {problem.display}
+          {problem.question}
         </h2>
         
         {/* Teisendus visuaalselt */}

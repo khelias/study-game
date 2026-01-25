@@ -1,14 +1,8 @@
 import { create } from 'zustand';
 import { createAdaptiveDifficulty, updateAdaptiveDifficulty as updateDifficulty } from '../engine/adaptiveDifficulty';
+import type { Problem } from '../types/game';
 
 type GameState = 'menu' | 'playing' | 'game_over';
-
-interface Problem {
-  type: string;
-  answer: unknown;
-  uid?: string;
-  [key: string]: unknown;
-}
 
 interface AdaptiveDifficulty {
   recentAccuracy: boolean[];

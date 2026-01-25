@@ -20,8 +20,10 @@ export const createRng = (seed: number = Date.now()): RngFunction => {
  * @param rng - Random number generator function (defaults to Math.random)
  * @returns A random element from the array or null if array is empty
  */
-export const getRandom = <T>(arr: T[], rng: RngFunction = Math.random): T | null =>
-  arr && arr.length > 0 ? arr[Math.floor(rng() * arr.length)] : null;
+export const getRandom = <T>(arr: T[], rng: RngFunction = Math.random): T | null => {
+  if (!arr || arr.length === 0) return null;
+  return arr[Math.floor(rng() * arr.length)] ?? null;
+};
 
 /**
  * Generates a unique ID using the RNG

@@ -11,7 +11,7 @@ import type { Stats, PerformanceMetrics } from '../types/stats';
  * @returns Difficulty calculation result
  */
 export const calculateOptimalDifficulty = (
-  gameType: string,
+  _gameType: string,
   level: number,
   profile: ProfileType
 ): DifficultyResult => {
