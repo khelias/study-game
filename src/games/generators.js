@@ -640,5 +640,140 @@ export const Generators = {
       options: Array.from(opts).sort(() => rng() - 0.5),
       uid: uid(rng)
     };
+  },
+
+  unit_conversion: (level, rng = Math.random, profile = 'starter') => {
+    const meta = profileMeta(profile);
+    const harder = meta.difficultyOffset > 0;
+
+    // Unit conversion definitions
+    const conversions = {
+      length: [
+        { from: 'm', to: 'cm', factor: 100, emoji: '📏', name: 'meetris', toName: 'sentimeetrit' },
+        { from: 'km', to: 'm', factor: 1000, emoji: '📐', name: 'kilomeetris', toName: 'meetrit' },
+        { from: 'cm', to: 'mm', factor: 10, emoji: '📏', name: 'sentimeetris', toName: 'millimeetrit' }
+      ],
+      mass: [
+        { from: 'kg', to: 'g', factor: 1000, emoji: '⚖️', name: 'kilogrammis', toName: 'grammi' },
+        { from: 't', to: 'kg', factor: 1000, emoji: '🏋️', name: 'tonnis', toName: 'kilogrammi' }
+      ],
+      volume: [
+        { from: 'l', to: 'ml', factor: 1000, emoji: '🧪', name: 'liitris', toName: 'milliliitrit' },
+        { from: 'l', to: 'dl', factor: 10, emoji: '🥛', name: 'liitris', toName: 'detsiliitrit' }
+      ]
+    };
+
+    let selectedConversion;
+    let value;
+    let unitType;
+
+    if (harder) {
+      // Advanced profile (levels 1-15)
+      if (level <= 3) {
+        // Levels 1-3: Basic conversions (m↔cm, kg↔g, l↔ml), numbers 10-50
+        const basicTypes = ['length', 'mass', 'volume'];
+        unitType = getRandom(basicTypes, rng);
+        const availableConversions = unitType === 'length' 
+          ? [conversions.length[0]] 
+          : unitType === 'mass' 
+          ? [conversions.mass[0]] 
+          : [conversions.volume[0]];
+        selectedConversion = getRandom(availableConversions, rng);
+        value = Math.floor(rng() * 41) + 10; // 10-50
+      } else if (level <= 7) {
+        // Levels 4-7: Add km↔m, t↔kg, numbers 50-100
+        unitType = getRandom(['length', 'mass', 'volume'], rng);
+        selectedConversion = getRandom(conversions[unitType], rng);
+        value = Math.floor(rng() * 51) + 50; // 50-100
+      } else if (level <= 10) {
+        // Levels 8-10: All units, numbers 100-500
+        unitType = getRandom(['length', 'mass', 'volume'], rng);
+        selectedConversion = getRandom(conversions[unitType], rng);
+        value = Math.floor(rng() * 401) + 100; // 100-500
+      } else {
+        // Levels 11-15: Complex, numbers up to 1000
+        unitType = getRandom(['length', 'mass', 'volume'], rng);
+        selectedConversion = getRandom(conversions[unitType], rng);
+        value = Math.floor(rng() * 901) + 100; // 100-1000
+      }
+    } else {
+      // Starter profile (levels 1-10)
+      if (level <= 3) {
+        // Levels 1-3: Only m↔cm, kg↔g, numbers 1-5
+        const basicTypes = ['length', 'mass'];
+        unitType = getRandom(basicTypes, rng);
+        selectedConversion = unitType === 'length' 
+          ? conversions.length[0] 
+          : conversions.mass[0];
+        value = Math.floor(rng() * 5) + 1; // 1-5
+      } else if (level <= 6) {
+        // Levels 4-6: Add l↔ml, numbers 1-10
+        const types = ['length', 'mass', 'volume'];
+        unitType = getRandom(types, rng);
+        const availableConversions = unitType === 'length' 
+          ? [conversions.length[0]] 
+          : unitType === 'mass' 
+          ? [conversions.mass[0]] 
+          : [conversions.volume[0]];
+        selectedConversion = getRandom(availableConversions, rng);
+        value = Math.floor(rng() * 10) + 1; // 1-10
+      } else {
+        // Levels 7-10: All basic units, numbers 1-20
+        unitType = getRandom(['length', 'mass', 'volume'], rng);
+        const availableConversions = unitType === 'length' 
+          ? [conversions.length[0]] 
+          : unitType === 'mass' 
+          ? [conversions.mass[0]] 
+          : conversions.volume;
+        selectedConversion = getRandom(availableConversions, rng);
+        value = Math.floor(rng() * 20) + 1; // 1-20
+      }
+    }
+
+    const correctAnswer = value * selectedConversion.factor;
+
+    // Generate wrong answers
+    const wrongAnswers = [
+      Math.floor(correctAnswer * 0.1), // ÷10
+      Math.floor(correctAnswer * 10),  // ×10
+      Math.floor(correctAnswer * 0.5), // half
+      Math.floor(correctAnswer * 1.1), // +10%
+      Math.floor(correctAnswer * 0.9), // -10%
+      Math.floor(correctAnswer * 2),   // double
+      Math.floor(correctAnswer / selectedConversion.factor) // reverse (just the value)
+    ].filter(a => a !== correctAnswer && a > 0);
+
+    // Select 3 unique wrong answers
+    const uniqueWrong = [...new Set(wrongAnswers)].sort(() => rng() - 0.5).slice(0, 3);
+    
+    // If we don't have enough unique wrong answers, generate more
+    while (uniqueWrong.length < 3) {
+      const offset = Math.floor(rng() * correctAnswer * 0.3) + 1;
+      const wrong = rng() > 0.5 ? correctAnswer + offset : correctAnswer - offset;
+      if (wrong > 0 && wrong !== correctAnswer && !uniqueWrong.includes(wrong)) {
+        uniqueWrong.push(wrong);
+      }
+    }
+
+    const options = [correctAnswer, ...uniqueWrong.slice(0, 3)].sort(() => rng() - 0.5);
+
+    const display = `Kui palju ${selectedConversion.toName} on ${value} ${selectedConversion.name}?`;
+    const question = `${value} ${selectedConversion.from} = ? ${selectedConversion.to}`;
+    const hint = `1 ${selectedConversion.from} on ${selectedConversion.factor} ${selectedConversion.to}`;
+
+    return {
+      uid: uid(rng),
+      type: 'unit_conversion',
+      display,
+      question,
+      answer: correctAnswer,
+      options,
+      unitType,
+      fromUnit: selectedConversion.from,
+      toUnit: selectedConversion.to,
+      value,
+      emoji: selectedConversion.emoji,
+      hint
+    };
   }
 };

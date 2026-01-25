@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { 
   Heart, Trophy, Trash2, Volume2, VolumeX, Loader2, Star, Home, BarChart3,
-  Type, Brain, Scale, BookOpen, GraduationCap, TrainFront, Bot
+  Type, Brain, Scale, BookOpen, GraduationCap, TrainFront, Bot, Clock3, Ruler
 } from 'lucide-react';
 
-import { LevelUpModal, BalanceScaleView, StandardGameView, WordGameView, PatternTrainView, MemoryGameView, RoboPathView, Confetti, SyllableGameView, TimeGameView } from './components/GameViews';
+import { LevelUpModal, BalanceScaleView, StandardGameView, WordGameView, PatternTrainView, MemoryGameView, RoboPathView, Confetti, SyllableGameView, TimeGameView, UnitConversionView } from './components/GameViews';
 import { AchievementModal } from './components/AchievementModal';
 import { AchievementsModal } from './components/AchievementsModal';
 import { StatsModal } from './components/StatsModal';
@@ -24,7 +24,7 @@ import { createRng } from './engine/rng';
 import { createStats, recordGameStart, recordAnswer, recordLevelUp, recordScore } from './engine/stats';
 import { checkAchievements } from './engine/achievements';
 
-const ICON_MAP = { Type, Brain, Scale, BookOpen, GraduationCap, TrainFront, Bot };
+const ICON_MAP = { Type, Brain, Scale, BookOpen, GraduationCap, TrainFront, Bot, Clock3, Ruler };
 
 const buildDefaultLevels = () => {
   const base = {};
@@ -149,6 +149,7 @@ const SmartAdventure = () => {
       case 'memory_math': return `mem:${prob.cards.map(c=>c.content).join('|')}`;
       case 'robo_path': return `robo:${prob.gridSize}:${prob.end.x},${prob.end.y}:${prob.obstacles.map(o=>`${o.x},${o.y}`).join(';')}`;
       case 'time_match': return `time:${prob.answer}`;
+      case 'unit_conversion': return `unit:${prob.value}${prob.fromUnit}=${prob.answer}${prob.toUnit}`;
       default: return `${prob.type}:${prob.answer || prob.display || prob.uid}`;
     }
   };
@@ -393,6 +394,9 @@ const SmartAdventure = () => {
         break;
       case 'time_match':
         hintText = `Vihje: Vaata kella osutiid!`;
+        break;
+      case 'unit_conversion':
+        hintText = problem.hint || `Vihje: ${problem.question}`;
         break;
       default:
         hintText = 'Proovi veel!';
@@ -689,6 +693,9 @@ const SmartAdventure = () => {
               }
               if (baseGameType === 'time_match') {
                 return <TimeGameView problem={problem} onAnswer={handleAnswer} soundEnabled={soundEnabled} />;
+              }
+              if (baseGameType === 'unit_conversion') {
+                return <UnitConversionView problem={problem} onAnswer={handleAnswer} soundEnabled={soundEnabled} />;
               }
               if (baseGameType === 'letter_match' || baseGameType === 'sentence_logic') {
                 return <StandardGameView problem={problem} onAnswer={handleAnswer} soundEnabled={soundEnabled} />;
