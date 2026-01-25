@@ -116,6 +116,29 @@ npm run build
 npm run preview
 ```
 
+### Testimine
+
+Projekt kasutab **Vitest** testiraamistikku koos **React Testing Library**-ga.
+
+```bash
+# Käivita testid watch-režiimis
+npm run test
+
+# Käivita testid ühekordselt
+npm run test:run
+
+# Käivita testid UI-ga (vajab @vitest/ui installimist)
+npm run test:ui
+
+# Käivita testid coverage-ga
+npm run test:coverage
+```
+
+**Test Coverage:**
+- Engine (kriitiline loogika): 76.58% ✅
+- Testitud komponendid: 100% ✅
+- Testimise eesmärgid: Engine 80%+, Komponendid 60%+
+
 ### Koodi kvaliteet
 
 ```bash
@@ -252,6 +275,131 @@ Mäng jälgib:
 - Avatud saavutused
 
 Kõik andmed salvestatakse LocalStorage'i ja säilivad brauseri sessioonide vahel.
+
+## 🧪 Testimine
+
+### Testimise Filosoofia
+
+Projekt järgib parimaid testimise praktikaid:
+- **Käitumine, mitte implementatsioon** - Testid kontrollivad, mida kood teeb, mitte kuidas
+- **Kiiret ja isoleeritud** - Testid töötavad kiiresti (alla 10 sekundi) ja ei sõltu üksteisest
+- **Deterministlikud** - Testid kasutavad seededitud RNG-d ennustatavuse tagamiseks
+- **AAA muster** - Testid järgivad Arrange-Act-Assert struktuuri
+
+### Testikomplekt
+
+#### Engine Testid (Ühiktestid)
+Kõrgeima prioriteediga testid kriitilise äriloogika jaoks:
+
+- **rng.test.ts** (16 testi)
+  - Deterministlik juhuarvude genereerimine
+  - Seededitud RNG järjepidevus
+  - Massiivi elementide valik
+  - Unikaalsete ID-de genereerimine
+
+- **stats.test.ts** (25 testi)
+  - Statistika loomine ja uuendamine
+  - Mängude arvestus
+  - Vastuste salvestamine ja seeriaid
+  - Tasemete ja skooride jälgimine
+
+- **achievements.test.ts** (19 testi)
+  - Saavutuste avamine
+  - Saavutuste tingimuste kontroll
+  - Dubleeritud avamiste vältimine
+
+- **adaptiveDifficulty.test.ts** (28 testi)
+  - Raskusastme kohandamine jõudluse põhjal
+  - Järjestikused õiged/valed vastused
+  - Raskusastme piirangud
+
+- **progression.test.ts** (26 testi)
+  - Optimaalse raskusastme arvutamine
+  - Progressiooni soovitused
+  - Edukuse skoori arvutamine
+
+#### Mängu Loogika Testid
+
+- **generators.test.ts** (20 testi)
+  - Ülesannete genereerimine (balance_scale, word_builder, pattern)
+  - Raskusastme progressioon
+  - Seededitud RNG järjepidevus
+  - Vastuse valideerimise loogika
+
+#### Komponendi Testid (Integratsioonitestid)
+
+- **GameCard.test.tsx** (13 testi)
+  - Mängu info kuvamine
+  - Klikkimise käsitlemine
+  - Lukustatud seisundi käsitlemine
+  - Progressi kuvamine
+
+- **StatsModal.test.tsx** (10 testi)
+  - Statistika kuvamine
+  - Sulgemise nupu töö
+  - Saavutuste renderdamine
+
+- **AchievementsModal.test.tsx** (14 testi)
+  - Lukustatud/avatud saavutuste kuvamine
+  - Progressi kuvamine
+
+#### Utility Testid
+
+- **performance.test.ts** (16 testi)
+  - Debounce funktsioon
+  - Throttle funktsioon
+  - Seadme tuvastamise utiliidid
+
+### Testimise Käivitamine
+
+```bash
+# Watch režiim (arendamiseks)
+npm run test
+
+# Ühekordselt (CI jaoks)
+npm run test:run
+
+# Coverage raportiga
+npm run test:coverage
+
+# UI-ga (interaktiivne)
+npm run test:ui
+```
+
+### Coverage Eesmärgid
+
+- **Engine**: 80%+ (saavutatud: 76.58%) ✅
+- **Testitud Komponendid**: 100% ✅
+- **Kogu**: Keskendutud kriitilisele funktsionaalsusele
+
+### Uue Testi Lisamine
+
+1. Loo test fail `__tests__` kaustasse
+2. Kasuta järjekindlat nimetamist: `<component>.test.tsx` või `<module>.test.ts`
+3. Kasuta test utiliite: `src/test/utils.tsx`
+4. Järgi AAA mustrit (Arrange-Act-Assert)
+5. Lisa kirjeldavad test nimed
+
+**Näide:**
+```typescript
+import { describe, it, expect } from 'vitest';
+import { createRng } from '../rng';
+
+describe('createRng', () => {
+  it('should create deterministic RNG with seed', () => {
+    // Arrange
+    const rng1 = createRng(12345);
+    const rng2 = createRng(12345);
+    
+    // Act
+    const values1 = [rng1(), rng1(), rng1()];
+    const values2 = [rng2(), rng2(), rng2()];
+    
+    // Assert
+    expect(values1).toEqual(values2);
+  });
+});
+```
 
 ## 🎯 Hariduslik Väärtus
 
