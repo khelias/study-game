@@ -125,5 +125,5 @@ export const LearningTip: React.FC<LearningTipProps> = ({ gameType, onClose }) =
 export const getRandomTip = (gameType: string): string | null => {
   const tips: string[] = LEARNING_TIPS[gameType] || [];
   if (tips.length === 0) return null;
-  return tips[Math.floor(Math.random() * tips.length)];
+  return tips[Math.floor(Math.random() * tips.length)] || null;
 };

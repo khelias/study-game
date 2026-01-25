@@ -61,7 +61,7 @@ export const TutorialModal: React.FC<TutorialModalProps> = ({ onClose }) => {
     }
   };
 
-  const step: TutorialStep = TUTORIAL_STEPS[currentStep] || TUTORIAL_STEPS[0];
+  const step: TutorialStep = TUTORIAL_STEPS[currentStep ?? 0] ?? TUTORIAL_STEPS[0]!;
   const isLast: boolean = currentStep === TUTORIAL_STEPS.length - 1;
 
   return (
