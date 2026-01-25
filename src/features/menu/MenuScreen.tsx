@@ -268,12 +268,12 @@ export const MenuScreen: React.FC = () => {
                     const Icon = ICON_MAP[conf.icon] || Type;
                     const gameStats = stats.gamesByType?.[key] || 0;
                     const isNew = gameStats === 0;
-                    const levels = useGameStore.getState().levels;
+                    const currentLevel = levels[profile][key];
                     return (
                       <GameCard
                         key={key}
                         gameConfig={{ ...conf, iconComponent: Icon }}
-                        level={levels[profile][key]}
+                        level={currentLevel}
                         onClick={() => handleStartGame(key)}
                         badge={isNew ? 'UUS!' : null}
                         delay={idx * 50}

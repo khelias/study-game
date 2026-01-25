@@ -24,6 +24,7 @@ export const GameScreen: React.FC = () => {
   const recordLevelUp = useGameStore(state => state.recordLevelUp);
   const addCollectedStars = useGameStore(state => state.addCollectedStars);
   const addScore = useGameStore(state => state.addScore);
+  const updateStats = useGameStore(state => state.updateStats);
   
   // Session state
   const gameType = usePlaySessionStore(state => state.gameType);
@@ -156,7 +157,7 @@ export const GameScreen: React.FC = () => {
           // Record time played
           if (gameStartTime) {
             const playTime = Math.floor((Date.now() - gameStartTime) / 1000);
-            useGameStore.getState().updateStats(stats => ({
+            updateStats(stats => ({
               ...stats,
               totalTimePlayed: stats.totalTimePlayed + playTime
             }));
@@ -174,7 +175,7 @@ export const GameScreen: React.FC = () => {
     setParticleActive, addScore, addCollectedStars, setShowHint, incrementStars,
     decrementHearts, endGame, gameStartTime, updateAdaptiveDifficulty, submitAnswer,
     playWin, setEnhancedConfetti, setConfetti, showLevelUpModal, gameType, levels,
-    profile, adaptiveDifficulty, generateUniqueProblemForGame, setProblem
+    profile, adaptiveDifficulty, generateUniqueProblemForGame, setProblem, updateStats
   ]);
   
   const handleNextLevel = useCallback(() => {
