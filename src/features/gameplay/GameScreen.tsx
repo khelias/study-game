@@ -408,11 +408,18 @@ export const GameScreen: React.FC = () => {
       <NotificationSystem 
         notifications={notifications}
         onDismiss={(id) => {
-          removeNotification(id);
-          // If it was a level up notification, handle next level
+          // Find the notification before removing it
           const notification = notifications.find(n => n.id === id);
+          removeNotification(id);
+          
+          // If it was a level up notification, handle next level
           if (notification?.type === 'levelUp') {
             handleNextLevel();
+          }
+          
+          // Reset achievement ref when achievement notification is dismissed
+          if (notification?.type === 'achievement') {
+            achievementShownRef.current = false;
           }
         }}
       />
