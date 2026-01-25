@@ -2,12 +2,18 @@
 import React from 'react';
 import { TrendingUp, TrendingDown, Target, Award } from 'lucide-react';
 import { getProgressionRecommendation, calculateGameSuccessScore } from '../engine/progression';
+import { Stats } from '../types/stats';
 
-export const GameProgressionCard = ({ gameType, stats }) => {
+interface GameProgressionCardProps {
+  gameType: string;
+  stats: Stats;
+}
+
+export const GameProgressionCard: React.FC<GameProgressionCardProps> = ({ gameType, stats }) => {
   const recommendation = getProgressionRecommendation(stats, gameType);
-  const successScore = calculateGameSuccessScore(stats, gameType);
+  const successScore: number = calculateGameSuccessScore(stats, gameType);
   
-  const getRecommendationIcon = () => {
+  const getRecommendationIcon = (): React.ReactElement => {
     switch (recommendation.action) {
       case 'level_up':
         return <TrendingUp className="w-5 h-5 text-green-600" />;
@@ -20,7 +26,7 @@ export const GameProgressionCard = ({ gameType, stats }) => {
     }
   };
   
-  const getRecommendationColor = () => {
+  const getRecommendationColor = (): string => {
     switch (recommendation.priority) {
       case 'high':
         return 'bg-blue-50 border-blue-200';
@@ -56,8 +62,14 @@ export const GameProgressionCard = ({ gameType, stats }) => {
   );
 };
 
-export const LevelProgressIndicator = ({ current, next, progress }) => {
-  const progressPercentage = (progress / 5) * 100;
+interface LevelProgressIndicatorProps {
+  current: number;
+  next: number;
+  progress: number;
+}
+
+export const LevelProgressIndicator: React.FC<LevelProgressIndicatorProps> = ({ current, next, progress }) => {
+  const progressPercentage: number = (progress / 5) * 100;
   
   return (
     <div className="w-full max-w-md mx-auto p-4 bg-white rounded-xl border-2 border-slate-200 shadow-sm">

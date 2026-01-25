@@ -1,7 +1,7 @@
 /**
  * React performance optimization hooks
  */
-import { useMemo, useCallback, useState, useEffect, useRef } from 'react';
+import { useCallback, useState, useEffect, useRef } from 'react';
 
 type AnyFunction = (...args: unknown[]) => unknown;
 

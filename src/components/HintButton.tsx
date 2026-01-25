@@ -2,10 +2,16 @@ import React, { useState } from 'react';
 import { Lightbulb } from 'lucide-react';
 import { playSound } from '../engine/audio';
 
-export const HintButton = ({ onHint, soundEnabled, disabled = false }) => {
-  const [used, setUsed] = useState(false);
+interface HintButtonProps {
+  onHint?: () => void;
+  soundEnabled: boolean;
+  disabled?: boolean;
+}
 
-  const handleClick = () => {
+export const HintButton: React.FC<HintButtonProps> = ({ onHint, soundEnabled, disabled = false }) => {
+  const [used, setUsed] = useState<boolean>(false);
+
+  const handleClick = (): void => {
     if (used || disabled) return;
     setUsed(true);
     playSound('click', soundEnabled);

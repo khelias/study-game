@@ -99,7 +99,7 @@ export const getDifficultyForGame = (
   gameType: string,
   baseLevel: number,
   adaptive: AdaptiveDifficulty,
-  profile: ProfileType
+  _profile: ProfileType
 ): GameDifficulty => {
   const effectiveLevel = getEffectiveLevel(baseLevel, adaptive);
   const multiplier = adaptive.difficultyMultiplier;

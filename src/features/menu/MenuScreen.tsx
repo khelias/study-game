@@ -266,7 +266,7 @@ export const MenuScreen: React.FC = () => {
               {isExpanded && (
                 <div className="grid grid-cols-1 gap-3 sm:gap-5 animate-fadeIn">
                   {categoryGames.map(([key, conf], idx) => {
-                    const Icon = ICON_MAP[conf.icon] || Type;
+                    const Icon = ICON_MAP[conf.icon as keyof typeof ICON_MAP] || Type;
                     const gameStats = stats.gamesByType?.[key] || 0;
                     const isNew = gameStats === 0;
                     const currentLevel = levels[profile][key];

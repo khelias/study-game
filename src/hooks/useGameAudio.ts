@@ -11,7 +11,7 @@ export function useGameAudio(soundEnabled: boolean) {
   const playWrong = useCallback(() => {
     // No dedicated wrong sound, silence is used
     // playSound('wrong', soundEnabled);
-  }, [soundEnabled]);
+  }, []);
 
   const playWin = useCallback(() => {
     playSound('win', soundEnabled);

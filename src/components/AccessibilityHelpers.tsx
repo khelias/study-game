@@ -1,10 +1,14 @@
 // Accessibility helperid - parem ligipääsetavus
-import React, { useEffect } from 'react';
+import { useEffect } from 'react';
 
 // Keyboard navigation helper
-export const useKeyboardNavigation = (onEscape, onEnter) => {
+// eslint-disable-next-line react-refresh/only-export-components
+export const useKeyboardNavigation = (
+  onEscape?: () => void,
+  onEnter?: () => void
+): void => {
   useEffect(() => {
-    const handleKeyDown = (e) => {
+    const handleKeyDown = (e: KeyboardEvent): void => {
       if (e.key === 'Escape' && onEscape) {
         onEscape();
       }
@@ -19,20 +23,27 @@ export const useKeyboardNavigation = (onEscape, onEnter) => {
 };
 
 // Focus trap komponent
-export const FocusTrap = ({ children, active = true }) => {
-  const containerRef = React.useRef(null);
+import React, { ReactNode } from 'react';
+
+interface FocusTrapProps {
+  children: ReactNode;
+  active?: boolean;
+}
+
+const FocusTrap: React.FC<FocusTrapProps> = ({ children, active = true }) => {
+  const containerRef = React.useRef<HTMLDivElement>(null);
   
   useEffect(() => {
     if (!active || !containerRef.current) return;
     
-    const focusableElements = containerRef.current.querySelectorAll(
+    const focusableElements = containerRef.current.querySelectorAll<HTMLElement>(
       'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
     );
     
     const firstElement = focusableElements[0];
     const lastElement = focusableElements[focusableElements.length - 1];
     
-    const handleTab = (e) => {
+    const handleTab = (e: KeyboardEvent): void => {
       if (e.key !== 'Tab') return;
       
       if (e.shiftKey) {
@@ -60,7 +71,15 @@ export const FocusTrap = ({ children, active = true }) => {
 };
 
 // Screen reader friendly message
-export const ScreenReaderMessage = ({ message, priority = 'polite' }) => {
+interface ScreenReaderMessageProps {
+  message: string;
+  priority?: 'polite' | 'assertive';
+}
+
+const ScreenReaderMessage: React.FC<ScreenReaderMessageProps> = ({ 
+  message, 
+  priority = 'polite' 
+}) => {
   return (
     <div
       className="sr-only"
@@ -74,7 +93,11 @@ export const ScreenReaderMessage = ({ message, priority = 'polite' }) => {
 };
 
 // Skip to content link
-export const SkipToContent = ({ targetId = 'main-content' }) => {
+interface SkipToContentProps {
+  targetId?: string;
+}
+
+const SkipToContent: React.FC<SkipToContentProps> = ({ targetId = 'main-content' }) => {
   return (
     <a
       href={`#${targetId}`}
@@ -84,3 +107,5 @@ export const SkipToContent = ({ targetId = 'main-content' }) => {
     </a>
   );
 };
+
+export { FocusTrap, ScreenReaderMessage, SkipToContent };

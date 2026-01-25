@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { Lightbulb, X } from 'lucide-react';
 
-const LEARNING_TIPS = {
+const LEARNING_TIPS: Record<string, string[]> = {
   word_builder: [
     '💡 Vihje: Proovi mõelda, mis sõna võiks emoji järgi olla!',
     '💡 Vihje: Vaata esimest tähte - see aitab alustada!',
@@ -50,13 +50,18 @@ const LEARNING_TIPS = {
   ],
 };
 
-export const LearningTip = ({ gameType, onClose }) => {
-  const tips = LEARNING_TIPS[gameType] || [];
-  const [currentTip, setCurrentTip] = useState(0);
+interface LearningTipProps {
+  gameType: string;
+  onClose?: () => void;
+}
+
+export const LearningTip: React.FC<LearningTipProps> = ({ gameType, onClose }) => {
+  const tips: string[] = LEARNING_TIPS[gameType] || [];
+  const [currentTip, setCurrentTip] = useState<number>(0);
   
   if (tips.length === 0) return null;
   
-  const tip = tips[currentTip];
+  const tip: string = tips[currentTip] || '';
   
   return (
     <div className="fixed bottom-2 sm:bottom-4 left-1/2 -translate-x-1/2 z-40 max-w-md w-full mx-2 sm:mx-4 animate-fade-in">
@@ -115,8 +120,10 @@ export const LearningTip = ({ gameType, onClose }) => {
   );
 };
 
-export const getRandomTip = (gameType) => {
-  const tips = LEARNING_TIPS[gameType] || [];
+// Helper function (not a component)
+// eslint-disable-next-line react-refresh/only-export-components
+export const getRandomTip = (gameType: string): string | null => {
+  const tips: string[] = LEARNING_TIPS[gameType] || [];
   if (tips.length === 0) return null;
-  return tips[Math.floor(Math.random() * tips.length)];
+  return tips[Math.floor(Math.random() * tips.length)] || null;
 };

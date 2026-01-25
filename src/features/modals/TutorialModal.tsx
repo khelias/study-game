@@ -1,7 +1,13 @@
 import React, { useState } from 'react';
 import { X, ArrowRight, ArrowLeft } from 'lucide-react';
 
-const TUTORIAL_STEPS = [
+interface TutorialStep {
+  title: string;
+  content: string;
+  emoji: string;
+}
+
+const TUTORIAL_STEPS: TutorialStep[] = [
   {
     title: 'Tere tulemast! 🎮',
     content: 'See on õppemäng, kus saad harjutada lugemist, matemaatikat ja loogikat!',
@@ -34,10 +40,14 @@ const TUTORIAL_STEPS = [
   }
 ];
 
-export const TutorialModal = ({ onClose, soundEnabled }) => {
-  const [currentStep, setCurrentStep] = useState(0);
+interface TutorialModalProps {
+  onClose: () => void;
+}
 
-  const nextStep = () => {
+export const TutorialModal: React.FC<TutorialModalProps> = ({ onClose }) => {
+  const [currentStep, setCurrentStep] = useState<number>(0);
+
+  const nextStep = (): void => {
     if (currentStep < TUTORIAL_STEPS.length - 1) {
       setCurrentStep(currentStep + 1);
     } else {
@@ -45,19 +55,19 @@ export const TutorialModal = ({ onClose, soundEnabled }) => {
     }
   };
 
-  const prevStep = () => {
+  const prevStep = (): void => {
     if (currentStep > 0) {
       setCurrentStep(currentStep - 1);
     }
   };
 
-  const step = TUTORIAL_STEPS[currentStep];
-  const isLast = currentStep === TUTORIAL_STEPS.length - 1;
+  const step: TutorialStep = TUTORIAL_STEPS[currentStep] || TUTORIAL_STEPS[0];
+  const isLast: boolean = currentStep === TUTORIAL_STEPS.length - 1;
 
   return (
     <div 
       className="fixed inset-0 z-[120] flex items-center justify-center bg-black/70 backdrop-blur-sm p-4 animate-in fade-in duration-300"
-      onClick={(e) => {
+      onClick={(e: React.MouseEvent<HTMLDivElement>) => {
         // Sulge, kui klikitakse taustale
         if (e.target === e.currentTarget) {
           onClose();
@@ -66,7 +76,7 @@ export const TutorialModal = ({ onClose, soundEnabled }) => {
     >
       <div className="bg-white rounded-3xl p-8 max-w-md w-full shadow-2xl text-center relative">
         <button
-          onClick={(e) => {
+          onClick={(e: React.MouseEvent<HTMLButtonElement>) => {
             e.stopPropagation();
             onClose();
           }}

@@ -44,8 +44,8 @@ export const Generators: Record<string, GeneratorFunction> = {
     let safety = 0; 
     while(opts.size < 3 && safety < 50) { 
       safety++; 
-      let offset = Math.floor(rng() * 5) - 2; // -2 kuni +2
-      let r = rHidden + offset;
+      const offset = Math.floor(rng() * 5) - 2; // -2 kuni +2
+      const r = rHidden + offset;
       if(r > 0 && r !== rHidden) opts.add(r); 
     }
     while(opts.size < 3) opts.add(Math.floor(rng() * 10) + 1);
@@ -494,7 +494,7 @@ export const Generators: Record<string, GeneratorFunction> = {
       safety++; 
     }
     // Build grid
-    const grid: number[][] = Array(gridSize).fill(0).map(() => Array(gridSize).fill(0));
+    const grid: number[][] = Array.from({ length: gridSize }, () => Array(gridSize).fill(0) as number[]);
     for (const obs of obstacles) {
       const row = grid[obs.y];
       if (row) {
@@ -737,8 +737,8 @@ export const Generators: Record<string, GeneratorFunction> = {
     while(opts.size < 3) {
       const delta = (Math.floor(rng()*3)+1) * step;
       const sign = rng() > 0.5 ? 1 : -1;
-      let m2 = (minute + sign * delta + 60) % 60;
-      let h2 = (hour24 + (minute + sign * delta < 0 ? -1 : 0) + 24) % 24;
+      const m2 = (minute + sign * delta + 60) % 60;
+      const h2 = (hour24 + (minute + sign * delta < 0 ? -1 : 0) + 24) % 24;
       opts.add(toLabel(h2, m2));
     }
     return { 

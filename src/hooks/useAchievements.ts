@@ -1,5 +1,6 @@
 import { useCallback } from 'react';
 import { checkAchievements } from '../engine/achievements';
+import type { Stats } from '../types/stats';
 
 interface AchievementData {
   id: string;
@@ -9,7 +10,7 @@ interface AchievementData {
 }
 
 export function useAchievements() {
-  const checkForNewAchievements = useCallback((stats: any, unlockedAchievements: string[]): AchievementData[] => {
+  const checkForNewAchievements = useCallback((stats: Stats, unlockedAchievements: string[]): AchievementData[] => {
     return checkAchievements(stats, unlockedAchievements);
   }, []);
 

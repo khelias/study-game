@@ -1,32 +1,40 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { X } from 'lucide-react';
 import { playSound } from '../engine/audio';
+import { AchievementUnlock } from '../types/achievement';
 
-export const AchievementModal = ({ achievement, onClose, soundEnabled }) => {
-  const [show, setShow] = useState(false);
+interface AchievementModalProps {
+  achievement: AchievementUnlock | null;
+  onClose: () => void;
+  soundEnabled: boolean;
+}
+
+export const AchievementModal: React.FC<AchievementModalProps> = ({ 
+  achievement, 
+  onClose, 
+  soundEnabled 
+}) => {
+  const timerRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     if (achievement) {
       playSound('win', soundEnabled);
-      setShow(true);
-      const timer = setTimeout(() => {
-        setShow(false);
-        setTimeout(onClose, 500);
+      timerRef.current = setTimeout(() => {
+        onClose();
       }, 3000);
-      return () => clearTimeout(timer);
+      return () => {
+        if (timerRef.current) clearTimeout(timerRef.current);
+      };
     }
   }, [achievement, onClose, soundEnabled]);
 
-  if (!achievement || !show) return null;
+  if (!achievement) return null;
 
   return (
     <div className="fixed inset-0 z-[110] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-300">
       <div className="bg-gradient-to-br from-yellow-50 to-orange-50 rounded-3xl p-8 max-w-sm w-full shadow-2xl text-center transform scale-100 animate-bounce-short border-4 border-yellow-400 relative">
         <button
-          onClick={() => {
-            setShow(false);
-            onClose();
-          }}
+          onClick={onClose}
           className="absolute top-4 right-4 p-2 rounded-full bg-white/80 hover:bg-white transition-colors"
           aria-label="Sulge"
         >
@@ -41,7 +49,7 @@ export const AchievementModal = ({ achievement, onClose, soundEnabled }) => {
         <p className="text-slate-600 mb-6 font-semibold">{achievement.desc}</p>
         
         <div className="flex gap-2 justify-center">
-          {[...Array(5)].map((_, i) => (
+          {Array.from({ length: 5 }).map((_, i) => (
             <div key={i} className="w-2 h-2 bg-yellow-400 rounded-full animate-ping" style={{ animationDelay: `${i * 0.1}s` }} />
           ))}
         </div>

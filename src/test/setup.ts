@@ -1,5 +1,5 @@
 import '@testing-library/jest-dom';
-import { expect, afterEach, vi } from 'vitest';
+import { afterEach, vi } from 'vitest';
 import { cleanup } from '@testing-library/react';
 
 // Cleanup after each test case (e.g., clearing jsdom)
@@ -25,10 +25,21 @@ const localStorageMock = (() => {
   };
 })();
 
-global.localStorage = localStorageMock as Storage;
+global.localStorage = localStorageMock as unknown as Storage;
 
 // Mock Audio API
-global.Audio = vi.fn().mockImplementation(() => ({
+interface MockAudio {
+  play: ReturnType<typeof vi.fn>;
+  pause: ReturnType<typeof vi.fn>;
+  addEventListener: ReturnType<typeof vi.fn>;
+  removeEventListener: ReturnType<typeof vi.fn>;
+  volume: number;
+  currentTime: number;
+  duration: number;
+  src: string;
+}
+
+global.Audio = vi.fn().mockImplementation((): MockAudio => ({
   play: vi.fn().mockResolvedValue(undefined),
   pause: vi.fn(),
   addEventListener: vi.fn(),
@@ -37,12 +48,12 @@ global.Audio = vi.fn().mockImplementation(() => ({
   currentTime: 0,
   duration: 0,
   src: '',
-})) as any;
+})) as unknown as typeof Audio;
 
 // Mock matchMedia
 Object.defineProperty(window, 'matchMedia', {
   writable: true,
-  value: vi.fn().mockImplementation((query) => ({
+  value: vi.fn().mockImplementation((query: string) => ({
     matches: false,
     media: query,
     onchange: null,

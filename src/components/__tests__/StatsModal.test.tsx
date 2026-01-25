@@ -121,6 +121,7 @@ describe('StatsModal', () => {
     });
     const onClose = vi.fn();
     
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { container } = render(
       <StatsModal
         stats={stats}

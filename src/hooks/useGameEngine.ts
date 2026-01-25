@@ -1,14 +1,8 @@
-import { useState, useCallback, useRef } from 'react';
+import { useState, useCallback } from 'react';
 import { Generators } from '../games/generators';
 import { getEffectiveLevel } from '../engine/adaptiveDifficulty';
 import { createRng } from '../engine/rng';
-
-interface Problem {
-  type: string;
-  answer: any;
-  uid?: string;
-  [key: string]: any;
-}
+import type { Problem } from '../types/game';
 
 interface AdaptiveDifficulty {
   recentAccuracy: boolean[];
@@ -24,15 +18,15 @@ const makeKey = (prob: Problem | null): string => {
   switch(prob.type) {
     case 'word_builder': return `word:${prob.target}`;
     case 'syllable_builder': return `syll:${prob.target}`;
-    case 'letter_match': return `letter:${prob.display}`;
-    case 'sentence_logic': return `sent:${prob.display}`;
+    case 'letter_match': return `letter:${prob.word}`;
+    case 'sentence_logic': return `sent:${prob.sentence}`;
     case 'balance_scale': return `bal:${prob.display.left.join(',')}|${prob.display.right.join(',')}`;
     case 'pattern': return `pat:${prob.sequence.join('')}:${prob.answer}`;
-    case 'memory_math': return `mem:${prob.cards.map((c: any) => c.content).join('|')}`;
-    case 'robo_path': return `robo:${prob.gridSize}:${prob.end.x},${prob.end.y}:${prob.obstacles.map((o: any) => `${o.x},${o.y}`).join(';')}`;
+    case 'memory_math': return `mem:${prob.cards.map((c) => c.content).join('|')}`;
+    case 'robo_path': return `robo:${prob.grid.length}:${prob.goal[0]},${prob.goal[1]}:${prob.obstacles.map((o) => `${o[0]},${o[1]}`).join(';')}`;
     case 'time_match': return `time:${prob.answer}`;
     case 'unit_conversion': return `unit:${prob.value}${prob.fromUnit}=${prob.answer}${prob.toUnit}`;
-    default: return `${prob.type}:${prob.answer || prob.display || prob.uid}`;
+    default: return `${prob.type}:${prob.uid}`;
   }
 };
 
@@ -81,12 +75,26 @@ export function useGameEngine() {
     }
   }, [generateUniqueProblem]);
 
-  const validateAnswer = useCallback((problem: Problem, userAnswer: any): boolean => {
+  const validateAnswer = useCallback((problem: Problem, userAnswer: unknown): boolean => {
     if (!problem) return false;
     
     // The actual validation is handled by the game views
     // This is a placeholder for any additional validation logic
-    return userAnswer === problem.answer;
+    switch(problem.type) {
+      case 'word_builder':
+      case 'syllable_builder':
+      case 'letter_match':
+      case 'sentence_logic':
+      case 'pattern':
+      case 'time_match':
+        return userAnswer === problem.answer;
+      case 'balance_scale':
+        return userAnswer === problem.answer;
+      case 'unit_conversion':
+        return userAnswer === problem.answer;
+      default:
+        return false;
+    }
   }, []);
 
   return {
