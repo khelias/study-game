@@ -49,7 +49,7 @@ export const AchievementModal: React.FC<AchievementModalProps> = ({
         <p className="text-slate-600 mb-6 font-semibold">{achievement.desc}</p>
         
         <div className="flex gap-2 justify-center">
-          {[...Array(5)].map((_, i) => (
+          {Array.from({ length: 5 }).map((_, i) => (
             <div key={i} className="w-2 h-2 bg-yellow-400 rounded-full animate-ping" style={{ animationDelay: `${i * 0.1}s` }} />
           ))}
         </div>

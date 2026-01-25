@@ -12,7 +12,8 @@ import type {
   RoboPathProblem,
   TimeMatchProblem,
   LetterMatchProblem,
-  UnitConversionProblem
+  UnitConversionProblem,
+  LetterObject
 } from '../types/game';
 
 interface LevelUpModalProps {
@@ -336,12 +337,12 @@ export const StandardGameView: React.FC<StandardGameViewProps> = ({ problem, onA
   }, [problemUid]);
 
   // Cache random offset per problem to avoid calling Math.random during render
-  const sideOffsets = useMemo(() => {
+  const sideOffsets = useMemo((): Record<number, number> => {
     if (problem.type !== 'sentence_logic') return {};
     // Create a stable seed from problem.uid to ensure consistent offsets per problem
     const seed = problem.uid ? problem.uid.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0) : 0;
-    return problem.options.reduce((acc, opt, idx) => {
-      if (opt.pos === 'KÕRVAL') {
+    return problem.options.reduce((acc: Record<number, number>, opt, idx) => {
+      if (typeof opt === 'object' && 'pos' in opt && opt.pos === 'KÕRVAL') {
         // Use seeded pseudo-random value instead of Math.random()
         acc[idx] = ((seed + idx) % 2 === 0) ? 50 : -50;
       }
@@ -349,21 +350,24 @@ export const StandardGameView: React.FC<StandardGameViewProps> = ({ problem, onA
     }, {});
   }, [problem.type, problem.options, problem.uid]);
 
-  const handleChoice = (opt) => {
+  const handleChoice = (opt: string | { text: string; pos?: string; answer?: boolean; id?: string }): void => {
     playSound('click', soundEnabled);
-    const isCorrect = problem.type === 'sentence_logic' ? opt.id === problem.answer : opt === problem.answer;
+    const isCorrect = problem.type === 'sentence_logic' 
+      ? (typeof opt === 'object' && 'text' in opt ? opt.text === problem.answer : false)
+      : opt === problem.answer;
     
     if (isCorrect) {
       onAnswer(true); 
     } else { 
-      setDisabled([...disabled, opt.id || opt]); 
+      const optId = typeof opt === 'object' && 'text' in opt ? opt.text : opt;
+      setDisabled([...disabled, optId]); 
       onAnswer(false); 
     }
   };
 
-  const renderOptionContent = (opt, optIdx) => {
-    if (problem.type === 'sentence_logic') {
-        const sceneBg = opt.bg || 'bg-gray-100';
+  const renderOptionContent = (opt: string | { text: string; pos?: string; answer?: boolean; a?: { n?: string; e?: string }; s?: { n?: string; e?: string }; sceneName?: string; [key: string]: unknown }, optIdx: number): React.ReactNode => {
+    if (problem.type === 'sentence_logic' && typeof opt === 'object') {
+        const sceneBg = (opt.bg as string | undefined) || 'bg-gray-100';
         let transformClass = '';
         let zIndex = 'z-10';
         let anchorTransform = '';
@@ -489,7 +493,8 @@ export const StandardGameView: React.FC<StandardGameViewProps> = ({ problem, onA
         ? (problem.options.length === 4 ? 'grid-cols-2 gap-2 sm:gap-4' : problem.options.length === 5 ? 'grid-cols-3 gap-2 sm:gap-3' : 'grid-cols-2 gap-2 sm:gap-4')
         : 'grid-cols-3 gap-2 sm:gap-3'} w-full`}>
         {problem.options.map((opt, idx) => {
-           const isDisabled = disabled.includes(opt.id || opt);
+           const optId = typeof opt === 'object' && 'text' in opt ? opt.text : opt;
+           const isDisabled = disabled.includes(optId);
            return (
             <button 
               key={idx}
@@ -533,7 +538,7 @@ export const WordGameView: React.FC<WordGameViewProps> = ({ problem, onAnswer, s
     return () => clearTimeout(timer);
   }, [problemUid, problem.shuffled]);
   
-  const handleSelect = (letter) => {
+  const handleSelect = (letter: LetterObject): void => {
     playSound('click', soundEnabled);
     const newWord = [...userWord, letter]; 
     setUserWord(newWord); 
@@ -552,7 +557,7 @@ export const WordGameView: React.FC<WordGameViewProps> = ({ problem, onAnswer, s
     }
   };
 
-  const handleRemove = (letter, idx) => {
+  const handleRemove = (letter: LetterObject, idx: number): void => {
     playSound('click', soundEnabled);
     const newUserWord = [...userWord]; 
     newUserWord.splice(idx, 1); 
@@ -564,7 +569,7 @@ export const WordGameView: React.FC<WordGameViewProps> = ({ problem, onAnswer, s
     <div className="flex flex-col items-center mt-2 sm:mt-4 w-full animate-in fade-in slide-in-from-right-4 duration-500 px-2">
       <div className="text-6xl sm:text-9xl mb-4 sm:mb-8 animate-bounce filter drop-shadow-xl">{problem.emoji}</div>
       <div className="flex gap-1.5 sm:gap-2 mb-4 sm:mb-8 min-h-[3.5rem] sm:min-h-[4.5rem] flex-wrap justify-center">
-        {[...Array(problem.target.length)].map((_, i) => (
+        {Array.from({ length: problem.target.length }).map((_, i) => (
           <button 
             key={i} 
             onClick={() => userWord[i] && handleRemove(userWord[i], i)} 
@@ -601,7 +606,7 @@ export const SyllableGameView: React.FC<SyllableGameViewProps> = ({ problem, onA
     id: string;
   }
   
-  const poolFromProblem = (): SyllablePart[] => problem.shuffled.map((p, i) => ({ part: p, id: `${p}-${i}` }));
+  const poolFromProblem = (): SyllablePart[] => problem.shuffled.map((p, i) => ({ part: p, id: `${p.text}-${i}` }));
   const [current, setCurrent] = useState<Array<{ text: string; id: string } | null>>([]);
   const [pool, setPool] = useState<SyllablePart[]>(poolFromProblem());
   const [ghost, setGhost] = useState<boolean>(false);
@@ -617,13 +622,13 @@ export const SyllableGameView: React.FC<SyllableGameViewProps> = ({ problem, onA
     return () => clearTimeout(timer);
   }, [problemUid]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const handleSelect = (item) => {
+  const handleSelect = (item: SyllablePart): void => {
     playSound('click', soundEnabled);
-    const next = [...current, item];
+    const next = [...current, item.part];
     setCurrent(next);
     setPool(pool.filter(p => p.id !== item.id));
-    if (next.length === problem.parts.length) {
-      const word = next.map(p => p.part).join('');
+    if (next.length === problem.syllables.length) {
+      const word = next.map(p => p.text).join('');
       if (word === problem.target) {
         onAnswer(true);
       } else {
@@ -638,13 +643,15 @@ export const SyllableGameView: React.FC<SyllableGameViewProps> = ({ problem, onA
     }
   };
 
-  const handleRemove = (idx) => {
+  const handleRemove = (idx: number): void => {
     playSound('click', soundEnabled);
     const item = current[idx];
     const next = [...current];
     next.splice(idx,1);
     setCurrent(next);
-    setPool(prev => [...prev, item]);
+    if (item) {
+      setPool(prev => [...prev, { part: item, id: `${item.text}-${Date.now()}` }]);
+    }
   };
 
   return (
@@ -653,17 +660,17 @@ export const SyllableGameView: React.FC<SyllableGameViewProps> = ({ problem, onA
       <div className="text-xs sm:text-sm font-semibold text-slate-600 mb-2 px-2 text-center uppercase">PANE SILBID ÕIGESSE JÄRJEKORDA, ET SAADA SÕNA</div>
       {ghost && (
         <div className="mb-2 text-[10px] sm:text-xs font-semibold text-slate-400">
-          ÕIGE: {problem.parts.join('-')}
+          ÕIGE: {problem.syllables.join('-')}
         </div>
       )}
       <div className="flex gap-1.5 sm:gap-2 mb-4 sm:mb-6 min-h-[3rem] sm:min-h-[3.5rem] flex-wrap justify-center">
-        {[...Array(problem.parts.length)].map((_, i) => (
+        {Array.from({ length: problem.syllables.length }).map((_, i) => (
           <button 
             key={i} 
             onClick={() => current[i] && handleRemove(i)} 
             className={`px-2 sm:px-4 h-12 sm:h-14 rounded-xl sm:rounded-2xl border-b-3 sm:border-b-4 flex items-center justify-center text-lg sm:text-2xl font-black transition-all ${current[i] ? colors[i % colors.length] : 'bg-slate-100 border-slate-200 text-slate-300'}`}
           >
-            {current[i]?.part || ''}
+            {current[i]?.text || ''}
           </button>
         ))}
       </div>
@@ -690,9 +697,9 @@ interface PatternTrainViewProps {
 }
 
 export const PatternTrainView: React.FC<PatternTrainViewProps> = ({ problem, onAnswer, soundEnabled }) => {
-  const [disabled, setDisabled] = useState<string[]>([]);
+  const [disabled, setDisabled] = useState<number[]>([]);
   const [trainState, setTrainState] = useState<string>('enter'); 
-  const [selectedOption, setSelectedOption] = useState<string | null>(null);
+  const [selectedOption, setSelectedOption] = useState<number | null>(null);
   const problemUid = problem.uid;
   
   useEffect(() => { 
@@ -708,7 +715,7 @@ export const PatternTrainView: React.FC<PatternTrainViewProps> = ({ problem, onA
     };
   }, [problemUid]);
 
-  const handleChoice = (opt, idx) => {
+  const handleChoice = (opt: string, idx: number): void => {
     if (disabled.includes(idx) || trainState === 'leave') return;
     
     playSound('click', soundEnabled);
@@ -817,11 +824,11 @@ interface MemoryGameViewProps {
 }
 
 export const MemoryGameView: React.FC<MemoryGameViewProps> = ({ problem, onAnswer, soundEnabled }) => {
-  const [cards, setCards] = useState(problem.cards || []);
-  const [flipped, setFlipped] = useState([]); 
-  const [matchedPairs, setMatchedPairs] = useState(0);
-  const [showCelebration, setShowCelebration] = useState(false);
-  const problemUid = problem.uid;
+  const [cards, setCards] = useState<Array<{ id: string; content: string; matched?: boolean; flipped?: boolean; solved?: boolean; matchId?: string; type?: string }>>(problem.cards || []);
+  const [flipped, setFlipped] = useState<number[]>([]); 
+  const [matchedPairs, setMatchedPairs] = useState<number>(0);
+  const [showCelebration, setShowCelebration] = useState<boolean>(false);
+  const problemUid: string = problem.uid;
   
   useEffect(() => { 
     const timer = setTimeout(() => {
@@ -833,8 +840,8 @@ export const MemoryGameView: React.FC<MemoryGameViewProps> = ({ problem, onAnswe
     return () => clearTimeout(timer);
   }, [problemUid, problem.cards]);
   
-  const handleCard = (index) => {
-    if (flipped.length >= 2 || cards[index].flipped || cards[index].solved) return;
+  const handleCard = (index: number): void => {
+    if (flipped.length >= 2 || cards[index]?.flipped || cards[index]?.solved) return;
     playSound('click', soundEnabled);
     
     const newCards = [...cards]; 
@@ -845,8 +852,12 @@ export const MemoryGameView: React.FC<MemoryGameViewProps> = ({ problem, onAnswe
     setFlipped(newFlipped);
     
     if (newFlipped.length === 2) {
-      const [i1, i2] = newFlipped;
-      if (cards[i1].matchId === cards[i2].matchId) {
+      const i1 = newFlipped[0];
+      const i2 = newFlipped[1];
+      if (i1 !== undefined && i2 !== undefined) {
+        const card1 = cards[i1];
+        const card2 = cards[i2];
+        if (card1 && card2 && card1.matchId === card2.matchId) {
         playSound('correct', soundEnabled);
         setMatchedPairs(prev => prev + 1);
         setTimeout(() => {
@@ -874,6 +885,7 @@ export const MemoryGameView: React.FC<MemoryGameViewProps> = ({ problem, onAnswe
           setCards(resetCards); 
           setFlipped([]); 
         }, 1200);
+      }
       }
     }
   };
@@ -974,14 +986,14 @@ interface RoboPathViewProps {
 }
 
 export const RoboPathView: React.FC<RoboPathViewProps> = ({ problem, onAnswer, soundEnabled }) => {
-  const [commands, setCommands] = useState([]);
-  const [robotPos, setRobotPos] = useState(problem.start);
-  const [status, setStatus] = useState('planning');
-  const [startTime, setStartTime] = useState(null);
-  const [elapsedTime, setElapsedTime] = useState(0);
-  const [moveCount, setMoveCount] = useState(0);
-  const [bestTime, setBestTime] = useState(null);
-  const [bestMoves, setBestMoves] = useState(null);
+  const [commands, setCommands] = useState<string[]>([]);
+  const [robotPos, setRobotPos] = useState<[number, number]>(problem.start);
+  const [status, setStatus] = useState<string>('planning');
+  const [startTime, setStartTime] = useState<number | null>(null);
+  const [elapsedTime, setElapsedTime] = useState<number>(0);
+  const [moveCount, setMoveCount] = useState<number>(0);
+  const [bestTime, setBestTime] = useState<number | null>(null);
+  const [bestMoves, setBestMoves] = useState<number | null>(null);
   
   useEffect(() => { 
       setCommands([]); 
@@ -997,7 +1009,7 @@ export const RoboPathView: React.FC<RoboPathViewProps> = ({ problem, onAnswer, s
       try {
         const saved = localStorage.getItem(storageKey);
         if (saved) {
-          const best = JSON.parse(saved);
+          const best = JSON.parse(saved) as { time: number; moves: number };
           setBestTime(best.time);
           setBestMoves(best.moves);
         }
@@ -1017,7 +1029,7 @@ export const RoboPathView: React.FC<RoboPathViewProps> = ({ problem, onAnswer, s
     return () => clearInterval(interval);
   }, [status, startTime]);
 
-  const addCommand = useCallback((cmd) => { 
+  const addCommand = useCallback((cmd: string): void => { 
       const maxCommands = problem.maxCommands || 8;
       if (status !== 'planning' || commands.length >= maxCommands) return; 
       playSound('click', soundEnabled);
@@ -1038,24 +1050,24 @@ export const RoboPathView: React.FC<RoboPathViewProps> = ({ problem, onAnswer, s
       }); 
   }, [status, soundEnabled]);
   
-  const runSimulation = useCallback(async () => {
+  const runSimulation = useCallback(async (): Promise<void> => {
     if (commands.length === 0) return;
     setStatus('moving');
     playSound('click', soundEnabled);
     
-    let currentPos = { ...problem.start };
+    const currentPos: [number, number] = [problem.start[0], problem.start[1]];
     for (let i = 0; i < commands.length; i++) {
         const cmd = commands[i]; 
         await new Promise(r => setTimeout(r, 600));
         
-        if (cmd === 'UP') currentPos.y = Math.max(0, currentPos.y - 1);
-        if (cmd === 'DOWN') currentPos.y = Math.min(problem.gridSize - 1, currentPos.y + 1);
-        if (cmd === 'LEFT') currentPos.x = Math.max(0, currentPos.x - 1);
-        if (cmd === 'RIGHT') currentPos.x = Math.min(problem.gridSize - 1, currentPos.x + 1);
+        if (cmd === 'UP') currentPos[1] = Math.max(0, currentPos[1] - 1);
+        if (cmd === 'DOWN') currentPos[1] = Math.min(problem.gridSize - 1, currentPos[1] + 1);
+        if (cmd === 'LEFT') currentPos[0] = Math.max(0, currentPos[0] - 1);
+        if (cmd === 'RIGHT') currentPos[0] = Math.min(problem.gridSize - 1, currentPos[0] + 1);
         
-        setRobotPos({ ...currentPos });
+        setRobotPos([currentPos[0], currentPos[1]]);
         
-        if (problem.obstacles.some(o => o.x === currentPos.x && o.y === currentPos.y)) { 
+        if (problem.obstacles.some(o => o[0] === currentPos[0] && o[1] === currentPos[1])) { 
             setStatus('crash'); 
             playSound('wrong', soundEnabled);
             setTimeout(() => { 
@@ -1068,9 +1080,10 @@ export const RoboPathView: React.FC<RoboPathViewProps> = ({ problem, onAnswer, s
         }
     }
     
-    if (currentPos.x === problem.end.x && currentPos.y === problem.end.y) { 
+    const goalPos = problem.end || problem.goal;
+    if (currentPos[0] === goalPos[0] && currentPos[1] === goalPos[1]) { 
         setStatus('win');
-        const finalTime = Math.floor((Date.now() - startTime) / 1000);
+        const finalTime = Math.floor((Date.now() - (startTime || 0)) / 1000);
         const finalMoves = commands.length;
         
         // Salvesta parimad tulemused
@@ -1078,7 +1091,7 @@ export const RoboPathView: React.FC<RoboPathViewProps> = ({ problem, onAnswer, s
         try {
           const saved = localStorage.getItem(storageKey);
           if (saved) {
-            const best = JSON.parse(saved);
+            const best = JSON.parse(saved) as { time: number; moves: number };
             if (!bestTime || finalTime < best.time) {
               setBestTime(finalTime);
               localStorage.setItem(storageKey, JSON.stringify({ time: finalTime, moves: finalMoves }));
@@ -1107,17 +1120,17 @@ export const RoboPathView: React.FC<RoboPathViewProps> = ({ problem, onAnswer, s
             setStatus('planning'); 
         }, 1200); 
     }
-  }, [commands, problem.start, problem.end, problem.gridSize, problem.obstacles, soundEnabled, startTime, bestTime, bestMoves, onAnswer]);
+  }, [commands, problem.start, problem.end, problem.goal, problem.gridSize, problem.obstacles, soundEnabled, startTime, bestTime, bestMoves, onAnswer]);
 
   // Klaviatuuri tugi - nooleklahvid ja WASD
   useEffect(() => {
     if (status !== 'planning') return;
     
-    const handleKeyPress = (e) => {
+    const handleKeyPress = (e: KeyboardEvent): void => {
       // Vältime, kui kasutaja kirjutab tekstiväljale
-      if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+      if ((e.target as HTMLElement).tagName === 'INPUT' || (e.target as HTMLElement).tagName === 'TEXTAREA') return;
       
-      let command = null;
+      let command: string | null = null;
       
       // Nooleklahvid
       if (e.key === 'ArrowUp') {
@@ -1156,7 +1169,7 @@ export const RoboPathView: React.FC<RoboPathViewProps> = ({ problem, onAnswer, s
       // Enter või Space - käivita robot
       else if ((e.key === 'Enter' || e.key === ' ') && commands.length > 0) {
         e.preventDefault();
-        runSimulation();
+        void runSimulation();
         return;
       }
       
@@ -1254,7 +1267,7 @@ export const RoboPathView: React.FC<RoboPathViewProps> = ({ problem, onAnswer, s
            <div className="col-start-3 row-start-2"><button onClick={() => addCommand('RIGHT')} aria-label="Lisa käsk: paremale" disabled={status !== 'planning'} className="w-full h-12 sm:h-14 bg-white border-b-3 sm:border-b-4 border-indigo-200 rounded-lg sm:rounded-xl flex items-center justify-center active:translate-y-1 hover:bg-indigo-50 transition-colors"><ArrowRight size={18} className="sm:w-5 sm:h-5" /></button></div>
            
            <div className="col-start-1 row-start-3"><button onClick={removeCommand} aria-label="Eemalda viimane käsk" disabled={status !== 'planning'} className="w-full h-12 sm:h-14 bg-red-100 border-b-3 sm:border-b-4 border-red-300 text-red-500 rounded-lg sm:rounded-xl flex items-center justify-center active:translate-y-1"><RotateCcw size={16} className="sm:w-5 sm:h-5" /></button></div>
-           <div className="col-start-2 col-end-4 row-start-3"><button onClick={runSimulation} aria-label="Käivita robot" disabled={status !== 'planning' || commands.length === 0} className="w-full h-12 sm:h-14 bg-green-500 border-b-3 sm:border-b-4 border-green-700 text-white font-black rounded-lg sm:rounded-xl flex items-center justify-center active:translate-y-1 shadow-lg gap-1 sm:gap-2 text-sm sm:text-lg hover:bg-green-600 transition-colors">START <Play size={16} fill="white" className="sm:w-5 sm:h-5" /></button></div>
+           <div className="col-start-2 col-end-4 row-start-3"><button onClick={() => void runSimulation()} aria-label="Käivita robot" disabled={status !== 'planning' || commands.length === 0} className="w-full h-12 sm:h-14 bg-green-500 border-b-3 sm:border-b-4 border-green-700 text-white font-black rounded-lg sm:rounded-xl flex items-center justify-center active:translate-y-1 shadow-lg gap-1 sm:gap-2 text-sm sm:text-lg hover:bg-green-600 transition-colors">START <Play size={16} fill="white" className="sm:w-5 sm:h-5" /></button></div>
         </div>
     </div>
   );
@@ -1262,7 +1275,7 @@ export const RoboPathView: React.FC<RoboPathViewProps> = ({ problem, onAnswer, s
 
 export const Confetti: React.FC = () => {
   // Generate stable random positions for confetti using index-based seed (memoized to prevent recalculation)
-  const confettiItems = useMemo(() => [...Array(30)].map((_, i) => {
+  const confettiItems = useMemo(() => Array.from({ length: 30 }).map((_, i) => {
     const seed = i * 12345;
     const left = ((seed * 9301 + 49297) % 233280) / 2332.8;
     const duration = 2 + ((seed * 48271) % 100) / 50;
@@ -1296,7 +1309,7 @@ export const TimeDisplay: React.FC<TimeDisplayProps> = ({ hour, minute }) => {
     <div className="relative w-32 h-32 sm:w-44 sm:h-44">
       <div className="absolute inset-0 rounded-full bg-white border-[6px] sm:border-[10px] border-blue-100 shadow-[0_10px_25px_rgba(59,130,246,0.12)]"></div>
       {/* minute ticks */}
-      {[...Array(60)].map((_, i) => (
+      {Array.from({ length: 60 }).map((_, i) => (
         <div
           key={i}
           className="absolute left-1/2 top-1/2 origin-bottom"
@@ -1309,7 +1322,7 @@ export const TimeDisplay: React.FC<TimeDisplayProps> = ({ hour, minute }) => {
         />
       ))}
       {/* numbers */}
-      {[...Array(12)].map((_, i) => {
+      {Array.from({ length: 12 }).map((_, i) => {
         const n = i === 0 ? 12 : i;
         const angle = i * 30;
         return (
@@ -1346,8 +1359,8 @@ interface TimeGameViewProps {
 }
 
 export const TimeGameView: React.FC<TimeGameViewProps> = ({ problem, onAnswer, soundEnabled }) => {
-  const [disabled, setDisabled] = useState([]);
-  const [feedback, setFeedback] = useState(null);
+  const [disabled, setDisabled] = useState<string[]>([]);
+  const [feedback, setFeedback] = useState<string | null>(null);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -1357,7 +1370,7 @@ export const TimeGameView: React.FC<TimeGameViewProps> = ({ problem, onAnswer, s
     return () => clearTimeout(timer);
   }, [problem.uid]);
 
-  const handleChoice = (opt) => {
+  const handleChoice = (opt: string): void => {
     playSound('click', soundEnabled);
     const correct = opt === problem.answer;
     if (correct) {
