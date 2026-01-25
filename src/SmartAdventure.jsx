@@ -619,23 +619,27 @@ const SmartAdventure = () => {
           return (
             <div key={category.id} className="mb-4 sm:mb-6">
               {/* Category header - clickable */}
-              <div className="mb-3 sm:mb-4 text-center">
+              <div className="mb-3 sm:mb-4">
                 <button
                   onClick={() => toggleCategory(category.id)}
-                  className="inline-flex items-center gap-2 bg-white/90 backdrop-blur-sm px-4 py-2 rounded-full border-2 border-purple-200 shadow-sm hover:shadow-md hover:border-purple-300 transition-all active:scale-95 cursor-pointer"
+                  className="w-full flex items-center justify-between bg-white/90 backdrop-blur-sm px-4 sm:px-5 py-3 sm:py-4 rounded-2xl border-2 border-purple-200 shadow-sm hover:shadow-md hover:border-purple-300 transition-all active:scale-[0.98] cursor-pointer"
                 >
-                  <span className="text-xl sm:text-2xl">{category.emoji}</span>
-                  <span className="font-black text-sm sm:text-base text-slate-700">
-                    {category.name}
-                  </span>
-                  <span className="text-xs sm:text-sm text-slate-500 font-bold">
-                    ({categoryGames.length})
-                  </span>
-                  {isExpanded ? (
-                    <ChevronUp className="w-4 h-4 sm:w-5 sm:h-5 text-slate-600" />
-                  ) : (
-                    <ChevronDown className="w-4 h-4 sm:w-5 sm:h-5 text-slate-600" />
-                  )}
+                  <div className="flex items-center gap-2 sm:gap-3">
+                    <span className="text-2xl sm:text-3xl">{category.emoji}</span>
+                    <span className="font-black text-base sm:text-lg text-slate-700">
+                      {category.name}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2 sm:gap-3">
+                    <span className="text-sm sm:text-base text-slate-500 font-bold bg-slate-100 px-2 sm:px-3 py-1 rounded-full">
+                      {categoryGames.length}
+                    </span>
+                    {isExpanded ? (
+                      <ChevronUp className="w-5 h-5 sm:w-6 sm:h-6 text-slate-600" />
+                    ) : (
+                      <ChevronDown className="w-5 h-5 sm:w-6 sm:h-6 text-slate-600" />
+                    )}
+                  </div>
                 </button>
               </div>
               
