@@ -3,6 +3,7 @@ import { persist } from 'zustand/middleware';
 import { APP_KEY, PROFILES, GAME_CONFIG } from '../games/data';
 import { createStats, recordGameStart, recordAnswer as recordStatsAnswer, recordLevelUp as recordStatsLevelUp, recordScore } from '../engine/stats';
 import { checkAchievements } from '../engine/achievements';
+import { getTranslations } from '../i18n';
 
 interface AchievementData {
   id: string;
@@ -176,7 +177,9 @@ export const useGameStore = create<GameStore>()(
       },
       
       resetGame: () => {
-        if (confirm('Kas oled kindel, et soovid kogu progressi kustutada?')) {
+        const t = getTranslations();
+        const confirmed = confirm(t.errors.confirmReset);
+        if (confirmed) {
           set({
             profile: Object.keys(PROFILES)[0],
             levels: buildDefaultLevels(),

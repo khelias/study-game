@@ -1,5 +1,6 @@
 // Error boundary komponent React'i jaoks
 import React, { Component, ErrorInfo, ReactNode } from 'react';
+import { getTranslations } from '../i18n';
 
 interface ErrorBoundaryProps {
   children: ReactNode;
@@ -26,18 +27,19 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
 
   render(): ReactNode {
     if (this.state.hasError) {
+      const t = getTranslations();
       return (
         <div className="min-h-screen flex flex-col items-center justify-center bg-red-50 p-4">
           <div className="text-6xl mb-4">😕</div>
-          <h2 className="text-2xl font-black text-red-600 mb-2">Midagi läks valesti</h2>
+          <h2 className="text-2xl font-black text-red-600 mb-2">{t.errors.somethingWentWrong}</h2>
           <p className="text-slate-600 mb-4 text-center max-w-md">
-            Mängus tekkis viga. Proovi lehte värskendada.
+            {t.errors.gameError}
           </p>
           <button
             onClick={() => window.location.reload()}
             className="bg-blue-500 hover:bg-blue-600 text-white px-6 py-3 rounded-xl font-bold shadow-lg transition-colors"
           >
-            Värskenda lehte
+            {t.errors.refreshPage}
           </button>
         </div>
       );

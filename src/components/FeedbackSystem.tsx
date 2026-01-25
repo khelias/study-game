@@ -1,26 +1,7 @@
 // Täiustatud tagasiside süsteem - parem visuaalne ja heliline tagasiside
 import React, { useEffect, useState, useRef } from 'react';
 import { playSound } from '../engine/audio';
-
-const ENCOURAGEMENTS = {
-  correct: [
-    'ÕIGE! 🌟', 'SUUREPÄRANE! ⭐', 'VÄGA HEA! 🎉', 'FANTASTILINE! 🚀', 
-    'IMELISELT! ✨', 'TUBLI! 💪', 'TÄIUSLIK! 🏆', 'HÄMMASTAV! 🌈',
-    'WOW! 🔥', 'VÄGA TUBLI! 🎊', 'SULLE LIHTNE! 💯', 'PROFESSIONAALNE! 🎯'
-  ],
-  wrong: [
-    'PROOVI UUESTI! 💪', 'ÄRA ANNA ALLA! 🌟', 'SAAD SEDA! ⭐', 'JÄTKA! 🚀',
-    'LÄHED ÕIGELE TEEDELE! 🎯', 'PROOVI VEEL! 💡', 'PEAAEGU! ✨',
-    'VÄGA LÄHEDAL! 🎉', 'JÄRGMINE KORD! 🌈', 'ÄRA LOOBU! 💪'
-  ],
-  streak: [
-    '2 ÕIGET JÄRJEST! 🔥', '3 ÕIGET JÄRJEST! ⭐⭐', '4 ÕIGET JÄRJEST! 🌟🌟',
-    '5 ÕIGET JÄRJEST! 🏆', '6 ÕIGET JÄRJEST! 💯', '7+ ÕIGET JÄRJEST! 🚀'
-  ],
-  levelUp: [
-    'TASE TÕUSIS! 🎊', 'UUS TASE! 🌟', 'EDENED! ⭐', 'SUUREPÄRANE! 🏆'
-  ]
-};
+import { getTranslations } from '../i18n';
 
 type FeedbackType = 'correct' | 'wrong' | 'hint' | 'levelUp' | 'streak' | 'info';
 
@@ -127,20 +108,23 @@ export const FeedbackMessage: React.FC<FeedbackMessageProps> = ({
  */
 // eslint-disable-next-line react-refresh/only-export-components
 export const getRandomEncouragement = (type: FeedbackType, streak = 0): string => {
+  const t = getTranslations();
+  const encouragements = t.feedback;
+  
   if (type === 'correct') {
-    if (streak >= 7) return ENCOURAGEMENTS.streak[5] ?? '';
-    if (streak >= 6) return ENCOURAGEMENTS.streak[4] ?? '';
-    if (streak >= 5) return ENCOURAGEMENTS.streak[3] ?? '';
-    if (streak >= 4) return ENCOURAGEMENTS.streak[2] ?? '';
-    if (streak >= 3) return ENCOURAGEMENTS.streak[1] ?? '';
-    if (streak >= 2) return ENCOURAGEMENTS.streak[0] ?? '';
-    return ENCOURAGEMENTS.correct[Math.floor(Math.random() * ENCOURAGEMENTS.correct.length)] ?? '';
+    if (streak >= 7) return encouragements.streak[5] ?? '';
+    if (streak >= 6) return encouragements.streak[4] ?? '';
+    if (streak >= 5) return encouragements.streak[3] ?? '';
+    if (streak >= 4) return encouragements.streak[2] ?? '';
+    if (streak >= 3) return encouragements.streak[1] ?? '';
+    if (streak >= 2) return encouragements.streak[0] ?? '';
+    return encouragements.correct[Math.floor(Math.random() * encouragements.correct.length)] ?? '';
   }
   if (type === 'wrong') {
-    return ENCOURAGEMENTS.wrong[Math.floor(Math.random() * ENCOURAGEMENTS.wrong.length)] ?? '';
+    return encouragements.wrong[Math.floor(Math.random() * encouragements.wrong.length)] ?? '';
   }
   if (type === 'levelUp') {
-    return ENCOURAGEMENTS.levelUp[Math.floor(Math.random() * ENCOURAGEMENTS.levelUp.length)] ?? '';
+    return encouragements.levelUp[Math.floor(Math.random() * encouragements.levelUp.length)] ?? '';
   }
   return '';
 };

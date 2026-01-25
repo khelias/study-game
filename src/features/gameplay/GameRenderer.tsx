@@ -11,6 +11,7 @@ import {
   UnitConversionView 
 } from '../../components/GameViews';
 import type { Problem } from '../../types/game';
+import { useTranslation } from '../../i18n/useTranslation';
 
 interface GameRendererProps {
   gameType: string;
@@ -20,6 +21,7 @@ interface GameRendererProps {
 }
 
 export const GameRenderer: React.FC<GameRendererProps> = ({ gameType, problem, onAnswer, soundEnabled }) => {
+  const t = useTranslation();
   // Handle advanced versions by removing '_adv' suffix
   const baseGameType = gameType.replace('_adv', '');
   
@@ -55,7 +57,7 @@ export const GameRenderer: React.FC<GameRendererProps> = ({ gameType, problem, o
     default:
       return (
         <div className="text-center p-8 text-red-600">
-          Viga: Tundmatu mängutüüp "{gameType}"
+          {t.errors.unknownGameType}: "{gameType}"
         </div>
       );
   }

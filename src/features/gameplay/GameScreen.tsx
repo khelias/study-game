@@ -13,6 +13,7 @@ import { EnhancedConfetti, PulseEffect } from '../../components/EnhancedAnimatio
 import { ParticleEffect } from '../../components/ParticleEffect';
 import { ProgressIndicator } from '../../components/FeedbackSystem';
 import { LearningTip } from '../../components/LearningTips';
+import type { BalanceScaleProblem } from '../../types/game';
 
 // Type-safe wrapper for getRandomEncouragement
 const getRandomEncouragement = (type: string, streak?: number): string => 
@@ -218,10 +219,9 @@ export const GameScreen: React.FC = () => {
         break;
       case 'balance_scale': {
         if (problem.type === 'balance_scale') {
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
-          const leftSum = problem.display.left.reduce((a: number, b: number) => a + b, 0);
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
-          const rightKnown = problem.display.right.reduce((a: number, b: number) => a + b, 0);
+          const balanceProblem = problem as BalanceScaleProblem;
+          const leftSum = balanceProblem.display.left.reduce((a, b) => a + b, 0);
+          const rightKnown = balanceProblem.display.right.reduce((a, b) => a + b, 0);
           hintText = `Vihje: Vasak pool on ${leftSum}, parem pool on ${rightKnown} + ?`;
         }
         break;
@@ -300,10 +300,9 @@ export const GameScreen: React.FC = () => {
           <Home size={18} className="sm:w-5 sm:h-5 text-slate-600"/>
         </button>
         
-        <div className="flex flex-col items-center gap-0.5 sm:gap-1">
+          <div className="flex flex-col items-center gap-0.5 sm:gap-1">
           <div className="flex gap-1 sm:gap-1.5 bg-slate-100 px-2 sm:px-3 py-1 sm:py-2 rounded-full">
-            {/* eslint-disable-next-line @typescript-eslint/no-unsafe-assignment */}
-            {[...Array(5)].map((_, i) => (
+            {Array.from({ length: 5 }, (_, i) => (
               <PulseEffect key={i} active={i < stars && particleActive}>
                 <div className={`transition-all duration-500 ${i < stars ? 'scale-110' : 'scale-100'}`}>
                   <Star 
@@ -320,8 +319,7 @@ export const GameScreen: React.FC = () => {
         </div>
         
         <div className="flex gap-0.5 sm:gap-1">
-          {/* eslint-disable-next-line @typescript-eslint/no-unsafe-assignment */}
-          {[...Array(3)].map((_, i) => (
+          {Array.from({ length: 3 }, (_, i) => (
             <Heart key={i} className={`w-5 h-5 sm:w-7 sm:h-7 transition-all duration-300 ${i < hearts ? 'text-red-500 fill-red-500 animate-pulse-slow' : 'text-slate-200'}`} />
           ))}
         </div>

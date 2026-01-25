@@ -606,12 +606,14 @@ export const SyllableGameView: React.FC<SyllableGameViewProps> = ({ problem, onA
     id: string;
   }
   
-  const poolFromProblem = (): SyllablePart[] => problem.shuffled.map((p, i) => ({ part: p, id: `${p.text}-${i}` }));
+  const poolFromProblem = useCallback((): SyllablePart[] => {
+    return problem.shuffled.map((p, i) => ({ part: p, id: `${p.text}-${i}` }));
+  }, [problem.shuffled]);
+  
   const [current, setCurrent] = useState<Array<{ text: string; id: string } | null>>([]);
-  const [pool, setPool] = useState<SyllablePart[]>(poolFromProblem());
+  const [pool, setPool] = useState<SyllablePart[]>(() => poolFromProblem());
   const [ghost, setGhost] = useState<boolean>(false);
   const colors: string[] = ['bg-orange-100 text-orange-700 border-orange-300', 'bg-teal-100 text-teal-700 border-teal-300', 'bg-blue-100 text-blue-700 border-blue-300', 'bg-pink-100 text-pink-700 border-pink-300'];
-  const problemUid: string = problem.uid;
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -620,7 +622,7 @@ export const SyllableGameView: React.FC<SyllableGameViewProps> = ({ problem, onA
       setGhost(false);
     }, 0);
     return () => clearTimeout(timer);
-  }, [problemUid]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [poolFromProblem]);
 
   const handleSelect = (item: SyllablePart): void => {
     playSound('click', soundEnabled);

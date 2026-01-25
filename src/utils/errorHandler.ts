@@ -2,8 +2,7 @@
  * Error handling utility - production-safe error logging
  */
 
-// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
-const isDevelopment = import.meta.env?.DEV ?? false;
+const isDevelopment = import.meta.env.DEV;
 
 /**
  * Logs an error message
