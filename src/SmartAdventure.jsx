@@ -18,7 +18,7 @@ import { ProgressIndicator } from './components/FeedbackSystem';
 import { LearningTip } from './components/LearningTips';
 import { createAdaptiveDifficulty, updateAdaptiveDifficulty, getEffectiveLevel } from './engine/adaptiveDifficulty';
 import { Generators } from './games/generators';
-import { APP_KEY, GAME_CONFIG, PROFILES } from './games/data';
+import { APP_KEY, GAME_CONFIG, PROFILES, CATEGORIES } from './games/data';
 import { playSound } from './engine/audio';
 import { createRng } from './engine/rng';
 import { createStats, recordGameStart, recordAnswer, recordLevelUp, recordScore } from './engine/stats';
@@ -594,20 +594,48 @@ const SmartAdventure = () => {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 gap-3 sm:gap-5 w-full max-w-md pb-6 sm:pb-10">
-        {Object.entries(GAME_CONFIG).filter(([, conf]) => !conf.allowedProfiles || conf.allowedProfiles.includes(profile)).map(([key, conf], idx) => {
-          const Icon = ICON_MAP[conf.icon] || Type;
-          const gameStats = stats.gamesByType?.[key] || 0;
-          const isNew = gameStats === 0;
+      {/* Mängud kategooriate kaupa */}
+      <div className="w-full max-w-md pb-6 sm:pb-10">
+        {Object.values(CATEGORIES).map(category => {
+          const categoryGames = Object.entries(GAME_CONFIG)
+            .filter(([, conf]) => 
+              conf.category === category.id && 
+              (!conf.allowedProfiles || conf.allowedProfiles.includes(profile))
+            );
+          
+          if (categoryGames.length === 0) return null;
+          
           return (
-            <GameCard
-              key={key}
-              gameConfig={{ ...conf, iconComponent: Icon }}
-              level={levels[profile][key]}
-              onClick={() => startGame(key)}
-              badge={isNew ? 'UUS!' : null}
-              delay={idx * 50}
-            />
+            <div key={category.id} className="mb-6 sm:mb-8">
+              {/* Category header */}
+              <div className="mb-3 sm:mb-4 text-center">
+                <div className="inline-flex items-center gap-2 bg-white/90 backdrop-blur-sm px-4 py-2 rounded-full border-2 border-purple-200 shadow-sm">
+                  <span className="text-xl sm:text-2xl">{category.emoji}</span>
+                  <span className="font-black text-sm sm:text-base text-slate-700">
+                    {category.name}
+                  </span>
+                </div>
+              </div>
+              
+              {/* Games grid */}
+              <div className="grid grid-cols-1 gap-3 sm:gap-5">
+                {categoryGames.map(([key, conf], idx) => {
+                  const Icon = ICON_MAP[conf.icon] || Type;
+                  const gameStats = stats.gamesByType?.[key] || 0;
+                  const isNew = gameStats === 0;
+                  return (
+                    <GameCard
+                      key={key}
+                      gameConfig={{ ...conf, iconComponent: Icon }}
+                      level={levels[profile][key]}
+                      onClick={() => startGame(key)}
+                      badge={isNew ? 'UUS!' : null}
+                      delay={idx * 50}
+                    />
+                  );
+                })}
+              </div>
+            </div>
           );
         })}
       </div>
