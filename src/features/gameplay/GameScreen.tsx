@@ -171,7 +171,7 @@ export const GameScreen: React.FC = () => {
             addNotification({
               type: 'levelUp',
               title: `${t.levelUp.level} ${currentLevel + 1}`,
-              emoji: gameConfig.emoji,
+              emoji: gameConfig.icon,
               message: t.levelUp.greatWork,
               duration: 3000,
               position: 'center',

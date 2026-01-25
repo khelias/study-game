@@ -150,6 +150,14 @@ const NotificationItem: React.FC<NotificationItemProps> = ({
   const [visible, setVisible] = useState(false);
   const [animating, setAnimating] = useState(false);
 
+  const handleDismiss = useCallback(() => {
+    setAnimating(false);
+    setTimeout(() => {
+      setVisible(false);
+      onDismiss(notification.id);
+    }, 300);
+  }, [notification.id, onDismiss]);
+
   // Handle auto-dismiss based on duration
   useEffect(() => {
     // Show animation
@@ -170,15 +178,7 @@ const NotificationItem: React.FC<NotificationItemProps> = ({
       clearTimeout(showTimer);
       if (hideTimer) clearTimeout(hideTimer);
     };
-  }, [notification.duration, notification.id, notification.type]);
-
-  const handleDismiss = useCallback(() => {
-    setAnimating(false);
-    setTimeout(() => {
-      setVisible(false);
-      onDismiss(notification.id);
-    }, 300);
-  }, [notification.id, onDismiss]);
+  }, [notification.duration, notification.id, notification.type, handleDismiss]);
 
   if (!visible) return null;
 
@@ -251,7 +251,9 @@ const CorrectNotification: React.FC<{
   notification: Notification;
   animating: boolean;
 }> = ({ notification, animating }) => {
-  const randomEmoji = CORRECT_EMOJIS[Math.floor(Math.random() * CORRECT_EMOJIS.length)];
+  // Use a stable random emoji by using notification ID as seed
+  const emojiIndex = notification.id.charCodeAt(notification.id.length - 1) % CORRECT_EMOJIS.length;
+  const randomEmoji = CORRECT_EMOJIS[emojiIndex];
   
   return (
     <div
