@@ -2,7 +2,7 @@
  * Error handling utility - production-safe error logging
  */
 
-const isDevelopment = import.meta.env.DEV as boolean;
+const isDevelopment = import.meta.env?.DEV ?? false;
 
 /**
  * Logs an error message

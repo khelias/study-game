@@ -34,7 +34,7 @@ const TUTORIAL_STEPS = [
   }
 ];
 
-export const TutorialModal = ({ onClose, soundEnabled }) => {
+export const TutorialModal = ({ onClose }) => {
   const [currentStep, setCurrentStep] = useState(0);
 
   const nextStep = () => {

@@ -47,7 +47,7 @@ describe('gameStore', () => {
   describe('Answer Recording', () => {
     it('should record correct answer', () => {
       const { recordAnswer } = useGameStore.getState();
-      const result = recordAnswer(true, 10);
+      recordAnswer(true, 10);
       
       const state = useGameStore.getState();
       expect(state.stats.correctAnswers).toBe(1);
@@ -94,7 +94,7 @@ describe('gameStore', () => {
   describe('Level Management', () => {
     it('should record level up', () => {
       const { recordLevelUp } = useGameStore.getState();
-      const result = recordLevelUp('word_builder', 2);
+      recordLevelUp('word_builder', 2);
       
       const state = useGameStore.getState();
       expect(state.levels[state.profile]['word_builder']).toBe(2);

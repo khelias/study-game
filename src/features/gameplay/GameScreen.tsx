@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useCallback } from 'react';
 import { Heart, Star, Home, Loader2 } from 'lucide-react';
 import { useGameStore } from '../../stores/gameStore';
 import { usePlaySessionStore } from '../../stores/playSessionStore';
@@ -96,7 +96,8 @@ export const GameScreen: React.FC = () => {
     
     if (isCorrect) {
       // Correct answer
-      const encouragement = getRandomEncouragement('correct', newStreak);
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
+      const encouragement = getRandomEncouragement('correct', newStreak) as string;
       setFeedbackMessage(encouragement, newStreak >= 2 ? 'streak' : 'correct');
       setBgClass('bg-green-50');
       setParticleActive(true);
@@ -145,7 +146,8 @@ export const GameScreen: React.FC = () => {
       }
     } else {
       // Wrong answer
-      const encouragement = getRandomEncouragement('wrong');
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
+      const encouragement = getRandomEncouragement('wrong') as string;
       setFeedbackMessage(encouragement, 'wrong');
       setBgClass('bg-red-50');
       setShowHint(true);

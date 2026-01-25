@@ -1,5 +1,5 @@
-import { describe, it, expect, vi } from 'vitest';
-import { renderHook, act } from '@testing-library/react';
+import { describe, it, expect } from 'vitest';
+import { renderHook } from '@testing-library/react';
 import { useGameEngine } from '../useGameEngine';
 
 describe('useGameEngine', () => {
@@ -124,6 +124,7 @@ describe('useGameEngine', () => {
     it('should handle null problem', () => {
       const { result } = renderHook(() => useGameEngine());
       
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const isCorrect = result.current.validateAnswer(null as any, 'TEST');
       expect(isCorrect).toBe(false);
     });

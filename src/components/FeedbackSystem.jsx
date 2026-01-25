@@ -1,5 +1,5 @@
 // Täiustatud tagasiside süsteem - parem visuaalne ja heliline tagasiside
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { playSound } from '../engine/audio';
 
 const ENCOURAGEMENTS = {
@@ -23,13 +23,13 @@ const ENCOURAGEMENTS = {
 };
 
 export const FeedbackMessage = ({ message, type = 'info', duration = 2000, onComplete, soundEnabled }) => {
-  const [visible, setVisible] = useState(true);
-  const [animating, setAnimating] = useState(false);
+  const [visible, setVisible] = useState(Boolean(message));
+  const [animating, setAnimating] = useState(Boolean(message));
+  const messageRef = useRef(message);
 
   useEffect(() => {
-    if (message) {
-      setVisible(true);
-      setAnimating(true);
+    if (message && message !== messageRef.current) {
+      messageRef.current = message;
       
       // Mängi heli
       if (type === 'correct' || type === 'levelUp') {
@@ -38,7 +38,13 @@ export const FeedbackMessage = ({ message, type = 'info', duration = 2000, onCom
         playSound('wrong', soundEnabled);
       }
 
-      const timer = setTimeout(() => {
+      // Schedule state updates
+      const showTimer = setTimeout(() => {
+        setVisible(true);
+        setAnimating(true);
+      }, 0);
+
+      const hideTimer = setTimeout(() => {
         setAnimating(false);
         setTimeout(() => {
           setVisible(false);
@@ -46,6 +52,17 @@ export const FeedbackMessage = ({ message, type = 'info', duration = 2000, onCom
         }, 300);
       }, duration);
 
+      return () => {
+        clearTimeout(showTimer);
+        clearTimeout(hideTimer);
+      };
+    } else if (!message && messageRef.current) {
+      // Reset state when message is cleared
+      messageRef.current = null;
+      const timer = setTimeout(() => {
+        setVisible(false);
+        setAnimating(false);
+      }, 0);
       return () => clearTimeout(timer);
     }
   }, [message, type, duration, onComplete, soundEnabled]);
@@ -85,6 +102,7 @@ export const FeedbackMessage = ({ message, type = 'info', duration = 2000, onCom
   );
 };
 
+// Helper function (not a component)
 export const getRandomEncouragement = (type, streak = 0) => {
   if (type === 'correct') {
     if (streak >= 7) return ENCOURAGEMENTS.streak[5];
@@ -105,7 +123,7 @@ export const getRandomEncouragement = (type, streak = 0) => {
 };
 
 // Progress indicator komponent
-export const ProgressIndicator = ({ current, total, label = '' }) => {
+const ProgressIndicator = ({ current, total, label = '' }) => {
   const percentage = (current / total) * 100;
   
   return (

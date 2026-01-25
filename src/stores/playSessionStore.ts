@@ -1,13 +1,13 @@
 import { create } from 'zustand';
-import { createAdaptiveDifficulty, updateAdaptiveDifficulty as updateDifficulty, getEffectiveLevel } from '../engine/adaptiveDifficulty';
+import { createAdaptiveDifficulty, updateAdaptiveDifficulty as updateDifficulty } from '../engine/adaptiveDifficulty';
 
 type GameState = 'menu' | 'playing' | 'game_over';
 
 interface Problem {
   type: string;
-  answer: any;
+  answer: unknown;
   uid?: string;
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
 interface AdaptiveDifficulty {

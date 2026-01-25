@@ -5,9 +5,7 @@ import { StatsDashboard, GameTypeStats } from '../../components/StatsDashboard';
 import { FocusTrap } from '../../components/AccessibilityHelpers';
 
 export const StatsModal = ({ stats, unlockedAchievements, onClose }) => {
-  const accuracy = stats.gamesPlayed > 0 
-    ? Math.round((stats.correctAnswers / (stats.correctAnswers + stats.wrongAnswers)) * 100)
-    : 0;
+  // Removed unused accuracy calculation
 
   return (
     <div 

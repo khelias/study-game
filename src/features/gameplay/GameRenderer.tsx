@@ -10,13 +10,7 @@ import {
   TimeGameView, 
   UnitConversionView 
 } from '../../components/GameViews';
-
-interface Problem {
-  type: string;
-  answer: any;
-  uid?: string;
-  [key: string]: any;
-}
+import type { Problem } from '../../types/game';
 
 interface GameRendererProps {
   gameType: string;

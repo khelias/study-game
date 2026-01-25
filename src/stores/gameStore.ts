@@ -4,12 +4,25 @@ import { APP_KEY, PROFILES, GAME_CONFIG } from '../games/data';
 import { createStats, recordGameStart, recordAnswer as recordStatsAnswer, recordLevelUp as recordStatsLevelUp, recordScore } from '../engine/stats';
 import { checkAchievements } from '../engine/achievements';
 
+interface AchievementData {
+  id: string;
+  title: string;
+  desc: string;
+  icon: string;
+}
+
+interface ProfileData {
+  levelStart?: number;
+  [key: string]: unknown;
+}
+
 // Build default levels for all profiles and game types
 const buildDefaultLevels = () => {
-  const base = {};
+  const base: Record<string, Record<string, number>> = {};
   Object.keys(PROFILES).forEach(pid => {
-    const start = PROFILES[pid].levelStart || 1;
-    base[pid] = Object.keys(GAME_CONFIG).reduce((acc, g) => ({ ...acc, [g]: start }), {});
+    const profile = PROFILES[pid] as ProfileData;
+    const start = profile.levelStart || 1;
+    base[pid] = Object.keys(GAME_CONFIG).reduce((acc, g) => ({ ...acc, [g]: start }), {} as Record<string, number>);
   });
   return base;
 };
@@ -28,13 +41,13 @@ export interface GameStore {
   // Actions
   setProfile: (profile: string) => void;
   updateStats: (updater: (stats: ReturnType<typeof createStats>) => ReturnType<typeof createStats>) => void;
-  recordAnswer: (isCorrect: boolean, points?: number) => { newAchievements: any[] };
-  recordGameStart: (gameType: string) => { newAchievements: any[] };
-  recordLevelUp: (gameType: string, newLevel: number) => { newAchievements: any[] };
+  recordAnswer: (isCorrect: boolean, points?: number) => { newAchievements: AchievementData[] };
+  recordGameStart: (gameType: string) => { newAchievements: AchievementData[] };
+  recordLevelUp: (gameType: string, newLevel: number) => { newAchievements: AchievementData[] };
   unlockAchievement: (id: string) => void;
   toggleSound: () => void;
   resetGame: () => void;
-  addCollectedStars: (count: number) => { newAchievements: any[] };
+  addCollectedStars: (count: number) => { newAchievements: AchievementData[] };
   setScore: (score: number) => void;
   addScore: (points: number) => void;
   markTutorialSeen: () => void;
@@ -208,9 +221,10 @@ export const useGameStore = create<GameStore>()(
         hasSeenTutorial: state.hasSeenTutorial,
       }),
       // Handle migration from old localStorage format
-      migrate: (persistedState: any, version: number) => {
+      migrate: (persistedState: unknown) => {
         // Merge old format with new if needed
         if (persistedState && typeof persistedState === 'object') {
+          const stateObj = persistedState as Record<string, unknown>;
           const defaults = {
             profile: Object.keys(PROFILES)[0],
             levels: buildDefaultLevels(),
@@ -223,23 +237,27 @@ export const useGameStore = create<GameStore>()(
           };
           
           // Merge levels properly
-          if (persistedState.levels && typeof persistedState.levels === 'object') {
+          if (stateObj.levels && typeof stateObj.levels === 'object') {
             const template = buildDefaultLevels();
             const merged = { ...template };
-            Object.entries(persistedState.levels).forEach(([pid, lvlObj]: [string, any]) => {
-              merged[pid] = { ...template[pid], ...lvlObj };
+            const levelsObj = stateObj.levels as Record<string, Record<string, number>>;
+            Object.entries(levelsObj).forEach(([pid, lvlObj]) => {
+              if (typeof lvlObj === 'object' && lvlObj !== null) {
+                merged[pid] = { ...template[pid], ...lvlObj };
+              }
             });
-            persistedState.levels = merged;
+            stateObj.levels = merged;
           }
           
           // Sync collectedStars with stats if needed
-          if (persistedState.stats && !persistedState.stats.collectedStars && persistedState.collectedStars) {
-            persistedState.stats.collectedStars = persistedState.collectedStars;
-          } else if (persistedState.stats && persistedState.stats.collectedStars) {
-            persistedState.collectedStars = persistedState.stats.collectedStars;
+          const statsObj = stateObj.stats as Record<string, unknown> | undefined;
+          if (statsObj && !statsObj.collectedStars && stateObj.collectedStars) {
+            statsObj.collectedStars = stateObj.collectedStars;
+          } else if (statsObj && statsObj.collectedStars) {
+            stateObj.collectedStars = statsObj.collectedStars;
           }
           
-          return { ...defaults, ...persistedState };
+          return { ...defaults, ...stateObj };
         }
         return persistedState;
       },

@@ -1,7 +1,8 @@
 // Accessibility helperid - parem ligipääsetavus
-import React, { useEffect } from 'react';
+import { useEffect } from 'react';
 
 // Keyboard navigation helper
+// eslint-disable-next-line react-refresh/only-export-components
 export const useKeyboardNavigation = (onEscape, onEnter) => {
   useEffect(() => {
     const handleKeyDown = (e) => {
@@ -19,7 +20,9 @@ export const useKeyboardNavigation = (onEscape, onEnter) => {
 };
 
 // Focus trap komponent
-export const FocusTrap = ({ children, active = true }) => {
+import React from 'react';
+
+const FocusTrap = ({ children, active = true }) => {
   const containerRef = React.useRef(null);
   
   useEffect(() => {
@@ -60,7 +63,7 @@ export const FocusTrap = ({ children, active = true }) => {
 };
 
 // Screen reader friendly message
-export const ScreenReaderMessage = ({ message, priority = 'polite' }) => {
+const ScreenReaderMessage = ({ message, priority = 'polite' }) => {
   return (
     <div
       className="sr-only"
@@ -74,7 +77,7 @@ export const ScreenReaderMessage = ({ message, priority = 'polite' }) => {
 };
 
 // Skip to content link
-export const SkipToContent = ({ targetId = 'main-content' }) => {
+const SkipToContent = ({ targetId = 'main-content' }) => {
   return (
     <a
       href={`#${targetId}`}
@@ -84,3 +87,5 @@ export const SkipToContent = ({ targetId = 'main-content' }) => {
     </a>
   );
 };
+
+export { FocusTrap, ScreenReaderMessage, SkipToContent };

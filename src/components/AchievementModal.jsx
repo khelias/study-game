@@ -1,32 +1,29 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { X } from 'lucide-react';
 import { playSound } from '../engine/audio';
 
 export const AchievementModal = ({ achievement, onClose, soundEnabled }) => {
-  const [show, setShow] = useState(false);
+  const timerRef = useRef(null);
 
   useEffect(() => {
     if (achievement) {
       playSound('win', soundEnabled);
-      setShow(true);
-      const timer = setTimeout(() => {
-        setShow(false);
-        setTimeout(onClose, 500);
+      timerRef.current = setTimeout(() => {
+        onClose();
       }, 3000);
-      return () => clearTimeout(timer);
+      return () => {
+        if (timerRef.current) clearTimeout(timerRef.current);
+      };
     }
   }, [achievement, onClose, soundEnabled]);
 
-  if (!achievement || !show) return null;
+  if (!achievement) return null;
 
   return (
     <div className="fixed inset-0 z-[110] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-300">
       <div className="bg-gradient-to-br from-yellow-50 to-orange-50 rounded-3xl p-8 max-w-sm w-full shadow-2xl text-center transform scale-100 animate-bounce-short border-4 border-yellow-400 relative">
         <button
-          onClick={() => {
-            setShow(false);
-            onClose();
-          }}
+          onClick={onClose}
           className="absolute top-4 right-4 p-2 rounded-full bg-white/80 hover:bg-white transition-colors"
           aria-label="Sulge"
         >

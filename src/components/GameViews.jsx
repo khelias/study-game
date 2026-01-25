@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { ArrowRight, ArrowUp, ArrowDown, ArrowLeft, RotateCcw, Play } from 'lucide-react';
 import { playSound } from '../engine/audio';
 
@@ -23,14 +23,74 @@ export const LevelUpModal = ({ level, onNext, gameConfig }) => (
   </div>
 );
 
+// Move SvgWeight outside the component to avoid creating it during render
+const SvgWeight = ({ x, y, num, color }) => {
+  const isBlue = color === 'blue';
+  return (
+    <g transform={`translate(${x}, ${y})`}>
+      {/* 3D efekt - ülemine osa */}
+      <defs>
+        <linearGradient id={`weightGradTop-${color}-${num}`} x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" stopColor={isBlue ? '#60a5fa' : '#f87171'} stopOpacity="1" />
+          <stop offset="100%" stopColor={isBlue ? '#3b82f6' : '#ef4444'} stopOpacity="1" />
+        </linearGradient>
+        <linearGradient id={`weightGradSide-${color}-${num}`} x1="0%" y1="0%" x2="100%" y2="0%">
+          <stop offset="0%" stopColor={isBlue ? '#3b82f6' : '#ef4444'} stopOpacity="1" />
+          <stop offset="100%" stopColor={isBlue ? '#1e40af' : '#dc2626'} stopOpacity="1" />
+        </linearGradient>
+        <filter id={`weightShadow-${color}-${num}`}>
+          <feDropShadow dx="2" dy="3" stdDeviation="3" floodOpacity="0.4"/>
+        </filter>
+      </defs>
+      
+      {/* Varjutus alt */}
+      <ellipse cx="0" cy="8" rx="16" ry="4" fill="black" opacity="0.2" filter={`url(#weightShadow-${color}-${num})`} />
+      
+      {/* 3D kaal - esikülg */}
+      <rect x="-16" y="-22" width="32" height="32" rx="5" ry="5" 
+            fill={`url(#weightGradTop-${color}-${num})`} 
+            stroke={isBlue ? '#1e40af' : '#991b1b'} 
+            strokeWidth="2.5"
+            filter={`url(#weightShadow-${color}-${num})`} />
+      
+      {/* 3D efekt - parem külg (sügavus) */}
+      <path d="M 16 -22 L 20 -18 L 20 10 L 16 10 Z" 
+            fill={`url(#weightGradSide-${color}-${num})`} 
+            opacity="0.7" />
+      
+      {/* Ülemine kumerus (3D efekt) */}
+      <ellipse cx="0" cy="-22" rx="16" ry="6" fill={isBlue ? '#93c5fd' : '#fca5a5'} opacity="0.6" />
+      
+      {/* Numbri taust (parem loetavus) */}
+      <circle cx="0" cy="-5" r="10" fill="white" opacity="0.3" />
+      
+      {/* Number - suurem ja selgem, alati nähtav */}
+      <text x="0" y="2" textAnchor="middle" fill="white" 
+            fontSize="20" fontWeight="900" fontFamily="Arial, sans-serif"
+            stroke={isBlue ? '#1e3a8a' : '#991b1b'} strokeWidth="1"
+            style={{ textShadow: '0 1px 2px rgba(0,0,0,0.8)' }}
+            dominantBaseline="middle">
+        {num}
+      </text>
+      
+      {/* Hiilgus efekt */}
+      <ellipse cx="-8" cy="-18" rx="4" ry="3" fill="white" opacity="0.4" />
+    </g>
+  );
+};
+
 export const BalanceScaleView = ({ problem, onAnswer, soundEnabled }) => {
+  const problemUid = problem.uid;
   const [disabled, setDisabled] = useState([]);
   const [tilt, setTilt] = useState(-10);
+  const [prevUid, setPrevUid] = useState(problemUid);
 
-  useEffect(() => {
+  // Reset state when problem changes (derived state pattern)
+  if (problemUid !== prevUid) {
     setDisabled([]);
     setTilt(-10);
-  }, [problem.uid]);
+    setPrevUid(problemUid);
+  }
 
   const handleChoice = (weight) => {
     playSound('click', soundEnabled);
@@ -54,61 +114,6 @@ export const BalanceScaleView = ({ problem, onAnswer, soundEnabled }) => {
         onAnswer(false);
       }
     }, 1000);
-  };
-
-  const SvgWeight = ({ x, y, num, color }) => {
-    const isBlue = color === 'blue';
-    return (
-      <g transform={`translate(${x}, ${y})`}>
-        {/* 3D efekt - ülemine osa */}
-        <defs>
-          <linearGradient id={`weightGradTop-${color}-${num}`} x1="0%" y1="0%" x2="0%" y2="100%">
-            <stop offset="0%" stopColor={isBlue ? '#60a5fa' : '#f87171'} stopOpacity="1" />
-            <stop offset="100%" stopColor={isBlue ? '#3b82f6' : '#ef4444'} stopOpacity="1" />
-          </linearGradient>
-          <linearGradient id={`weightGradSide-${color}-${num}`} x1="0%" y1="0%" x2="100%" y2="0%">
-            <stop offset="0%" stopColor={isBlue ? '#3b82f6' : '#ef4444'} stopOpacity="1" />
-            <stop offset="100%" stopColor={isBlue ? '#1e40af' : '#dc2626'} stopOpacity="1" />
-          </linearGradient>
-          <filter id={`weightShadow-${color}-${num}`}>
-            <feDropShadow dx="2" dy="3" stdDeviation="3" floodOpacity="0.4"/>
-          </filter>
-        </defs>
-        
-        {/* Varjutus alt */}
-        <ellipse cx="0" cy="8" rx="16" ry="4" fill="black" opacity="0.2" filter={`url(#weightShadow-${color}-${num})`} />
-        
-        {/* 3D kaal - esikülg */}
-        <rect x="-16" y="-22" width="32" height="32" rx="5" ry="5" 
-              fill={`url(#weightGradTop-${color}-${num})`} 
-              stroke={isBlue ? '#1e40af' : '#991b1b'} 
-              strokeWidth="2.5"
-              filter={`url(#weightShadow-${color}-${num})`} />
-        
-        {/* 3D efekt - parem külg (sügavus) */}
-        <path d="M 16 -22 L 20 -18 L 20 10 L 16 10 Z" 
-              fill={`url(#weightGradSide-${color}-${num})`} 
-              opacity="0.7" />
-        
-        {/* Ülemine kumerus (3D efekt) */}
-        <ellipse cx="0" cy="-22" rx="16" ry="6" fill={isBlue ? '#93c5fd' : '#fca5a5'} opacity="0.6" />
-        
-        {/* Numbri taust (parem loetavus) */}
-        <circle cx="0" cy="-5" r="10" fill="white" opacity="0.3" />
-        
-        {/* Number - suurem ja selgem, alati nähtav */}
-        <text x="0" y="2" textAnchor="middle" fill="white" 
-              fontSize="20" fontWeight="900" fontFamily="Arial, sans-serif"
-              stroke={isBlue ? '#1e3a8a' : '#991b1b'} strokeWidth="1"
-              style={{ textShadow: '0 1px 2px rgba(0,0,0,0.8)' }}
-              dominantBaseline="middle">
-          {num}
-        </text>
-        
-        {/* Hiilgus efekt */}
-        <ellipse cx="-8" cy="-18" rx="4" ry="3" fill="white" opacity="0.4" />
-      </g>
-    );
   };
 
   return (
@@ -285,8 +290,26 @@ export const BalanceScaleView = ({ problem, onAnswer, soundEnabled }) => {
 
 export const StandardGameView = ({ problem, onAnswer, soundEnabled }) => {
   const [disabled, setDisabled] = useState([]);
+  const problemUid = problem.uid;
   
-  useEffect(() => { setDisabled([]); }, [problem.uid]);
+  useEffect(() => { 
+    const timer = setTimeout(() => setDisabled([]), 0);
+    return () => clearTimeout(timer);
+  }, [problemUid]);
+
+  // Cache random offset per problem to avoid calling Math.random during render
+  const sideOffsets = useMemo(() => {
+    if (problem.type !== 'sentence_logic') return {};
+    // Create a stable seed from problem.uid to ensure consistent offsets per problem
+    const seed = problem.uid ? problem.uid.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0) : 0;
+    return problem.options.reduce((acc, opt, idx) => {
+      if (opt.pos === 'KÕRVAL') {
+        // Use seeded pseudo-random value instead of Math.random()
+        acc[idx] = ((seed + idx) % 2 === 0) ? 50 : -50;
+      }
+      return acc;
+    }, {});
+  }, [problem.type, problem.options, problem.uid]);
 
   const handleChoice = (opt) => {
     playSound('click', soundEnabled);
@@ -300,7 +323,7 @@ export const StandardGameView = ({ problem, onAnswer, soundEnabled }) => {
     }
   };
 
-  const renderOptionContent = (opt) => {
+  const renderOptionContent = (opt, optIdx) => {
     if (problem.type === 'sentence_logic') {
         const sceneBg = opt.bg || 'bg-gray-100';
         let transformClass = '';
@@ -335,8 +358,8 @@ export const StandardGameView = ({ problem, onAnswer, soundEnabled }) => {
             anchorTransform = 'scale-120 translate-y-[-10px] opacity-100';
             break;
           case 'KÕRVAL': 
-            // Juhuslikult vasakule või paremale
-            sideOffset = Math.random() > 0.5 ? 50 : -50;
+            // Use pre-calculated random offset instead of Math.random() during render
+            sideOffset = sideOffsets[optIdx] || 0;
             transformClass = 'translate-y-[5px] scale-115'; 
             zIndex = 'z-25';
             // Anchor keskel, selgelt nähtav
@@ -444,7 +467,7 @@ export const StandardGameView = ({ problem, onAnswer, soundEnabled }) => {
                 ${isDisabled ? 'bg-slate-100 border-slate-100 opacity-40 cursor-not-allowed scale-95' : 'hover:border-blue-400 hover:-translate-y-1 hover:shadow-lg active:scale-95 active:border-b-0 active:translate-y-1'}
               `}
             >
-              {renderOptionContent(opt)}
+              {renderOptionContent(opt, idx)}
             </button>
            );
         })}
@@ -455,9 +478,16 @@ export const StandardGameView = ({ problem, onAnswer, soundEnabled }) => {
 
 export const WordGameView = ({ problem, onAnswer, soundEnabled }) => {
   const [userWord, setUserWord] = useState([]);
-  const [pool, setPool] = useState([]);
+  const [pool, setPool] = useState(problem.shuffled || []);
+  const problemUid = problem.uid;
   
-  useEffect(() => { if (problem) { setUserWord([]); setPool(problem.shuffled || []); } }, [problem.uid]);
+  useEffect(() => { 
+    const timer = setTimeout(() => {
+      setUserWord([]); 
+      setPool(problem.shuffled || []); 
+    }, 0);
+    return () => clearTimeout(timer);
+  }, [problemUid, problem.shuffled]);
   
   const handleSelect = (letter) => {
     playSound('click', soundEnabled);
@@ -516,19 +546,21 @@ export const WordGameView = ({ problem, onAnswer, soundEnabled }) => {
 };
 
 export const SyllableGameView = ({ problem, onAnswer, soundEnabled }) => {
-  const [current, setCurrent] = useState([]);
-  const [pool, setPool] = useState([]);
-  const [ghost, setGhost] = useState(false);
   const poolFromProblem = () => problem.shuffled.map((p, i) => ({ part: p, id: `${p}-${i}` }));
+  const [current, setCurrent] = useState([]);
+  const [pool, setPool] = useState(poolFromProblem());
+  const [ghost, setGhost] = useState(false);
   const colors = ['bg-orange-100 text-orange-700 border-orange-300', 'bg-teal-100 text-teal-700 border-teal-300', 'bg-blue-100 text-blue-700 border-blue-300', 'bg-pink-100 text-pink-700 border-pink-300'];
+  const problemUid = problem.uid;
 
   useEffect(() => {
-    if (problem) {
+    const timer = setTimeout(() => {
       setCurrent([]);
       setPool(poolFromProblem());
       setGhost(false);
-    }
-  }, [problem.uid]);
+    }, 0);
+    return () => clearTimeout(timer);
+  }, [problemUid]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleSelect = (item) => {
     playSound('click', soundEnabled);
@@ -600,14 +632,20 @@ export const PatternTrainView = ({ problem, onAnswer, soundEnabled }) => {
   const [disabled, setDisabled] = useState([]);
   const [trainState, setTrainState] = useState('enter'); 
   const [selectedOption, setSelectedOption] = useState(null);
+  const problemUid = problem.uid;
   
   useEffect(() => { 
-    setDisabled([]); 
-    setTrainState('enter'); 
-    setSelectedOption(null);
+    const timer = setTimeout(() => {
+      setDisabled([]); 
+      setTrainState('enter'); 
+      setSelectedOption(null);
+    }, 0);
     const t = setTimeout(() => setTrainState('idle'), 600); 
-    return () => clearTimeout(t); 
-  }, [problem.uid]);
+    return () => {
+      clearTimeout(timer);
+      clearTimeout(t);
+    };
+  }, [problemUid]);
 
   const handleChoice = (opt, idx) => {
     if (disabled.includes(idx) || trainState === 'leave') return;
@@ -712,19 +750,21 @@ export const PatternTrainView = ({ problem, onAnswer, soundEnabled }) => {
 };
 
 export const MemoryGameView = ({ problem, onAnswer, soundEnabled }) => {
-  const [cards, setCards] = useState([]);
+  const [cards, setCards] = useState(problem.cards || []);
   const [flipped, setFlipped] = useState([]); 
   const [matchedPairs, setMatchedPairs] = useState(0);
   const [showCelebration, setShowCelebration] = useState(false);
+  const problemUid = problem.uid;
   
   useEffect(() => { 
-    if (problem) { 
+    const timer = setTimeout(() => {
       setCards(problem.cards); 
       setFlipped([]); 
       setMatchedPairs(0);
       setShowCelebration(false);
-    } 
-  }, [problem.uid]);
+    }, 0);
+    return () => clearTimeout(timer);
+  }, [problemUid, problem.cards]);
   
   const handleCard = (index) => {
     if (flipped.length >= 2 || cards[index].flipped || cards[index].solved) return;
@@ -743,13 +783,14 @@ export const MemoryGameView = ({ problem, onAnswer, soundEnabled }) => {
         playSound('correct', soundEnabled);
         setMatchedPairs(prev => prev + 1);
         setTimeout(() => {
-          newCards[i1].solved = true; 
-          newCards[i2].solved = true;
-          setCards([...newCards]); 
+          const solvedCards = [...newCards];
+          solvedCards[i1] = { ...solvedCards[i1], solved: true };
+          solvedCards[i2] = { ...solvedCards[i2], solved: true };
+          setCards(solvedCards); 
           setFlipped([]);
           
           // Kontrolli, kas kõik paarid on leitud
-          const allSolved = newCards.every(c => c.solved);
+          const allSolved = solvedCards.every(c => c.solved);
           if (allSolved) {
             setShowCelebration(true);
             setTimeout(() => {
@@ -760,9 +801,10 @@ export const MemoryGameView = ({ problem, onAnswer, soundEnabled }) => {
         }, 600);
       } else {
         setTimeout(() => { 
-          newCards[i1].flipped = false; 
-          newCards[i2].flipped = false; 
-          setCards([...newCards]); 
+          const resetCards = [...newCards];
+          resetCards[i1] = { ...resetCards[i1], flipped: false };
+          resetCards[i2] = { ...resetCards[i2], flipped: false };
+          setCards(resetCards); 
           setFlipped([]); 
         }, 1200);
       }
@@ -801,7 +843,6 @@ export const MemoryGameView = ({ problem, onAnswer, soundEnabled }) => {
         {cards.map((card, i) => {
           const isFlipped = card.flipped || card.solved;
           const isMath = card.type === 'math';
-          const isAnswer = card.type === 'answer';
           
           return (
             <button 
@@ -887,7 +928,7 @@ export const RoboPathView = ({ problem, onAnswer, soundEnabled }) => {
           setBestTime(best.time);
           setBestMoves(best.moves);
         }
-      } catch (e) {
+      } catch {
         // Ignore
       }
   }, [problem.uid, problem.gridSize, problem.obstacles.length]);
@@ -978,7 +1019,7 @@ export const RoboPathView = ({ problem, onAnswer, soundEnabled }) => {
             setBestMoves(finalMoves);
             localStorage.setItem(storageKey, JSON.stringify({ time: finalTime, moves: finalMoves }));
           }
-        } catch (e) {
+        } catch {
           // Ignore storage errors
         }
         
@@ -1115,6 +1156,7 @@ export const RoboPathView = ({ problem, onAnswer, soundEnabled }) => {
          <div className="mb-2 sm:mb-3 text-center animate-bounce">
            <div className="text-3xl sm:text-4xl mb-1 sm:mb-2">🎉</div>
            <div className="text-xs sm:text-sm font-bold text-green-600">
+              {/* eslint-disable-next-line react-hooks/purity */}
              {Math.floor((Date.now() - startTime) / 1000)}s | {commands.length} käiku
            </div>
          </div>
@@ -1145,16 +1187,27 @@ export const RoboPathView = ({ problem, onAnswer, soundEnabled }) => {
   );
 };
 
-export const Confetti = () => (
-  <div className="fixed inset-0 pointer-events-none z-[50] overflow-hidden">
-    {[...Array(30)].map((_, i) => (
-      <div key={i} className="absolute text-2xl animate-confetti" style={{
-        left: `${Math.random() * 100}%`, top: `-10%`, animationDuration: `${2 + Math.random() * 2}s`, animationDelay: `${Math.random()}s`
-      }}>🎉</div>
-    ))}
-    <style>{`@keyframes confetti { 100% { transform: translateY(110vh) rotate(720deg); opacity: 0; } } .animate-confetti { animation: confetti 3s ease-out forwards; }`}</style>
-  </div>
-);
+export const Confetti = () => {
+  // Generate stable random positions for confetti using index-based seed
+  const confettiItems = [...Array(30)].map((_, i) => {
+    const seed = i * 12345;
+    const left = ((seed * 9301 + 49297) % 233280) / 2332.8;
+    const duration = 2 + ((seed * 48271) % 100) / 50;
+    const delay = ((seed * 1103515245 + 12345) % 100) / 100;
+    return { left, duration, delay };
+  });
+  
+  return (
+    <div className="fixed inset-0 pointer-events-none z-[50] overflow-hidden">
+      {confettiItems.map(({ left, duration, delay }, i) => (
+        <div key={i} className="absolute text-2xl animate-confetti" style={{
+          left: `${left}%`, top: `-10%`, animationDuration: `${duration}s`, animationDelay: `${delay}s`
+        }}>🎉</div>
+      ))}
+      <style>{`@keyframes confetti { 100% { transform: translateY(110vh) rotate(720deg); opacity: 0; } } .animate-confetti { animation: confetti 3s ease-out forwards; }`}</style>
+    </div>
+  );
+};
 
 export const TimeDisplay = ({ hour, minute }) => {
   const angleH = ((hour % 12) + minute / 60) * 30;
@@ -1213,8 +1266,11 @@ export const TimeGameView = ({ problem, onAnswer, soundEnabled }) => {
   const [feedback, setFeedback] = useState(null);
 
   useEffect(() => {
-    setDisabled([]);
-    setFeedback(null);
+    const timer = setTimeout(() => {
+      setDisabled([]);
+      setFeedback(null);
+    }, 0);
+    return () => clearTimeout(timer);
   }, [problem.uid]);
 
   const handleChoice = (opt) => {

@@ -1,6 +1,8 @@
 // Täiustatud mängukaart komponent - parem UI/UX
-import React from 'react';
+import React, { useMemo } from 'react';
 import { FadeIn } from './EnhancedAnimations';
+
+const DefaultIcon = () => null;
 
 export const GameCard = ({ 
   gameConfig, 
@@ -11,7 +13,10 @@ export const GameCard = ({
   badge = null, // Badge tekst (nt "UUS!")
   delay = 0
 }) => {
-  const IconComponent = gameConfig.iconComponent || (() => null);
+  const IconComponent = useMemo(
+    () => gameConfig.iconComponent || DefaultIcon,
+    [gameConfig.iconComponent]
+  );
   
   return (
     <FadeIn delay={delay}>

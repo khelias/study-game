@@ -30,11 +30,6 @@ export const ParticleEffect = ({ type = 'success', active = false }) => {
   if (!active || particles.length === 0) return null;
 
   const emoji = type === 'success' ? '✨' : type === 'star' ? '⭐' : '🎉';
-  const colors = type === 'success' 
-    ? ['#10b981', '#34d399', '#6ee7b7']
-    : type === 'star'
-    ? ['#fbbf24', '#fcd34d', '#fde68a']
-    : ['#f59e0b', '#fbbf24', '#fcd34d'];
 
   return (
     <div className="fixed inset-0 pointer-events-none z-[60] overflow-hidden">
