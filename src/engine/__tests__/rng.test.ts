@@ -83,6 +83,7 @@ describe('getRandom', () => {
   it('should return null for null array', () => {
     const rng = createRng(12345);
     
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const element = getRandom(null as any, rng);
     
     expect(element).toBeNull();
@@ -91,6 +92,7 @@ describe('getRandom', () => {
   it('should return null for undefined array', () => {
     const rng = createRng(12345);
     
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const element = getRandom(undefined as any, rng);
     
     expect(element).toBeNull();

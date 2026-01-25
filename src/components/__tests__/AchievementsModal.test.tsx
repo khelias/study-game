@@ -72,7 +72,7 @@ describe('AchievementsModal', () => {
       />
     );
     
-    const totalAchievements = Object.values(ACHIEVEMENTS).length;
+    const _totalAchievements = Object.values(ACHIEVEMENTS).length;
     const achievements = screen.getAllByRole('generic').filter(
       el => el.className.includes('p-4') && el.className.includes('rounded-xl')
     );
@@ -116,6 +116,7 @@ describe('AchievementsModal', () => {
     const onClose = vi.fn();
     const unlocked = ['first_game'];
     
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { container } = render(
       <AchievementsModal
         unlockedAchievements={unlocked}

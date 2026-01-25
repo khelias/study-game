@@ -5,7 +5,7 @@ export const ParticleEffect = ({ type = 'success', active = false }) => {
 
   useEffect(() => {
     if (!active) {
-      setParticles([]);
+      setTimeout(() => setParticles([]), 0);
       return;
     }
 
@@ -16,9 +16,12 @@ export const ParticleEffect = ({ type = 'success', active = false }) => {
       delay: Math.random() * 0.5,
       duration: 1 + Math.random() * 0.5,
       size: 8 + Math.random() * 12,
+      offsetX: Math.random() > 0.5 ? '-' : '+',
+      offsetXAmount: 100 + Math.random() * 50,
+      offsetY: 100 + Math.random() * 50,
     }));
 
-    setParticles(newParticles);
+    setTimeout(() => setParticles(newParticles), 0);
 
     const timer = setTimeout(() => {
       setParticles([]);
@@ -31,12 +34,37 @@ export const ParticleEffect = ({ type = 'success', active = false }) => {
 
   const emoji = type === 'success' ? '✨' : type === 'star' ? '⭐' : '🎉';
 
+  // Generate unique keyframe names for each particle with different offsets
+  const keyframes = particles
+    .map((particle) => {
+      const offsetX = particle.offsetX === '-' ? `-${particle.offsetXAmount}` : `${particle.offsetXAmount}`;
+      return `
+        @keyframes particle-${particle.id} {
+          0% {
+            transform: translate(0, 0) scale(1) rotate(0deg);
+            opacity: 1;
+          }
+          100% {
+            transform: translate(${offsetX}px, ${particle.offsetY}px) scale(0) rotate(360deg);
+            opacity: 0;
+          }
+        }
+      `;
+    })
+    .join('\n');
+
+  const animationStyle = particles
+    .map((particle) => {
+      return `.particle-${particle.id} { animation: particle-${particle.id} linear forwards; }`;
+    })
+    .join('\n');
+
   return (
     <div className="fixed inset-0 pointer-events-none z-[60] overflow-hidden">
       {particles.map((particle) => (
         <div
           key={particle.id}
-          className="absolute text-2xl animate-particle"
+          className={`absolute text-2xl particle-${particle.id}`}
           style={{
             left: `${particle.x}%`,
             top: `${particle.y}%`,
@@ -49,22 +77,8 @@ export const ParticleEffect = ({ type = 'success', active = false }) => {
         </div>
       ))}
       <style>{`
-        @keyframes particle {
-          0% {
-            transform: translate(0, 0) scale(1) rotate(0deg);
-            opacity: 1;
-          }
-          100% {
-            transform: translate(
-              ${Math.random() > 0.5 ? '-' : '+'}${100 + Math.random() * 50}px,
-              ${100 + Math.random() * 50}px
-            ) scale(0) rotate(360deg);
-            opacity: 0;
-          }
-        }
-        .animate-particle {
-          animation: particle linear forwards;
-        }
+        ${keyframes}
+        ${animationStyle}
       `}</style>
     </div>
   );

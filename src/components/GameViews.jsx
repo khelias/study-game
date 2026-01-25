@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo } from 'react';
+import React, { useEffect, useState, useMemo, useCallback } from 'react';
 import { ArrowRight, ArrowUp, ArrowDown, ArrowLeft, RotateCcw, Play } from 'lucide-react';
 import { playSound } from '../engine/audio';
 
@@ -931,7 +931,7 @@ export const RoboPathView = ({ problem, onAnswer, soundEnabled }) => {
       } catch {
         // Ignore
       }
-  }, [problem.uid, problem.gridSize, problem.obstacles.length]);
+  }, [problem.uid, problem.gridSize, problem.obstacles.length, problem.start]);
 
   // Timer - näitab aega
   useEffect(() => {
@@ -944,7 +944,7 @@ export const RoboPathView = ({ problem, onAnswer, soundEnabled }) => {
     return () => clearInterval(interval);
   }, [status, startTime]);
 
-  const addCommand = (cmd) => { 
+  const addCommand = useCallback((cmd) => { 
       const maxCommands = problem.maxCommands || 8;
       if (status !== 'planning' || commands.length >= maxCommands) return; 
       playSound('click', soundEnabled);
@@ -953,9 +953,9 @@ export const RoboPathView = ({ problem, onAnswer, soundEnabled }) => {
         setMoveCount(newCommands.length);
         return newCommands;
       }); 
-  };
+  }, [status, commands.length, problem.maxCommands, soundEnabled]);
   
-  const removeCommand = () => { 
+  const removeCommand = useCallback(() => { 
       if (status !== 'planning') return; 
       playSound('click', soundEnabled);
       setCommands(prev => {
@@ -963,9 +963,9 @@ export const RoboPathView = ({ problem, onAnswer, soundEnabled }) => {
         setMoveCount(newCommands.length);
         return newCommands;
       }); 
-  };
+  }, [status, soundEnabled]);
   
-  const runSimulation = async () => {
+  const runSimulation = useCallback(async () => {
     if (commands.length === 0) return;
     setStatus('moving');
     playSound('click', soundEnabled);
@@ -1034,7 +1034,7 @@ export const RoboPathView = ({ problem, onAnswer, soundEnabled }) => {
             setStatus('planning'); 
         }, 1200); 
     }
-  };
+  }, [commands, problem.start, problem.end, problem.gridSize, problem.obstacles, soundEnabled, startTime, bestTime, bestMoves, onAnswer]);
 
   // Klaviatuuri tugi - nooleklahvid ja WASD
   useEffect(() => {
@@ -1094,7 +1094,7 @@ export const RoboPathView = ({ problem, onAnswer, soundEnabled }) => {
     
     window.addEventListener('keydown', handleKeyPress);
     return () => window.removeEventListener('keydown', handleKeyPress);
-  }, [status, commands.length, problem.uid, problem.maxCommands, soundEnabled]);
+  }, [status, commands.length, problem.uid, problem.maxCommands, soundEnabled, addCommand, removeCommand, runSimulation]);
 
   const renderCell = (x, y) => {
      const isRobot = robotPos.x === x && robotPos.y === y;
@@ -1315,7 +1315,7 @@ export const UnitConversionView = ({ problem, onAnswer, soundEnabled }) => {
   const [disabled, setDisabled] = useState([]);
   
   useEffect(() => { 
-    setDisabled([]); 
+    setTimeout(() => setDisabled([]), 0);
   }, [problem.uid]);
 
   const handleChoice = (opt) => {

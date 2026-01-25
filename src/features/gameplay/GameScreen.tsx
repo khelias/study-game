@@ -8,11 +8,15 @@ import { GameRenderer } from './GameRenderer';
 import { LevelUpModal, Confetti } from '../../components/GameViews';
 import { AchievementModal } from '../../components/AchievementModal';
 import { HintButton } from '../../components/HintButton';
-import { FeedbackMessage, getRandomEncouragement } from '../../components/FeedbackSystem';
+import { FeedbackMessage, getRandomEncouragement as _getRandomEncouragement } from '../../components/FeedbackSystem';
 import { EnhancedConfetti, PulseEffect } from '../../components/EnhancedAnimations';
 import { ParticleEffect } from '../../components/ParticleEffect';
 import { ProgressIndicator } from '../../components/FeedbackSystem';
 import { LearningTip } from '../../components/LearningTips';
+
+// Type-safe wrapper for getRandomEncouragement
+const getRandomEncouragement = (type: string, streak?: number): string => 
+  (_getRandomEncouragement as (type: string, streak?: number) => string)(type, streak);
 import { GAME_CONFIG } from '../../games/data';
 
 export const GameScreen: React.FC = () => {
@@ -97,7 +101,7 @@ export const GameScreen: React.FC = () => {
     if (isCorrect) {
       // Correct answer
        
-      const encouragement = getRandomEncouragement('correct', newStreak) as string;
+      const encouragement = getRandomEncouragement('correct', newStreak);
       setFeedbackMessage(encouragement, newStreak >= 2 ? 'streak' : 'correct');
       setBgClass('bg-green-50');
       setParticleActive(true);
@@ -147,7 +151,7 @@ export const GameScreen: React.FC = () => {
     } else {
       // Wrong answer
        
-      const encouragement = getRandomEncouragement('wrong') as string;
+      const encouragement = getRandomEncouragement('wrong');
       setFeedbackMessage(encouragement, 'wrong');
       setBgClass('bg-red-50');
       setShowHint(true);

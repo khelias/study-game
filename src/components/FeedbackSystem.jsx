@@ -103,6 +103,13 @@ export const FeedbackMessage = ({ message, type = 'info', duration = 2000, onCom
 };
 
 // Helper function (not a component)
+/**
+ * Get a random encouragement message for the given type
+ * @param {string} type - The type of encouragement ('correct', 'wrong', 'levelUp')
+ * @param {number} streak - Optional streak count for correct answers
+ * @returns {string} - The encouragement message
+ */
+// eslint-disable-next-line react-refresh/only-export-components
 export const getRandomEncouragement = (type, streak = 0) => {
   if (type === 'correct') {
     if (streak >= 7) return ENCOURAGEMENTS.streak[5];

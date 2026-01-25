@@ -116,6 +116,7 @@ export const LearningTip = ({ gameType, onClose }) => {
 };
 
 // Helper function (not a component)
+// eslint-disable-next-line react-refresh/only-export-components
 export const getRandomTip = (gameType) => {
   const tips = LEARNING_TIPS[gameType] || [];
   if (tips.length === 0) return null;

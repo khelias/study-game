@@ -64,6 +64,7 @@ describe('calculateOptimalDifficulty', () => {
   });
 
   it('should handle unknown profile gracefully', () => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const result = calculateOptimalDifficulty('word_builder', 3, 'unknown' as any);
     
     expect(result).toHaveProperty('effectiveLevel');
