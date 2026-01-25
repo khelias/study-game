@@ -13,6 +13,7 @@ import { TutorialModal } from '../modals/TutorialModal';
 import { GAME_CONFIG, PROFILES, CATEGORIES } from '../../games/data';
 import { ACHIEVEMENTS } from '../../engine/achievements';
 import { useTranslation } from '../../i18n/useTranslation';
+import { useProfileText } from '../../hooks/useProfileText';
 import { getLocale, setLocale, type SupportedLocale } from '../../i18n';
 import type { ProfileType } from '../../types/game';
 import type { AchievementUnlock } from '../../types/achievement';
@@ -21,6 +22,7 @@ const ICON_MAP = { Type, Brain, Scale, BookOpen, GraduationCap, TrainFront, Bot,
 
 export const MenuScreen: React.FC = () => {
   const t = useTranslation();
+  const { formatText } = useProfileText();
   const profile = useGameStore(state => state.profile);
   const score = useGameStore(state => state.score);
   const collectedStars = useGameStore(state => state.collectedStars);
@@ -117,7 +119,7 @@ export const MenuScreen: React.FC = () => {
               <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0">
                 <span className="text-xl sm:text-2xl">⭐</span>
                 <span className="font-black text-base sm:text-xl text-slate-700 whitespace-nowrap">{collectedStars}</span>
-                <span className="text-[10px] sm:text-xs text-slate-500 hidden sm:inline">{t.menuSpecific.starsLabel}</span>
+                <span className="text-[10px] sm:text-xs text-slate-500 hidden sm:inline">{formatText(t.menuSpecific.starsLabel)}</span>
               </div>
             )}
           </div>
@@ -157,7 +159,7 @@ export const MenuScreen: React.FC = () => {
                     className="w-full px-4 py-2 text-left hover:bg-slate-50 transition-colors flex items-center gap-2 text-slate-700"
                   >
                     <BarChart3 size={16} className="text-blue-600"/>
-                    <span>{t.menu.stats}</span>
+                    <span>{formatText(t.menu.stats)}</span>
                   </button>
                   <div className="border-t border-slate-200">
                     <button
@@ -168,7 +170,7 @@ export const MenuScreen: React.FC = () => {
                     >
                       <div className="flex items-center gap-2">
                         <Languages size={16} className="text-slate-600"/>
-                        <span>{t.menuSpecific.language}</span>
+                        <span>{formatText(t.menuSpecific.language)}</span>
                       </div>
                       <span className="text-sm">{currentLocale === 'et' ? '🇪🇪' : '🇬🇧'}</span>
                     </button>
@@ -208,7 +210,7 @@ export const MenuScreen: React.FC = () => {
                       className="w-full px-4 py-2 text-left hover:bg-slate-50 transition-colors flex items-center gap-2 text-slate-700"
                     >
                       {soundEnabled ? <Volume2 size={16} className="text-slate-600"/> : <VolumeX size={16} className="text-red-500"/>}
-                      <span>{soundEnabled ? t.menuSpecific.toggleSoundOff : t.menuSpecific.toggleSoundOn}</span>
+                      <span>{formatText(soundEnabled ? t.menuSpecific.toggleSoundOff : t.menuSpecific.toggleSoundOn)}</span>
                     </button>
                   </div>
                   <div className="border-t border-slate-200">
@@ -220,7 +222,7 @@ export const MenuScreen: React.FC = () => {
                       className="w-full px-4 py-2 text-left hover:bg-red-50 transition-colors flex items-center gap-2 text-red-600"
                     >
                       <Trash2 size={16}/>
-                      <span>{t.menuSpecific.deleteProgress}</span>
+                      <span>{formatText(t.menuSpecific.deleteProgress)}</span>
                     </button>
                   </div>
                 </div>
@@ -233,6 +235,7 @@ export const MenuScreen: React.FC = () => {
       {/* Modals */}
       {showStats && (
         <StatsModal 
+          key="stats-modal"
           stats={stats} 
           unlockedAchievements={unlockedAchievements.map(id => {
             const achievement = ACHIEVEMENTS[id];
@@ -250,6 +253,7 @@ export const MenuScreen: React.FC = () => {
       
       {showAchievements && (
         <AchievementsModal
+          key="achievements-modal"
           unlockedAchievements={unlockedAchievements}
           onClose={() => setShowAchievements(false)}
         />
@@ -257,6 +261,7 @@ export const MenuScreen: React.FC = () => {
       
       {showTutorial && (
         <TutorialModal 
+          key="tutorial-modal"
           onClose={handleCloseTutorial}
         />
       )}
@@ -267,36 +272,36 @@ export const MenuScreen: React.FC = () => {
           <div className="flex items-center gap-2 sm:gap-3 mb-1 sm:mb-2">
             <div className="text-3xl sm:text-5xl animate-bounce">🚀</div>
             <div>
-              <h1 className="text-2xl sm:text-4xl font-black bg-gradient-to-r from-purple-600 via-pink-600 to-orange-600 bg-clip-text text-transparent tracking-tight">
-                {t.menu.title}
+              <h1 className={`text-2xl sm:text-4xl font-black bg-gradient-to-r from-purple-600 via-pink-600 to-orange-600 bg-clip-text text-transparent ${profile === 'starter' ? 'tracking-tight' : 'tracking-normal'}`}>
+                {formatText(t.menu.title)}
               </h1>
               <div className="flex items-center gap-1 sm:gap-2 mt-0.5 sm:mt-1">
-                <span className="text-[10px] sm:text-xs font-bold text-purple-600 bg-purple-100 px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-full">
-                  {t.menuSpecific.subtitle}
+                <span className={`text-[10px] sm:text-xs font-bold text-purple-600 bg-purple-100 px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-full ${profile === 'starter' ? 'uppercase' : ''}`}>
+                  {formatText(t.menuSpecific.subtitle)}
                 </span>
               </div>
             </div>
           </div>
-          <p className="text-sm sm:text-base font-bold text-slate-700 mt-1 sm:mt-2 leading-relaxed">
-            {profile === 'starter' 
+          <p className={`text-sm sm:text-base font-bold text-slate-700 mt-1 sm:mt-2 leading-relaxed ${profile === 'starter' ? 'uppercase' : ''}`}>
+            {formatText(profile === 'starter' 
               ? t.menuSpecific.starterDescription
-              : t.menuSpecific.advancedDescription}
+              : t.menuSpecific.advancedDescription)}
           </p>
           {collectedStars > 0 && (
             <div className="mt-2 flex items-center gap-2 flex-wrap">
               {collectedStars >= 50 && collectedStars < 100 && (
                 <span className="text-xs bg-yellow-100 text-yellow-700 px-2 py-0.5 rounded-full font-bold">
-                  {t.menuSpecific.starCollector}
+                  {formatText(t.menuSpecific.starCollector)}
                 </span>
               )}
               {collectedStars >= 100 && collectedStars < 250 && (
                 <span className="text-xs bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full font-bold">
-                  {t.menuSpecific.starMaster}
+                  {formatText(t.menuSpecific.starMaster)}
                 </span>
               )}
               {collectedStars >= 250 && (
                 <span className="text-xs bg-gradient-to-r from-yellow-400 to-orange-400 text-white px-2 py-0.5 rounded-full font-bold">
-                  {t.menuSpecific.starLegend}
+                  {formatText(t.menuSpecific.starLegend)}
                 </span>
               )}
             </div>
@@ -305,9 +310,9 @@ export const MenuScreen: React.FC = () => {
         <button
           onClick={() => setShowTutorial(true)}
           className="px-2 sm:px-4 py-1.5 sm:py-2 bg-blue-100 hover:bg-blue-200 text-blue-700 rounded-lg sm:rounded-xl font-bold text-xs sm:text-sm transition-colors"
-          aria-label={t.menuSpecific.showTutorial}
+          aria-label={formatText(t.menuSpecific.showTutorial)}
         >
-          ❓ {t.menuSpecific.tutorial}
+          ❓ {formatText(t.menuSpecific.tutorial)}
         </button>
       </div>
       
@@ -333,7 +338,7 @@ export const MenuScreen: React.FC = () => {
               <div className="text-left">
                 <div className="text-sm sm:text-base">{p.label}</div>
                 <div className={`text-[10px] sm:text-xs ${profile === p.id ? 'text-purple-100' : 'text-slate-500'}`}>
-                  {t.profiles[p.id as keyof typeof t.profiles]?.desc || p.desc}
+                  {formatText(t.profiles[p.id as keyof typeof t.profiles]?.desc || p.desc)}
                 </div>
               </div>
             </div>
@@ -346,7 +351,7 @@ export const MenuScreen: React.FC = () => {
         <div className="inline-flex items-center gap-1.5 sm:gap-2 bg-white/80 backdrop-blur-sm px-3 sm:px-4 py-1.5 sm:py-2 rounded-full border-2 border-purple-200 shadow-sm">
           <span className="text-xl sm:text-2xl">🎮</span>
           <span className="font-black text-xs sm:text-base text-slate-700">
-            {Object.entries(GAME_CONFIG).filter(([, conf]) => !conf.allowedProfiles || conf.allowedProfiles.includes(profile as ProfileType)).length} {t.menuSpecific.gamesCount}
+            {Object.entries(GAME_CONFIG).filter(([, conf]) => !conf.allowedProfiles || conf.allowedProfiles.includes(profile as ProfileType)).length} {formatText(t.menuSpecific.gamesCount)}
           </span>
         </div>
       </div>
@@ -375,7 +380,7 @@ export const MenuScreen: React.FC = () => {
                   <div className="flex items-center gap-2 sm:gap-3">
                     <span className="text-2xl sm:text-3xl">{category.emoji}</span>
                     <span className="font-black text-base sm:text-lg text-slate-700">
-                      {t.categories[category.id as keyof typeof t.categories]?.name || category.name}
+                      {formatText(t.categories[category.id as keyof typeof t.categories]?.name || category.name)}
                     </span>
                   </div>
                   <div className="flex items-center gap-2 sm:gap-3">
@@ -405,7 +410,7 @@ export const MenuScreen: React.FC = () => {
                         gameConfig={{ ...conf, iconComponent: Icon }}
                         level={currentLevel}
                         onClick={() => handleStartGame(key)}
-                        badge={isNew ? t.menuSpecific.newGame : null}
+                        badge={isNew ? formatText(t.menuSpecific.newGame) : null}
                         delay={idx * 50}
                       />
                     );

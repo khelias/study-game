@@ -4,6 +4,7 @@ import { FadeIn } from './EnhancedAnimations';
 import { GameConfig } from '../types/game';
 import { LucideIcon } from 'lucide-react';
 import { useTranslation } from '../i18n/useTranslation';
+import { useProfileText } from '../hooks/useProfileText';
 
 const DefaultIcon = () => null;
 
@@ -34,6 +35,7 @@ export const GameCard: React.FC<GameCardProps> = ({
   delay = 0
 }) => {
   const t = useTranslation();
+  const { formatText } = useProfileText();
   const IconComponent = useMemo(
     () => gameConfig.iconComponent || DefaultIcon,
     [gameConfig.iconComponent]
@@ -63,7 +65,7 @@ export const GameCard: React.FC<GameCardProps> = ({
         {/* Badge - täiustatud */}
         {badge && (
           <div className="absolute -top-3 -right-3 bg-gradient-to-r from-red-500 to-pink-500 text-white text-xs font-black px-3 py-1.5 rounded-full animate-bounce shadow-lg z-10 border-2 border-white">
-            ✨ {badge}
+            ✨ {formatText(badge)}
           </div>
         )}
         
@@ -81,11 +83,11 @@ export const GameCard: React.FC<GameCardProps> = ({
         
         {/* Content - täiustatud */}
         <div className="text-left flex-1 min-w-0">
-          <h3 className={`text-xl font-black uppercase ${gameConfig.theme.text} flex items-center gap-2 mb-1 truncate`}>
-            {gameTitle}
+          <h3 className={`text-xl font-black ${gameConfig.theme.text} flex items-center gap-2 mb-1 truncate`}>
+            {formatText(gameTitle)}
             {isLocked && <span className="text-sm">🔒</span>}
           </h3>
-          <p className="text-sm font-semibold text-slate-600 mb-2 truncate">{gameDesc}</p>
+          <p className="text-sm font-semibold text-slate-600 mb-2 truncate">{formatText(gameDesc)}</p>
           
           {/* Difficulty badge */}
           {gameConfig.difficulty && difficultyText && (
@@ -96,7 +98,7 @@ export const GameCard: React.FC<GameCardProps> = ({
                   gameConfig.difficulty === 'medium' ? 'bg-yellow-100 text-yellow-700' :
                   'bg-red-100 text-red-700'}
               `}>
-                {difficultyText}
+                {formatText(difficultyText)}
               </span>
             </div>
           )}
@@ -114,7 +116,7 @@ export const GameCard: React.FC<GameCardProps> = ({
         
         {/* Level indicator - täiustatud */}
         <div className="flex flex-col items-end gap-1 flex-shrink-0">
-          <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">{t.level}</span>
+          <span className="text-xs font-bold text-slate-500 tracking-wider">{formatText(t.level)}</span>
           <div className={`
             w-16 h-16 rounded-2xl flex items-center justify-center
             bg-gradient-to-br ${gameConfig.theme.iconBg}

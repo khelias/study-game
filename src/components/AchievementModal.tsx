@@ -15,16 +15,33 @@ export const AchievementModal: React.FC<AchievementModalProps> = ({
   soundEnabled 
 }) => {
   const timerRef = useRef<NodeJS.Timeout | null>(null);
+  const hasPlayedSound = useRef(false);
 
   useEffect(() => {
     if (achievement) {
-      playSound('win', soundEnabled);
+      // Only play sound once per achievement
+      if (!hasPlayedSound.current) {
+        playSound('win', soundEnabled);
+        hasPlayedSound.current = true;
+      }
+      
+      // Clear any existing timer
+      if (timerRef.current) {
+        clearTimeout(timerRef.current);
+      }
+      
       timerRef.current = setTimeout(() => {
         onClose();
+        hasPlayedSound.current = false;
       }, 3000);
+      
       return () => {
-        if (timerRef.current) clearTimeout(timerRef.current);
+        if (timerRef.current) {
+          clearTimeout(timerRef.current);
+        }
       };
+    } else {
+      hasPlayedSound.current = false;
     }
     return undefined;
   }, [achievement, onClose, soundEnabled]);
@@ -32,8 +49,26 @@ export const AchievementModal: React.FC<AchievementModalProps> = ({
   if (!achievement) return null;
 
   return (
-    <div className="fixed inset-0 z-[110] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-300">
-      <div className="bg-gradient-to-br from-yellow-50 to-orange-50 rounded-3xl p-8 max-w-sm w-full shadow-2xl text-center transform scale-100 animate-bounce-short border-4 border-yellow-400 relative">
+    <div 
+      className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-300"
+      style={{ 
+        position: 'fixed', 
+        top: 0, 
+        left: 0, 
+        right: 0, 
+        bottom: 0, 
+        margin: 0,
+        padding: '1rem',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center'
+      }}
+      onClick={(e: React.MouseEvent<HTMLDivElement>) => e.target === e.currentTarget && onClose()}
+    >
+      <div 
+        className="bg-gradient-to-br from-yellow-50 to-orange-50 rounded-3xl p-8 max-w-sm w-full shadow-2xl text-center transform scale-100 animate-bounce-short border-4 border-yellow-400 relative"
+        style={{ margin: '0 auto' }}
+      >
         <button
           onClick={onClose}
           className="absolute top-4 right-4 p-2 rounded-full bg-white/80 hover:bg-white transition-colors"

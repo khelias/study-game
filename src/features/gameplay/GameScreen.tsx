@@ -1,4 +1,4 @@
-import React, { useEffect, useCallback } from 'react';
+import React, { useEffect, useCallback, useRef } from 'react';
 import { Heart, Star, Home, Loader2 } from 'lucide-react';
 import { useGameStore } from '../../stores/gameStore';
 import { usePlaySessionStore } from '../../stores/playSessionStore';
@@ -14,6 +14,7 @@ import { ParticleEffect } from '../../components/ParticleEffect';
 import { ProgressIndicator } from '../../components/FeedbackSystem';
 import { LearningTip } from '../../components/LearningTips';
 import { useTranslation } from '../../i18n/useTranslation';
+import { useProfileText } from '../../hooks/useProfileText';
 
 // Type-safe wrapper for getRandomEncouragement
 const getRandomEncouragement = (type: string, streak?: number): string => 
@@ -22,6 +23,7 @@ import { GAME_CONFIG } from '../../games/data';
 
 export const GameScreen: React.FC = () => {
   const t = useTranslation();
+  const { formatText } = useProfileText();
   // Global state
   const profile = useGameStore(state => state.profile);
   const levels = useGameStore(state => state.levels);
@@ -50,6 +52,14 @@ export const GameScreen: React.FC = () => {
   const currentStreak = usePlaySessionStore(state => state.currentStreak);
   const adaptiveDifficulty = usePlaySessionStore(state => state.adaptiveDifficulty);
   const gameStartTime = usePlaySessionStore(state => state.gameStartTime);
+  
+  // Track if we're currently showing an achievement to prevent duplicates
+  const achievementShownRef = useRef(false);
+  
+  // Update ref when achievement changes
+  useEffect(() => {
+    achievementShownRef.current = Boolean(showAchievement);
+  }, [showAchievement]);
   
   const setProblem = usePlaySessionStore(state => state.setProblem);
   const returnToMenu = usePlaySessionStore(state => state.returnToMenu);
@@ -93,26 +103,32 @@ export const GameScreen: React.FC = () => {
     submitAnswer(isCorrect);
     const newStreak = isCorrect ? currentStreak + 1 : 0;
     
-    // Update stats in global store
-    const { newAchievements } = recordAnswer(isCorrect, points);
+    // Collect all achievements first, then show only one
+    const { newAchievements: answerAchievements } = recordAnswer(isCorrect, points);
     
-    if (newAchievements.length > 0) {
-      setShowAchievement(newAchievements[0] ?? null);
-    }
+    let allNewAchievements = [...answerAchievements];
     
     if (isCorrect) {
       // Correct answer
        
       const encouragement = getRandomEncouragement('correct', newStreak);
-      setFeedbackMessage(encouragement, newStreak >= 2 ? 'streak' : 'correct');
+      setFeedbackMessage(formatText(encouragement), newStreak >= 2 ? 'streak' : 'correct');
       setBgClass('bg-green-50');
       setParticleActive(true);
       setTimeout(() => setParticleActive(false), 1500);
       addScore(points);
       
       const { newAchievements: starAchievements } = addCollectedStars(1);
-      if (starAchievements.length > 0) {
-        setShowAchievement(starAchievements[0] ?? null);
+      
+      // Combine achievements, avoiding duplicates
+      const answerIds = new Set(answerAchievements.map(a => a.id));
+      const uniqueStarAchievements = starAchievements.filter(a => !answerIds.has(a.id));
+      allNewAchievements = [...answerAchievements, ...uniqueStarAchievements];
+      
+      // Show only the first achievement if any exist and none is currently showing
+      if (allNewAchievements.length > 0 && !achievementShownRef.current) {
+        setShowAchievement(allNewAchievements[0] ?? null);
+        achievementShownRef.current = true;
       }
       
       setShowHint(false);
@@ -137,7 +153,7 @@ export const GameScreen: React.FC = () => {
           t.gameScreen.starProgress.last,
         ];
         setTimeout(() => {
-          setFeedbackMessage(progressMessages[nextStars - 1] || '', 'info');
+          setFeedbackMessage(formatText(progressMessages[nextStars - 1] || ''), 'info');
           setTimeout(() => {
             setBgClass('bg-slate-50');
             setFeedbackMessage(null);
@@ -151,10 +167,15 @@ export const GameScreen: React.FC = () => {
         }, 600);
       }
     } else {
+      // Show achievement from recordAnswer even for wrong answers (if any)
+      if (allNewAchievements.length > 0 && !achievementShownRef.current) {
+        setShowAchievement(allNewAchievements[0] ?? null);
+        achievementShownRef.current = true;
+      }
       // Wrong answer
        
       const encouragement = getRandomEncouragement('wrong');
-      setFeedbackMessage(encouragement, 'wrong');
+      setFeedbackMessage(formatText(encouragement), 'wrong');
       setBgClass('bg-red-50');
       setShowHint(true);
       
@@ -258,13 +279,13 @@ export const GameScreen: React.FC = () => {
         hintText = t.gameScreen.hints.default;
     }
     
-    setFeedbackMessage(hintText, 'hint');
+    setFeedbackMessage(formatText(hintText), 'hint');
     setBgClass('bg-yellow-50');
     setTimeout(() => {
       setBgClass('bg-slate-50');
       setFeedbackMessage(null);
     }, 3000);
-  }, [problem, setFeedbackMessage, setBgClass, t]);
+  }, [problem, setFeedbackMessage, setBgClass, t, formatText]);
   
   if (!gameType) {
     return null;
@@ -286,8 +307,12 @@ export const GameScreen: React.FC = () => {
       
       {showAchievement && (
         <AchievementModal 
+          key={showAchievement.id}
           achievement={showAchievement} 
-          onClose={() => setShowAchievement(null)} 
+          onClose={() => {
+            setShowAchievement(null);
+            achievementShownRef.current = false;
+          }} 
           soundEnabled={soundEnabled} 
         />
       )}

@@ -87,11 +87,17 @@ export const FeedbackMessage: React.FC<FeedbackMessageProps> = ({
   return (
     <div
       className={`
-        fixed top-20 left-1/2 -translate-x-1/2 z-50 px-8 py-4 rounded-full shadow-2xl border-4 
+        fixed top-20 z-50 px-8 py-4 rounded-full shadow-2xl border-4 
         font-black text-xl transition-all duration-300
         ${getStyles()}
         ${animating ? 'animate-bounce-short scale-110' : 'scale-100 opacity-0'}
       `}
+      style={{
+        left: '50%',
+        transform: 'translateX(-50%)',
+        margin: 0,
+        padding: '1rem 2rem'
+      }}
       role="alert"
       aria-live="polite"
     >

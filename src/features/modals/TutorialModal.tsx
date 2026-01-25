@@ -68,7 +68,19 @@ export const TutorialModal: React.FC<TutorialModalProps> = ({ onClose }) => {
 
   return (
     <div 
-      className="fixed inset-0 z-[120] flex items-center justify-center bg-black/70 backdrop-blur-sm p-4 animate-in fade-in duration-300"
+      className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/70 backdrop-blur-sm p-4 animate-in fade-in duration-300"
+      style={{ 
+        position: 'fixed', 
+        top: 0, 
+        left: 0, 
+        right: 0, 
+        bottom: 0, 
+        margin: 0,
+        padding: '1rem',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center'
+      }}
       onClick={(e: React.MouseEvent<HTMLDivElement>) => {
         // Sulge, kui klikitakse taustale
         if (e.target === e.currentTarget) {
@@ -76,7 +88,10 @@ export const TutorialModal: React.FC<TutorialModalProps> = ({ onClose }) => {
         }
       }}
     >
-      <div className="bg-white rounded-3xl p-8 max-w-md w-full shadow-2xl text-center relative">
+      <div 
+        className="bg-white rounded-3xl p-8 max-w-md w-full shadow-2xl text-center relative"
+        style={{ margin: '0 auto' }}
+      >
         <button
           onClick={(e: React.MouseEvent<HTMLButtonElement>) => {
             e.stopPropagation();

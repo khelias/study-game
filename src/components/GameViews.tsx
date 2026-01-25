@@ -2,6 +2,7 @@ import React, { useEffect, useState, useMemo, useCallback } from 'react';
 import { ArrowRight, ArrowUp, ArrowDown, ArrowLeft, RotateCcw, Play } from 'lucide-react';
 import { playSound } from '../engine/audio';
 import { useTranslation } from '../i18n/useTranslation';
+import { useProfileText } from '../hooks/useProfileText';
 import { GameConfig } from '../types/game';
 import type { 
   BalanceScaleProblem, 
@@ -26,8 +27,25 @@ interface LevelUpModalProps {
 export const LevelUpModal: React.FC<LevelUpModalProps> = ({ level, onNext, gameConfig }) => {
   const t = useTranslation();
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 animate-in fade-in duration-300">
-      <div className="bg-gradient-to-br from-white to-slate-50 rounded-3xl p-8 max-w-sm w-full shadow-2xl text-center transform scale-100 animate-bounce-short border-4 border-yellow-400">
+    <div 
+      className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 animate-in fade-in duration-300"
+      style={{ 
+        position: 'fixed', 
+        top: 0, 
+        left: 0, 
+        right: 0, 
+        bottom: 0, 
+        margin: 0,
+        padding: '1rem',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center'
+      }}
+    >
+      <div 
+        className="bg-gradient-to-br from-white to-slate-50 rounded-3xl p-8 max-w-sm w-full shadow-2xl text-center transform scale-100 animate-bounce-short border-4 border-yellow-400"
+        style={{ margin: '0 auto' }}
+      >
         <div className="mx-auto w-24 h-24 bg-gradient-to-br from-yellow-100 to-orange-100 rounded-full flex items-center justify-center mb-4 text-6xl shadow-inner animate-star-collect">
           🏆
         </div>
@@ -333,17 +351,27 @@ interface StandardGameViewProps {
 
 export const StandardGameView: React.FC<StandardGameViewProps> = ({ problem, onAnswer, soundEnabled }) => {
   const t = useTranslation();
+  const { formatText } = useProfileText();
   const [disabled, setDisabled] = useState<string[]>([]);
+  const [hasAnswered, setHasAnswered] = useState(false);
   const problemUid: string = problem.uid;
   
   useEffect(() => { 
-    const timer = setTimeout(() => setDisabled([]), 0);
+    const timer = setTimeout(() => {
+      setDisabled([]);
+      setHasAnswered(false);
+    }, 0);
     return () => clearTimeout(timer);
   }, [problemUid]);
 
 
   const handleChoice = (opt: string | { text: string; pos?: string; answer?: boolean; id?: string }): void => {
+    // Prevent multiple clicks
+    if (hasAnswered) return;
+    
     playSound('click', soundEnabled);
+    setHasAnswered(true);
+    
     const isCorrect = problem.type === 'sentence_logic' 
       ? (typeof opt === 'object' && 'text' in opt ? opt.text === problem.answer : false)
       : opt === problem.answer;
@@ -506,8 +534,10 @@ export const StandardGameView: React.FC<StandardGameViewProps> = ({ problem, onA
       );
     }
     
-    // For non-sentence_logic types
-    return typeof opt === 'string' ? opt : String(opt.text ?? '');
+    // For non-sentence_logic types (like letter_match)
+    const text = typeof opt === 'string' ? opt : String(opt.text ?? '');
+    // Letter match: keep letters lowercase (don't format), other types format normally
+    return problem.type === 'letter_match' ? text : formatText(text);
   };
 
   return (
@@ -520,12 +550,12 @@ export const StandardGameView: React.FC<StandardGameViewProps> = ({ problem, onA
           ) : problem.type === 'sentence_logic' ? (
             <div>
               <div className="text-xs sm:text-sm font-bold text-slate-500 mb-1 sm:mb-2 uppercase tracking-wider">
-                {problem.sceneName || t.gameScreen.sentenceLogic.scene}
+                {formatText(problem.sceneName || t.gameScreen.sentenceLogic.scene)}
               </div>
-              <h2 className="text-base sm:text-xl font-black text-green-700 uppercase leading-snug tracking-wide px-2">
-                {problem.display ?? ''}
+              <h2 className="text-base sm:text-xl font-black text-green-700 leading-snug tracking-wide px-2">
+                {formatText(problem.display ?? '')}
               </h2>
-              <div className="text-[10px] sm:text-xs text-slate-400 mt-1 sm:mt-2">{t.gameScreen.sentenceLogic.selectCorrectPicture}</div>
+              <div className="text-[10px] sm:text-xs text-slate-400 mt-1 sm:mt-2">{formatText(t.gameScreen.sentenceLogic.selectCorrectPicture)}</div>
             </div>
           ) : null
          }
@@ -643,6 +673,7 @@ interface SyllableGameViewProps {
 
 export const SyllableGameView: React.FC<SyllableGameViewProps> = ({ problem, onAnswer, soundEnabled }) => {
   const t = useTranslation();
+  const { formatText } = useProfileText();
   interface SyllablePart {
     part: { text: string; id: string };
     id: string;
@@ -701,10 +732,10 @@ export const SyllableGameView: React.FC<SyllableGameViewProps> = ({ problem, onA
   return (
     <div className="flex flex-col items-center mt-2 sm:mt-4 w-full animate-in fade-in slide-in-from-right-4 duration-500 px-2">
       <div className="text-3xl sm:text-4xl mb-1 sm:mb-2">{problem.emoji || problem.hint || '🧩'}</div>
-      <div className="text-xs sm:text-sm font-semibold text-slate-600 mb-2 px-2 text-center uppercase">{t.gameScreen.syllableBuilder.instruction}</div>
+      <div className="text-xs sm:text-sm font-semibold text-slate-600 mb-2 px-2 text-center">{formatText(t.gameScreen.syllableBuilder.instruction)}</div>
       {ghost && (
         <div className="mb-2 text-[10px] sm:text-xs font-semibold text-slate-400">
-          {t.gameScreen.syllableBuilder.correct} {problem.syllables.join('-')}
+          {formatText(t.gameScreen.syllableBuilder.correct)} {problem.syllables.join('-')}
         </div>
       )}
       <div className="flex gap-1.5 sm:gap-2 mb-4 sm:mb-6 min-h-[3rem] sm:min-h-[3.5rem] flex-wrap justify-center">
@@ -1037,6 +1068,7 @@ interface RoboPathViewProps {
 
 export const RoboPathView: React.FC<RoboPathViewProps> = ({ problem, onAnswer, soundEnabled }) => {
   const t = useTranslation();
+  const { formatText } = useProfileText();
   const [commands, setCommands] = useState<string[]>([]);
   const [robotPos, setRobotPos] = useState<[number, number]>(problem.start);
   const [status, setStatus] = useState<string>('planning');
@@ -1309,7 +1341,7 @@ export const RoboPathView: React.FC<RoboPathViewProps> = ({ problem, onAnswer, s
        
        {/* Käsud - kompaktne */}
        <div className="flex gap-1 h-10 sm:h-12 w-full bg-slate-100 rounded-lg sm:rounded-xl mb-2 sm:mb-4 items-center px-2 overflow-x-auto border-inner shadow-inner no-scrollbar">
-           {commands.length === 0 && <span className="text-slate-400 text-xs sm:text-sm ml-2">{t.roboPath.addCommands}</span>}
+           {commands.length === 0 && <span className="text-slate-400 text-xs sm:text-sm ml-2">{formatText(t.roboPath.addCommands)}</span>}
            {commands.map((c, i) => <div key={i} className="min-w-[1.5rem] sm:min-w-[2rem] h-7 sm:h-8 bg-white rounded flex items-center justify-center text-indigo-600 font-black shadow-sm text-base sm:text-lg animate-in fade-in zoom-in">{c === 'UP' ? '⬆' : c === 'DOWN' ? '⬇' : c === 'LEFT' ? '⬅' : '➡'}</div>)}
        </div>
        
@@ -1414,6 +1446,7 @@ interface TimeGameViewProps {
 
 export const TimeGameView: React.FC<TimeGameViewProps> = ({ problem, onAnswer, soundEnabled }) => {
   const t = useTranslation();
+  const { formatText } = useProfileText();
   const [disabled, setDisabled] = useState<string[]>([]);
   const [feedback, setFeedback] = useState<string | null>(null);
 
@@ -1441,8 +1474,8 @@ export const TimeGameView: React.FC<TimeGameViewProps> = ({ problem, onAnswer, s
   return (
     <div className="flex flex-col items-center gap-4 sm:gap-6 w-full px-2">
       <TimeDisplay hour={problem.display.hour} minute={problem.display.minute} />
-      <div className="text-xs sm:text-sm font-semibold text-slate-500 mb-1 sm:mb-2">{t.gameScreen.timeMatch.selectCorrectTime}</div>
-      {feedback && <div className="text-[10px] sm:text-xs font-semibold text-red-500 -mt-1 sm:-mt-2 px-2 text-center">{feedback}</div>}
+      <div className="text-xs sm:text-sm font-semibold text-slate-500 mb-1 sm:mb-2">{formatText(t.gameScreen.timeMatch.selectCorrectTime)}</div>
+      {feedback && <div className="text-[10px] sm:text-xs font-semibold text-red-500 -mt-1 sm:-mt-2 px-2 text-center">{formatText(feedback)}</div>}
       <div className="grid grid-cols-3 gap-2 sm:gap-3 w-full max-w-sm">
         {problem.options.map((opt, idx) => (
           <button
@@ -1470,6 +1503,7 @@ interface UnitConversionViewProps {
 }
 
 export const UnitConversionView: React.FC<UnitConversionViewProps> = ({ problem, onAnswer, soundEnabled }) => {
+  const { formatText } = useProfileText();
   const [disabled, setDisabled] = useState<number[]>([]);
   
   useEffect(() => { 
@@ -1494,12 +1528,12 @@ export const UnitConversionView: React.FC<UnitConversionViewProps> = ({ problem,
       <div className="mb-4 sm:mb-6 p-4 sm:p-6 bg-white rounded-2xl sm:rounded-3xl border-b-6 sm:border-b-8 border-teal-200 shadow-lg text-center w-full max-w-md">
         {/* Küsimus */}
         <h2 className="text-lg sm:text-2xl font-black text-teal-700 mb-2 sm:mb-3">
-          {problem.question}
+          {formatText(problem.question)}
         </h2>
         
         {/* Teisendus visuaalselt */}
         <div className="text-xl sm:text-3xl font-bold text-slate-600 bg-teal-50 rounded-xl p-3 sm:p-4 border-2 border-teal-200">
-          {problem.question}
+          {formatText(problem.question)}
         </div>
       </div>
 

@@ -29,6 +29,25 @@ a:focus-visible {
   box-shadow: 0 0 0 4px rgba(14, 165, 233, 0.25);
 }
 
+/* Modal positioning fix - ensure modals are centered */
+.fixed.inset-0 {
+  margin: 0 !important;
+  padding: 0;
+  overflow: hidden;
+}
+
+.fixed.inset-0 > div,
+.fixed.inset-0 > * > div:first-child {
+  margin-left: auto !important;
+  margin-right: auto !important;
+  transform: none;
+}
+
+/* Prevent body scroll when modal is open */
+body:has(.fixed.inset-0) {
+  overflow: hidden;
+}
+
 /* Screen reader only */
 .sr-only {
   position: absolute;
