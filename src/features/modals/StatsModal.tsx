@@ -3,14 +3,22 @@ import { X, Trophy, Target, Clock, TrendingUp } from 'lucide-react';
 import { GAME_CONFIG } from '../../games/data';
 import { StatsDashboard, GameTypeStats } from '../../components/StatsDashboard';
 import { FocusTrap } from '../../components/AccessibilityHelpers';
+import { Stats } from '../../types/stats';
+import { AchievementUnlock } from '../../types/achievement';
 
-export const StatsModal = ({ stats, unlockedAchievements, onClose }) => {
+interface StatsModalProps {
+  stats: Stats;
+  unlockedAchievements: AchievementUnlock[];
+  onClose: () => void;
+}
+
+export const StatsModal: React.FC<StatsModalProps> = ({ stats, unlockedAchievements, onClose }) => {
   // Removed unused accuracy calculation
 
   return (
     <div 
       className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-300"
-      onClick={(e) => e.target === e.currentTarget && onClose()}
+      onClick={(e: React.MouseEvent<HTMLDivElement>) => e.target === e.currentTarget && onClose()}
     >
       <FocusTrap active={true}>
         <div className="bg-white rounded-3xl p-6 max-w-4xl w-full shadow-2xl max-h-[90vh] overflow-y-auto">
