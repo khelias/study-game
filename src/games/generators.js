@@ -734,12 +734,12 @@ export const Generators = {
 
     // Generate wrong answers with pedagogically appropriate variations
     const wrongAnswers = [
-      Math.floor(correctAnswer * 0.1), // ÷10
+      Math.floor(correctAnswer * 0.1), // ÷10 (common mistake)
       Math.floor(correctAnswer * 0.5), // half
       Math.floor(correctAnswer * 1.1), // +10%
       Math.floor(correctAnswer * 0.9), // -10%
       Math.floor(correctAnswer * 1.5), // +50%
-      Math.floor(correctAnswer / selectedConversion.factor) // reverse (just the value)
+      Math.floor(correctAnswer / selectedConversion.factor) // original value without conversion
     ].filter(a => a !== correctAnswer && a > 0);
     
     // Only add ×10 if the result won't be too large (pedagogically confusing)
