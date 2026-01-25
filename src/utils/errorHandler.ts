@@ -2,7 +2,7 @@
  * Error handling utility - production-safe error logging
  */
 
-const isDevelopment = import.meta.env.DEV;
+const isDevelopment = import.meta.env.DEV as boolean;
 
 /**
  * Logs an error message
@@ -10,7 +10,7 @@ const isDevelopment = import.meta.env.DEV;
  * @param error - Error object (optional)
  * @param context - Additional context (optional)
  */
-export const logError = (message: string, error: Error | null = null, context: Record<string, unknown> = {}): void => {
+export const logError = (message: string, error: unknown = null, context: Record<string, unknown> = {}): void => {
   if (isDevelopment) {
     console.error(`[Error] ${message}`, { error, context });
   }

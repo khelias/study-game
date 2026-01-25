@@ -6,16 +6,6 @@ import { useMemo, useCallback, useState, useEffect, useRef } from 'react';
 type AnyFunction = (...args: unknown[]) => unknown;
 
 /**
- * Memoize expensive calculations
- * @param computeFn - Function to compute value
- * @param deps - Dependencies array
- * @returns Memoized value
- */
-export const useMemoizedValue = <T>(computeFn: () => T, deps: React.DependencyList): T => {
-  return useMemo(computeFn, deps);
-};
-
-/**
  * Debounce function calls in React components
  * @param callback - Callback function to debounce
  * @param delay - Delay in milliseconds
@@ -47,12 +37,13 @@ export const useThrottle = <T extends AnyFunction>(
   callback: T,
   delay: number
 ): ((...args: Parameters<T>) => void) => {
-  const lastRunRef = useRef<number>(Date.now());
+  const lastRunRef = useRef<number>(0);
   
   return useCallback((...args: Parameters<T>) => {
-    if (Date.now() - lastRunRef.current >= delay) {
+    const now = Date.now();
+    if (now - lastRunRef.current >= delay) {
       callback(...args);
-      lastRunRef.current = Date.now();
+      lastRunRef.current = now;
     }
   }, [callback, delay]);
 };

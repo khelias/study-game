@@ -1,7 +1,7 @@
 /**
  * Custom hooks for game state management
  */
-import { useState, useCallback, useRef } from 'react';
+import { useState, useCallback, useRef, useEffect } from 'react';
 import type { GameSession } from '../types/stats';
 
 type StateUpdater<T> = Partial<T> | ((prev: T) => T);
@@ -16,13 +16,16 @@ export const useGameState = <T extends Record<string, unknown>>(
 ): [T, (updater: StateUpdater<T>) => void, () => T] => {
   const [state, setState] = useState<T>(initialState);
   const stateRef = useRef<T>(state);
-  stateRef.current = state;
+  
+  // Update ref when state changes
+  useEffect(() => {
+    stateRef.current = state;
+  }, [state]);
 
   // Thread-safe state update
   const updateState = useCallback((updater: StateUpdater<T>) => {
     setState(prev => {
       const next = typeof updater === 'function' ? updater(prev) : { ...prev, ...updater };
-      stateRef.current = next;
       return next;
     });
   }, []);
