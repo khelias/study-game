@@ -697,7 +697,7 @@ export const WordGameView: React.FC<WordGameViewProps> = ({ problem, onAnswer, s
       {/* Show hint if there are pre-filled positions */}
       {problem.preFilledPositions && problem.preFilledPositions.length > 0 && (
         <div className="mb-2 text-sm sm:text-base text-orange-600 font-bold">
-          💡 Hint: some letters are already in place!
+          💡 {t.gameScreen.wordBuilder.preFilled}
         </div>
       )}
       

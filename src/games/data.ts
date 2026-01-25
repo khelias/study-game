@@ -229,7 +229,7 @@ const BASE_WORDS_EN: WordObject[] = [
   // 7-letter words
   { w: 'CHICKEN', e: '🐔' }, { w: 'DOLPHIN', e: '🐬' }, { w: 'GIRAFFE', e: '🦒' }, { w: 'PENGUIN', e: '🐧' },
   { w: 'OCTOPUS', e: '🐙' }, { w: 'RAINBOW', e: '🌈' }, { w: 'COCONUT', e: '🥥' }, { w: 'CABBAGE', e: '🥬' },
-  { w: 'BROCCOLI', e: '🥦' }, { w: 'PUMPKIN', e: '🎃' }, { w: 'AVOCADO', e: '🥑' }, { w: 'PRETZEL', e: '🥨' }
+  { w: 'PUMPKIN', e: '🎃' }, { w: 'AVOCADO', e: '🥑' }, { w: 'PRETZEL', e: '🥨' }
 ];
 
 export const WORD_DB_EN: Record<number, WordObject[]> = BASE_WORDS_EN.reduce<Record<number, WordObject[]>>((acc, item) => {
