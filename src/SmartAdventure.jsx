@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { 
   Heart, Trophy, Trash2, Volume2, VolumeX, Loader2, Star, Home, BarChart3,
-  Type, Brain, Scale, BookOpen, GraduationCap, TrainFront, Bot, Clock3, Ruler
+  Type, Brain, Scale, BookOpen, GraduationCap, TrainFront, Bot, Clock3, Ruler, ChevronDown, ChevronUp
 } from 'lucide-react';
 
 import { LevelUpModal, BalanceScaleView, StandardGameView, WordGameView, PatternTrainView, MemoryGameView, RoboPathView, Confetti, SyllableGameView, TimeGameView, UnitConversionView } from './components/GameViews';
@@ -18,7 +18,7 @@ import { ProgressIndicator } from './components/FeedbackSystem';
 import { LearningTip } from './components/LearningTips';
 import { createAdaptiveDifficulty, updateAdaptiveDifficulty, getEffectiveLevel } from './engine/adaptiveDifficulty';
 import { Generators } from './games/generators';
-import { APP_KEY, GAME_CONFIG, PROFILES } from './games/data';
+import { APP_KEY, GAME_CONFIG, PROFILES, CATEGORIES } from './games/data';
 import { playSound } from './engine/audio';
 import { createRng } from './engine/rng';
 import { createStats, recordGameStart, recordAnswer, recordLevelUp, recordScore } from './engine/stats';
@@ -72,6 +72,7 @@ const SmartAdventure = () => {
   const [currentStreak, setCurrentStreak] = useState(0);
   const [enhancedConfetti, setEnhancedConfetti] = useState(false);
   const [showLearningTip, setShowLearningTip] = useState(true);
+  const [expandedCategories, setExpandedCategories] = useState({}); // Track expanded categories
 
   // LOAD / SAVE
   useEffect(() => {
@@ -211,6 +212,14 @@ const SmartAdventure = () => {
         // Kui ülesande genereerimine ebaõnnestub, naase menüüsse
         setGameState('menu'); 
     }
+  };
+
+  const toggleCategory = (categoryId) => {
+    playSound('click', soundEnabled);
+    setExpandedCategories(prev => ({
+      ...prev,
+      [categoryId]: !prev[categoryId]
+    }));
   };
 
   const nextLevel = () => {
@@ -594,20 +603,67 @@ const SmartAdventure = () => {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 gap-3 sm:gap-5 w-full max-w-md pb-6 sm:pb-10">
-        {Object.entries(GAME_CONFIG).filter(([, conf]) => !conf.allowedProfiles || conf.allowedProfiles.includes(profile)).map(([key, conf], idx) => {
-          const Icon = ICON_MAP[conf.icon] || Type;
-          const gameStats = stats.gamesByType?.[key] || 0;
-          const isNew = gameStats === 0;
+      {/* Mängud kategooriate kaupa */}
+      <div className="w-full max-w-md pb-6 sm:pb-10">
+        {Object.values(CATEGORIES).map(category => {
+          const categoryGames = Object.entries(GAME_CONFIG)
+            .filter(([, conf]) => 
+              conf.category === category.id && 
+              (!conf.allowedProfiles || conf.allowedProfiles.includes(profile))
+            );
+          
+          if (categoryGames.length === 0) return null;
+          
+          const isExpanded = expandedCategories[category.id];
+          
           return (
-            <GameCard
-              key={key}
-              gameConfig={{ ...conf, iconComponent: Icon }}
-              level={levels[profile][key]}
-              onClick={() => startGame(key)}
-              badge={isNew ? 'UUS!' : null}
-              delay={idx * 50}
-            />
+            <div key={category.id} className="mb-4 sm:mb-6">
+              {/* Category header - clickable */}
+              <div className="mb-3 sm:mb-4">
+                <button
+                  onClick={() => toggleCategory(category.id)}
+                  className="w-full flex items-center justify-between bg-white/90 backdrop-blur-sm px-4 sm:px-5 py-3 sm:py-4 rounded-2xl border-2 border-purple-200 shadow-sm hover:shadow-md hover:border-purple-300 transition-all active:scale-[0.98] cursor-pointer"
+                >
+                  <div className="flex items-center gap-2 sm:gap-3">
+                    <span className="text-2xl sm:text-3xl">{category.emoji}</span>
+                    <span className="font-black text-base sm:text-lg text-slate-700">
+                      {category.name}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2 sm:gap-3">
+                    <span className="text-sm sm:text-base text-slate-500 font-bold bg-slate-100 px-2 sm:px-3 py-1 rounded-full">
+                      {categoryGames.length}
+                    </span>
+                    {isExpanded ? (
+                      <ChevronUp className="w-5 h-5 sm:w-6 sm:h-6 text-slate-600" />
+                    ) : (
+                      <ChevronDown className="w-5 h-5 sm:w-6 sm:h-6 text-slate-600" />
+                    )}
+                  </div>
+                </button>
+              </div>
+              
+              {/* Games grid - only show when expanded */}
+              {isExpanded && (
+                <div className="grid grid-cols-1 gap-3 sm:gap-5 animate-fadeIn">
+                  {categoryGames.map(([key, conf], idx) => {
+                    const Icon = ICON_MAP[conf.icon] || Type;
+                    const gameStats = stats.gamesByType?.[key] || 0;
+                    const isNew = gameStats === 0;
+                    return (
+                      <GameCard
+                        key={key}
+                        gameConfig={{ ...conf, iconComponent: Icon }}
+                        level={levels[profile][key]}
+                        onClick={() => startGame(key)}
+                        badge={isNew ? 'UUS!' : null}
+                        delay={idx * 50}
+                      />
+                    );
+                  })}
+                </div>
+              )}
+            </div>
           );
         })}
       </div>
