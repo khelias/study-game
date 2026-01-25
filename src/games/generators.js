@@ -732,22 +732,28 @@ export const Generators = {
 
     const correctAnswer = value * selectedConversion.factor;
 
-    // Generate wrong answers
+    // Generate wrong answers with pedagogically appropriate variations
     const wrongAnswers = [
       Math.floor(correctAnswer * 0.1), // ÷10
-      Math.floor(correctAnswer * 10),  // ×10
       Math.floor(correctAnswer * 0.5), // half
       Math.floor(correctAnswer * 1.1), // +10%
       Math.floor(correctAnswer * 0.9), // -10%
-      Math.floor(correctAnswer * 2),   // double
+      Math.floor(correctAnswer * 1.5), // +50%
       Math.floor(correctAnswer / selectedConversion.factor) // reverse (just the value)
     ].filter(a => a !== correctAnswer && a > 0);
+    
+    // Only add ×10 if the result won't be too large (pedagogically confusing)
+    if (correctAnswer < 10000) {
+      wrongAnswers.push(Math.floor(correctAnswer * 10));
+    }
 
     // Select 3 unique wrong answers
     const uniqueWrong = [...new Set(wrongAnswers)].sort(() => rng() - 0.5).slice(0, 3);
     
-    // If we don't have enough unique wrong answers, generate more
-    while (uniqueWrong.length < 3) {
+    // If we don't have enough unique wrong answers, generate more (with safety limit)
+    let attempts = 0;
+    while (uniqueWrong.length < 3 && attempts < 20) {
+      attempts++;
       const offset = Math.floor(rng() * correctAnswer * 0.3) + 1;
       const wrong = rng() > 0.5 ? correctAnswer + offset : correctAnswer - offset;
       if (wrong > 0 && wrong !== correctAnswer && !uniqueWrong.includes(wrong)) {
