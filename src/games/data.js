@@ -12,8 +12,8 @@ export const THEME = {
 
 export const GAME_CONFIG = {
   // 5+ mängud - lihtsamad, visuaalsed (7 mängu - lisatud letter_match)
-  word_builder:    { id: 'word_builder', title: 'SÕNAMEISTER', theme: THEME.orange, icon: 'Type', desc: 'Lao tähtedest sõna', allowedProfiles: ['starter'], difficulty: 'easy' },
-  syllable_builder:{ id: 'syllable_builder', title: 'SILBIMEISTER', theme: THEME.orange, icon: 'Type', desc: 'Pane silbid sõnaks', allowedProfiles: ['starter'], difficulty: 'easy' },
+  word_builder:    { id: 'word_builder', title: 'SÕNAMEISTER', theme: THEME.orange, icon: 'Type', desc: 'Lao tähtedest sõna kokku', allowedProfiles: ['starter'], difficulty: 'easy' },
+  syllable_builder:{ id: 'syllable_builder', title: 'SILBIMEISTER', theme: THEME.orange, icon: 'Type', desc: 'Pane silbid sõnaks kokku', allowedProfiles: ['starter'], difficulty: 'easy' },
   pattern:         { id: 'pattern', title: 'MUSTRI-RONG', theme: THEME.teal, icon: 'TrainFront', desc: 'Jätka mustrit', allowedProfiles: ['starter'], difficulty: 'easy' },
   sentence_logic:  { id: 'sentence_logic', title: 'LAUSE-DETEKTIIV', theme: THEME.green, icon: 'BookOpen', desc: 'Kus asub ese?', allowedProfiles: ['starter'], difficulty: 'medium' },
   memory_math:     { id: 'memory_math', title: 'MATEMAATIKA MÄLU', theme: THEME.purple, icon: 'Brain', desc: 'Leia tehe ja vastus', allowedProfiles: ['starter'], difficulty: 'medium' },
@@ -23,7 +23,7 @@ export const GAME_CONFIG = {
   
   // 8+ mängud - raskemad, loogilised (7 mängu - lisatud letter_match_adv)
   balance_scale:   { id: 'balance_scale', title: 'KAALUD', theme: THEME.blue, icon: 'Scale', desc: 'Tasakaalusta kaalud', allowedProfiles: ['advanced'], difficulty: 'hard' },
-  time_match:      { id: 'time_match', title: 'KELLAMÄNG', theme: THEME.blue, icon: 'Clock3', desc: 'Leia kellaaeg', allowedProfiles: ['advanced'], difficulty: 'hard' },
+  time_match:      { id: 'time_match', title: 'KELLAMÄNG', theme: THEME.blue, icon: 'Clock3', desc: 'Määra kellaaeg', allowedProfiles: ['advanced'], difficulty: 'hard' },
   memory_math_adv: { id: 'memory_math', title: 'MATEMAATIKA MÄLU', theme: THEME.purple, icon: 'Brain', desc: 'Leia tehe ja vastus', allowedProfiles: ['advanced'], difficulty: 'hard' },
   robo_path_adv:   { id: 'robo_path', title: 'ROBO-RADA', theme: THEME.indigo, icon: 'Bot', desc: 'Programmeerirobot', allowedProfiles: ['advanced'], difficulty: 'hard' },
   sentence_logic_adv: { id: 'sentence_logic', title: 'LAUSE-DETEKTIIV', theme: THEME.green, icon: 'BookOpen', desc: 'Kus asub ese?', allowedProfiles: ['advanced'], difficulty: 'hard' },
@@ -171,8 +171,12 @@ export const SCENE_DB = {
       {n:'HIRV', e:'🦌'}, {n:'KONN', e:'🐸'}
     ], 
     anchors: [
-      {n:'PUU', e:'🌳'}, {n:'KIVI', e:'🪨'}, {n:'PÕÕSA', e:'🌿'}, {n:'SEENE', e:'🍄'}, 
-      {n:'KÄNNU', e:'🪵'}, {n:'JÕE', e:'🏞️'}, {n:'KIVI', e:'🪨'}
+      {n:'PUU', adess:'PUUL', iness:'PUUS', e:'🌳'}, 
+      {n:'KIVI', adess:'KIVIL', iness:'KIVIS', e:'🪨'}, 
+      {n:'PÕÕSAS', adess:'PÕÕSAL', iness:'PÕÕSAS', e:'🌿'}, 
+      {n:'SEEN', adess:'SEENEL', iness:'SEENES', e:'🍄'}, 
+      {n:'KÄND', adess:'KÄNUL', iness:'KÄNNUS', e:'🪵'}, 
+      {n:'JÕGI', adess:'JÕEL', iness:'JÕES', e:'🏞️'}
     ], 
     positions: ['EES', 'TAGA', 'KÕRVAL', 'PEAL', 'ALL'] 
   },
@@ -184,7 +188,10 @@ export const SCENE_DB = {
       {n:'PLANEET', e:'🪐'}, {n:'KOMEET', e:'☄️'}, {n:'SATELLIIT', e:'🛰️'}
     ], 
     anchors: [
-      {n:'MAA', e:'🌍'}, {n:'KUU', e:'🌙'}, {n:'PÄIKESE', e:'☀️'}, {n:'PLANEEDI', e:'🪐'}
+      {n:'MAA', adess:'MAAL', iness:'MAAS', e:'🌍'}, 
+      {n:'KUU', adess:'KUUL', iness:'KUUS', e:'🌙'}, 
+      {n:'PÄIKE', adess:'PÄIKESEL', iness:'PÄIKESES', e:'☀️'}, 
+      {n:'PLANEET', adess:'PLANEEDIL', iness:'PLANEEDIS', e:'🪐'}
     ], 
     positions: ['PEAL', 'ALL', 'KÕRVAL', 'EES'] 
   },
@@ -196,8 +203,13 @@ export const SCENE_DB = {
       {n:'KOER', e:'🐶'}, {n:'ROBOT', e:'🤖'}, {n:'PUSLE', e:'🧩'}, {n:'RAAMAT', e:'📖'}
     ], 
     anchors: [
-      {n:'KARBI', e:'📦'}, {n:'VOODI', e:'🛏️'}, {n:'TOOLI', e:'🪑'}, {n:'DIIVANI', e:'🛋️'}, 
-      {n:'KAPI', e:'🚪'}, {n:'LAUA', e:'🪑'}, {n:'RIIULI', e:'📚'}
+      {n:'KARP', adess:'KARBIL', iness:'KARBIS', e:'📦'}, 
+      {n:'VOODI', adess:'VOODIL', iness:'VOODIS', e:'🛏️'}, 
+      {n:'TOOL', adess:'TOOLIL', iness:'TOOLIS', e:'🪑'}, 
+      {n:'DIIVAN', adess:'DIIVANIL', iness:'DIIVANIS', e:'🛋️'}, 
+      {n:'KAPP', adess:'KAPIL', iness:'KAPIS', e:'🚪'}, 
+      {n:'LAUD', adess:'LAUAL', iness:'LAUAS', e:'🪑'}, 
+      {n:'RIIUL', adess:'RIIULIL', iness:'RIIULIS', e:'📚'}
     ], 
     positions: ['SEES', 'PEAL', 'ALL', 'KÕRVAL', 'EES', 'TAGA'] 
   },
@@ -209,8 +221,12 @@ export const SCENE_DB = {
       {n:'KALKULAATOR', e:'🔢'}, {n:'KUSTUTI', e:'🧹'}, {n:'ÕPIK', e:'📘'}
     ],
     anchors: [
-      {n:'LAUA', e:'🪑'}, {n:'TABLETI', e:'📺'}, {n:'TABELI', e:'📋'}, {n:'KAPI', e:'🚪'},
-      {n:'TOOLI', e:'🪑'}, {n:'RIIULI', e:'📚'}
+      {n:'LAUD', adess:'LAUAL', iness:'LAUAS', e:'🪑'}, 
+      {n:'TAHVEL', adess:'TAHVLIL', iness:'TAHVLIS', e:'📺'}, 
+      {n:'TABEL', adess:'TABELIL', iness:'TABELIS', e:'📋'}, 
+      {n:'KAPP', adess:'KAPIL', iness:'KAPIS', e:'🚪'},
+      {n:'TOOL', adess:'TOOLIL', iness:'TOOLIS', e:'🪑'}, 
+      {n:'RIIUL', adess:'RIIULIL', iness:'RIIULIS', e:'📚'}
     ],
     positions: ['PEAL', 'ALL', 'KÕRVAL', 'EES', 'TAGA', 'SEES']
   },
@@ -222,21 +238,27 @@ export const SCENE_DB = {
       {n:'ÕHUPALL', e:'🎈'}, {n:'KELK', e:'🛷'}, {n:'JÄNES', e:'🐰'}
     ],
     anchors: [
-      {n:'TOOLI', e:'🪑'}, {n:'PUU', e:'🌳'}, {n:'LILLE', e:'🌸'}, {n:'TEKI', e:'🛌'},
-      {n:'KIVI', e:'🪨'}, {n:'KÄNNU', e:'🪵'}
+      {n:'TOOL', adess:'TOOLIL', iness:'TOOLIS', e:'🪑'}, 
+      {n:'PUU', adess:'PUUL', iness:'PUUS', e:'🌳'}, 
+      {n:'LILL', adess:'LILLEL', iness:'LILLES', e:'🌸'}, 
+      {n:'TEKK', adess:'TEKIL', iness:'TEKIS', e:'🛌'},
+      {n:'KIVI', adess:'KIVIL', iness:'KIVIS', e:'🪨'}, 
+      {n:'KÄND', adess:'KÄNUL', iness:'KÄNNUS', e:'🪵'}
     ],
     positions: ['PEAL', 'ALL', 'KÕRVAL', 'EES', 'TAGA', 'SEES']
   },
   beach: {
     bg: 'bg-gradient-to-b from-cyan-200 to-blue-300',
-    name: 'Rannas',
+    name: 'Rand',
     subjects: [
       {n:'LAPS', e:'🧒'}, {n:'PALL', e:'⚽'}, {n:'KALLA', e:'🐚'}, {n:'ÕHUPALL', e:'🎈'},
       {n:'KREVETT', e:'🦐'}, {n:'KRABI', e:'🦀'}
     ],
     anchors: [
-      {n:'LIIVA', e:'🏖️'}, {n:'MERE', e:'🌊'}, {n:'KIVI', e:'🪨'},
-      {n:'PARASOLI', e:'⛱️'}
+      {n:'LIIV', adess:'LIIIVAL', iness:'LIIIVAS', e:'🏖️'}, 
+      {n:'MERI', adess:'MEREL', iness:'MERES', e:'🌊'}, 
+      {n:'KIVI', adess:'KIVIL', iness:'KIVIS', e:'🪨'},
+      {n:'PÄIKESEVARI', adess:'PÄIKESEVARJU', iness:'PÄIKESEVARJU', e:'⛱️'}
     ],
     positions: ['PEAL', 'ALL', 'KÕRVAL', 'EES', 'SEES']
   },
@@ -248,8 +270,12 @@ export const SCENE_DB = {
       {n:'KARTUL', e:'🥔'}, {n:'TOMAT', e:'🍅'}, {n:'MUNA', e:'🥚'}
     ],
     anchors: [
-      {n:'LAUA', e:'🪑'}, {n:'PLAADI', e:'🍳'}, {n:'KAPI', e:'🚪'}, {n:'KÜLMUTI', e:'❄️'},
-      {n:'RIIULI', e:'📚'}, {n:'KARBI', e:'📦'}
+      {n:'LAUD', adess:'LAUAL', iness:'LAUAS', e:'🪑'}, 
+      {n:'PLIIT', adess:'PLIIDIL', iness:'PLIIDIS', e:'🍳'}, 
+      {n:'KAPP', adess:'KAPIL', iness:'KAPIS', e:'🚪'}, 
+      {n:'KÜLMIK', adess:'KÜLMIKUL', iness:'KÜLMIKUS', e:'❄️'},
+      {n:'RIIUL', adess:'RIIULIL', iness:'RIIULIS', e:'📚'}, 
+      {n:'KARP', adess:'KARBIL', iness:'KARBIS', e:'📦'}
     ],
     positions: ['PEAL', 'ALL', 'KÕRVAL', 'EES', 'TAGA', 'SEES']
   },
@@ -261,8 +287,10 @@ export const SCENE_DB = {
       {n:'KOER', e:'🐶'}, {n:'PALL', e:'⚽'}
     ],
     anchors: [
-      {n:'MAA', e:'🛣️'}, {n:'KIVI', e:'🪨'}, {n:'PUIESTEE', e:'🌳'}, {n:'FOOR', e:'🚦'},
-      {n:'KIVI', e:'🪨'}
+      {n:'MAA', adess:'MAAL', iness:'MAAS', e:'🛣️'}, 
+      {n:'KIVI', adess:'KIVIL', iness:'KIVIS', e:'🪨'}, 
+      {n:'PUIESTEE', adess:'PUIESTEEL', iness:'PUIESTEES', e:'🌳'}, 
+      {n:'FOOR', adess:'FOORIL', iness:'FOORIS', e:'🚦'}
     ],
     positions: ['PEAL', 'ALL', 'KÕRVAL', 'EES', 'TAGA']
   }

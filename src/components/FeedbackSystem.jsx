@@ -6,10 +6,10 @@ const ENCOURAGEMENTS = {
   correct: [
     'ÕIGE! 🌟', 'SUUREPÄRANE! ⭐', 'VÄGA HEA! 🎉', 'FANTASTILINE! 🚀', 
     'IMELISELT! ✨', 'TUBLI! 💪', 'TÄIUSLIK! 🏆', 'HÄMMASTAV! 🌈',
-    'WOW! 🔥', 'VÄGA TUBLI! 🎊', 'SINU JAOKS LIHTSALT! 💯', 'PROFESSIONAALNE! 🎯'
+    'WOW! 🔥', 'VÄGA TUBLI! 🎊', 'SULLE LIHTNE! 💯', 'PROFESSIONAALNE! 🎯'
   ],
   wrong: [
-    'PROOVI UUESTI! 💪', 'ÄRA ANDA! 🌟', 'SAAD SEDA! ⭐', 'JÄTKA! 🚀',
+    'PROOVI UUESTI! 💪', 'ÄRA ANNA ALLA! 🌟', 'SAAD SEDA! ⭐', 'JÄTKA! 🚀',
     'LÄHED ÕIGELE TEEDELE! 🎯', 'PROOVI VEEL! 💡', 'PEAAEGU! ✨',
     'VÄGA LÄHEDAL! 🎉', 'JÄRGMINE KORD! 🌈', 'ÄRA LOOBU! 💪'
   ],

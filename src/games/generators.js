@@ -332,7 +332,7 @@ export const Generators = {
     
     return { 
       type: 'sentence_logic', 
-      display: `${subject.n} ON ${anchor.n} ${correctPos}.`, 
+      display: `${subject.n} ON ${correctPos === 'SEES' ? anchor.iness : anchor.adess} ${correctPos}.`, 
       answer: 'correct', 
       options: validatedOptions.sort(() => rng() - 0.5), 
       sceneName: scene.name,
@@ -444,17 +444,17 @@ export const Generators = {
       { w: 'KO-PTER', hint: '🚁', parts: 2 },
       { w: 'PÕR-SAS', hint: '🐖', parts: 2 },
       { w: 'LAM-MAS', hint: '🐑', parts: 2 },
-      { w: 'HOBU-NE', hint: '🐎', parts: 2 },
+      { w: 'HO-BU-NE', hint: '🐎', parts: 3 },
       { w: 'LEH-ME', hint: '🐄', parts: 2 },
       { w: 'KON-NI', hint: '🐸', parts: 2 },
       { w: 'SII-LI', hint: '🦔', parts: 2 },
       { w: 'TI-GU', hint: '🐌', parts: 2 },
       { w: 'KIR-SI', hint: '🍒', parts: 2 },
-      { w: 'PLO-MI', hint: '🍑', parts: 2 },
+      { w: 'PLOOM', hint: '🍑', parts: 1 },
       { w: 'MAA-SIK', hint: '🍓', parts: 2 },
       { w: 'SID-RUN', hint: '🍋', parts: 2 },
       { w: 'PÄH-KEL', hint: '🌰', parts: 2 },
-      { w: 'JU-US-TI', hint: '🧀', parts: 2 },
+      { w: 'JUUST', hint: '🧀', parts: 1 },
       { w: 'PI-TSA', hint: '🍕', parts: 2 },
       { w: 'BUR-GER', hint: '🍔', parts: 2 },
       { w: 'KUR-GI', hint: '🥒', parts: 2 },
@@ -463,18 +463,18 @@ export const Generators = {
       { w: 'LAM-PI', hint: '💡', parts: 2 },
       { w: 'UK-SE', hint: '🚪', parts: 2 },
       { w: 'KAP-PI', hint: '📦', parts: 2 },
-      { w: 'PLIIA-TSI', hint: '✏️', parts: 2 },
+      { w: 'PLII-ATS', hint: '✏️', parts: 2 },
       { w: 'AR-VU-TI', hint: '💻', parts: 2 },
       { w: 'TE-LE-FON', hint: '📱', parts: 2 },
-      { w: 'EK-RAA-NI', hint: '🖥️', parts: 2 },
+      { w: 'EK-RAAN', hint: '🖥️', parts: 2 },
       { w: 'KOH-VE-RI', hint: '🧳', parts: 2 },
       { w: 'PRIL-LID', hint: '👓', parts: 2 },
       { w: 'KIN-DAD', hint: '🧤', parts: 2 },
       { w: 'MÜT-SI', hint: '🧢', parts: 2 },
-      { w: 'KE-L-LI', hint: '⌚', parts: 2 },
+      { w: 'KELL', hint: '⌚', parts: 1 },
       { w: 'PUS-LI', hint: '🧩', parts: 2 },
       { w: 'KLOT-SID', hint: '🧱', parts: 2 },
-      { w: 'LUSI-KAS', hint: '🥄', parts: 2 },
+      { w: 'LU-SI-KAS', hint: '🥄', parts: 3 },
       { w: 'NU-GA', hint: '🔪', parts: 2 },
       { w: 'BUSS-I', hint: '🚌', parts: 2 },
       { w: 'TRAM-MI', hint: '🚊', parts: 2 },
@@ -503,14 +503,14 @@ export const Generators = {
       // 3 silpi - õigesti silbitatud
       { w: 'LI-MO-NAAD', hint: '🥤', parts: 3 },
       { w: 'PO-LIT-SEI', hint: '👮', parts: 3 },
-      { w: 'LU-ME-INGEL', hint: '❄️', parts: 3 },
+      { w: 'LU-ME-IN-GEL', hint: '❄️', parts: 4 },
       { w: 'MA-RA-TON', hint: '🏃', parts: 3 },
       { w: 'TE-LE-FON', hint: '📱', parts: 3 },
       { w: 'AR-VU-TI', hint: '💻', parts: 3 },
       { w: 'ÕPI-LA-NE', hint: '👨‍🎓', parts: 3 },
       { w: 'ÕPE-TA-JA', hint: '🧑‍🏫', parts: 3 },
-      { w: 'ELE-VANT', hint: '🐘', parts: 3 },
-      { w: 'KIR-AHV', hint: '🦒', parts: 3 },
+      { w: 'E-LE-VANT', hint: '🐘', parts: 3 },
+      { w: 'KI-RAHV', hint: '🦒', parts: 2 },
       { w: 'PING-VIIN', hint: '🐧', parts: 3 },
       { w: 'KRO-KO-DILL', hint: '🐊', parts: 3 },
       { w: 'KILP-KONN', hint: '🐢', parts: 3 },
@@ -519,36 +519,36 @@ export const Generators = {
       { w: 'LÕ-VI', hint: '🦁', parts: 3 },
       { w: 'TII-GER', hint: '🐯', parts: 3 },
       { w: 'PAN-DA', hint: '🐼', parts: 3 },
-      { w: 'KIRAH-VI', hint: '🦒', parts: 3 },
+      { w: 'KI-RAH-VI', hint: '🦒', parts: 3 },
       { w: 'PING-VIIN', hint: '🐧', parts: 3 },
       { w: 'ÄMB-LIK', hint: '🕷️', parts: 3 },
       { w: 'DRAA-KON', hint: '🐉', parts: 3 },
       { w: 'BUR-GER', hint: '🍔', parts: 3 },
       { w: 'KAR-TU-LI', hint: '🥔', parts: 3 },
-      { w: 'POR-GAN-DI', hint: '🥕', parts: 3 },
-      { w: 'MAAS-I-KU', hint: '🍓', parts: 3 },
-      { w: 'ARBUU-SI', hint: '🍉', parts: 3 },
-      { w: 'SIDRU-NI', hint: '🍋', parts: 3 },
-      { w: 'KOMP-VE-KI', hint: '🍬', parts: 3 },
-      { w: 'JÄÄTI-SI', hint: '🍦', parts: 3 },
-      { w: 'KÜPSI-SI', hint: '🍪', parts: 3 },
-      { w: 'KOO-GI', hint: '🍰', parts: 3 },
+      { w: 'POR-GAND', hint: '🥕', parts: 2 },
+      { w: 'MAA-SI-KAS', hint: '🍓', parts: 3 },
+      { w: 'AR-BUUS', hint: '🍉', parts: 2 },
+      { w: 'SID-RUN', hint: '🍋', parts: 2 },
+      { w: 'KOMP-VEK', hint: '🍬', parts: 2 },
+      { w: 'JÄÄ-TIS', hint: '🍦', parts: 2 },
+      { w: 'KÜP-SIS', hint: '🍪', parts: 2 },
+      { w: 'KOOK', hint: '🍰', parts: 1 },
       { w: 'ME-SI', hint: '🍯', parts: 3 },
       { w: 'KOH-VI', hint: '☕', parts: 3 },
       { w: 'TE-E', hint: '🫖', parts: 3 },
-      { w: 'VOO-DI', hint: '🛌', parts: 2 },
-      { w: 'KÖÖ-GI', hint: '🍳', parts: 2 },
-      { w: 'DII-VA-NI', hint: '🛋️', parts: 3 },
-      { w: 'KÄÄRI-DI', hint: '✂️', parts: 3 },
-      { w: 'PRILLI-DI', hint: '👓', parts: 3 },
-      { w: 'KINDA-DI', hint: '🧤', parts: 3 },
-      { w: 'KLOTSI-DI', hint: '🧱', parts: 3 },
-      { w: 'LUSIKA-SI', hint: '🥄', parts: 3 },
+      { w: 'VOODI', hint: '🛌', parts: 2 },
+      { w: 'KÖÖK', hint: '🍳', parts: 1 },
+      { w: 'DII-VAN', hint: '🛋️', parts: 2 },
+      { w: 'KÄÄ-RID', hint: '✂️', parts: 2 },
+      { w: 'PRIL-LID', hint: '👓', parts: 2 },
+      { w: 'KIN-DAD', hint: '🧤', parts: 2 },
+      { w: 'KLOT-SID', hint: '🧱', parts: 2 },
+      { w: 'LU-SI-KAS', hint: '🥄', parts: 3 },
       { w: 'NU-GA', hint: '🔪', parts: 3 },
-      { w: 'LEN-NU-KI', hint: '✈️', parts: 3 },
-      { w: 'KOP-TE-RI', hint: '🚁', parts: 3 },
+      { w: 'LEN-NUK', hint: '✈️', parts: 2 },
+      { w: 'KOP-TER', hint: '🚁', parts: 2 },
       { w: 'MO-PEED', hint: '🛵', parts: 2 },
-      { w: 'VEO-GI', hint: '🚚', parts: 2 },
+      { w: 'VEOK', hint: '🚚', parts: 1 },
       { w: 'TROL-LI-BUSS', hint: '🚎', parts: 3 },
       { w: 'VANA-EMA', hint: '👵', parts: 3 },
       { w: 'VANA-ISA', hint: '👴', parts: 3 },
@@ -579,16 +579,16 @@ export const Generators = {
       { w: 'TUI-SKU', hint: '🌨️', parts: 2 },
       { w: 'PÄI-KE', hint: '☀️', parts: 2 },
       { w: 'PIL-VE', hint: '☁️', parts: 2 },
-      { w: 'VIH-MA-VAR-JUD', hint: '🌦️', parts: 4 },
+      { w: 'VIH-MA-VAR-JU', hint: '🌦️', parts: 4 },
       
       // 4 silpi
       { w: 'HE-LI-KOP-TER', hint: '🚁', parts: 4 },
-      { w: 'TE-LE-VI-SIOON', hint: '📺', parts: 4 },
-      { w: 'MAG-A-MIS-TU-BA', hint: '🛏️', parts: 4 },
+      { w: 'TE-LE-VI-SI-OON', hint: '📺', parts: 5 },
+      { w: 'MA-GA-MIS-TU-BA', hint: '🛏️', parts: 5 },
       { w: 'KIR-JU-TUS-LAUD', hint: '🪑', parts: 4 },
-      { w: 'VI-NA-MA-RI', hint: '🍇', parts: 4 },
-      { w: 'A-NAN-ASS', hint: '🍍', parts: 4 },
-      { w: 'MO-TO-RRA-TAS', hint: '🏍️', parts: 4 },
+      { w: 'VII-NA-MA-RI', hint: '🍇', parts: 4 },
+      { w: 'A-NA-NASS', hint: '🍍', parts: 3 },
+      { w: 'MO-TOOR-RA-TAS', hint: '🏍️', parts: 4 },
       { w: 'VAN-NI-TU-BA', hint: '🛁', parts: 4 },
     ];
     // Filtreeri leveli järgi - kõrgematel tasemetel pikemad sõnad
@@ -649,17 +649,17 @@ export const Generators = {
     // Unit conversion definitions
     const conversions = {
       length: [
-        { from: 'm', to: 'cm', factor: 100, emoji: '📏', name: 'meetris', toName: 'sentimeetrit' },
-        { from: 'km', to: 'm', factor: 1000, emoji: '📐', name: 'kilomeetris', toName: 'meetrit' },
-        { from: 'cm', to: 'mm', factor: 10, emoji: '📏', name: 'sentimeetris', toName: 'millimeetrit' }
+        { from: 'm', to: 'cm', factor: 100, emoji: '📏', name: 'meetrit', toName: 'sentimeetrit' },
+        { from: 'km', to: 'm', factor: 1000, emoji: '📐', name: 'kilomeetrit', toName: 'meetrit' },
+        { from: 'cm', to: 'mm', factor: 10, emoji: '📏', name: 'sentimeetrit', toName: 'millimeetrit' }
       ],
       mass: [
-        { from: 'kg', to: 'g', factor: 1000, emoji: '⚖️', name: 'kilogrammis', toName: 'grammi' },
-        { from: 't', to: 'kg', factor: 1000, emoji: '🏋️', name: 'tonnis', toName: 'kilogrammi' }
+        { from: 'kg', to: 'g', factor: 1000, emoji: '⚖️', name: 'kilogrammi', toName: 'grammi' },
+        { from: 't', to: 'kg', factor: 1000, emoji: '🏋️', name: 'tonni', toName: 'kilogrammi' }
       ],
       volume: [
-        { from: 'l', to: 'ml', factor: 1000, emoji: '🧪', name: 'liitris', toName: 'milliliitrit' },
-        { from: 'l', to: 'dl', factor: 10, emoji: '🥛', name: 'liitris', toName: 'detsiliitrit' }
+        { from: 'l', to: 'ml', factor: 1000, emoji: '🧪', name: 'liitrit', toName: 'milliliitrit' },
+        { from: 'l', to: 'dl', factor: 10, emoji: '🥛', name: 'liitrit', toName: 'detsiliitrit' }
       ]
     };
 
@@ -763,7 +763,7 @@ export const Generators = {
 
     const options = [correctAnswer, ...uniqueWrong.slice(0, 3)].sort(() => rng() - 0.5);
 
-    const display = `Kui palju ${selectedConversion.toName} on ${value} ${selectedConversion.name}?`;
+    const display = `Mitu ${selectedConversion.toName} on ${value} ${selectedConversion.from}?`;
     const question = `${value} ${selectedConversion.from} = ? ${selectedConversion.to}`;
     const hint = `1 ${selectedConversion.from} on ${selectedConversion.factor} ${selectedConversion.to}`;
 

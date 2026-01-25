@@ -1233,7 +1233,7 @@ export const TimeGameView = ({ problem, onAnswer, soundEnabled }) => {
   return (
     <div className="flex flex-col items-center gap-4 sm:gap-6 w-full px-2">
       <TimeDisplay hour={problem.display.hour} minute={problem.display.minute} />
-      <div className="text-xs sm:text-sm font-semibold text-slate-500 mb-1 sm:mb-2">Vali, mis kell on</div>
+      <div className="text-xs sm:text-sm font-semibold text-slate-500 mb-1 sm:mb-2">Vali õige kellaaeg</div>
       {feedback && <div className="text-[10px] sm:text-xs font-semibold text-red-500 -mt-1 sm:-mt-2 px-2 text-center">{feedback}</div>}
       <div className="grid grid-cols-3 gap-2 sm:gap-3 w-full max-w-sm">
         {problem.options.map((opt, idx) => (

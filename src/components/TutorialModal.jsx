@@ -19,7 +19,7 @@ const TUTORIAL_STEPS = [
   },
   {
     title: 'Vasta õigesti ⭐',
-    content: 'Iga õige vastus annab sulle tähe. Kui kogud 5 tähte, tõuseb tase!',
+    content: 'Iga õige vastus annab sulle tähe. Kui kogud 5 tähte, tõused taseme võrra!',
     emoji: '⭐'
   },
   {
