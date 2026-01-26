@@ -422,6 +422,43 @@ export const Generators: Record<string, GeneratorFunction> = {
       }
     }
     
+    // Calculate optimal moves using BFS pathfinding
+    const calculateOptimalMoves = (startPos: [number, number], endPos: [number, number], gridSize: number, obstacleSet: Set<string>): number => {
+      const queue: Array<{ pos: [number, number]; dist: number }> = [{ pos: startPos, dist: 0 }];
+      const visited = new Set<string>();
+      visited.add(`${startPos[0]},${startPos[1]}`);
+      
+      const directions = [[0, -1], [0, 1], [-1, 0], [1, 0]]; // UP, DOWN, LEFT, RIGHT
+      
+      while (queue.length > 0) {
+        const current = queue.shift();
+        if (!current) break;
+        
+        const [x, y] = current.pos;
+        if (x === endPos[0] && y === endPos[1]) {
+          return current.dist;
+        }
+        
+        for (const [dx, dy] of directions) {
+          const newX = x + dx;
+          const newY = y + dy;
+          const key = `${newX},${newY}`;
+          
+          if (newX >= 0 && newX < gridSize && newY >= 0 && newY < gridSize && 
+              !visited.has(key) && !obstacleSet.has(key)) {
+            visited.add(key);
+            queue.push({ pos: [newX, newY], dist: current.dist + 1 });
+          }
+        }
+      }
+      
+      // If no path found, return Manhattan distance as estimate
+      return Math.abs(endPos[0] - startPos[0]) + Math.abs(endPos[1] - startPos[1]);
+    };
+    
+    const obstacleSet = new Set(obstacles.map(o => `${o.x},${o.y}`));
+    const optimalMoves = calculateOptimalMoves([start.x, start.y], [end.x, end.y], gridSize, obstacleSet);
+    
     // Generate correct path (simplified - just store instructions)
     const correctPath: string[] = [];
     const optionCommands = ['UP', 'DOWN', 'LEFT', 'RIGHT', 'FORWARD', 'TURN_LEFT', 'TURN_RIGHT'];
@@ -436,6 +473,7 @@ export const Generators: Record<string, GeneratorFunction> = {
       correctPath,
       options: optionCommands,
       maxCommands: Math.max(6, Math.floor(gridSize * 1.5) + obstacleCount),
+      optimalMoves,
       uid: uid(rng) 
     };
   },

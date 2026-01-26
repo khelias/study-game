@@ -1071,40 +1071,65 @@ export const RoboPathView: React.FC<RoboPathViewProps> = ({ problem, onAnswer, s
   const { formatText } = useProfileText();
   const [commands, setCommands] = useState<string[]>([]);
   const [robotPos, setRobotPos] = useState<[number, number]>(problem.start);
+  const [robotDirection, setRobotDirection] = useState<string>('DOWN');
   const [status, setStatus] = useState<string>('planning');
   const [startTime, setStartTime] = useState<number | null>(null);
   const [elapsedTime, setElapsedTime] = useState<number>(0);
   const [moveCount, setMoveCount] = useState<number>(0);
   const [bestTime, setBestTime] = useState<number | null>(null);
-  const [bestMoves, setBestMoves] = useState<number | null>(null);
+  const [showNumbers, setShowNumbers] = useState<boolean>(false);
+  const [hintLevel, setHintLevel] = useState<number>(0);
+  const [stars, setStars] = useState<number>(0);
+  const [earnedXP, setEarnedXP] = useState<number>(0);
+  const [currentCommandIndex, setCurrentCommandIndex] = useState<number>(-1);
   
-  // Reset state when problem changes - intentional cascading updates
+  // Calculate Manhattan distance to goal
+  const calculateDistance = useCallback((pos: [number, number]): number => {
+    const goalPos = problem.end || problem.goal;
+    return Math.abs(goalPos[0] - pos[0]) + Math.abs(goalPos[1] - pos[1]);
+  }, [problem.end, problem.goal]);
+  
+  const currentDistance = calculateDistance(robotPos);
+  
+  // Get distance color
+  const getDistanceColor = (distance: number): string => {
+    const maxDist = problem.gridSize * 2;
+    if (distance <= maxDist * 0.3) return 'text-green-600';
+    if (distance <= maxDist * 0.6) return 'text-yellow-600';
+    return 'text-red-600';
+  };
+  
+  // Reset state when problem changes
   /* eslint-disable react-hooks/set-state-in-effect */
   useEffect(() => { 
       setCommands([]); 
       setRobotPos(problem.start); 
+      setRobotDirection('DOWN');
       setStatus('planning');
       const now = Date.now();
       setStartTime(now);
       setElapsedTime(0);
       setMoveCount(0);
+      setHintLevel(0);
+      setStars(0);
+      setEarnedXP(0);
+      setCurrentCommandIndex(-1);
       
-      // Laadi parimad tulemused
-      const storageKey = `robo_best_${problem.gridSize}_${problem.obstacles.length}`;
+      // Load best results
+      const storageKey = `robo_best_${problem.uid}`;
       try {
         const saved = localStorage.getItem(storageKey);
         if (saved) {
-          const best = JSON.parse(saved) as { time: number; moves: number };
+          const best = JSON.parse(saved) as { time: number; moves: number; stars: number };
           setBestTime(best.time);
-          setBestMoves(best.moves);
         }
       } catch {
         // Ignore
       }
-  }, [problem.uid, problem.gridSize, problem.obstacles.length, problem.start]);
+  }, [problem.uid, problem.start]);
   /* eslint-enable react-hooks/set-state-in-effect */
 
-  // Timer - näitab aega
+  // Timer
   useEffect(() => {
     if (status !== 'planning' || !startTime) return;
     
@@ -1142,15 +1167,33 @@ export const RoboPathView: React.FC<RoboPathViewProps> = ({ problem, onAnswer, s
     playSound('click', soundEnabled);
     
     const currentPos: [number, number] = [problem.start[0], problem.start[1]];
+    let currentDir = 'DOWN';
+    
     for (let i = 0; i < commands.length; i++) {
-        const cmd = commands[i]; 
-        await new Promise(r => setTimeout(r, 600));
+        const cmd = commands[i];
+        setCurrentCommandIndex(i);
+        await new Promise(r => setTimeout(r, 400));
         
-        if (cmd === 'UP') currentPos[1] = Math.max(0, currentPos[1] - 1);
-        if (cmd === 'DOWN') currentPos[1] = Math.min(problem.gridSize - 1, currentPos[1] + 1);
-        if (cmd === 'LEFT') currentPos[0] = Math.max(0, currentPos[0] - 1);
-        if (cmd === 'RIGHT') currentPos[0] = Math.min(problem.gridSize - 1, currentPos[0] + 1);
+        let newDir = currentDir;
+        if (cmd === 'UP') {
+          currentPos[1] = Math.max(0, currentPos[1] - 1);
+          newDir = 'UP';
+        }
+        if (cmd === 'DOWN') {
+          currentPos[1] = Math.min(problem.gridSize - 1, currentPos[1] + 1);
+          newDir = 'DOWN';
+        }
+        if (cmd === 'LEFT') {
+          currentPos[0] = Math.max(0, currentPos[0] - 1);
+          newDir = 'LEFT';
+        }
+        if (cmd === 'RIGHT') {
+          currentPos[0] = Math.min(problem.gridSize - 1, currentPos[0] + 1);
+          newDir = 'RIGHT';
+        }
         
+        currentDir = newDir;
+        setRobotDirection(newDir);
         setRobotPos([currentPos[0], currentPos[1]]);
         
         if (problem.obstacles.some(o => o[0] === currentPos[0] && o[1] === currentPos[1])) { 
@@ -1159,67 +1202,90 @@ export const RoboPathView: React.FC<RoboPathViewProps> = ({ problem, onAnswer, s
             setTimeout(() => { 
                 onAnswer(false); 
                 setRobotPos(problem.start); 
+                setRobotDirection('DOWN');
                 setCommands([]); 
-                setStatus('planning'); 
+                setStatus('planning');
+                setCurrentCommandIndex(-1);
             }, 1200); 
             return; 
         }
     }
+    
+    setCurrentCommandIndex(-1);
     
     const goalPos = problem.end || problem.goal;
     if (currentPos[0] === goalPos[0] && currentPos[1] === goalPos[1]) { 
         const finalTime = Math.floor((Date.now() - (startTime || 0)) / 1000);
         const finalMoves = commands.length;
         setElapsedTime(finalTime);
+        
+        // Calculate stars based on optimal moves
+        const optimal = problem.optimalMoves || calculateDistance(problem.start);
+        let starCount = 1;
+        let xp = 30;
+        
+        if (finalMoves === optimal) {
+          starCount = 3;
+          xp = 100;
+        } else if (finalMoves <= optimal + 2) {
+          starCount = 2;
+          xp = 60;
+        }
+        
+        setStars(starCount);
+        setEarnedXP(xp);
         setStatus('win');
         
-        // Salvesta parimad tulemused
-        const storageKey = `robo_best_${problem.gridSize}_${problem.obstacles.length}`;
+        // Save best results
+        const storageKey = `robo_best_${problem.uid}`;
         try {
           const saved = localStorage.getItem(storageKey);
+          let shouldSave = false;
+          const saveData = { time: finalTime, moves: finalMoves, stars: starCount };
+          
           if (saved) {
-            const best = JSON.parse(saved) as { time: number; moves: number };
-            if (!bestTime || finalTime < best.time) {
-              setBestTime(finalTime);
-              localStorage.setItem(storageKey, JSON.stringify({ time: finalTime, moves: finalMoves }));
-            }
-            if (!bestMoves || finalMoves < best.moves) {
-              setBestMoves(finalMoves);
-              localStorage.setItem(storageKey, JSON.stringify({ time: best.time || finalTime, moves: finalMoves }));
+            const best = JSON.parse(saved) as { time: number; moves: number; stars: number };
+            if (finalMoves < best.moves || (finalMoves === best.moves && finalTime < best.time) || starCount > best.stars) {
+              shouldSave = true;
+              setBestTime(Math.min(finalTime, best.time));
             }
           } else {
+            shouldSave = true;
             setBestTime(finalTime);
-            setBestMoves(finalMoves);
-            localStorage.setItem(storageKey, JSON.stringify({ time: finalTime, moves: finalMoves }));
+          }
+          
+          if (shouldSave) {
+            localStorage.setItem(storageKey, JSON.stringify(saveData));
           }
         } catch {
           // Ignore storage errors
         }
         
-        setTimeout(() => onAnswer(true), 1500); 
+        playSound('correct', soundEnabled);
+        setTimeout(() => onAnswer(true), 2500); 
     } else { 
-        setStatus('crash'); 
+        setStatus('notReached'); 
         playSound('wrong', soundEnabled);
         setTimeout(() => { 
             onAnswer(false); 
-            setRobotPos(problem.start); 
+            setRobotPos(problem.start);
+            setRobotDirection('DOWN');
             setCommands([]); 
-            setStatus('planning'); 
+            setStatus('planning');
+            setCurrentCommandIndex(-1);
         }, 1200); 
     }
-  }, [commands, problem.start, problem.end, problem.goal, problem.gridSize, problem.obstacles, soundEnabled, startTime, bestTime, bestMoves, onAnswer]);
+  }, [commands, problem.start, problem.end, problem.goal, problem.gridSize, problem.obstacles, problem.optimalMoves, problem.uid, soundEnabled, startTime, calculateDistance, onAnswer]);
 
-  // Klaviatuuri tugi - nooleklahvid ja WASD
+  // Keyboard support
   useEffect(() => {
     if (status !== 'planning') return;
     
     const handleKeyPress = (e: KeyboardEvent): void => {
-      // Vältime, kui kasutaja kirjutab tekstiväljale
       if ((e.target as HTMLElement).tagName === 'INPUT' || (e.target as HTMLElement).tagName === 'TEXTAREA') return;
       
       let command: string | null = null;
       
-      // Nooleklahvid
       if (e.key === 'ArrowUp') {
         e.preventDefault();
         command = 'UP';
@@ -1232,9 +1298,7 @@ export const RoboPathView: React.FC<RoboPathViewProps> = ({ problem, onAnswer, s
       } else if (e.key === 'ArrowRight') {
         e.preventDefault();
         command = 'RIGHT';
-      }
-      // WASD klahvid
-      else if (e.key === 'w' || e.key === 'W') {
+      } else if (e.key === 'w' || e.key === 'W') {
         e.preventDefault();
         command = 'UP';
       } else if (e.key === 's' || e.key === 'S') {
@@ -1246,15 +1310,11 @@ export const RoboPathView: React.FC<RoboPathViewProps> = ({ problem, onAnswer, s
       } else if (e.key === 'd' || e.key === 'D') {
         e.preventDefault();
         command = 'RIGHT';
-      }
-      // Backspace või Delete - eemalda viimane käsk
-      else if ((e.key === 'Backspace' || e.key === 'Delete') && commands.length > 0) {
+      } else if ((e.key === 'Backspace' || e.key === 'Delete') && commands.length > 0) {
         e.preventDefault();
         removeCommand();
         return;
-      }
-      // Enter või Space - käivita robot
-      else if ((e.key === 'Enter' || e.key === ' ') && commands.length > 0) {
+      } else if ((e.key === 'Enter' || e.key === ' ') && commands.length > 0) {
         e.preventDefault();
         void runSimulation();
         return;
@@ -1267,48 +1327,80 @@ export const RoboPathView: React.FC<RoboPathViewProps> = ({ problem, onAnswer, s
     
     window.addEventListener('keydown', handleKeyPress);
     return () => window.removeEventListener('keydown', handleKeyPress);
-  }, [status, commands.length, problem.uid, problem.maxCommands, soundEnabled, addCommand, removeCommand, runSimulation]);
+  }, [status, commands.length, problem.maxCommands, addCommand, removeCommand, runSimulation]);
 
   const renderCell = (x: number, y: number): React.ReactNode => {
      const isRobot = robotPos[0] === x && robotPos[1] === y;
      const isEnd = (problem.end?.[0] ?? problem.goal?.[0]) === x && (problem.end?.[1] ?? problem.goal?.[1]) === y;
      const isRock = problem.obstacles.some(o => o[0] === x && o[1] === y);
+     const cellDistance = showNumbers ? Math.abs((problem.end?.[0] ?? problem.goal?.[0] ?? 0) - x) + Math.abs((problem.end?.[1] ?? problem.goal?.[1] ?? 0) - y) : 0;
+     
+     // Robot rotation based on direction
+     const robotRotation = robotDirection === 'UP' ? 'rotate-0' : 
+                          robotDirection === 'RIGHT' ? 'rotate-90' : 
+                          robotDirection === 'DOWN' ? 'rotate-180' : 'rotate-[270deg]';
      
      return (
-        <div key={`${x}-${y}`} className={`relative w-full aspect-square bg-white border-2 border-indigo-50 rounded-lg flex items-center justify-center text-3xl shadow-sm overflow-hidden ${status === 'crash' && isRobot ? 'bg-red-100 animate-pulse' : ''}`}>
-            {isEnd && <div className="absolute inset-0 bg-green-50 flex items-center justify-center animate-pulse border-4 border-green-200 rounded-lg">🔋</div>}
-            {isRock && <div className="absolute inset-0 bg-slate-100 flex items-center justify-center">🪨</div>}
-            {isRobot && <div className="absolute inset-0 flex items-center justify-center z-10 text-4xl transition-all duration-300 drop-shadow-lg">🤖</div>}
+        <div key={`${x}-${y}`} className={`relative w-full aspect-square bg-gradient-to-br from-green-50 to-emerald-50 border-2 border-emerald-200 rounded-lg flex items-center justify-center text-3xl shadow-sm overflow-hidden transition-all duration-300 ${status === 'crash' && isRobot ? 'bg-red-200 animate-pulse' : ''}`}>
+            {showNumbers && !isRobot && !isEnd && !isRock && (
+              <div className="absolute top-0.5 right-1 text-[10px] font-bold text-slate-400">{cellDistance}</div>
+            )}
+            {isEnd && (
+              <div className="absolute inset-0 bg-gradient-to-br from-green-100 to-green-200 flex items-center justify-center border-4 border-green-400 rounded-lg">
+                <div className="text-4xl animate-pulse drop-shadow-lg">🔋</div>
+                <div className="absolute inset-0 bg-green-300 opacity-20 rounded-full blur-xl animate-pulse"></div>
+              </div>
+            )}
+            {isRock && (
+              <div className="absolute inset-0 bg-gradient-to-br from-gray-400 via-gray-500 to-gray-600 flex items-center justify-center rounded-lg shadow-[inset_-2px_-2px_8px_rgba(0,0,0,0.4),inset_2px_2px_8px_rgba(255,255,255,0.1),4px_4px_12px_rgba(0,0,0,0.5)] border-2 border-gray-700 transform hover:scale-105 transition-transform">
+                <div className="text-3xl drop-shadow-[2px_2px_4px_rgba(0,0,0,0.8)]">🪨</div>
+              </div>
+            )}
+            {isRobot && (
+              <div className={`absolute inset-0 flex items-center justify-center z-10 text-4xl transition-all duration-300 drop-shadow-2xl ${robotRotation} ${status === 'crash' ? 'animate-[shake_0.5s_ease-in-out]' : ''}`}>
+                🤖
+              </div>
+            )}
+            {status === 'crash' && isRobot && (
+              <div className="absolute inset-0 flex items-center justify-center z-20 text-5xl animate-ping">💥</div>
+            )}
         </div>
      );
   };
 
+  const getCommandColor = (cmd: string): string => {
+    if (cmd === 'UP') return 'bg-blue-500 border-blue-700';
+    if (cmd === 'DOWN') return 'bg-red-500 border-red-700';
+    if (cmd === 'LEFT') return 'bg-yellow-500 border-yellow-700';
+    if (cmd === 'RIGHT') return 'bg-green-500 border-green-700';
+    return 'bg-white border-indigo-200';
+  };
 
   return (
     <div className="w-full flex flex-col items-center max-w-sm mx-auto">
-       {/* Statistika paneel - aeg, käigud, parimad (kompaktne mobiilile) */}
+       {/* Stats panel */}
        <div className="w-full mb-3 bg-gradient-to-r from-indigo-50 to-purple-50 rounded-xl p-2 sm:p-4 border-2 border-indigo-200 shadow-lg">
          <div className="grid grid-cols-3 gap-2 sm:gap-3 text-center">
            <div className="bg-white rounded-lg sm:rounded-xl p-2 sm:p-3 shadow-sm border-2 border-indigo-100">
-             <div className="text-[10px] sm:text-xs font-bold text-slate-500 mb-0.5 sm:mb-1">⏱️ AEG</div>
+             <div className="text-[10px] sm:text-xs font-bold text-slate-500 mb-0.5 sm:mb-1">⏱️ {t.roboPath.time}</div>
              <div className="text-lg sm:text-2xl font-black text-indigo-600">{elapsedTime}s</div>
              {bestTime && (
                <div className="text-[9px] sm:text-xs text-green-600 font-semibold mt-0.5 sm:mt-1 hidden sm:block">
-                 Parim: {bestTime}s
+                 {t.roboPath.bestTime} {bestTime}s
                </div>
              )}
            </div>
            <div className="bg-white rounded-lg sm:rounded-xl p-2 sm:p-3 shadow-sm border-2 border-indigo-100">
-             <div className="text-[10px] sm:text-xs font-bold text-slate-500 mb-0.5 sm:mb-1">🎯 KÄIGUD</div>
+             <div className="text-[10px] sm:text-xs font-bold text-slate-500 mb-0.5 sm:mb-1">🎯 {t.roboPath.commands}</div>
              <div className="text-lg sm:text-2xl font-black text-purple-600">{moveCount}</div>
-             {bestMoves && (
-               <div className="text-[9px] sm:text-xs text-green-600 font-semibold mt-0.5 sm:mt-1 hidden sm:block">
-                 Parim: {bestMoves}
+             {problem.optimalMoves && (
+               <div className="text-[9px] sm:text-xs text-blue-600 font-semibold mt-0.5 sm:mt-1">
+                 Opt: {problem.optimalMoves}
                </div>
              )}
            </div>
            <div className="bg-white rounded-lg sm:rounded-xl p-2 sm:p-3 shadow-sm border-2 border-indigo-100">
-             <div className="text-[10px] sm:text-xs font-bold text-slate-500 mb-0.5 sm:mb-1">📊 LIMIIT</div>
+             <div className="text-[10px] sm:text-xs font-bold text-slate-500 mb-0.5 sm:mb-1">📊 MAX</div>
              <div className="text-lg sm:text-2xl font-black text-teal-600">{problem.maxCommands || 8}</div>
              <div className="text-[9px] sm:text-xs text-slate-400 mt-0.5 sm:mt-1">
                {moveCount}/{problem.maxCommands || 8}
@@ -1317,43 +1409,164 @@ export const RoboPathView: React.FC<RoboPathViewProps> = ({ problem, onAnswer, s
          </div>
        </div>
        
-       {/* Klaviatuuri vihje - peidetud väikestel ekraanidel */}
+       {/* Distance indicator */}
        {status === 'planning' && (
-         <div className="mb-2 sm:mb-3 text-[10px] sm:text-xs text-slate-600 text-center bg-blue-50 px-2 sm:px-3 py-1 sm:py-2 rounded-lg border border-blue-200 hidden sm:block">
-           💡 Vihje: Kasuta nooleklahve (↑↓←→) või WASD klahve, et lisada käske!
+         <div className={`mb-2 sm:mb-3 text-xs sm:text-sm font-bold text-center px-3 py-2 rounded-lg border-2 ${getDistanceColor(currentDistance)} bg-white shadow-sm transition-colors`}>
+           📍 {t.roboPath.distanceToGoal} <span className="text-lg">{currentDistance}</span> {t.roboPath.steps}
          </div>
        )}
        
-       {/* Win celebration - kompaktne */}
+       {/* Win celebration with stars and XP */}
        {status === 'win' && (
-         <div className="mb-2 sm:mb-3 text-center animate-bounce">
-           <div className="text-3xl sm:text-4xl mb-1 sm:mb-2">🎉</div>
-           <div className="text-xs sm:text-sm font-bold text-green-600">
-             {elapsedTime}s | {commands.length} käiku
+         <div className="mb-3 text-center bg-gradient-to-br from-yellow-100 to-orange-100 p-4 rounded-2xl border-4 border-yellow-400 shadow-xl">
+           <div className="text-4xl mb-2 animate-bounce">
+             {stars === 3 ? '⭐⭐⭐' : stars === 2 ? '⭐⭐' : '⭐'}
            </div>
+           <div className="text-sm font-bold text-green-700 mb-1">
+             {stars === 3 ? t.roboPath.excellent : stars === 2 ? t.roboPath.good : t.roboPath.solved}
+           </div>
+           <div className="text-xs text-slate-600 mb-2">
+             {t.roboPath.youUsed} {commands.length} {t.roboPath.commands}
+             {problem.optimalMoves && ` | ${t.roboPath.optimalIs} ${problem.optimalMoves}`}
+           </div>
+           <div className="text-xs font-semibold text-purple-600 bg-purple-100 px-3 py-1 rounded-full inline-block">
+             {t.roboPath.earnedXP} +{earnedXP} XP
+           </div>
+           {stars < 3 && (
+             <div className="text-[10px] text-orange-600 mt-2">
+               {t.roboPath.tryAgainFor3Stars}
+             </div>
+           )}
          </div>
        )}
        
-       {/* Grid - kompaktne väikestel ekraanidel */}
-       <div className="grid gap-1 sm:gap-2 w-full mb-2 sm:mb-4 bg-indigo-50 p-2 sm:p-4 rounded-xl sm:rounded-2xl border-2 sm:border-4 border-indigo-100 shadow-inner" style={{ gridTemplateColumns: `repeat(${problem.gridSize}, 1fr)` }}>
+       {/* Crash/Not reached feedback */}
+       {status === 'crash' && (
+         <div className="mb-3 text-center bg-red-100 p-3 rounded-xl border-2 border-red-400 animate-pulse">
+           <div className="text-sm font-bold text-red-700">{t.roboPath.crashWithStone}</div>
+           <div className="text-xs text-red-600 mt-1">{t.roboPath.avoidObstacles}</div>
+         </div>
+       )}
+       
+       {status === 'notReached' && (
+         <div className="mb-3 text-center bg-orange-100 p-3 rounded-xl border-2 border-orange-400 animate-pulse">
+           <div className="text-sm font-bold text-orange-700">{t.roboPath.needMoreCommands}</div>
+         </div>
+       )}
+       
+       {/* Hint system */}
+       {status === 'planning' && (
+         <div className="flex gap-2 mb-3 w-full">
+           <button 
+             onClick={() => setShowNumbers(!showNumbers)}
+             className="flex-1 bg-purple-500 text-white text-xs font-bold py-2 px-3 rounded-lg shadow-md hover:bg-purple-600 transition-colors"
+           >
+             {showNumbers ? t.roboPath.hideNumbers : t.roboPath.showNumbers}
+           </button>
+           <button 
+             onClick={() => {
+               setHintLevel(prev => Math.min(prev + 1, 3));
+               playSound('click', soundEnabled);
+             }}
+             disabled={hintLevel >= 3}
+             className="flex-1 bg-amber-500 text-white text-xs font-bold py-2 px-3 rounded-lg shadow-md hover:bg-amber-600 transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed"
+           >
+             {t.roboPath.hint} {hintLevel > 0 && `(${hintLevel}/3)`}
+           </button>
+         </div>
+       )}
+       
+       {hintLevel > 0 && status === 'planning' && (
+         <div className="mb-3 bg-amber-50 border-2 border-amber-400 p-3 rounded-xl text-xs text-amber-900">
+           {hintLevel >= 1 && <div className="mb-1">💡 {t.roboPath.hint1}</div>}
+           {hintLevel >= 2 && <div className="mb-1">💡 {t.roboPath.hint2}</div>}
+           {hintLevel >= 3 && <div>💡 {t.roboPath.hint3}</div>}
+         </div>
+       )}
+       
+       {/* Grid */}
+       <div className="grid gap-1 sm:gap-2 w-full mb-2 sm:mb-4 bg-gradient-to-br from-green-100 to-emerald-200 p-2 sm:p-4 rounded-xl sm:rounded-2xl border-2 sm:border-4 border-emerald-300 shadow-inner" style={{ gridTemplateColumns: `repeat(${problem.gridSize}, 1fr)` }}>
           {Array.from({ length: problem.gridSize * problem.gridSize }).map((_, i) => renderCell(i % problem.gridSize, Math.floor(i / problem.gridSize)))}
        </div>
        
-       {/* Käsud - kompaktne */}
-       <div className="flex gap-1 h-10 sm:h-12 w-full bg-slate-100 rounded-lg sm:rounded-xl mb-2 sm:mb-4 items-center px-2 overflow-x-auto border-inner shadow-inner no-scrollbar">
+       {/* Command queue with colors and indices */}
+       <div className="flex gap-1 min-h-10 sm:min-h-12 w-full bg-slate-100 rounded-lg sm:rounded-xl mb-2 sm:mb-4 items-center px-2 py-2 overflow-x-auto border-2 border-slate-300 shadow-inner">
            {commands.length === 0 && <span className="text-slate-400 text-xs sm:text-sm ml-2">{formatText(t.roboPath.addCommands)}</span>}
-           {commands.map((c, i) => <div key={i} className="min-w-[1.5rem] sm:min-w-[2rem] h-7 sm:h-8 bg-white rounded flex items-center justify-center text-indigo-600 font-black shadow-sm text-base sm:text-lg animate-in fade-in zoom-in">{c === 'UP' ? '⬆' : c === 'DOWN' ? '⬇' : c === 'LEFT' ? '⬅' : '➡'}</div>)}
+           {commands.map((c, i) => (
+             <div key={i} className="relative flex-shrink-0">
+               <div className={`min-w-[2rem] sm:min-w-[2.5rem] h-8 sm:h-10 ${getCommandColor(c)} text-white rounded-lg flex items-center justify-center font-black shadow-md text-base sm:text-xl border-b-4 transform transition-all ${currentCommandIndex === i ? 'scale-110 ring-4 ring-yellow-400 animate-pulse' : ''}`}>
+                 {c === 'UP' ? '⬆' : c === 'DOWN' ? '⬇' : c === 'LEFT' ? '⬅' : '➡'}
+               </div>
+               <div className="absolute -top-1 -right-1 bg-white text-[8px] sm:text-[10px] font-bold text-slate-600 rounded-full w-4 h-4 flex items-center justify-center border border-slate-300">
+                 {i + 1}
+               </div>
+             </div>
+           ))}
        </div>
        
-       {/* Nupud - kompaktne väikestel ekraanidel */}
+       {/* Control buttons */}
        <div className="grid grid-cols-3 gap-1.5 sm:gap-2 w-full">
-           <div className="col-start-2"><button onClick={() => addCommand('UP')} aria-label={t.roboPath.addCommandUp} disabled={status !== 'planning'} className="w-full h-12 sm:h-14 bg-white border-b-3 sm:border-b-4 border-indigo-200 rounded-lg sm:rounded-xl flex items-center justify-center active:translate-y-1 hover:bg-indigo-50 transition-colors"><ArrowUp size={18} className="sm:w-5 sm:h-5" /></button></div>
-           <div className="col-start-1 row-start-2"><button onClick={() => addCommand('LEFT')} aria-label={t.roboPath.addCommandLeft} disabled={status !== 'planning'} className="w-full h-12 sm:h-14 bg-white border-b-3 sm:border-b-4 border-indigo-200 rounded-lg sm:rounded-xl flex items-center justify-center active:translate-y-1 hover:bg-indigo-50 transition-colors"><ArrowLeft size={18} className="sm:w-5 sm:h-5" /></button></div>
-           <div className="col-start-2 row-start-2"><button onClick={() => addCommand('DOWN')} aria-label={t.roboPath.addCommandDown} disabled={status !== 'planning'} className="w-full h-12 sm:h-14 bg-white border-b-3 sm:border-b-4 border-indigo-200 rounded-lg sm:rounded-xl flex items-center justify-center active:translate-y-1 hover:bg-indigo-50 transition-colors"><ArrowDown size={18} className="sm:w-5 sm:h-5" /></button></div>
-           <div className="col-start-3 row-start-2"><button onClick={() => addCommand('RIGHT')} aria-label={t.roboPath.addCommandRight} disabled={status !== 'planning'} className="w-full h-12 sm:h-14 bg-white border-b-3 sm:border-b-4 border-indigo-200 rounded-lg sm:rounded-xl flex items-center justify-center active:translate-y-1 hover:bg-indigo-50 transition-colors"><ArrowRight size={18} className="sm:w-5 sm:h-5" /></button></div>
+           <div className="col-start-2">
+             <button 
+               onClick={() => addCommand('UP')} 
+               aria-label={t.roboPath.addCommandUp} 
+               disabled={status !== 'planning'} 
+               className="w-full h-12 sm:h-14 bg-blue-500 border-b-4 border-blue-700 text-white rounded-lg sm:rounded-xl flex items-center justify-center active:translate-y-1 hover:bg-blue-600 transition-all disabled:bg-gray-300 disabled:border-gray-400 shadow-lg"
+             >
+               <ArrowUp size={20} className="sm:w-6 sm:h-6" />
+             </button>
+           </div>
+           <div className="col-start-1 row-start-2">
+             <button 
+               onClick={() => addCommand('LEFT')} 
+               aria-label={t.roboPath.addCommandLeft} 
+               disabled={status !== 'planning'} 
+               className="w-full h-12 sm:h-14 bg-yellow-500 border-b-4 border-yellow-700 text-white rounded-lg sm:rounded-xl flex items-center justify-center active:translate-y-1 hover:bg-yellow-600 transition-all disabled:bg-gray-300 disabled:border-gray-400 shadow-lg"
+             >
+               <ArrowLeft size={20} className="sm:w-6 sm:h-6" />
+             </button>
+           </div>
+           <div className="col-start-2 row-start-2">
+             <button 
+               onClick={() => addCommand('DOWN')} 
+               aria-label={t.roboPath.addCommandDown} 
+               disabled={status !== 'planning'} 
+               className="w-full h-12 sm:h-14 bg-red-500 border-b-4 border-red-700 text-white rounded-lg sm:rounded-xl flex items-center justify-center active:translate-y-1 hover:bg-red-600 transition-all disabled:bg-gray-300 disabled:border-gray-400 shadow-lg"
+             >
+               <ArrowDown size={20} className="sm:w-6 sm:h-6" />
+             </button>
+           </div>
+           <div className="col-start-3 row-start-2">
+             <button 
+               onClick={() => addCommand('RIGHT')} 
+               aria-label={t.roboPath.addCommandRight} 
+               disabled={status !== 'planning'} 
+               className="w-full h-12 sm:h-14 bg-green-500 border-b-4 border-green-700 text-white rounded-lg sm:rounded-xl flex items-center justify-center active:translate-y-1 hover:bg-green-600 transition-all disabled:bg-gray-300 disabled:border-gray-400 shadow-lg"
+             >
+               <ArrowRight size={20} className="sm:w-6 sm:h-6" />
+             </button>
+           </div>
            
-           <div className="col-start-1 row-start-3"><button onClick={removeCommand} aria-label={t.roboPath.removeCommand} disabled={status !== 'planning'} className="w-full h-12 sm:h-14 bg-red-100 border-b-3 sm:border-b-4 border-red-300 text-red-500 rounded-lg sm:rounded-xl flex items-center justify-center active:translate-y-1"><RotateCcw size={16} className="sm:w-5 sm:h-5" /></button></div>
-           <div className="col-start-2 col-end-4 row-start-3"><button onClick={() => void runSimulation()} aria-label={t.roboPath.runRobot} disabled={status !== 'planning' || commands.length === 0} className="w-full h-12 sm:h-14 bg-green-500 border-b-3 sm:border-b-4 border-green-700 text-white font-black rounded-lg sm:rounded-xl flex items-center justify-center active:translate-y-1 shadow-lg gap-1 sm:gap-2 text-sm sm:text-lg hover:bg-green-600 transition-colors">START <Play size={16} fill="white" className="sm:w-5 sm:h-5" /></button></div>
+           <div className="col-start-1 row-start-3">
+             <button 
+               onClick={removeCommand} 
+               aria-label={t.roboPath.removeCommand} 
+               disabled={status !== 'planning'} 
+               className="w-full h-12 sm:h-14 bg-orange-400 border-b-4 border-orange-600 text-white rounded-lg sm:rounded-xl flex items-center justify-center active:translate-y-1 hover:bg-orange-500 transition-all disabled:bg-gray-300 disabled:border-gray-400 shadow-lg"
+             >
+               <RotateCcw size={18} className="sm:w-5 sm:h-5" />
+             </button>
+           </div>
+           <div className="col-start-2 col-end-4 row-start-3">
+             <button 
+               onClick={() => void runSimulation()} 
+               aria-label={t.roboPath.runRobot} 
+               disabled={status !== 'planning' || commands.length === 0} 
+               className="w-full h-12 sm:h-14 bg-gradient-to-r from-green-500 to-emerald-600 border-b-4 border-green-800 text-white font-black rounded-lg sm:rounded-xl flex items-center justify-center active:translate-y-1 shadow-xl gap-1 sm:gap-2 text-sm sm:text-lg hover:from-green-600 hover:to-emerald-700 transition-all disabled:from-gray-300 disabled:to-gray-400 disabled:border-gray-500"
+             >
+               START <Play size={18} fill="white" className="sm:w-5 sm:h-5" />
+             </button>
+           </div>
         </div>
     </div>
   );
