@@ -26,6 +26,9 @@ export type Difficulty = 'easy' | 'medium' | 'hard';
 // Profile types
 export type ProfileType = 'starter' | 'advanced';
 
+// Direction helpers (grid-based games)
+export type Direction = 'UP' | 'DOWN' | 'LEFT' | 'RIGHT';
+
 // Position constants for sentence logic game (English keys, translated to Estonian in UI)
 export const POSITION = {
   NEXT_TO: 'NEXT_TO',    // KÕRVAL
@@ -169,6 +172,17 @@ export interface RoboPathProblem extends BaseProblem {
   coins?: Array<[number, number]>;
 }
 
+// Math snake problem
+export interface MathSnakeProblem extends BaseProblem {
+  type: 'math_snake';
+  gridSize: number;
+  snake: Array<[number, number]>;
+  direction: Direction;
+  apple: { id: string; kind: 'normal' | 'math'; pos: [number, number] } | null;
+  applesUntilMath: number;
+  math: { equation: string; answer: number; options: number[] } | null;
+}
+
 // Time match problem
 export interface TimeMatchProblem extends BaseProblem {
   type: 'time_match';
@@ -213,6 +227,7 @@ export interface UnitConversionProblem extends BaseProblem {
   options: number[];
 }
 
+// Answer metadata for game-specific actions
 // Union type for all problems
 export type Problem =
   | BalanceScaleProblem
@@ -221,6 +236,7 @@ export type Problem =
   | SentenceLogicProblem
   | MemoryMathProblem
   | RoboPathProblem
+  | MathSnakeProblem
   | TimeMatchProblem
   | SyllableBuilderProblem
   | LetterMatchProblem

@@ -300,7 +300,7 @@ const ToastNotification: React.FC<ToastNotificationProps> = ({
   switch (notification.type) {
     case 'correct': {
       const emojiIndex = notification.id.charCodeAt(notification.id.length - 1) % CORRECT_EMOJIS.length;
-      const emoji = notification.emoji ?? CORRECT_EMOJIS[emojiIndex];
+      const emoji = notification.emoji ?? CORRECT_EMOJIS[emojiIndex] ?? '✨';
       const message = stripEmojis(formatText(notification.message ?? t.notifications.correctTitle));
       return (
         <HeroToast

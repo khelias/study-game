@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { Generators } from '../generators';
 import { createRng } from '../../engine/rng';
-import type { BalanceScaleProblem, WordBuilderProblem, PatternProblem } from '../../types/game';
+import type { BalanceScaleProblem, WordBuilderProblem, PatternProblem, MathSnakeProblem } from '../../types/game';
 
 describe('Generators', () => {
   describe('balance_scale', () => {
@@ -119,10 +119,16 @@ describe('Generators', () => {
       const problem6 = generator(6, rng, 'starter') as WordBuilderProblem;
       
       // First letter uppercase, rest lowercase
-      expect(problem4.target[0]).toBe(problem4.target[0].toUpperCase());
-      expect(problem4.target.slice(1)).toBe(problem4.target.slice(1).toLowerCase());
-      expect(problem6.target[0]).toBe(problem6.target[0].toUpperCase());
-      expect(problem6.target.slice(1)).toBe(problem6.target.slice(1).toLowerCase());
+      const first4 = problem4.target[0];
+      const first6 = problem6.target[0];
+      if (first4) {
+        expect(first4).toBe(first4.toUpperCase());
+        expect(problem4.target.slice(1)).toBe(problem4.target.slice(1).toLowerCase());
+      }
+      if (first6) {
+        expect(first6).toBe(first6.toUpperCase());
+        expect(problem6.target.slice(1)).toBe(problem6.target.slice(1).toLowerCase());
+      }
     });
 
     it('should use lowercase letters at level 7-9', () => {
@@ -262,6 +268,40 @@ describe('Generators', () => {
       const problem5 = generator(5, rng2, 'starter') as PatternProblem;
       
       expect(problem5.sequence.length).toBeGreaterThanOrEqual(problem1.sequence.length);
+    });
+  });
+
+  describe('math_snake', () => {
+    it('should generate valid math snake problem', () => {
+      const rng = createRng(4242);
+      const generator = Generators.math_snake;
+      if (!generator) throw new Error('math_snake generator not found');
+      const problem = generator(2, rng, 'starter') as MathSnakeProblem;
+      
+      expect(problem.type).toBe('math_snake');
+      expect(problem.gridSize).toBeGreaterThanOrEqual(5);
+      expect(problem.snake.length).toBeGreaterThanOrEqual(3);
+      expect(problem.apple).not.toBeNull();
+      expect(problem.math).toBeNull();
+      expect(problem.applesUntilMath).toBeGreaterThan(0);
+    });
+
+    it('should keep apples inside the grid and off the snake', () => {
+      const rng = createRng(4242);
+      const generator = Generators.math_snake;
+      if (!generator) throw new Error('math_snake generator not found');
+      const problem = generator(3, rng, 'starter') as MathSnakeProblem;
+      
+      const snakeSet = new Set(problem.snake.map(([x, y]) => `${x},${y}`));
+      const apple = problem.apple;
+      if (!apple) throw new Error('Expected apple');
+      const [x, y] = apple.pos;
+      expect(x).toBeGreaterThanOrEqual(0);
+      expect(y).toBeGreaterThanOrEqual(0);
+      expect(x).toBeLessThan(problem.gridSize);
+      expect(y).toBeLessThan(problem.gridSize);
+      expect(snakeSet.has(`${x},${y}`)).toBe(false);
+      expect(apple.kind).toBe('normal');
     });
   });
 

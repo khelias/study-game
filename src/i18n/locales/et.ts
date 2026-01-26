@@ -140,6 +140,7 @@ export const et = {
     soundOff: 'Heli välja',
     score: 'Skoor',
     stars: 'Tähed',
+    featured: 'Soovitatud',
   },
 
   // Game
@@ -156,6 +157,7 @@ export const et = {
     gameOver: 'Mäng läbi',
     scoreMessage: 'Said {score} punkti!',
     returnToMenu: 'Tagasi menüüsse',
+    retry: 'Proovi uuesti',
     levelUp: 'Tase tõusis!',
     newAchievement: 'Uus saavutus!',
   },
@@ -216,35 +218,35 @@ export const et = {
     items: {
       first_game: {
         title: 'Esimene samm',
-        desc: 'Mängi oma esimest mängu',
+        desc: 'Mängi oma esimene mäng',
       },
       perfect_5: {
         title: 'Täiuslik seeria',
-        desc: 'Vastasid 5 ülesannet järjest õigesti',
+        desc: 'Vasta 5 ülesannet järjest õigesti',
       },
       word_master: {
         title: 'Sõnameister',
-        desc: 'Lõpeta SÕNAMEISTER tase 5',
+        desc: 'Jõua SÕNAMEISTER tasemele 5',
       },
       math_whiz: {
         title: 'Matemaatikameister',
-        desc: 'Lõpeta MATEMAATIKA MÄLU tase 5',
+        desc: 'Jõua MATEMAATIKA MÄLU tasemele 5',
       },
       pattern_pro: {
-        title: 'Mustriprofi',
-        desc: 'Lõpeta MUSTRI-RONG tase 5',
+        title: 'Mustriproff',
+        desc: 'Jõua MUSTRI-RONG tasemele 5',
       },
       score_100: {
-        title: '100-punkter',
-        desc: 'Kogu 100 punkti',
+        title: 'Sada punkti',
+        desc: 'Kogu kokku 100 punkti',
       },
       score_500: {
-        title: '500-punkter',
-        desc: 'Kogu 500 punkti',
+        title: 'Viissada punkti',
+        desc: 'Kogu kokku 500 punkti',
       },
       persistent: {
         title: 'Püsivus',
-        desc: 'Mängi 10 mängu',
+        desc: 'Mängi kokku 10 mängu',
       },
       all_games: {
         title: 'Kõik mängud',
@@ -252,15 +254,31 @@ export const et = {
       },
       star_collector_50: {
         title: 'Tähtede koguja',
-        desc: 'Kogu 50 tähte',
+        desc: 'Kogu kokku 50 tähte',
       },
       star_collector_100: {
         title: 'Tähtede meister',
-        desc: 'Kogu 100 tähte',
+        desc: 'Kogu kokku 100 tähte',
       },
       star_collector_250: {
-        title: 'Tähtede legenda',
-        desc: 'Kogu 250 tähte',
+        title: 'Tähtede legend',
+        desc: 'Kogu kokku 250 tähte',
+      },
+      snake_master: {
+        title: 'Madumeister',
+        desc: 'Jõua NUMBRIMADU tasemele 5',
+      },
+      snake_growth_20: {
+        title: 'Pikk madu',
+        desc: 'Kasvata madu vähemalt 20 pikkuseks',
+      },
+      snake_growth_30: {
+        title: 'Väga pikk madu',
+        desc: 'Kasvata madu vähemalt 30 pikkuseks',
+      },
+      snake_growth_max: {
+        title: 'Maksimaalne madu',
+        desc: 'Kasvata madu maksimaalse pikkuseni (49)',
       },
     },
   },
@@ -367,6 +385,15 @@ export const et = {
       selectCorrectTime: 'Vali õige kellaaeg',
       correctTimeIs: 'Õige aeg on',
     },
+    mathSnake: {
+      tagline: 'Numbrimadu',
+      instruction: 'Liigu nooleklahvidega ja söö õunu. Matemaatika õun annab boonuse.',
+      solveLabel: 'Lahenda',
+      chooseApple: 'Söö õunu. Matemaatika õun annab +1 või -2 pikkust.',
+      keyboardHint: 'Kasuta nooleklahve või WASD klahve.',
+      lengthLabel: 'Pikkus',
+      nextMathLabel: 'Järgmine tehe',
+    },
     hints: {
       wordBuilder: 'Sõna algab tähega',
       syllableBuilder: 'Sõna algab silbiga',
@@ -377,6 +404,7 @@ export const et = {
       sentenceLogic: 'Vaata, kus asub',
       sentenceLogicScene: 'stseenis!',
       roboPath: 'Robot peab jõudma rohelise aknaga lahtrisse!',
+      mathSnake: 'Söö õunu ja vaata, millal tuleb matemaatika õun!',
       timeMatch: 'Vaata kella osuteid!',
       unitConversion: 'Arvuta ümber!',
       default: 'Proovi veel!',
@@ -424,6 +452,11 @@ export const et = {
         'Mõtle, kuidas robot peab liikuma!',
         'Vaata, kus on takistused!',
         'Proovi sammhaaval!',
+      ],
+      math_snake: [
+        'Liigu rahulikult ja väldi seinu!',
+        'Matemaatika õun annab boonuse või vähendab pikkust!',
+        'Planeeri, millist rada mööda õunani jõuda!',
       ],
       time_match: [
         'Vaata kella osuteid!',
@@ -575,6 +608,10 @@ export const et = {
     time_match: {
       title: 'KELLAMÄNG',
       desc: 'Määra kellaaeg',
+    },
+    math_snake: {
+      title: 'NUMBRIMADU',
+      desc: 'Sööda madu tehetega',
     },
   },
 

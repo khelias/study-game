@@ -50,7 +50,7 @@ export const ACHIEVEMENTS: Record<string, Achievement> = {
     icon: '🎯',
     check: (stats: Stats) => {
       const allTypes = ['word_builder', 'memory_math', 'sentence_logic', 'balance_scale', 
-                       'letter_match', 'pattern', 'robo_path', 'syllable_builder', 'time_match'];
+                       'letter_match', 'pattern', 'robo_path', 'syllable_builder', 'time_match', 'math_snake'];
       return allTypes.every(type => (stats.gamesByType[type] || 0) > 0);
     }
   },
@@ -68,6 +68,26 @@ export const ACHIEVEMENTS: Record<string, Achievement> = {
     id: 'star_collector_250',
     icon: '✨',
     check: (stats: Stats) => (stats.collectedStars || 0) >= 250
+  },
+  snake_master: {
+    id: 'snake_master',
+    icon: '🐍',
+    check: (stats: Stats) => (stats.maxLevels.math_snake || 0) >= 5
+  },
+  snake_growth_20: {
+    id: 'snake_growth_20',
+    icon: '📏',
+    check: (stats: Stats) => (stats.maxSnakeLength || 0) >= 20
+  },
+  snake_growth_30: {
+    id: 'snake_growth_30',
+    icon: '📐',
+    check: (stats: Stats) => (stats.maxSnakeLength || 0) >= 30
+  },
+  snake_growth_max: {
+    id: 'snake_growth_max',
+    icon: '👑',
+    check: (stats: Stats) => (stats.maxSnakeLength || 0) >= 49 // 7x7 grid = 49 max
   }
 };
 

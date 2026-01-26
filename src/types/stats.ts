@@ -15,6 +15,7 @@ export interface Stats {
   totalTimePlayed: number; // in seconds
   lastPlayed: number | null;
   collectedStars: number; // Stars collected for narrative purposes
+  maxSnakeLength: number; // Maximum snake length achieved in math snake
 }
 
 // Performance metrics for adaptive difficulty

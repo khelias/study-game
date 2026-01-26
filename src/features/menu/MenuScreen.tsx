@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { 
   Trophy, Trash2, Volume2, VolumeX, BarChart3,
-  Type, Brain, Scale, BookOpen, GraduationCap, TrainFront, Bot, Clock3, Ruler, ChevronDown, ChevronUp, Languages, Menu, X
+  Type, Brain, Scale, BookOpen, GraduationCap, TrainFront, Bot, Clock3, Ruler, Gamepad2, ChevronDown, ChevronUp, Languages, Menu, X
 } from 'lucide-react';
 import { useGameStore } from '../../stores/gameStore';
 import { usePlaySessionStore } from '../../stores/playSessionStore';
@@ -19,7 +19,7 @@ import { getAchievementCopy } from '../../utils/achievementCopy';
 import type { ProfileType } from '../../types/game';
 import type { AchievementUnlock } from '../../types/achievement';
 
-const ICON_MAP = { Type, Brain, Scale, BookOpen, GraduationCap, TrainFront, Bot, Clock3, Ruler };
+const ICON_MAP = { Type, Brain, Scale, BookOpen, GraduationCap, TrainFront, Bot, Clock3, Ruler, Gamepad2 };
 
 export const MenuScreen: React.FC = () => {
   const t = useTranslation();
@@ -47,6 +47,7 @@ export const MenuScreen: React.FC = () => {
   const [showAchievements, setShowAchievements] = useState(false);
   const [showTutorial, setShowTutorial] = useState(!hasSeenTutorial);
   const [expandedCategories, setExpandedCategories] = useState<Record<string, boolean>>({});
+  const [showFeatured, setShowFeatured] = useState(true);
   const [showLanguageMenu, setShowLanguageMenu] = useState(false);
   const [showSettingsMenu, setShowSettingsMenu] = useState(false);
   const currentLocale = getLocale();
@@ -315,13 +316,70 @@ export const MenuScreen: React.FC = () => {
         ))}
       </div>
       
+      {/* Featured Games Section */}
+      <div className="w-full max-w-md sm:max-w-lg lg:max-w-xl mb-4 sm:mb-6">
+        <div className="mb-3 sm:mb-4">
+          <button
+            onClick={() => {
+              playClick();
+              setShowFeatured(!showFeatured);
+            }}
+            className="w-full flex items-center justify-between bg-gradient-to-r from-emerald-100 to-green-100 backdrop-blur-sm px-4 sm:px-5 py-3 sm:py-4 rounded-2xl border-2 border-emerald-300 shadow-md hover:shadow-lg hover:border-emerald-400 transition-all active:scale-[0.98] cursor-pointer"
+          >
+            <div className="flex items-center gap-2 sm:gap-3">
+              <span className="text-2xl sm:text-3xl">⭐</span>
+              <span className="font-black text-base sm:text-lg text-emerald-800">
+                {formatText(t.menu.featured)}
+              </span>
+            </div>
+            <div className="flex items-center gap-2 sm:gap-3">
+              {showFeatured ? (
+                <ChevronUp className="w-5 h-5 sm:w-6 sm:h-6 text-emerald-700" />
+              ) : (
+                <ChevronDown className="w-5 h-5 sm:w-6 sm:h-6 text-emerald-700" />
+              )}
+            </div>
+          </button>
+        </div>
+        
+        {/* Featured games grid */}
+        {showFeatured && (
+          <div className="grid grid-cols-1 gap-3 sm:gap-5 animate-fadeIn">
+            {(() => {
+              const featuredGameKeys = profile === 'starter' ? ['math_snake'] : ['math_snake_adv'];
+              return featuredGameKeys.map((key) => {
+                const conf = GAME_CONFIG[key];
+                if (!conf) return null;
+                const Icon = ICON_MAP[conf.icon as keyof typeof ICON_MAP] || Type;
+                const gameStats = stats.gamesByType?.[key] || 0;
+                const isNew = gameStats === 0;
+                const currentLevel = levels[profile]?.[key] ?? 1;
+                return (
+                  <GameCard
+                    key={key}
+                    gameConfig={{ ...conf, iconComponent: Icon }}
+                    level={currentLevel}
+                    onClick={() => handleStartGame(key)}
+                    badge={isNew ? formatText(t.menuSpecific.newGame) : null}
+                    delay={0}
+                  />
+                );
+              }).filter(Boolean);
+            })()}
+          </div>
+        )}
+      </div>
+      
       {/* Games by category */}
       <div className="w-full max-w-md sm:max-w-lg lg:max-w-xl pb-6 sm:pb-10">
         {Object.values(CATEGORIES).map(category => {
+          // Featured games are shown separately, exclude them from categories
+          const featuredGameIds = ['math_snake', 'math_snake_adv'];
           const categoryGames = Object.entries(GAME_CONFIG)
-            .filter(([, conf]) => 
+            .filter(([key, conf]) => 
               conf.category === category.id && 
-              (!conf.allowedProfiles || conf.allowedProfiles.includes(profile as ProfileType))
+              (!conf.allowedProfiles || conf.allowedProfiles.includes(profile as ProfileType)) &&
+              !featuredGameIds.includes(key)
             );
           
           if (categoryGames.length === 0) return null;

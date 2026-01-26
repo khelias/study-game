@@ -90,6 +90,8 @@ export const usePlaySessionStore = create<PlaySessionStore>((set, get) => ({
     set({
       gameType,
       gameState: 'playing',
+      problem: null, // Reset problem so new one gets generated
+      score: 0, // Reset session score
       bgClass: 'bg-slate-50',
       notifications: [],
       stars: 0,
@@ -98,12 +100,16 @@ export const usePlaySessionStore = create<PlaySessionStore>((set, get) => ({
       currentStreak: 0,
       gameStartTime: Date.now(),
       adaptiveDifficulty: createAdaptiveDifficulty(),
+      confetti: false,
+      enhancedConfetti: false,
+      particleActive: false,
     });
   },
   
   setProblem: (problem: Problem | null) => {
     set({ problem });
   },
+
   
   submitAnswer: (isCorrect: boolean) => {
     const state = get();

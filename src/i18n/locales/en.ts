@@ -140,6 +140,7 @@ export const en = {
     soundOff: 'Sound off',
     score: 'Score',
     stars: 'Stars',
+    featured: 'Featured',
   },
 
   // Game
@@ -156,6 +157,7 @@ export const en = {
     gameOver: 'Game Over',
     scoreMessage: 'You scored {score} points!',
     returnToMenu: 'Return to menu',
+    retry: 'Try Again',
     levelUp: 'Level up!',
     newAchievement: 'New achievement!',
   },
@@ -224,15 +226,15 @@ export const en = {
       },
       word_master: {
         title: 'Word Master',
-        desc: 'Finish WORD MASTER level 5',
+        desc: 'Reach WORD MASTER level 5',
       },
       math_whiz: {
         title: 'Math Whiz',
-        desc: 'Finish MATH MEMORY level 5',
+        desc: 'Reach MATH MEMORY level 5',
       },
       pattern_pro: {
         title: 'Pattern Pro',
-        desc: 'Finish PATTERN TRAIN level 5',
+        desc: 'Reach PATTERN TRAIN level 5',
       },
       score_100: {
         title: '100 Points',
@@ -261,6 +263,22 @@ export const en = {
       star_collector_250: {
         title: 'Star Legend',
         desc: 'Collect 250 stars',
+      },
+      snake_master: {
+        title: 'Snake Master',
+        desc: 'Reach NUMBER SNAKE level 5',
+      },
+      snake_growth_20: {
+        title: 'Long Snake',
+        desc: 'Grow snake to at least 20 length',
+      },
+      snake_growth_30: {
+        title: 'Very Long Snake',
+        desc: 'Grow snake to at least 30 length',
+      },
+      snake_growth_max: {
+        title: 'Maximum Snake',
+        desc: 'Grow snake to maximum length (49)',
       },
     },
   },
@@ -367,6 +385,15 @@ export const en = {
       selectCorrectTime: 'Choose the correct time',
       correctTimeIs: 'Correct time is',
     },
+    mathSnake: {
+      tagline: 'Number Snake',
+      instruction: 'Move with the arrow keys and eat apples. The math apple gives a bonus.',
+      solveLabel: 'Solve',
+      chooseApple: 'Eat apples. The math apple gives +1 or -2 length.',
+      keyboardHint: 'Use arrow keys or WASD to move.',
+      lengthLabel: 'Length',
+      nextMathLabel: 'Math in',
+    },
     hints: {
       wordBuilder: 'The word starts with letter',
       syllableBuilder: 'The word starts with syllable',
@@ -377,6 +404,7 @@ export const en = {
       sentenceLogic: 'Look where',
       sentenceLogicScene: 'is in the scene!',
       roboPath: 'Robot must reach the cell with green window!',
+      mathSnake: 'Eat apples and watch for the math apple!',
       timeMatch: 'Look at the clock hands!',
       unitConversion: 'Calculate!',
       default: 'Try again!',
@@ -424,6 +452,11 @@ export const en = {
         'Think how the robot should move!',
         'Look where the obstacles are!',
         'Try it step by step!',
+      ],
+      math_snake: [
+        'Move calmly and avoid the walls!',
+        'Math apples can grow or shrink the snake!',
+        'Plan your path before you move!',
       ],
       time_match: [
         'Look at the clock hands!',
@@ -575,6 +608,10 @@ export const en = {
     time_match: {
       title: 'CLOCK GAME',
       desc: 'Set the time',
+    },
+    math_snake: {
+      title: 'NUMBER SNAKE',
+      desc: 'Feed the snake with equations',
     },
   },
 

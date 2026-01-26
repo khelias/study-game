@@ -52,6 +52,7 @@ export const GAME_CONFIG: Record<string, GameConfig> = {
   sentence_logic:  { id: 'sentence_logic', title: 'LAUSE-DETEKTIIV', theme: THEME.green!, icon: 'BookOpen', desc: 'Kus asub ese?', allowedProfiles: ['starter'], difficulty: 'medium', category: 'language' },
   memory_math:     { id: 'memory_math', title: 'MATEMAATIKA MÄLU', theme: THEME.purple!, icon: 'Brain', desc: 'Leia tehe ja vastus', allowedProfiles: ['starter'], difficulty: 'medium', category: 'math' },
   robo_path:       { id: 'robo_path', title: 'ROBO-RADA', theme: THEME.indigo!, icon: 'Bot', desc: 'Programmeerirobot', allowedProfiles: ['starter'], difficulty: 'medium', category: 'logic' },
+  math_snake:      { id: 'math_snake', title: 'NUMBRIMADU', theme: THEME.green!, icon: 'Gamepad2', desc: 'Liigu ja kogu õunu', allowedProfiles: ['starter'], difficulty: 'medium', category: 'math' },
   letter_match:    { id: 'letter_match', title: 'TÄHE-DETEKTIIV', theme: THEME.pink!, icon: 'Type', desc: 'Leia õige täht', allowedProfiles: ['starter'], difficulty: 'easy', category: 'language' },
   unit_conversion: { id: 'unit_conversion', title: 'MÕÕTÜHIKUD', theme: THEME.teal!, icon: 'Ruler', desc: 'Muunda ühikuid', allowedProfiles: ['starter'], difficulty: 'medium', category: 'math' },
   
@@ -60,6 +61,7 @@ export const GAME_CONFIG: Record<string, GameConfig> = {
   time_match:      { id: 'time_match', title: 'KELLAMÄNG', theme: THEME.blue!, icon: 'Clock3', desc: 'Määra kellaaeg', allowedProfiles: ['advanced'], difficulty: 'hard', category: 'math' },
   memory_math_adv: { id: 'memory_math', title: 'MATEMAATIKA MÄLU', theme: THEME.purple!, icon: 'Brain', desc: 'Leia tehe ja vastus', allowedProfiles: ['advanced'], difficulty: 'hard', category: 'math' },
   robo_path_adv:   { id: 'robo_path', title: 'ROBO-RADA', theme: THEME.indigo!, icon: 'Bot', desc: 'Programmeerirobot', allowedProfiles: ['advanced'], difficulty: 'hard', category: 'logic' },
+  math_snake_adv:  { id: 'math_snake', title: 'NUMBRIMADU', theme: THEME.green!, icon: 'Gamepad2', desc: 'Liigu ja kogu õunu', allowedProfiles: ['advanced'], difficulty: 'hard', category: 'math' },
   sentence_logic_adv: { id: 'sentence_logic', title: 'LAUSE-DETEKTIIV', theme: THEME.green!, icon: 'BookOpen', desc: 'Kus asub ese?', allowedProfiles: ['advanced'], difficulty: 'hard', category: 'language' },
   pattern_adv:      { id: 'pattern', title: 'MUSTRI-RONG', theme: THEME.teal!, icon: 'TrainFront', desc: 'Jätka mustrit', allowedProfiles: ['advanced'], difficulty: 'hard', category: 'logic' },
   letter_match_adv: { id: 'letter_match', title: 'TÄHE-DETEKTIIV', theme: THEME.pink!, icon: 'Type', desc: 'Leia õige täht', allowedProfiles: ['advanced'], difficulty: 'medium', category: 'language' },
@@ -81,7 +83,8 @@ export const ICONS: Record<string, string> = {
   TrainFront: 'TrainFront',
   Bot: 'Bot',
   Clock3: 'Clock3',
-  Ruler: 'Ruler'
+  Ruler: 'Ruler',
+  Gamepad2: 'Gamepad2'
 };
 
 export const ALPHABET: string[] = 'ABCDEFGHIJKLMNOPRSŠZŽTUVÕÄÖÜ'.split('');
@@ -98,7 +101,7 @@ const BASE_WORDS: WordObject[] = [
   // loomad
   { w: 'KOER', e: '🐶' }, { w: 'KASS', e: '🐱' }, { w: 'HIIR', e: '🐭' }, { w: 'JÄNES', e: '🐰' },
   { w: 'REBANE', e: '🦊' }, { w: 'KARU', e: '🐻' }, { w: 'SEBRA', e: '🦓' }, { w: 'LÕVI', e: '🦁' },
-  { w: 'TIIGER', e: '🐯' }, { w: 'PANDA', e: '🐼' }, { w: 'ELEVANT', e: '🐘' }, { w: 'KIRAHV', e: '🦒' },
+  { w: 'TIIGER', e: '🐯' }, { w: 'PANDA', e: '🐼' }, { w: 'ELEVANT', e: '🐘' }, { w: 'KAELKIRJAK', e: '🦒' },
   { w: 'HOBUNE', e: '🐎' }, { w: 'LAMMAS', e: '🐑' }, { w: 'KITS', e: '🐐' }, { w: 'LEHM', e: '🐄' },
   { w: 'PÕRSAS', e: '🐖' }, { w: 'PART', e: '🦆' }, { w: 'HANI', e: '🪿' }, { w: 'PINGVIIN', e: '🐧' },
   { w: 'KONN', e: '🐸' }, { w: 'KALA', e: '🐟' }, { w: 'HAI', e: '🦈' }, { w: 'DRAAKON', e: '🐉' },
@@ -114,7 +117,7 @@ const BASE_WORDS: WordObject[] = [
   { w: 'MESI', e: '🍯' }, { w: 'KOHV', e: '☕' }, { w: 'TEE', e: '🫖' },
 
   // home and items
-  { w: 'KODU', e: '🏡' }, { w: 'TUBA', e: '🛏️' }, { w: 'VOODI', e: '🛌' }, { w: 'LAUD', e: '🪑' },
+  { w: 'KODU', e: '🏡' }, { w: 'VOODI', e: '🛌' }, { w: 'LAUD', e: '🪑' },
   { w: 'TOOL', e: '🪑' }, { w: 'LAMP', e: '💡' }, { w: 'KARDIN', e: '🪟' }, { w: 'UKS', e: '🚪' },
   { w: 'KAPP', e: '📦' }, { w: 'RAAMAT', e: '📖' }, { w: 'PLIIATS', e: '✏️' }, { w: 'VÄRV', e: '🎨' },
   { w: 'KÄÄRID', e: '✂️' }, { w: 'ARVUTI', e: '💻' }, { w: 'TELEFON', e: '📱' }, { w: 'EKRAAN', e: '🖥️' },
@@ -185,7 +188,7 @@ const BASE_WORDS: WordObject[] = [
   
   // natural phenomena
   { w: 'VIHM', e: '🌧️' }, { w: 'LUMESADU', e: '❄️' }, { w: 'TUISK', e: '🌨️' },
-  { w: 'PÄIKE', e: '☀️' }, { w: 'PILVED', e: '☁️' }, { w: 'VIHMAVARJUD', e: '🌦️' }
+  { w: 'PÄIKE', e: '☀️' }, { w: 'PILV', e: '☁️' }
 ];
 
 export const WORD_DB: Record<number, WordObject[]> = BASE_WORDS.reduce<Record<number, WordObject[]>>((acc, item) => {
@@ -217,7 +220,7 @@ const BASE_WORDS_EN: WordObject[] = [
   { w: 'HORSE', e: '🐴' }, { w: 'MOUSE', e: '🐭' }, { w: 'WHALE', e: '🐋' }, { w: 'SHARK', e: '🦈' },
   { w: 'SNAKE', e: '🐍' }, { w: 'SHEEP', e: '🐑' }, { w: 'TIGER', e: '🐯' }, { w: 'ZEBRA', e: '🦓' },
   { w: 'CLOUD', e: '☁️' }, { w: 'OCEAN', e: '🌊' }, { w: 'RIVER', e: '🏞️' }, { w: 'PLANT', e: '🌱' },
-  { w: 'CHAIR', e: '🪑' }, { w: 'TABLE', e: '🪑' }, { w: 'HOUSE', e: '🏡' }, { w: 'CLOCK', e: '🕐' },
+  { w: 'CHAIR', e: '🪑' }, { w: 'HOUSE', e: '🏡' }, { w: 'CLOCK', e: '🕐' },
   
   // 6-letter words
   { w: 'BANANA', e: '🍌' }, { w: 'ORANGE', e: '🍊' }, { w: 'CARROT', e: '🥕' }, { w: 'POTATO', e: '🥔' },

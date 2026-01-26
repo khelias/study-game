@@ -18,20 +18,22 @@ import { buildUnitConversionQuestion } from '../../utils/unitConversion';
 import { useProfileText } from '../../hooks/useProfileText';
 
 import { GAME_CONFIG } from '../../games/data';
+import { moveMathSnake, resolveMathSnakeAnswer } from '../../engine/mathSnake';
+import type { Direction, ProfileType } from '../../types/game';
 
 export const GameScreen: React.FC = () => {
   const t = useTranslation();
   const { formatText } = useProfileText();
   // Global state
   const profile = useGameStore(state => state.profile);
+  const profileId = profile as ProfileType;
   const levels = useGameStore(state => state.levels);
   const soundEnabled = useGameStore(state => state.soundEnabled);
-  const score = useGameStore(state => state.score);
   const toggleSound = useGameStore(state => state.toggleSound);
   const recordAnswer = useGameStore(state => state.recordAnswer);
   const recordLevelUp = useGameStore(state => state.recordLevelUp);
   const addCollectedStars = useGameStore(state => state.addCollectedStars);
-  const addScore = useGameStore(state => state.addScore);
+  const addGlobalScore = useGameStore(state => state.addScore);
   const updateStats = useGameStore(state => state.updateStats);
   
   // Session state
@@ -39,6 +41,8 @@ export const GameScreen: React.FC = () => {
   const problem = usePlaySessionStore(state => state.problem);
   const stars = usePlaySessionStore(state => state.stars);
   const hearts = usePlaySessionStore(state => state.hearts);
+  const score = usePlaySessionStore(state => state.score);
+  const addScore = usePlaySessionStore(state => state.addScore);
   const bgClass = usePlaySessionStore(state => state.bgClass);
   const confetti = usePlaySessionStore(state => state.confetti);
   const enhancedConfetti = usePlaySessionStore(state => state.enhancedConfetti);
@@ -83,7 +87,7 @@ export const GameScreen: React.FC = () => {
   const removeNotification = usePlaySessionStore(state => state.removeNotification);
   const clearNotifications = usePlaySessionStore(state => state.clearNotifications);
   
-  const { generateUniqueProblemForGame } = useGameEngine();
+  const { generateUniqueProblemForGame, getRng } = useGameEngine();
   const { playWin, playClick } = useGameAudio(soundEnabled);
 
   useEffect(() => {
@@ -125,26 +129,153 @@ export const GameScreen: React.FC = () => {
   const handleAnswer = useCallback((isCorrect: boolean) => {
     const answerStartTime = Date.now();
     const points = isCorrect ? 10 : 0;
-    
+    const baseGameType = gameType?.replace('_adv', '');
+
     // Update adaptive difficulty
     const responseTime = Date.now() - answerStartTime;
     updateAdaptiveDifficulty(isCorrect, responseTime);
-    
+
     // Update streak
     submitAnswer(isCorrect);
     const newStreak = isCorrect ? currentStreak + 1 : 0;
-    
-    // Collect all achievements first, then show only one
+
+    // Collect achievements first
     const { newAchievements: answerAchievements } = recordAnswer(isCorrect, points);
-    
-    let allNewAchievements = [...answerAchievements];
-    
-    if (isCorrect) {
-      // Correct answer
-       
-      const encouragement = getRandomEncouragement('correct', newStreak);
+
+    if (baseGameType === 'math_snake' && problem?.type === 'math_snake') {
+      let allNewAchievements = [...answerAchievements];
+
+      if (isCorrect) {
+        const encouragement = getRandomEncouragement('correct', newStreak);
+        if (newStreak >= 2) {
+          addNotification({
+            type: 'streak',
+            message: formatText(encouragement),
+            streakCount: newStreak,
+          });
+        } else {
+          addNotification({
+            type: 'correct',
+            message: formatText(encouragement),
+          });
+        }
+        setBgClass('bg-green-50');
+        setParticleActive(true);
+        setTimeout(() => setParticleActive(false), 1200);
+        // Add to session score (displayed during game) and global score (persisted)
+        // Math answer gives points (not the apple itself - apple gives star)
+        addScore(points);
+        addGlobalScore(points);
+        setShowHint(false);
+
+        // Collect star for correct math answer (like other games)
+        const { newAchievements: starAchievements } = addCollectedStars(1);
+        const answerIds = new Set(answerAchievements.map(a => a.id));
+        const uniqueStarAchievements = starAchievements.filter(a => !answerIds.has(a.id));
+        allNewAchievements = [...answerAchievements, ...uniqueStarAchievements];
+
+        // Check for level up (5 stars)
+        const nextStars = incrementStars();
+        if (nextStars >= 5) {
+          playWin();
+          setEnhancedConfetti(true);
+          setTimeout(() => {
+            setConfetti(true);
+
+            if (gameType) {
+              const currentLevel = levels[profile]?.[gameType] || 1;
+              const gameConfig = GAME_CONFIG[gameType] ?? GAME_CONFIG['word_builder']!;
+              addNotification({
+                type: 'levelUp',
+                title: `${t.levelUp.level} ${currentLevel + 1}`,
+                emoji: gameConfig.icon,
+                message: formatText(t.levelUp.greatWork),
+              });
+            }
+
+            setEnhancedConfetti(false);
+          }, 800);
+        }
+      } else {
+        const encouragement = getRandomEncouragement('wrong');
+        addNotification({
+          type: 'wrong',
+          message: formatText(encouragement),
+        });
+        setBgClass('bg-red-50');
+        setShowHint(false);
+        
+        // Decrement heart for wrong answer
+        const newHearts = decrementHearts();
+        if (newHearts <= 0) {
+          // Game over if no hearts left
+          const rng = getRng();
+          const resolution = resolveMathSnakeAnswer(problem, isCorrect, rng);
+          setProblem(resolution.problem);
+          // Record max snake length before game ends
+          const finalSnakeLength = resolution.problem.snake.length;
+          setTimeout(() => {
+            endGame();
+            if (gameStartTime) {
+              const playTime = Math.floor((Date.now() - gameStartTime) / 1000);
+              updateStats(stats => ({
+                ...stats,
+                totalTimePlayed: stats.totalTimePlayed + playTime,
+                maxSnakeLength: Math.max(stats.maxSnakeLength || 0, finalSnakeLength)
+              }));
+            }
+          }, 800);
+          return;
+        }
+      }
+
+      if (allNewAchievements.length > 0 && !achievementShownRef.current) {
+        const achievement = allNewAchievements[0];
+        if (achievement) {
+          addNotification({
+            type: 'achievement',
+            achievement: achievement,
+          });
+        }
+        achievementShownRef.current = true;
+      }
+
+      const rng = getRng();
+      const resolution = resolveMathSnakeAnswer(problem, isCorrect, rng);
       
-      // Show correct notification or streak notification
+      // Track max snake length during game
+      const currentSnakeLength = resolution.problem.snake.length;
+      updateStats(stats => ({
+        ...stats,
+        maxSnakeLength: Math.max(stats.maxSnakeLength || 0, currentSnakeLength)
+      }));
+      
+      setProblem(resolution.problem);
+
+      // Check for collision-based game over (snake hits self)
+      if (resolution.gameOver) {
+        setTimeout(() => {
+          endGame();
+          if (gameStartTime) {
+            const playTime = Math.floor((Date.now() - gameStartTime) / 1000);
+            updateStats(stats => ({
+              ...stats,
+              totalTimePlayed: stats.totalTimePlayed + playTime
+            }));
+          }
+        }, 400);
+        return;
+      }
+
+      setTimeout(() => setBgClass('bg-slate-50'), 600);
+      return;
+    }
+
+    let allNewAchievements = [...answerAchievements];
+
+    if (isCorrect) {
+      const encouragement = getRandomEncouragement('correct', newStreak);
+
       if (newStreak >= 2) {
         addNotification({
           type: 'streak',
@@ -157,20 +288,19 @@ export const GameScreen: React.FC = () => {
           message: formatText(encouragement),
         });
       }
-      
+
       setBgClass('bg-green-50');
       setParticleActive(true);
       setTimeout(() => setParticleActive(false), 1500);
+      // Add to session score (displayed during game) and global score (persisted)
       addScore(points);
-      
+      addGlobalScore(points);
+
       const { newAchievements: starAchievements } = addCollectedStars(1);
-      
-      // Combine achievements, avoiding duplicates
       const answerIds = new Set(answerAchievements.map(a => a.id));
       const uniqueStarAchievements = starAchievements.filter(a => !answerIds.has(a.id));
       allNewAchievements = [...answerAchievements, ...uniqueStarAchievements];
-      
-      // Show only the first achievement if any exist and none is currently showing
+
       if (allNewAchievements.length > 0 && !achievementShownRef.current) {
         const achievement = allNewAchievements[0];
         if (achievement) {
@@ -181,18 +311,16 @@ export const GameScreen: React.FC = () => {
         }
         achievementShownRef.current = true;
       }
-      
+
       setShowHint(false);
-      
+
       const nextStars = incrementStars();
       if (nextStars >= 5) {
-        // Level complete!
         playWin();
         setEnhancedConfetti(true);
         setTimeout(() => {
           setConfetti(true);
-          
-          // Show level up notification
+
           if (gameType) {
             const currentLevel = levels[profile]?.[gameType] || 1;
             const gameConfig = GAME_CONFIG[gameType] ?? GAME_CONFIG['word_builder']!;
@@ -203,14 +331,12 @@ export const GameScreen: React.FC = () => {
               message: formatText(t.levelUp.greatWork),
             });
           }
-          
+
           setEnhancedConfetti(false);
         }, 800);
       } else {
-        // Next problem
         setTimeout(() => {
           setBgClass('bg-slate-50');
-          // Generate next problem
           if (gameType) {
             const currentLevel = levels[profile]?.[gameType] || 1;
             const newProblem = generateUniqueProblemForGame(gameType, currentLevel, profile, adaptiveDifficulty);
@@ -219,7 +345,6 @@ export const GameScreen: React.FC = () => {
         }, 600);
       }
     } else {
-      // Show achievement from recordAnswer even for wrong answers (if any)
       if (allNewAchievements.length > 0 && !achievementShownRef.current) {
         const achievement = allNewAchievements[0];
         if (achievement) {
@@ -230,22 +355,20 @@ export const GameScreen: React.FC = () => {
         }
         achievementShownRef.current = true;
       }
-      // Wrong answer
-       
+
       const encouragement = getRandomEncouragement('wrong');
       addNotification({
         type: 'wrong',
         message: formatText(encouragement),
       });
-      
+
       setBgClass('bg-red-50');
       setShowHint(true);
-      
+
       const newHearts = decrementHearts();
       if (newHearts <= 0) {
         setTimeout(() => {
           endGame();
-          // Record time played
           if (gameStartTime) {
             const playTime = Math.floor((Date.now() - gameStartTime) / 1000);
             updateStats(stats => ({
@@ -262,11 +385,11 @@ export const GameScreen: React.FC = () => {
     }
   }, [
     currentStreak, recordAnswer, addNotification, setBgClass,
-    setParticleActive, addScore, addCollectedStars, setShowHint, incrementStars,
+    setParticleActive, addScore, addGlobalScore, addCollectedStars, setShowHint, incrementStars,
     decrementHearts, endGame, gameStartTime, updateAdaptiveDifficulty, submitAnswer,
     playWin, setEnhancedConfetti, setConfetti, gameType, levels,
     profile, adaptiveDifficulty, generateUniqueProblemForGame, setProblem, updateStats, t,
-    formatText
+    formatText, getRng, problem
   ]);
   
   const handleNextLevel = useCallback(() => {
@@ -290,13 +413,67 @@ export const GameScreen: React.FC = () => {
       }
     }
     
+    const baseType = gameType.replace('_adv', '');
+    const isMathSnake = baseType === 'math_snake';
+    
     setTimeout(() => {
-      const newProblem = generateUniqueProblemForGame(gameType, newLevel, profile, adaptiveDifficulty);
-      setProblem(newProblem);
+      // For math snake, continue with same problem (game continues)
+      // For other games, generate new problem with new level
+      if (!isMathSnake) {
+        const newProblem = generateUniqueProblemForGame(gameType, newLevel, profile, adaptiveDifficulty);
+        setProblem(newProblem);
+      }
       setBgClass('bg-slate-50');
     }, 100);
   }, [gameType, levels, profile, recordLevelUp, addNotification, clearNotifications, setConfetti,
       generateUniqueProblemForGame, adaptiveDifficulty, setProblem, setBgClass, resetStars]);
+
+  const handleMathSnakeMove = useCallback((direction: Direction) => {
+    if (!gameType || !problem || problem.type !== 'math_snake') return;
+    const baseType = gameType.replace('_adv', '');
+    if (baseType !== 'math_snake') return;
+    if (problem.math) return;
+    const currentLevel = levels[profile]?.[gameType] || 1;
+    const rng = getRng();
+    
+    // Check if we're eating an apple before moving
+    const wasEatingNormalApple = problem.apple?.kind === 'normal';
+    
+    const result = moveMathSnake(problem, direction, currentLevel, rng, profileId);
+    if (result.collision) {
+      // Record max snake length before game ends
+      const finalSnakeLength = problem.snake.length;
+      updateStats(stats => ({
+        ...stats,
+        maxSnakeLength: Math.max(stats.maxSnakeLength || 0, finalSnakeLength)
+      }));
+      endGame();
+      if (gameStartTime) {
+        const playTime = Math.floor((Date.now() - gameStartTime) / 1000);
+        updateStats(stats => ({
+          ...stats,
+          totalTimePlayed: stats.totalTimePlayed + playTime
+        }));
+      }
+      return;
+    }
+    
+    // Track max snake length during game
+    const currentSnakeLength = result.problem.snake.length;
+    updateStats(stats => ({
+      ...stats,
+      maxSnakeLength: Math.max(stats.maxSnakeLength || 0, currentSnakeLength)
+    }));
+    
+    // If we ate a normal apple, give points (not for math apple - that gives star)
+    if (wasEatingNormalApple && !result.problem.math) {
+      const applePoints = 5; // Points for eating a normal apple
+      addScore(applePoints);
+      addGlobalScore(applePoints);
+    }
+    
+    setProblem(result.problem);
+  }, [gameType, problem, levels, profile, getRng, profileId, setProblem, endGame, gameStartTime, updateStats, addScore, addGlobalScore]);
   
   const handleHint = useCallback(() => {
     if (!problem) return;
@@ -337,6 +514,9 @@ export const GameScreen: React.FC = () => {
       case 'robo_path':
         hintText = t.gameScreen.hints.roboPath;
         break;
+      case 'math_snake':
+        hintText = t.gameScreen.hints.mathSnake;
+        break;
       case 'time_match':
         hintText = t.gameScreen.hints.timeMatch;
         break;
@@ -362,25 +542,27 @@ export const GameScreen: React.FC = () => {
   const getTipsForGame = useCallback((type: string): string[] => {
     switch (type) {
       case 'word_builder':
-        return t.gameScreen.tips.word_builder;
+        return [...t.gameScreen.tips.word_builder];
       case 'syllable_builder':
-        return t.gameScreen.tips.syllable_builder;
+        return [...t.gameScreen.tips.syllable_builder];
       case 'pattern':
-        return t.gameScreen.tips.pattern;
+        return [...t.gameScreen.tips.pattern];
       case 'sentence_logic':
-        return t.gameScreen.tips.sentence_logic;
+        return [...t.gameScreen.tips.sentence_logic];
       case 'memory_math':
-        return t.gameScreen.tips.memory_math;
+        return [...t.gameScreen.tips.memory_math];
       case 'balance_scale':
-        return t.gameScreen.tips.balance_scale;
+        return [...t.gameScreen.tips.balance_scale];
       case 'robo_path':
-        return t.gameScreen.tips.robo_path;
+        return [...t.gameScreen.tips.robo_path];
+      case 'math_snake':
+        return [...t.gameScreen.tips.math_snake];
       case 'time_match':
-        return t.gameScreen.tips.time_match;
+        return [...t.gameScreen.tips.time_match];
       case 'letter_match':
-        return t.gameScreen.tips.letter_match;
+        return [...t.gameScreen.tips.letter_match];
       case 'unit_conversion':
-        return t.gameScreen.tips.unit_conversion;
+        return [...t.gameScreen.tips.unit_conversion];
       default:
         return [];
     }
@@ -430,10 +612,13 @@ export const GameScreen: React.FC = () => {
               });
             }
           }, 0);
-          return () => clearTimeout(tipTimer);
+          return () => {
+            clearTimeout(tipTimer);
+          };
         }
       }
     }
+    return undefined;
   }, [gameType, problem, notifications, addNotification, getTipsForGame, isCompactLayout]);
   
   if (!gameType) {
@@ -441,6 +626,8 @@ export const GameScreen: React.FC = () => {
   }
 
   const currentLevel = levels[profile]?.[gameType] ?? 1;
+  const baseType = gameType.replace('_adv', '');
+  const isMathSnake = baseType === 'math_snake';
   const settingsLabel = formatText(t.menu.settings);
   const scoreLabel = formatText(t.game.score);
   const levelLabel = formatText(t.game.level);
@@ -550,23 +737,43 @@ export const GameScreen: React.FC = () => {
           </div>
 
           <div className="col-span-2 relative flex items-center justify-center order-3 sm:order-2 w-full">
-            <div className="flex flex-col items-center gap-0.5 sm:gap-1">
-              <div className="flex gap-0.5 sm:gap-1.5 bg-slate-100 px-1.5 sm:px-3 py-0.5 sm:py-2 rounded-full">
-              {Array.from({ length: 5 }, (_, i) => (
-                <PulseEffect key={i} active={i < stars && particleActive}>
-                  <div className={`transition-all duration-500 ${i < stars ? 'scale-110' : 'scale-100'}`}>
-                    <Star 
-                      className={`w-3.5 h-3.5 sm:w-5 sm:h-5 ${i < stars ? 'text-yellow-400 fill-yellow-400 drop-shadow-sm' : 'text-slate-300'}`} 
-                      strokeWidth={2.5}
-                    />
-                  </div>
-                </PulseEffect>
-              ))}
+            {isMathSnake ? (
+              <div className="flex flex-col items-center gap-0.5 sm:gap-1">
+                <div className="flex gap-0.5 sm:gap-1.5 bg-slate-100 px-1.5 sm:px-3 py-0.5 sm:py-2 rounded-full">
+                {Array.from({ length: 5 }, (_, i) => (
+                  <PulseEffect key={i} active={i < stars && particleActive}>
+                    <div className={`transition-all duration-500 ${i < stars ? 'scale-110' : 'scale-100'}`}>
+                      <Star 
+                        className={`w-3.5 h-3.5 sm:w-5 sm:h-5 ${i < stars ? 'text-yellow-400 fill-yellow-400 drop-shadow-sm' : 'text-slate-300'}`} 
+                        strokeWidth={2.5}
+                      />
+                    </div>
+                  </PulseEffect>
+                ))}
+                </div>
+                <div className="w-16 sm:w-full max-w-xs">
+                  <ProgressIndicator current={stars} total={5} />
+                </div>
               </div>
-              <div className="w-16 sm:w-full max-w-xs">
-                <ProgressIndicator current={stars} total={5} />
+            ) : (
+              <div className="flex flex-col items-center gap-0.5 sm:gap-1">
+                <div className="flex gap-0.5 sm:gap-1.5 bg-slate-100 px-1.5 sm:px-3 py-0.5 sm:py-2 rounded-full">
+                {Array.from({ length: 5 }, (_, i) => (
+                  <PulseEffect key={i} active={i < stars && particleActive}>
+                    <div className={`transition-all duration-500 ${i < stars ? 'scale-110' : 'scale-100'}`}>
+                      <Star 
+                        className={`w-3.5 h-3.5 sm:w-5 sm:h-5 ${i < stars ? 'text-yellow-400 fill-yellow-400 drop-shadow-sm' : 'text-slate-300'}`} 
+                        strokeWidth={2.5}
+                      />
+                    </div>
+                  </PulseEffect>
+                ))}
+                </div>
+                <div className="w-16 sm:w-full max-w-xs">
+                  <ProgressIndicator current={stars} total={5} />
+                </div>
               </div>
-            </div>
+            )}
             <div className="absolute right-0 top-1/2 -translate-y-1/2 flex gap-0.5 sm:hidden">
               {Array.from({ length: 3 }, (_, i) => (
                 <Heart key={i} className={`w-4 h-4 transition-all duration-300 ${i < hearts ? 'text-red-500 fill-red-500 animate-pulse-slow' : 'text-slate-200'}`} />
@@ -585,8 +792,10 @@ export const GameScreen: React.FC = () => {
             <GameRenderer 
               gameType={gameType} 
               problem={problem} 
-              onAnswer={handleAnswer} 
-              soundEnabled={soundEnabled} 
+              onAnswer={handleAnswer}
+              onMove={isMathSnake ? handleMathSnakeMove : undefined}
+              soundEnabled={soundEnabled}
+              level={currentLevel}
             />
             
             {showHint && (

@@ -24,6 +24,7 @@ describe('createStats', () => {
       totalTimePlayed: 0,
       lastPlayed: null,
       collectedStars: 0,
+      maxSnakeLength: 0,
     });
   });
 });

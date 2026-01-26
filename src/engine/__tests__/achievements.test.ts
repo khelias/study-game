@@ -137,6 +137,7 @@ describe('checkAchievements', () => {
         robo_path: 1,
         syllable_builder: 1,
         time_match: 1,
+        math_snake: 1,
       },
     });
     const unlocked: string[] = [];

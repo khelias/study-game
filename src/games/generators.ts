@@ -3,6 +3,7 @@ import { SYLLABLE_WORDS } from './syllableWords';
 import { getRandom, uid } from '../engine/rng';
 import { getLocale } from '../i18n/index';
 import { generateSentence, getSceneName } from './sentenceTranslations';
+import { createMathSnakeProblem } from '../engine/mathSnake';
 import type { 
   RngFunction, 
   ProfileType, 
@@ -67,6 +68,7 @@ function addDistractorLetters(
   const hasUpper = correctCharsRaw.some((c) => c !== c.toLowerCase());
   const hasLower = correctCharsRaw.some((c) => c !== c.toUpperCase());
   const isTitleCase = correctCharsRaw.length > 0
+    && correctCharsRaw[0] !== undefined
     && correctCharsRaw[0] === correctCharsRaw[0].toUpperCase()
     && correctCharsRaw.slice(1).every((c) => c === c.toLowerCase());
   const caseStyle: 'upper' | 'lower' | 'title' | 'mixed' = !hasLower
@@ -139,28 +141,48 @@ function addDistractorLetters(
     : ALPHABET;
   
   for (let i = 0; i < count; i++) {
-    let distractor: string;
+    let distractor: string = availableLetters[0] ?? 'A';
     
     // Try to find a visually/phonetically similar letter
     if (correctChars.length > 0 && rng() > 0.3) {
       const targetChar = correctChars[Math.floor(rng() * correctChars.length)];
-      const similar = similarLetters[targetChar] as string[] | undefined;
-      if (similar && similar.length > 0) {
-        distractor = similar[Math.floor(rng() * similar.length)] as string;
-      } else {
+      if (!targetChar) {
         // Fallback to random letter
-        distractor = availableLetters[Math.floor(rng() * availableLetters.length)] as string;
+        const randomLetter = availableLetters[Math.floor(rng() * availableLetters.length)];
+        if (randomLetter) {
+          distractor = randomLetter;
+        }
+      } else {
+        const similar = similarLetters[targetChar] as string[] | undefined;
+        if (similar && similar.length > 0) {
+          distractor = similar[Math.floor(rng() * similar.length)] as string;
+        } else {
+          // Fallback to random letter
+          const randomLetter = availableLetters[Math.floor(rng() * availableLetters.length)];
+          if (randomLetter) {
+            distractor = randomLetter;
+          }
+        }
       }
     } else {
       // Random letter from alphabet
-      distractor = availableLetters[Math.floor(rng() * availableLetters.length)] as string;
+      const randomLetter = availableLetters[Math.floor(rng() * availableLetters.length)];
+      if (randomLetter) {
+        distractor = randomLetter;
+      }
     }
     
     // Ensure we don't add a letter that's already in the correct set
     let attempts = 0;
-    while (correctChars.includes(distractor.toUpperCase()) && attempts < 20) {
-      distractor = availableLetters[Math.floor(rng() * availableLetters.length)];
+    while (distractor && correctChars.includes(distractor.toUpperCase()) && attempts < 20) {
+      const newDistractor = availableLetters[Math.floor(rng() * availableLetters.length)];
+      if (newDistractor) {
+        distractor = newDistractor;
+      }
       attempts++;
+    }
+    if (!distractor) {
+      distractor = availableLetters[0] ?? 'A';
     }
     
     let displayChar = distractor;
@@ -431,6 +453,10 @@ export const Generators: Record<string, GeneratorFunction> = {
     return { type: 'memory_math', cards: cards.sort(() => rng() - 0.5), pairs, uid: uid(rng) };
   },
 
+  math_snake: (level: number, rng: RngFunction = Math.random, profile: ProfileType = 'starter') => {
+    return createMathSnakeProblem(level, rng, profile);
+  },
+
   sentence_logic: (level: number, rng: RngFunction = Math.random, _profile: ProfileType = 'starter'): SentenceLogicProblem => {
     // 1. Select scene based on level progression
     const allScenes = Object.keys(SCENE_DB);
@@ -639,8 +665,12 @@ export const Generators: Record<string, GeneratorFunction> = {
           const path: Array<[number, number]> = [];
           let key: string | undefined = `${x},${y}`;
           while (key) {
-            const [px, py] = key.split(',').map(Number);
-            path.push([px, py]);
+            const parts = key.split(',');
+            const px = Number(parts[0]);
+            const py = Number(parts[1]);
+            if (!isNaN(px) && !isNaN(py)) {
+              path.push([px, py]);
+            }
             key = parent.get(key);
           }
           path.reverse();

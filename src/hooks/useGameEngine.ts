@@ -24,6 +24,11 @@ const makeKey = (prob: Problem | null): string => {
     case 'pattern': return `pat:${prob.sequence.join('')}:${prob.answer}`;
     case 'memory_math': return `mem:${prob.cards.map((c) => c.content).join('|')}`;
     case 'robo_path': return `robo:${prob.grid.length}:${prob.goal[0]},${prob.goal[1]}:${prob.obstacles.map((o) => `${o[0]},${o[1]}`).join(';')}`;
+    case 'math_snake': {
+      const apple = prob.apple;
+      const mathKey = prob.math ? prob.math.equation : 'none';
+      return `snake:${prob.gridSize}:${apple?.kind ?? 'none'}:${apple ? apple.pos.join(',') : 'none'}:${mathKey}`;
+    }
     case 'time_match': return `time:${prob.answer}`;
     case 'unit_conversion': return `unit:${prob.value}${prob.fromUnit}=${prob.answer}${prob.toUnit}`;
     default: {
@@ -42,6 +47,8 @@ export function useGameEngine() {
   });
   
   const [lastKeys, setLastKeys] = useState<Record<string, string[]>>({});
+
+  const getRng = useCallback(() => rng, [rng]);
 
   const generateUniqueProblem = useCallback((type: string, level: number, profile: string): Problem | null => {
     const buffer = lastKeys[type] || [];
@@ -103,6 +110,8 @@ export function useGameEngine() {
       case 'balance_scale':
       case 'unit_conversion':
         return userAnswer === problem.answer;
+      case 'math_snake':
+        return userAnswer === problem.math?.answer;
       case 'memory_math':
       case 'robo_path':
         // These don't have simple answer validation
@@ -117,5 +126,6 @@ export function useGameEngine() {
   return {
     generateUniqueProblemForGame,
     validateAnswer,
+    getRng,
   };
 }

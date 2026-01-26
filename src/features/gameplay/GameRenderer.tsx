@@ -10,6 +10,7 @@ import {
   TimeGameView, 
   UnitConversionView 
 } from '../../components/GameViews';
+import { MathSnakeView } from '../../components/MathSnakeView';
 import type { 
   Problem,
   BalanceScaleProblem,
@@ -17,11 +18,13 @@ import type {
   PatternProblem,
   MemoryMathProblem,
   RoboPathProblem,
+  MathSnakeProblem,
   SyllableBuilderProblem,
   TimeMatchProblem,
   UnitConversionProblem,
   SentenceLogicProblem,
-  LetterMatchProblem
+  LetterMatchProblem,
+  Direction
 } from '../../types/game';
 import { useTranslation } from '../../i18n/useTranslation';
 
@@ -29,10 +32,12 @@ interface GameRendererProps {
   gameType: string;
   problem: Problem;
   onAnswer: (isCorrect: boolean) => void;
+  onMove?: (direction: Direction) => void;
   soundEnabled: boolean;
+  level?: number;
 }
 
-export const GameRenderer: React.FC<GameRendererProps> = ({ gameType, problem, onAnswer, soundEnabled }) => {
+export const GameRenderer: React.FC<GameRendererProps> = ({ gameType, problem, onAnswer, onMove, soundEnabled, level }) => {
   const t = useTranslation();
   // Handle advanced versions by removing '_adv' suffix
   const baseGameType = gameType.replace('_adv', '');
@@ -52,6 +57,18 @@ export const GameRenderer: React.FC<GameRendererProps> = ({ gameType, problem, o
     
     case 'robo_path':
       return <RoboPathView problem={problem as RoboPathProblem} onAnswer={onAnswer} soundEnabled={soundEnabled} />;
+
+    case 'math_snake':
+      return (
+        <MathSnakeView
+          problem={problem as MathSnakeProblem}
+          onAnswer={onAnswer}
+          onMove={onMove}
+          soundEnabled={soundEnabled}
+          level={level}
+          gameType={gameType}
+        />
+      );
     
     case 'syllable_builder':
       return <SyllableGameView problem={problem as SyllableBuilderProblem} onAnswer={onAnswer} soundEnabled={soundEnabled} />;

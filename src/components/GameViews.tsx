@@ -1,10 +1,11 @@
 import React, { useEffect, useState, useMemo, useCallback, useId } from 'react';
-import { ArrowRight, ArrowUp, ArrowDown, ArrowLeft, RotateCcw, Play } from 'lucide-react';
+import { ArrowRight, RotateCcw, Play } from 'lucide-react';
 import { playSound } from '../engine/audio';
 import { useTranslation } from '../i18n/useTranslation';
 import { useProfileText } from '../hooks/useProfileText';
 import { GameConfig } from '../types/game';
 import { buildUnitConversionQuestion } from '../utils/unitConversion';
+import { ControlPad } from './ControlPad';
 import type { 
   BalanceScaleProblem, 
   WordBuilderProblem, 
@@ -18,6 +19,8 @@ import type {
   UnitConversionProblem,
   LetterObject
 } from '../types/game';
+
+type AnswerHandler = (answer: boolean) => void;
 
 interface LevelUpModalProps {
   level: number;
@@ -155,7 +158,7 @@ const SvgWeight: React.FC<SvgWeightProps> = ({ x, y, num, label, color, dashed }
       <circle cx="0" cy="-5" r="10" fill="white" opacity="0.25" />
       
       {/* Number - suurem ja selgem, alati nähtav */}
-      <text x="0" y="2" textAnchor="middle" fill="white" 
+      <text x="0" y="2" textAnchor="middle"
             fontSize={fontSize} fontWeight="900" fontFamily="Arial, sans-serif"
             fill={palette.textFill}
             stroke={palette.textStroke} strokeWidth="1"
@@ -359,7 +362,7 @@ export const BalanceScaleView: React.FC<BalanceScaleViewProps> = ({ problem, onA
 
 interface StandardGameViewProps {
   problem: SentenceLogicProblem | LetterMatchProblem;
-  onAnswer: (answer: boolean) => void;
+  onAnswer: AnswerHandler;
   soundEnabled: boolean;
 }
 
@@ -606,7 +609,7 @@ export const StandardGameView: React.FC<StandardGameViewProps> = ({ problem, onA
 
 interface WordGameViewProps {
   problem: WordBuilderProblem;
-  onAnswer: (answer: boolean) => void;
+  onAnswer: AnswerHandler;
   soundEnabled: boolean;
 }
 
@@ -619,7 +622,12 @@ export const WordGameView: React.FC<WordGameViewProps> = ({ problem, onAnswer, s
     const next: Array<{ char: string; id: string } | null> = [];
     for (let i = 0; i < problem.target.length; i++) {
       if (problem.preFilledPositions?.includes(i)) {
-        next[i] = { char: problem.target[i], id: `prefilled-${i}` };
+        const char = problem.target[i];
+        if (char) {
+          next[i] = { char, id: `prefilled-${i}` };
+        } else {
+          next[i] = null;
+        }
       } else {
         next[i] = null;
       }
@@ -631,11 +639,13 @@ export const WordGameView: React.FC<WordGameViewProps> = ({ problem, onAnswer, s
     const remainingPool = [...(problem.shuffled || [])];
     problem.preFilledPositions?.forEach(idx => {
       const char = problem.target[idx];
-      const indexInPool = remainingPool.findIndex(
-        l => l.char.toUpperCase() === char.toUpperCase()
-      );
-      if (indexInPool !== -1) {
-        remainingPool.splice(indexInPool, 1);
+      if (char) {
+        const indexInPool = remainingPool.findIndex(
+          l => l.char.toUpperCase() === char.toUpperCase()
+        );
+        if (indexInPool !== -1) {
+          remainingPool.splice(indexInPool, 1);
+        }
       }
     });
     return remainingPool;
@@ -746,7 +756,7 @@ export const WordGameView: React.FC<WordGameViewProps> = ({ problem, onAnswer, s
 
 interface SyllableGameViewProps {
   problem: SyllableBuilderProblem;
-  onAnswer: (answer: boolean) => void;
+  onAnswer: AnswerHandler;
   soundEnabled: boolean;
 }
 
@@ -846,7 +856,7 @@ export const SyllableGameView: React.FC<SyllableGameViewProps> = ({ problem, onA
 
 interface PatternTrainViewProps {
   problem: PatternProblem;
-  onAnswer: (answer: boolean) => void;
+  onAnswer: AnswerHandler;
   soundEnabled: boolean;
 }
 
@@ -1006,7 +1016,7 @@ export const PatternTrainView: React.FC<PatternTrainViewProps> = ({ problem, onA
 
 interface MemoryGameViewProps {
   problem: MemoryMathProblem;
-  onAnswer: (answer: boolean) => void;
+  onAnswer: AnswerHandler;
   soundEnabled: boolean;
 }
 
@@ -1176,7 +1186,7 @@ export const MemoryGameView: React.FC<MemoryGameViewProps> = ({ problem, onAnswe
 
 interface RoboPathViewProps {
   problem: RoboPathProblem;
-  onAnswer: (answer: boolean) => void;
+  onAnswer: AnswerHandler;
   soundEnabled: boolean;
 }
 
@@ -1546,69 +1556,34 @@ export const RoboPathView: React.FC<RoboPathViewProps> = ({ problem, onAnswer, s
        </div>
        
        {/* Control buttons */}
-       <div className="grid grid-cols-3 gap-1.5 sm:gap-2 w-full">
-           <div className="col-start-2">
-             <button 
-               onClick={() => addCommand('UP')} 
-               aria-label={t.roboPath.addCommandUp} 
-               disabled={status !== 'planning' || commandCount >= maxCommands} 
-               className="w-full h-12 sm:h-14 bg-blue-500 border-b-4 border-blue-700 text-white rounded-lg sm:rounded-xl flex items-center justify-center active:translate-y-1 hover:bg-blue-600 transition-all disabled:bg-gray-300 disabled:border-gray-400 shadow-lg"
-             >
-               <ArrowUp size={20} className="sm:w-6 sm:h-6" />
-             </button>
-           </div>
-           <div className="col-start-1 row-start-2">
-             <button 
-               onClick={() => addCommand('LEFT')} 
-               aria-label={t.roboPath.addCommandLeft} 
-               disabled={status !== 'planning' || commandCount >= maxCommands} 
-               className="w-full h-12 sm:h-14 bg-yellow-500 border-b-4 border-yellow-700 text-white rounded-lg sm:rounded-xl flex items-center justify-center active:translate-y-1 hover:bg-yellow-600 transition-all disabled:bg-gray-300 disabled:border-gray-400 shadow-lg"
-             >
-               <ArrowLeft size={20} className="sm:w-6 sm:h-6" />
-             </button>
-           </div>
-           <div className="col-start-2 row-start-2">
-             <button 
-               onClick={() => addCommand('DOWN')} 
-               aria-label={t.roboPath.addCommandDown} 
-               disabled={status !== 'planning' || commandCount >= maxCommands} 
-               className="w-full h-12 sm:h-14 bg-red-500 border-b-4 border-red-700 text-white rounded-lg sm:rounded-xl flex items-center justify-center active:translate-y-1 hover:bg-red-600 transition-all disabled:bg-gray-300 disabled:border-gray-400 shadow-lg"
-             >
-               <ArrowDown size={20} className="sm:w-6 sm:h-6" />
-             </button>
-           </div>
-           <div className="col-start-3 row-start-2">
-             <button 
-               onClick={() => addCommand('RIGHT')} 
-               aria-label={t.roboPath.addCommandRight} 
-               disabled={status !== 'planning' || commandCount >= maxCommands} 
-               className="w-full h-12 sm:h-14 bg-green-500 border-b-4 border-green-700 text-white rounded-lg sm:rounded-xl flex items-center justify-center active:translate-y-1 hover:bg-green-600 transition-all disabled:bg-gray-300 disabled:border-gray-400 shadow-lg"
-             >
-               <ArrowRight size={20} className="sm:w-6 sm:h-6" />
-             </button>
-           </div>
-           
-           <div className="col-start-1 row-start-3">
-             <button 
-               onClick={removeCommand} 
-               aria-label={t.roboPath.removeCommand} 
-               disabled={status !== 'planning' || commandCount === 0} 
-               className="w-full h-12 sm:h-14 bg-orange-400 border-b-4 border-orange-600 text-white rounded-lg sm:rounded-xl flex items-center justify-center active:translate-y-1 hover:bg-orange-500 transition-all disabled:bg-gray-300 disabled:border-gray-400 shadow-lg"
-             >
-               <RotateCcw size={18} className="sm:w-5 sm:h-5" />
-             </button>
-           </div>
-           <div className="col-start-2 col-end-4 row-start-3">
-             <button 
-               onClick={() => void runSimulation()} 
-               aria-label={t.roboPath.runRobot} 
-               disabled={status !== 'planning' || commandCount === 0} 
-               className="w-full h-12 sm:h-14 bg-gradient-to-r from-green-500 to-emerald-600 border-b-4 border-green-800 text-white font-black rounded-lg sm:rounded-xl flex items-center justify-center active:translate-y-1 shadow-xl gap-1 sm:gap-2 text-sm sm:text-lg hover:from-green-600 hover:to-emerald-700 transition-all disabled:from-gray-300 disabled:to-gray-400 disabled:border-gray-500"
-             >
-               {t.roboPath.runRobot} <Play size={18} fill="white" className="sm:w-5 sm:h-5" />
-             </button>
-           </div>
-        </div>
+       <div className="flex flex-col gap-3 w-full">
+         <ControlPad
+           onUp={() => addCommand('UP')}
+           onDown={() => addCommand('DOWN')}
+           onLeft={() => addCommand('LEFT')}
+           onRight={() => addCommand('RIGHT')}
+           disabled={status !== 'planning' || commandCount >= maxCommands}
+           className="mx-auto"
+         />
+         <div className="flex gap-2 w-full">
+           <button 
+             onClick={removeCommand} 
+             aria-label={t.roboPath.removeCommand} 
+             disabled={status !== 'planning' || commandCount === 0} 
+             className="flex-1 h-12 sm:h-14 bg-orange-400 border-b-4 border-orange-600 text-white rounded-2xl flex items-center justify-center active:translate-y-1 hover:bg-orange-500 transition-all disabled:bg-gray-300 disabled:border-gray-400 shadow-lg"
+           >
+             <RotateCcw size={18} className="sm:w-5 sm:h-5" />
+           </button>
+           <button 
+             onClick={() => void runSimulation()} 
+             aria-label={t.roboPath.runRobot} 
+             disabled={status !== 'planning' || commandCount === 0} 
+             className="flex-1 h-12 sm:h-14 bg-gradient-to-r from-green-500 to-emerald-600 border-b-4 border-green-800 text-white font-black rounded-2xl flex items-center justify-center active:translate-y-1 shadow-xl gap-1 sm:gap-2 text-sm sm:text-lg hover:from-green-600 hover:to-emerald-700 transition-all disabled:from-gray-300 disabled:to-gray-400 disabled:border-gray-500"
+           >
+             {t.roboPath.runRobot} <Play size={18} fill="white" className="sm:w-5 sm:h-5" />
+           </button>
+         </div>
+       </div>
     </div>
   );
 };
@@ -1694,7 +1669,7 @@ export const TimeDisplay: React.FC<TimeDisplayProps> = ({ hour, minute }) => {
 
 interface TimeGameViewProps {
   problem: TimeMatchProblem;
-  onAnswer: (answer: boolean) => void;
+  onAnswer: AnswerHandler;
   soundEnabled: boolean;
 }
 
@@ -1752,7 +1727,7 @@ export const TimeGameView: React.FC<TimeGameViewProps> = ({ problem, onAnswer, s
 
 interface UnitConversionViewProps {
   problem: UnitConversionProblem;
-  onAnswer: (answer: boolean) => void;
+  onAnswer: AnswerHandler;
   soundEnabled: boolean;
 }
 
