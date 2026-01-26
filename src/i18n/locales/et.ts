@@ -504,6 +504,10 @@ export const et = {
     tryAgainButton: 'Proovi uuesti',
     nextButton: 'Edasi',
     stars: 'Tärnid:',
+    legendStart: 'Start',
+    legendObstacle: 'Keelatud',
+    legendGoal: 'Eesmärk',
+    legendHint: 'Vihje',
   },
 
   // Unit conversion game

@@ -1190,6 +1190,8 @@ export const RoboPathView: React.FC<RoboPathViewProps> = ({ problem, onAnswer, s
   const [stars, setStars] = useState<number>(0);
   const [currentCommandIndex, setCurrentCommandIndex] = useState<number>(-1);
   const [showRetryPrompt, setShowRetryPrompt] = useState<boolean>(false);
+  const [showHintMarker, setShowHintMarker] = useState<boolean>(false);
+  const coalPos = problem.coal ?? problem.coins?.[0];
   const maxCommands = problem.maxCommands ?? 8;
   const commandCount = commands.length;
   
@@ -1209,6 +1211,7 @@ export const RoboPathView: React.FC<RoboPathViewProps> = ({ problem, onAnswer, s
       setStars(0);
       setCurrentCommandIndex(-1);
       setShowRetryPrompt(false);
+      setShowHintMarker(false);
   }, [problem.uid, problem.start]);
   /* eslint-enable react-hooks/set-state-in-effect */
 
@@ -1261,6 +1264,7 @@ export const RoboPathView: React.FC<RoboPathViewProps> = ({ problem, onAnswer, s
         
         if (problem.obstacles.some(o => o[0] === currentPos[0] && o[1] === currentPos[1])) { 
             setStatus('crash'); 
+            setShowHintMarker(true);
             playSound('wrong', soundEnabled);
             setTimeout(() => { 
                 onAnswer(false); 
@@ -1300,6 +1304,7 @@ export const RoboPathView: React.FC<RoboPathViewProps> = ({ problem, onAnswer, s
         setTimeout(() => onAnswer(true), 3000); 
     } else { 
         setStatus('notReached'); 
+        setShowHintMarker(true);
         playSound('wrong', soundEnabled);
         setTimeout(() => { 
             onAnswer(false); 
@@ -1381,8 +1386,10 @@ export const RoboPathView: React.FC<RoboPathViewProps> = ({ problem, onAnswer, s
 
   const renderCell = (x: number, y: number): React.ReactNode => {
      const isRobot = robotPos[0] === x && robotPos[1] === y;
+     const isStart = problem.start[0] === x && problem.start[1] === y;
      const isEnd = (problem.end?.[0] ?? problem.goal?.[0]) === x && (problem.end?.[1] ?? problem.goal?.[1]) === y;
      const isRock = problem.obstacles.some(o => o[0] === x && o[1] === y);
+     const isCoal = showHintMarker && coalPos?.[0] === x && coalPos?.[1] === y && !isEnd;
      
      // Robot rotation based on direction
      const robotRotation = robotDirection === 'UP' ? 'rotate-0' : 
@@ -1390,7 +1397,12 @@ export const RoboPathView: React.FC<RoboPathViewProps> = ({ problem, onAnswer, s
                           robotDirection === 'DOWN' ? 'rotate-180' : 'rotate-[270deg]';
      
      return (
-        <div key={`${x}-${y}`} className={`relative w-full aspect-square bg-gradient-to-br from-green-50 to-emerald-50 border-2 border-emerald-200 rounded-lg flex items-center justify-center text-3xl shadow-sm overflow-hidden transition-all duration-300 ${status === 'crash' && isRobot ? 'bg-red-200 animate-pulse' : ''}`}>
+        <div
+          key={`${x}-${y}`}
+          className={`relative w-full aspect-square bg-gradient-to-br from-green-50 to-emerald-50 border-2 border-emerald-200 rounded-lg flex items-center justify-center text-3xl shadow-sm overflow-hidden transition-all duration-300 ${
+            status === 'crash' && isRobot ? 'bg-red-200 animate-pulse' : ''
+          } ${isStart ? 'ring-2 ring-emerald-400' : ''} ${isEnd ? 'ring-2 ring-amber-400' : ''}`}
+        >
             {isEnd && (
               <div className="absolute inset-0 bg-gradient-to-br from-green-100 to-green-200 flex items-center justify-center border-4 border-green-400 rounded-lg">
                 <div className="text-4xl animate-pulse drop-shadow-lg">🔋</div>
@@ -1400,6 +1412,11 @@ export const RoboPathView: React.FC<RoboPathViewProps> = ({ problem, onAnswer, s
             {isRock && (
               <div className="absolute inset-0 bg-gradient-to-br from-gray-400 via-gray-500 to-gray-600 flex items-center justify-center rounded-lg shadow-[inset_-2px_-2px_8px_rgba(0,0,0,0.4),inset_2px_2px_8px_rgba(255,255,255,0.1),4px_4px_12px_rgba(0,0,0,0.5)] border-2 border-gray-700 transform hover:scale-105 transition-transform">
                 <div className="text-3xl drop-shadow-[2px_2px_4px_rgba(0,0,0,0.8)]">🪨</div>
+              </div>
+            )}
+            {isCoal && !isRock && (
+              <div className="absolute inset-1 rounded-lg bg-gradient-to-br from-yellow-200 via-amber-200 to-orange-200 border-2 border-amber-400 shadow-[inset_-2px_-2px_6px_rgba(251,191,36,0.45),inset_2px_2px_6px_rgba(255,255,255,0.4)] flex items-center justify-center">
+                <div className="text-lg drop-shadow-lg">⚡</div>
               </div>
             )}
             {isRobot && (
@@ -1493,6 +1510,20 @@ export const RoboPathView: React.FC<RoboPathViewProps> = ({ problem, onAnswer, s
            <div className="text-sm font-bold text-orange-700">{t.roboPath.needMoreCommands}</div>
          </div>
        )}
+
+       <div className="w-full mb-2 text-[10px] sm:text-xs font-semibold text-slate-500 flex flex-wrap items-center justify-center gap-2">
+         <span className="flex items-center gap-1">🤖 {t.roboPath.legendStart}</span>
+         <span>•</span>
+         <span className="flex items-center gap-1">🪨 {t.roboPath.legendObstacle}</span>
+         <span>•</span>
+         <span className="flex items-center gap-1">🔋 {t.roboPath.legendGoal}</span>
+         {showHintMarker && coalPos && (
+           <>
+             <span>•</span>
+             <span className="flex items-center gap-1">⚡ {t.roboPath.legendHint}</span>
+           </>
+         )}
+       </div>
        
        {/* Grid */}
        <div className="grid gap-1 sm:gap-2 w-full mb-2 sm:mb-4 bg-gradient-to-br from-green-100 to-emerald-200 p-2 sm:p-4 rounded-xl sm:rounded-2xl border-2 sm:border-4 border-emerald-300 shadow-inner" style={{ gridTemplateColumns: `repeat(${problem.gridSize}, 1fr)` }}>

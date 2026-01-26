@@ -165,6 +165,7 @@ export interface RoboPathProblem extends BaseProblem {
   options: string[];
   maxCommands?: number;
   optimalMoves?: number;
+  coal?: [number, number];
   coins?: Array<[number, number]>;
 }
 

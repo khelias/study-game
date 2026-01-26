@@ -32,27 +32,25 @@ function hasDiacritics(word: string): boolean {
 
 // Helper function to apply letter case based on level
 function applyLetterCase(word: string, level: number, rng: RngFunction): string {
-  // Level 1-2: All uppercase (KASS)
-  if (level <= 2) {
+  // Level 1-3: All uppercase (KASS)
+  if (level <= 3) {
     return word.toUpperCase();
   }
-  // Level 3-5: All lowercase (kass)
-  else if (level <= 5) {
-    return word.toLowerCase();
-  }
-  // Level 6-8: First letter uppercase (Kass)
-  else if (level <= 8) {
+  // Level 4-6: Title case (Kass) to ease into lowercase
+  if (level <= 6) {
     return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
   }
-  // Level 9+: Mixed case (KaSs, KoEr)
-  else {
-    return word.split('').map((char, idx) => {
-      // First letter is always uppercase
-      if (idx === 0) return char.toUpperCase();
-      // Random case for other letters
-      return rng() > 0.5 ? char.toUpperCase() : char.toLowerCase();
-    }).join('');
+  // Level 7-9: All lowercase (kass)
+  if (level <= 9) {
+    return word.toLowerCase();
   }
+  // Level 10+: Mixed case (KaSs, KoEr)
+  return word.split('').map((char, idx) => {
+    // First letter is always uppercase
+    if (idx === 0) return char.toUpperCase();
+    // Random case for other letters
+    return rng() > 0.5 ? char.toUpperCase() : char.toLowerCase();
+  }).join('');
 }
 
 // Helper function to add distractor letters
@@ -65,6 +63,19 @@ function addDistractorLetters(
   if (count === 0) return correctLetters;
   
   const distractors: LetterObject[] = [];
+  const correctCharsRaw = correctLetters.map((l) => l.char);
+  const hasUpper = correctCharsRaw.some((c) => c !== c.toLowerCase());
+  const hasLower = correctCharsRaw.some((c) => c !== c.toUpperCase());
+  const isTitleCase = correctCharsRaw.length > 0
+    && correctCharsRaw[0] === correctCharsRaw[0].toUpperCase()
+    && correctCharsRaw.slice(1).every((c) => c === c.toLowerCase());
+  const caseStyle: 'upper' | 'lower' | 'title' | 'mixed' = !hasLower
+    ? 'upper'
+    : !hasUpper
+    ? 'lower'
+    : isTitleCase
+    ? 'title'
+    : 'mixed';
   
   // Define visually and phonetically similar letters
   const similarLetters: Record<string, string[]> = language === 'en' ? {
@@ -122,7 +133,7 @@ function addDistractorLetters(
     'N': ['M', 'R', 'H']
   };
   
-  const correctChars = correctLetters.map(l => l.char.toUpperCase());
+  const correctChars = correctCharsRaw.map((c) => c.toUpperCase());
   const availableLetters = language === 'en' 
     ? 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('')
     : ALPHABET;
@@ -152,8 +163,17 @@ function addDistractorLetters(
       attempts++;
     }
     
+    let displayChar = distractor;
+    if (caseStyle === 'upper') {
+      displayChar = distractor.toUpperCase();
+    } else if (caseStyle === 'lower' || caseStyle === 'title') {
+      displayChar = distractor.toLowerCase();
+    } else {
+      displayChar = rng() > 0.5 ? distractor.toUpperCase() : distractor.toLowerCase();
+    }
+
     distractors.push({
-      char: distractor,
+      char: displayChar,
       id: `distractor-${i}-${uid(rng)}`
     });
   }
@@ -594,25 +614,125 @@ export const Generators: Record<string, GeneratorFunction> = {
     const minObstacles = harder ? Math.max(1, Math.floor(level / 2)) : 0; // Advanced: at least 1, level 2+ = at least 2, etc.
     const obstacleCount = Math.min(Math.max(baseObstacles, minObstacles) + (harder ? 1 : 0), 5);
     
-    const start = {x:0,y:0, dir:'N'}; 
-    let end = {x:0,y:0}; 
-    const obstacles: Array<{x: number; y: number}> = []; 
+    const start = { x: 0, y: 0, dir: 'N' }; 
+    const maxCells = gridSize * gridSize;
+    const maxObstacles = Math.max(0, maxCells - 3);
+    const cappedObstacleCount = Math.min(obstacleCount, maxObstacles);
+
+    const directions: Array<[number, number]> = [[0, -1], [0, 1], [-1, 0], [1, 0]]; // UP, DOWN, LEFT, RIGHT
+
+    const findShortestPath = (
+      startPos: [number, number],
+      endPos: [number, number],
+      obstacleSet: Set<string>
+    ): { length: number; path: Array<[number, number]> } | null => {
+      const queue: Array<[number, number]> = [startPos];
+      const visited = new Set<string>();
+      const parent = new Map<string, string>();
+      visited.add(`${startPos[0]},${startPos[1]}`);
+
+      while (queue.length > 0) {
+        const current = queue.shift();
+        if (!current) break;
+        const [x, y] = current;
+        if (x === endPos[0] && y === endPos[1]) {
+          const path: Array<[number, number]> = [];
+          let key: string | undefined = `${x},${y}`;
+          while (key) {
+            const [px, py] = key.split(',').map(Number);
+            path.push([px, py]);
+            key = parent.get(key);
+          }
+          path.reverse();
+          return { length: path.length - 1, path };
+        }
+        for (const [dx, dy] of directions) {
+          const newX = x + dx;
+          const newY = y + dy;
+          const key = `${newX},${newY}`;
+          if (
+            newX >= 0 &&
+            newX < gridSize &&
+            newY >= 0 &&
+            newY < gridSize &&
+            !visited.has(key) &&
+            !obstacleSet.has(key)
+          ) {
+            visited.add(key);
+            parent.set(key, `${x},${y}`);
+            queue.push([newX, newY]);
+          }
+        }
+      }
+
+      return null;
+    };
+
+    const hasFreeStartNeighbor = (obstacleSet: Set<string>): boolean => {
+      return directions.some(([dx, dy]) => {
+        const nx = start.x + dx;
+        const ny = start.y + dy;
+        if (nx < 0 || ny < 0 || nx >= gridSize || ny >= gridSize) return false;
+        return !obstacleSet.has(`${nx},${ny}`);
+      });
+    };
+
+    let end = { x: 0, y: 0 }; 
+    let obstacles: Array<{x: number; y: number}> = [];
+    let optimalMoves = 0;
+    let path: Array<[number, number]> = [];
     let safety = 0;
-    
-    do { 
-      end = { x: Math.floor(rng() * gridSize), y: Math.floor(rng() * gridSize) }; 
-      safety++; 
-    } while ((Math.abs(end.x - start.x) + Math.abs(end.y - start.y) < 2) && safety < 20);
-    
-    safety = 0; 
-    while (obstacles.length < obstacleCount && safety < 80) { 
-      const obs = { x: Math.floor(rng() * gridSize), y: Math.floor(rng() * gridSize) }; 
-      const isStart = obs.x === start.x && obs.y === start.y;
-      const isEnd = obs.x === end.x && obs.y === end.y;
-      const exists = obstacles.some(o => o.x === obs.x && o.y === obs.y);
-      if (!isStart && !isEnd && !exists) obstacles.push(obs); 
-      safety++; 
+
+    while (safety < 80) {
+      safety++;
+      let attempts = 0;
+      do { 
+        end = { x: Math.floor(rng() * gridSize), y: Math.floor(rng() * gridSize) }; 
+        attempts++; 
+      } while ((Math.abs(end.x - start.x) + Math.abs(end.y - start.y) < 2) && attempts < 40);
+      
+      obstacles = [];
+      let obstacleSafety = 0; 
+      while (obstacles.length < cappedObstacleCount && obstacleSafety < 120) { 
+        const obs = { x: Math.floor(rng() * gridSize), y: Math.floor(rng() * gridSize) }; 
+        const isStart = obs.x === start.x && obs.y === start.y;
+        const isEnd = obs.x === end.x && obs.y === end.y;
+        const exists = obstacles.some(o => o.x === obs.x && o.y === obs.y);
+        if (!isStart && !isEnd && !exists) obstacles.push(obs); 
+        obstacleSafety++; 
+      }
+
+      const obstacleSet = new Set(obstacles.map(o => `${o.x},${o.y}`));
+      const pathResult = findShortestPath([start.x, start.y], [end.x, end.y], obstacleSet);
+      if (!pathResult) {
+        continue;
+      }
+      if (!hasFreeStartNeighbor(obstacleSet)) {
+        continue;
+      }
+
+      optimalMoves = pathResult.length;
+      path = pathResult.path;
+      break;
     }
+
+    if (path.length === 0) {
+      obstacles = [];
+      const fallbackPath = findShortestPath([start.x, start.y], [end.x, end.y], new Set());
+      if (fallbackPath) {
+        optimalMoves = fallbackPath.length;
+        path = fallbackPath.path;
+      } else {
+        optimalMoves = Math.abs(end.x - start.x) + Math.abs(end.y - start.y);
+      }
+    }
+
+    const coalIndex = Math.min(
+      Math.max(1, Math.floor(path.length / 2)),
+      Math.max(1, path.length - 2)
+    );
+    const coalPos = path.length >= 3 ? path[coalIndex] : null;
+    
     // Build grid
     const grid: number[][] = Array.from({ length: gridSize }, () => Array(gridSize).fill(0) as number[]);
     for (const obs of obstacles) {
@@ -621,43 +741,6 @@ export const Generators: Record<string, GeneratorFunction> = {
         row[obs.x] = 1;
       }
     }
-    
-    // Calculate optimal moves using BFS pathfinding
-    const calculateOptimalMoves = (startPos: [number, number], endPos: [number, number], gridSize: number, obstacleSet: Set<string>): number => {
-      const queue: Array<{ pos: [number, number]; dist: number }> = [{ pos: startPos, dist: 0 }];
-      const visited = new Set<string>();
-      visited.add(`${startPos[0]},${startPos[1]}`);
-      
-      const directions = [[0, -1], [0, 1], [-1, 0], [1, 0]]; // UP, DOWN, LEFT, RIGHT
-      
-      while (queue.length > 0) {
-        const current = queue.shift();
-        if (!current) break;
-        
-        const [x, y] = current.pos;
-        if (x === endPos[0] && y === endPos[1]) {
-          return current.dist;
-        }
-        
-        for (const [dx, dy] of directions) {
-          const newX = x + dx;
-          const newY = y + dy;
-          const key = `${newX},${newY}`;
-          
-          if (newX >= 0 && newX < gridSize && newY >= 0 && newY < gridSize && 
-              !visited.has(key) && !obstacleSet.has(key)) {
-            visited.add(key);
-            queue.push({ pos: [newX, newY], dist: current.dist + 1 });
-          }
-        }
-      }
-      
-      // If no path found, return Manhattan distance as estimate
-      return Math.abs(endPos[0] - startPos[0]) + Math.abs(endPos[1] - startPos[1]);
-    };
-    
-    const obstacleSet = new Set(obstacles.map(o => `${o.x},${o.y}`));
-    const optimalMoves = calculateOptimalMoves([start.x, start.y], [end.x, end.y], gridSize, obstacleSet);
     
     // Generate correct path (simplified - just store instructions)
     const correctPath: string[] = [];
@@ -672,8 +755,9 @@ export const Generators: Record<string, GeneratorFunction> = {
       obstacles: obstacles.map(o => [o.x, o.y] as [number, number]),
       correctPath,
       options: optionCommands,
-      maxCommands: Math.max(6, Math.floor(gridSize * 1.5) + obstacleCount),
+      maxCommands: Math.max(6, Math.floor(gridSize * 1.5) + obstacles.length),
       optimalMoves,
+      coal: coalPos ? [coalPos[0], coalPos[1]] : undefined,
       uid: uid(rng) 
     };
   },

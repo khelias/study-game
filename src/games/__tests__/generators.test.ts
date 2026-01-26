@@ -99,42 +99,42 @@ describe('Generators', () => {
       expect(shuffledLetters).toEqual(targetLetters);
     });
 
-    it('should use uppercase letters at level 1-2', () => {
+    it('should use uppercase letters at level 1-3', () => {
       const rng = createRng(12345);
       const generator = Generators.word_builder;
       if (!generator) throw new Error('word_builder generator not found');
       const problem1 = generator(1, rng, 'starter') as WordBuilderProblem;
-      const problem2 = generator(2, rng, 'starter') as WordBuilderProblem;
+      const problem3 = generator(3, rng, 'starter') as WordBuilderProblem;
       
       // All letters should be uppercase
       expect(problem1.target).toBe(problem1.target.toUpperCase());
-      expect(problem2.target).toBe(problem2.target.toUpperCase());
+      expect(problem3.target).toBe(problem3.target.toUpperCase());
     });
 
-    it('should use lowercase letters at level 3-5', () => {
+    it('should use capitalized first letter at level 4-6', () => {
       const rng = createRng(12345);
       const generator = Generators.word_builder;
       if (!generator) throw new Error('word_builder generator not found');
-      const problem3 = generator(3, rng, 'starter') as WordBuilderProblem;
-      const problem5 = generator(5, rng, 'starter') as WordBuilderProblem;
-      
-      // All letters should be lowercase
-      expect(problem3.target).toBe(problem3.target.toLowerCase());
-      expect(problem5.target).toBe(problem5.target.toLowerCase());
-    });
-
-    it('should use capitalized first letter at level 6-8', () => {
-      const rng = createRng(12345);
-      const generator = Generators.word_builder;
-      if (!generator) throw new Error('word_builder generator not found');
+      const problem4 = generator(4, rng, 'starter') as WordBuilderProblem;
       const problem6 = generator(6, rng, 'starter') as WordBuilderProblem;
-      const problem8 = generator(8, rng, 'starter') as WordBuilderProblem;
       
       // First letter uppercase, rest lowercase
+      expect(problem4.target[0]).toBe(problem4.target[0].toUpperCase());
+      expect(problem4.target.slice(1)).toBe(problem4.target.slice(1).toLowerCase());
       expect(problem6.target[0]).toBe(problem6.target[0].toUpperCase());
       expect(problem6.target.slice(1)).toBe(problem6.target.slice(1).toLowerCase());
-      expect(problem8.target[0]).toBe(problem8.target[0].toUpperCase());
-      expect(problem8.target.slice(1)).toBe(problem8.target.slice(1).toLowerCase());
+    });
+
+    it('should use lowercase letters at level 7-9', () => {
+      const rng = createRng(12345);
+      const generator = Generators.word_builder;
+      if (!generator) throw new Error('word_builder generator not found');
+      const problem7 = generator(7, rng, 'starter') as WordBuilderProblem;
+      const problem9 = generator(9, rng, 'starter') as WordBuilderProblem;
+      
+      // All letters should be lowercase
+      expect(problem7.target).toBe(problem7.target.toLowerCase());
+      expect(problem9.target).toBe(problem9.target.toLowerCase());
     });
 
     it('should add distractor letters at level 3+', () => {

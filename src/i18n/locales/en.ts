@@ -504,6 +504,10 @@ export const en = {
     tryAgainButton: 'Try again',
     nextButton: 'Next',
     stars: 'Stars:',
+    legendStart: 'Start',
+    legendObstacle: 'Blocked',
+    legendGoal: 'Goal',
+    legendHint: 'Hint',
   },
 
   // Unit conversion game

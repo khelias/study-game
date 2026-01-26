@@ -153,7 +153,7 @@ const BASE_WORDS: WordObject[] = [
   
   // food (added)
   { w: 'BANAAN', e: '🍌' }, { w: 'APELSIN', e: '🍊' }, { w: 'VIINAMARI', e: '🍇' }, { w: 'ANANASS', e: '🍍' },
-  { w: 'MANGO', e: '🥭' }, { w: 'KOKOS', e: '🥥' }, { w: 'PIRN', e: '🍐' }, { w: 'VÕI', e: '🧈' },
+  { w: 'MANGO', e: '🥭' }, { w: 'KOOKOS', e: '🥥' }, { w: 'PIRN', e: '🍐' }, { w: 'VÕI', e: '🧈' },
   { w: 'SUPP', e: '🍲' }, { w: 'SALAT', e: '🥗' }, { w: 'PRAAD', e: '🍖' },
   { w: 'KREVETT', e: '🦐' }, { w: 'KRABI', e: '🦀' },
   
@@ -161,7 +161,7 @@ const BASE_WORDS: WordObject[] = [
   { w: 'AKEN', e: '🪟' }, { w: 'PÕRAND', e: '🪵' }, { w: 'LAGI', e: '🏠' }, { w: 'SEIN', e: '🧱' },
   { w: 'KÖÖK', e: '🍳' }, { w: 'VANNITUBA', e: '🛁' }, { w: 'MAGAMISTUBA', e: '🛏️' },
   { w: 'RIIUL', e: '📚' }, { w: 'KIRJUTUSLAUD', e: '🪑' }, { w: 'TELEVISIOON', e: '📺' },
-  { w: 'PADJ', e: '🛏️' }, { w: 'TEKK', e: '🛌' },
+  { w: 'PADI', e: '🛏️' }, { w: 'TEKK', e: '🛌' },
   
   // transportation (added)
   { w: 'MOPEED', e: '🛵' }, { w: 'MOTORRATAS', e: '🏍️' }, { w: 'VEOK', e: '🚚' },
