@@ -351,6 +351,15 @@ export const en = {
       useAllLetters: 'Use all correct letters',
       watchCase: 'Watch upper and lower case!',
     },
+    pattern: {
+      tagline: 'Pattern Train',
+      instruction: 'Finish the pattern',
+      subInstruction: 'Tap the next car',
+      feedbackTitle: 'Not quite',
+      feedbackReason: 'The pattern repeats {pattern}. Next should be {answer}.',
+      feedbackChoiceLabel: 'You chose',
+      patternLabel: 'Pattern',
+    },
     memoryMath: {
       pairsLabel: 'Pairs',
     },

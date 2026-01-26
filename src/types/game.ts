@@ -113,11 +113,21 @@ export interface WordBuilderProblem extends BaseProblem {
 }
 
 // Pattern problem
+export type PatternRuleId =
+  | 'repeat_ab'
+  | 'repeat_abc'
+  | 'repeat_abcd'
+  | 'repeat_aab'
+  | 'repeat_aabb'
+  | 'repeat_aabc';
+
 export interface PatternProblem extends BaseProblem {
   type: 'pattern';
   sequence: string[];
   answer: string;
   options: string[];
+  patternRule: PatternRuleId;
+  patternCycle: string[];
 }
 
 // Sentence logic problem

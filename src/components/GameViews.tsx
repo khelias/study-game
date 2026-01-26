@@ -851,16 +851,21 @@ interface PatternTrainViewProps {
 }
 
 export const PatternTrainView: React.FC<PatternTrainViewProps> = ({ problem, onAnswer, soundEnabled }) => {
+  const t = useTranslation();
+  const { formatText } = useProfileText();
   const [disabled, setDisabled] = useState<number[]>([]);
-  const [trainState, setTrainState] = useState<string>('enter'); 
+  const [trainState, setTrainState] = useState<'enter' | 'idle' | 'leave'>('enter'); 
   const [selectedOption, setSelectedOption] = useState<number | null>(null);
+  const [feedbackChoice, setFeedbackChoice] = useState<string | null>(null);
   const problemUid = problem.uid;
+  const patternPreview = useMemo(() => problem.patternCycle.join(' '), [problem.patternCycle]);
   
   useEffect(() => { 
     const timer = setTimeout(() => {
       setDisabled([]); 
       setTrainState('enter'); 
       setSelectedOption(null);
+      setFeedbackChoice(null);
     }, 0);
     const t = setTimeout(() => setTrainState('idle'), 600); 
     return () => {
@@ -875,73 +880,101 @@ export const PatternTrainView: React.FC<PatternTrainViewProps> = ({ problem, onA
     playSound('click', soundEnabled);
     setSelectedOption(idx);
     
-    // Check if answer is correct - compare with emojis
     const isCorrect = opt === problem.answer;
     
     if (isCorrect) { 
+      setFeedbackChoice(null);
       setTrainState('leave'); 
       setTimeout(() => {
         onAnswer(true);
         setSelectedOption(null);
-      }, 1000); 
+      }, 700); 
     } else { 
-      setDisabled([...disabled, idx]); 
+      setDisabled(prev => [...prev, idx]); 
+      setFeedbackChoice(opt);
       setTimeout(() => {
         onAnswer(false);
         setSelectedOption(null);
-      }, 500);
+      }, 350);
     }
   };
 
   return (
-    <div className="w-full flex flex-col items-center overflow-hidden px-2">
-      {/* Täiustatud rong - värvikam ja atraktiivsem, mobiilile optimeeritud */}
-      <div className="relative w-full h-36 sm:h-56 mb-4 sm:mb-6 flex items-center justify-center bg-gradient-to-b from-teal-50 via-cyan-50 to-blue-50 rounded-2xl sm:rounded-3xl border-3 sm:border-4 border-teal-300 overflow-x-auto overflow-y-hidden shadow-xl" style={{ minHeight: '144px' }}>
-         {/* Taust efektid - väiksemad mobiilil */}
-         <div className="absolute top-2 sm:top-4 left-4 sm:left-10 text-3xl sm:text-5xl opacity-30 animate-pulse">☁️</div>
-         <div className="absolute top-4 sm:top-8 right-8 sm:right-20 text-2xl sm:text-4xl opacity-25 animate-pulse" style={{ animationDelay: '0.7s' }}>☁️</div>
-         <div className="absolute bottom-1 sm:bottom-2 left-1/4 text-xl sm:text-3xl opacity-20 animate-pulse hidden sm:block" style={{ animationDelay: '1.4s' }}>☁️</div>
-         
-         {/* Raudtee */}
-         <div className="absolute bottom-3 sm:bottom-6 w-full h-2 sm:h-4 bg-gradient-to-r from-slate-400 via-slate-500 to-slate-400 rounded-full border-1 sm:border-2 border-slate-600 shadow-inner">
-           <div className="absolute top-0 left-0 w-full h-0.5 sm:h-1 bg-slate-300 border-t border-slate-400 border-dashed"></div>
-         </div>
-         
-         {/* Rong - väiksem mobiilil, scrollitav */}
-         <div className={`flex items-end gap-1 sm:gap-2 px-2 sm:px-4 transition-transform duration-1000 ease-in-out shrink-0 ${trainState === 'enter' ? '-translate-x-[150%]' : ''} ${trainState === 'idle' ? 'translate-x-0' : ''} ${trainState === 'leave' ? 'translate-x-[150%]' : ''}`} style={{ minWidth: 'max-content' }}>
-            {/* Rongi mootor - täiustatud, väiksem mobiilil */}
-            <div className="relative w-18 h-18 sm:w-28 sm:h-28 bg-gradient-to-br from-red-500 to-red-700 rounded-xl sm:rounded-2xl rounded-tr-[2rem] sm:rounded-tr-[4rem] border-2 sm:border-4 border-red-800 flex items-center justify-center shadow-2xl z-10 shrink-0" style={{ minWidth: '72px', minHeight: '72px' }}>
-                <div className="absolute -top-5 sm:-top-10 left-2 sm:left-3 w-2.5 sm:w-5 h-5 sm:h-10 bg-slate-800 rounded-t-lg"></div>
-                <div className="absolute -top-7 sm:-top-12 left-0.5 sm:left-1 w-5 sm:w-10 h-2.5 sm:h-5 bg-slate-600 rounded-full opacity-60 animate-ping"></div>
-                <div className="text-3xl sm:text-6xl drop-shadow-lg filter brightness-110">🚂</div>
-                <div className="absolute bottom-0 left-0 right-0 h-1.5 sm:h-2 bg-slate-800 rounded-b-lg"></div>
-            </div>
-            
-            {/* Vagunid - täiustatud, väiksemad mobiilil */}
-            {problem.sequence.map((item, i) => (
-               <div key={i} className="relative w-12 h-16 sm:w-20 sm:h-24 bg-gradient-to-br from-teal-400 to-cyan-500 rounded-lg sm:rounded-2xl border-2 sm:border-4 border-teal-600 flex items-center justify-center shadow-lg shrink-0 mx-0.5 sm:mx-1 group" style={{ minWidth: '48px', minHeight: '64px' }}>
-                   <div className="text-2xl sm:text-5xl filter drop-shadow-lg transition-transform group-hover:scale-110">{item}</div>
-                   <div className="absolute -bottom-1 sm:-bottom-2 w-full flex justify-between px-1.5 sm:px-3">
-                       <div className="w-2 h-2 sm:w-4 sm:h-4 bg-slate-900 rounded-full shadow-md"></div>
-                       <div className="w-2 h-2 sm:w-4 sm:h-4 bg-slate-900 rounded-full shadow-md"></div>
-                   </div>
-                   <div className="absolute top-0.5 sm:top-1 left-0.5 sm:left-1 right-0.5 sm:right-1 h-0.5 sm:h-1 bg-teal-300 rounded-full opacity-50"></div>
-               </div>
-            ))}
-            
-            {/* Küsimärgi vagun - täiustatud, väiksem mobiilil */}
-            <div className="relative w-12 h-16 sm:w-20 sm:h-24 bg-gradient-to-br from-yellow-300 to-orange-400 rounded-lg sm:rounded-2xl border-2 sm:border-4 border-yellow-600 border-dashed flex items-center justify-center animate-pulse shrink-0 mx-0.5 sm:mx-1 shadow-lg" style={{ minWidth: '48px', minHeight: '64px' }}>
-                <div className="text-2xl sm:text-5xl font-black text-yellow-900 drop-shadow-md">?</div>
-                <div className="absolute -bottom-1 sm:-bottom-2 w-full flex justify-between px-1.5 sm:px-3">
-                    <div className="w-2 h-2 sm:w-4 sm:h-4 bg-slate-900 rounded-full shadow-md"></div>
-                    <div className="w-2 h-2 sm:w-4 sm:h-4 bg-slate-900 rounded-full shadow-md"></div>
-                </div>
-            </div>
-         </div>
+    <div className="w-full flex flex-col items-center px-2 sm:px-4">
+      <div className="w-full max-w-3xl text-center mb-3 sm:mb-4">
+        <div className="text-[10px] sm:text-xs font-bold uppercase tracking-wide text-teal-600">
+          {formatText(t.gameScreen.pattern.tagline)}
+        </div>
+        <div className="text-lg sm:text-2xl font-black text-slate-800">
+          {formatText(t.gameScreen.pattern.instruction)}
+        </div>
+        <div className="text-xs sm:text-sm text-slate-500 mt-1">
+          {formatText(t.gameScreen.pattern.subInstruction)}
+        </div>
       </div>
+
+      <div className="w-full max-w-4xl">
+        <div className="relative rounded-2xl sm:rounded-3xl bg-gradient-to-b from-white via-teal-50 to-emerald-50 border-2 sm:border-3 border-teal-200 shadow-lg px-3 sm:px-6 py-4 sm:py-6 overflow-hidden">
+          <div className="absolute inset-x-6 bottom-4 h-1.5 sm:h-2 bg-gradient-to-r from-slate-400 via-slate-500 to-slate-400 rounded-full opacity-80"></div>
+          <div className="absolute inset-x-8 bottom-2 h-1 bg-slate-300 rounded-full opacity-60"></div>
+
+          <div
+            className={`flex items-end gap-2 sm:gap-3 overflow-x-auto pb-6 sm:pb-8 transition-transform duration-700 ease-out ${
+              trainState === 'enter' ? 'opacity-0 -translate-x-6' : ''
+            } ${trainState === 'leave' ? 'opacity-0 translate-x-10' : ''}`}
+          >
+            <div className="flex items-center justify-center w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-gradient-to-br from-teal-500 to-emerald-500 text-2xl sm:text-3xl shadow-md shrink-0">
+              🚂
+            </div>
+            {problem.sequence.map((item, i) => (
+              <div
+                key={`${item}-${i}`}
+                className="relative w-12 h-16 sm:w-16 sm:h-20 rounded-2xl bg-white/90 border-2 border-teal-200 shadow-md flex items-center justify-center text-2xl sm:text-4xl shrink-0"
+              >
+                <span className="drop-shadow-sm">{item}</span>
+                <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 flex gap-2">
+                  <span className="w-2 h-2 sm:w-2.5 sm:h-2.5 bg-slate-700 rounded-full"></span>
+                  <span className="w-2 h-2 sm:w-2.5 sm:h-2.5 bg-slate-700 rounded-full"></span>
+                </div>
+              </div>
+            ))}
+            <div className="relative w-12 h-16 sm:w-16 sm:h-20 rounded-2xl border-2 border-dashed border-amber-300 bg-amber-100/80 shadow-md flex items-center justify-center text-2xl sm:text-4xl shrink-0">
+              <span className="font-black text-amber-700">?</span>
+              <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 flex gap-2">
+                <span className="w-2 h-2 sm:w-2.5 sm:h-2.5 bg-slate-700 rounded-full"></span>
+                <span className="w-2 h-2 sm:w-2.5 sm:h-2.5 bg-slate-700 rounded-full"></span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {feedbackChoice && (
+        <div className="w-full max-w-3xl mt-3 sm:mt-4 rounded-2xl border-2 border-amber-200 bg-amber-50 px-3 sm:px-4 py-3 sm:py-4 text-amber-900 shadow-sm">
+          <div className="text-sm sm:text-base font-black">{formatText(t.gameScreen.pattern.feedbackTitle)}</div>
+          <div className="text-xs sm:text-sm mt-1">
+            {formatText(
+              t.gameScreen.pattern.feedbackReason
+                .replace('{pattern}', patternPreview)
+                .replace('{answer}', problem.answer)
+            )}
+          </div>
+          <div className="mt-2 flex items-center gap-2 text-xs sm:text-sm">
+            <span className="font-semibold">{formatText(t.gameScreen.pattern.feedbackChoiceLabel)}</span>
+            <span className="text-xl">{feedbackChoice}</span>
+          </div>
+          <div className="mt-2 flex items-center gap-2 text-xs sm:text-sm">
+            <span className="font-semibold">{formatText(t.gameScreen.pattern.patternLabel)}</span>
+            <div className="flex items-center gap-1 text-lg">
+              {problem.patternCycle.map((item, index) => (
+                <span key={`${item}-${index}`}>{item}</span>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
       
-      {/* Täiustatud valikud - värvikamad, kompaktne mobiilil */}
-      <div className="grid grid-cols-3 gap-2 sm:gap-4 w-full max-w-md">
+      <div className="grid grid-cols-3 gap-2 sm:gap-4 w-full max-w-md mt-4 sm:mt-5">
         {problem.options.map((opt, idx) => {
           const isDisabled = disabled.includes(idx) || trainState === 'leave';
           const isSelected = selectedOption === idx;
@@ -952,13 +985,13 @@ export const PatternTrainView: React.FC<PatternTrainViewProps> = ({ problem, onA
               disabled={isDisabled} 
               onClick={() => handleChoice(opt, idx)} 
               className={`
-                h-16 sm:h-28 rounded-xl sm:rounded-3xl border-2 sm:border-4 text-3xl sm:text-6xl flex items-center justify-center 
-                transition-all duration-300 shadow-lg
+                h-16 sm:h-24 rounded-2xl border-2 text-3xl sm:text-5xl flex items-center justify-center 
+                transition-all duration-200 shadow-md
                 ${isDisabled 
                   ? 'bg-slate-200 opacity-40 grayscale cursor-not-allowed border-slate-300' 
                   : isSelected
-                  ? 'bg-gradient-to-br from-green-400 to-emerald-500 border-green-600 scale-105 sm:scale-110 shadow-2xl'
-                  : 'bg-gradient-to-br from-white to-teal-50 border-teal-300 hover:border-teal-500 hover:bg-teal-100 hover:scale-105 active:scale-95 shadow-xl'
+                  ? 'bg-emerald-200 border-emerald-400 scale-[1.02] shadow-lg'
+                  : 'bg-white border-teal-200 hover:border-teal-400 hover:bg-teal-50 active:scale-95'
                 }
               `}
             >

@@ -217,6 +217,8 @@ describe('Generators', () => {
       expect(problem.sequence).toBeInstanceOf(Array);
       expect(typeof problem.answer).toBe('string');
       expect(problem.options).toBeInstanceOf(Array);
+      expect(problem.patternRule).toBeDefined();
+      expect(problem.patternCycle.length).toBeGreaterThan(0);
     });
 
     it('should include correct answer in options', () => {

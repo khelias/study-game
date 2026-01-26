@@ -351,6 +351,15 @@ export const et = {
       useAllLetters: 'Kasuta kõiki õigeid tähti',
       watchCase: 'Pane tähele suuri ja väikeseid tähti!',
     },
+    pattern: {
+      tagline: 'Mustri-rong',
+      instruction: 'Jätka mustrit',
+      subInstruction: 'Puuduta järgmist vagunit',
+      feedbackTitle: 'Peaaegu!',
+      feedbackReason: 'Muster kordub {pattern}. Järgmine peab olema {answer}.',
+      feedbackChoiceLabel: 'Valisid',
+      patternLabel: 'Muster',
+    },
     memoryMath: {
       pairsLabel: 'Paarid',
     },

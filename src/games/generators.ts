@@ -19,7 +19,8 @@ import type {
   GeneratorFunction,
   SceneAnchor,
   SceneSubject,
-  LetterObject
+  LetterObject,
+  PatternRuleId
 } from '../types/game';
 
 const profileMeta = (profileId: ProfileType) => PROFILES[profileId] || PROFILES.starter;
@@ -305,65 +306,78 @@ export const Generators: Record<string, GeneratorFunction> = {
     const A = pool[0];
     const B = pool[1];
     const C = pool[2];
-    if (!A || !B || !C) {
+    const D = pool[3];
+    if (!A || !B || !C || !D) {
       throw new Error('Not enough pattern items');
     }
     const meta = profileMeta(profile);
     const harder = meta.difficultyOffset > 0;
-    
-    let seq: string[] = [];
-    let ans = '';
-    // Smoother progression by level - improved logic
-    if (harder) {
-      // Advanced profiil - raskemad mustrid
-      if (level <= 2) { 
-        seq = [A, B, A, B, A]; 
-        ans = B; // Next should be B (A, B, A, B, A, B)
-      } 
-      else if (level <= 4) { 
-        seq = [A, B, A, C, A, B]; 
-        ans = C; // Next should be C (A, B, A, C, A, B, C)
-      } 
-      else if (level <= 6) { 
-        seq = [A, B, C, A, B, C]; 
-        ans = A; // Next should be A (A, B, C, A, B, C, A)
-      } 
-      else { 
-        seq = [A, B, B, C, A, B]; 
-        ans = C; // Next should be C (A, B, B, C, A, B, C)
+
+    type PatternTemplate = {
+      id: PatternRuleId;
+      cycle: number[];
+      length: number;
+    };
+
+    const templates: Record<PatternRuleId, PatternTemplate> = {
+      repeat_ab: { id: 'repeat_ab', cycle: [0, 1], length: 4 },
+      repeat_abc: { id: 'repeat_abc', cycle: [0, 1, 2], length: 5 },
+      repeat_abcd: { id: 'repeat_abcd', cycle: [0, 1, 2, 3], length: 6 },
+      repeat_aab: { id: 'repeat_aab', cycle: [0, 0, 1], length: 5 },
+      repeat_aabb: { id: 'repeat_aabb', cycle: [0, 0, 1, 1], length: 5 },
+      repeat_aabc: { id: 'repeat_aabc', cycle: [0, 0, 1, 2], length: 6 },
+    };
+
+    const pickTemplates = (): PatternTemplate[] => {
+      if (!harder) {
+        if (level <= 2) {
+          return [templates.repeat_ab, templates.repeat_aab];
+        }
+        if (level <= 4) {
+          return [templates.repeat_ab, templates.repeat_aab, templates.repeat_abc];
+        }
+        return [templates.repeat_ab, templates.repeat_aab, templates.repeat_abc, templates.repeat_aabb];
       }
-    } else {
-      // Starter profiil - lihtsamad mustrid
-      if (level <= 2) { 
-        seq = [A, B, A, B]; 
-        ans = A; // Next should be A (A, B, A, B, A)
-      } 
-      else if (level <= 4) { 
-        seq = [A, A, B, A, A]; 
-        ans = B; // Next should be B (A, A, B, A, A, B)
-      } 
-      else if (level <= 6) { 
-        seq = [A, B, C, A, B]; 
-        ans = C; // Next should be C (A, B, C, A, B, C)
-      } 
-      else { 
-        seq = [A, B, B, A, B]; 
-        ans = B; // Next should be B (A, B, B, A, B, B)
+
+      if (level <= 2) {
+        return [templates.repeat_ab, templates.repeat_abc];
       }
+      if (level <= 4) {
+        return [templates.repeat_aab, templates.repeat_abc, templates.repeat_aabb];
+      }
+      return [templates.repeat_abc, templates.repeat_aabb, templates.repeat_abcd, templates.repeat_aabc];
+    };
+
+    const templatePool = pickTemplates();
+    const picked = getRandom(templatePool, rng);
+    if (!picked) {
+      throw new Error('No pattern template found');
     }
 
+    const lengthBoost = Math.min(2, Math.floor(level / 4));
+    const sequenceLength = Math.min(picked.length + lengthBoost, 6);
+    const sequence = Array.from({ length: sequenceLength }, (_, index) => {
+      const cycleIndex = picked.cycle[index % picked.cycle.length] ?? 0;
+      return pool[cycleIndex] ?? A;
+    });
+    const nextIndex = picked.cycle[sequenceLength % picked.cycle.length] ?? 0;
+    const answer = pool[nextIndex] ?? A;
+    const patternCycle = picked.cycle.map((index) => pool[index] ?? A);
+
     // Ensure the correct answer is always among the choices
-    const opts = new Set([ans]); 
+    const opts = new Set([answer]); 
     while(opts.size < 3) {
       const randomItem = getRandom(items, rng);
-      if (randomItem && randomItem !== ans) opts.add(randomItem);
+      if (randomItem && randomItem !== answer) opts.add(randomItem);
     }
     
     return { 
       type: 'pattern', 
-      sequence: seq, 
-      answer: ans, 
+      sequence, 
+      answer, 
       options: Array.from(opts).sort(() => rng() - 0.5), 
+      patternRule: picked.id,
+      patternCycle,
       uid: uid(rng) 
     };
   },
