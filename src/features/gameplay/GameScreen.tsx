@@ -1,5 +1,5 @@
 import React, { useEffect, useCallback, useRef, useState } from 'react';
-import { Heart, Star, Home, Loader2 } from 'lucide-react';
+import { Heart, Star, Home, Loader2, Menu, X, Volume2, VolumeX, Trophy, Sparkles } from 'lucide-react';
 import { useGameStore } from '../../stores/gameStore';
 import { usePlaySessionStore } from '../../stores/playSessionStore';
 import { useGameEngine } from '../../hooks/useGameEngine';
@@ -25,6 +25,8 @@ export const GameScreen: React.FC = () => {
   const profile = useGameStore(state => state.profile);
   const levels = useGameStore(state => state.levels);
   const soundEnabled = useGameStore(state => state.soundEnabled);
+  const score = useGameStore(state => state.score);
+  const toggleSound = useGameStore(state => state.toggleSound);
   const recordAnswer = useGameStore(state => state.recordAnswer);
   const recordLevelUp = useGameStore(state => state.recordLevelUp);
   const addCollectedStars = useGameStore(state => state.addCollectedStars);
@@ -59,6 +61,8 @@ export const GameScreen: React.FC = () => {
   const tipShownOnceRef = useRef(false);
   const tipMessageRef = useRef<string | null>(null);
   const [canReopenTip, setCanReopenTip] = useState(false);
+  const [showSettingsMenu, setShowSettingsMenu] = useState(false);
+  const settingsMenuRef = useRef<HTMLDivElement>(null);
   
   const setProblem = usePlaySessionStore(state => state.setProblem);
   const returnToMenu = usePlaySessionStore(state => state.returnToMenu);
@@ -78,7 +82,21 @@ export const GameScreen: React.FC = () => {
   const clearNotifications = usePlaySessionStore(state => state.clearNotifications);
   
   const { generateUniqueProblemForGame } = useGameEngine();
-  const { playWin } = useGameAudio(soundEnabled);
+  const { playWin, playClick } = useGameAudio(soundEnabled);
+
+  useEffect(() => {
+    if (!showSettingsMenu) return;
+    const handleClickOutside = (event: MouseEvent) => {
+      if (settingsMenuRef.current && !settingsMenuRef.current.contains(event.target as Node)) {
+        setShowSettingsMenu(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [showSettingsMenu]);
   
   // Generate initial problem on mount
   useEffect(() => {
@@ -356,7 +374,8 @@ export const GameScreen: React.FC = () => {
   useEffect(() => {
     tipShownOnceRef.current = false;
     tipMessageRef.current = null;
-    setCanReopenTip(false);
+    const resetTimer = setTimeout(() => setCanReopenTip(false), 0);
+    return () => clearTimeout(resetTimer);
   }, [gameType]);
 
   const handleTipReplay = useCallback(() => {
@@ -387,11 +406,14 @@ export const GameScreen: React.FC = () => {
         if (tipMessage) {
           tipShownOnceRef.current = true;
           tipMessageRef.current = tipMessage;
-          setCanReopenTip(true);
-          addNotification({
-            type: 'tip',
-            message: tipMessage,
-          });
+          const tipTimer = setTimeout(() => {
+            setCanReopenTip(true);
+            addNotification({
+              type: 'tip',
+              message: tipMessage,
+            });
+          }, 0);
+          return () => clearTimeout(tipTimer);
         }
       }
     }
@@ -400,6 +422,11 @@ export const GameScreen: React.FC = () => {
   if (!gameType) {
     return null;
   }
+
+  const currentLevel = levels[profile]?.[gameType] ?? 1;
+  const settingsLabel = formatText(t.menu.settings);
+  const scoreLabel = formatText(t.game.score);
+  const levelLabel = formatText(t.game.level);
   
   return (
     <div className={`min-h-screen font-sans flex flex-col ${bgClass} transition-colors duration-500 select-none overflow-hidden`}>
@@ -429,35 +456,99 @@ export const GameScreen: React.FC = () => {
       
       {/* Header */}
       <div className="flex justify-between items-center p-2 sm:p-3 bg-white/80 backdrop-blur-md border-b-3 sm:border-b-4 border-slate-200 sticky top-0 z-40 shadow-sm">
-        <button 
-          onClick={returnToMenu} 
-          aria-label={t.gameScreen.returnToMenu}
-          className="bg-slate-100 hover:bg-slate-200 p-2 sm:p-3 rounded-lg sm:rounded-xl transition-colors active:scale-90">
-          <Home size={18} className="sm:w-5 sm:h-5 text-slate-600"/>
-        </button>
-        
-          <div className="flex flex-col items-center gap-0.5 sm:gap-1">
-          <div className="flex gap-1 sm:gap-1.5 bg-slate-100 px-2 sm:px-3 py-1 sm:py-2 rounded-full">
-            {Array.from({ length: 5 }, (_, i) => (
-              <PulseEffect key={i} active={i < stars && particleActive}>
-                <div className={`transition-all duration-500 ${i < stars ? 'scale-110' : 'scale-100'}`}>
-                  <Star 
-                    className={`w-4 h-4 sm:w-5 sm:h-5 ${i < stars ? 'text-yellow-400 fill-yellow-400 drop-shadow-sm' : 'text-slate-300'}`} 
-                    strokeWidth={2.5}
-                  />
+        <div className="w-full max-w-2xl mx-auto flex items-center justify-between gap-2 sm:gap-3">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-1 sm:gap-2">
+            <button 
+              onClick={() => {
+                playClick();
+                returnToMenu();
+              }} 
+              aria-label={t.gameScreen.returnToMenu}
+              className="bg-slate-100 hover:bg-slate-200 p-2 sm:p-3 rounded-lg sm:rounded-xl transition-colors active:scale-90">
+              <Home size={18} className="sm:w-5 sm:h-5 text-slate-600"/>
+            </button>
+            <div className="relative" ref={settingsMenuRef}>
+              <button 
+                onClick={() => {
+                  setShowSettingsMenu(!showSettingsMenu);
+                  playClick();
+                }} 
+                aria-label={settingsLabel}
+                title={settingsLabel}
+                aria-expanded={showSettingsMenu}
+                className="bg-slate-100 hover:bg-slate-200 p-2 sm:p-3 rounded-lg sm:rounded-xl transition-colors active:scale-90"
+              >
+                {showSettingsMenu ? <X size={16} className="sm:w-5 sm:h-5 text-slate-600"/> : <Menu size={16} className="sm:w-5 sm:h-5 text-slate-600"/>}
+              </button>
+              {showSettingsMenu && (
+                <div className="absolute left-0 top-full mt-2 bg-white rounded-xl shadow-lg border-2 border-slate-200 overflow-hidden z-50 min-w-[180px]">
+                  <button
+                    onClick={() => {
+                      playClick();
+                      toggleSound();
+                    }}
+                    className="w-full px-4 py-2 text-left hover:bg-slate-50 transition-colors flex items-center gap-2 text-slate-700"
+                  >
+                    {soundEnabled ? <Volume2 size={16} className="text-slate-600"/> : <VolumeX size={16} className="text-red-500"/>}
+                    <span>{formatText(soundEnabled ? t.menuSpecific.toggleSoundOff : t.menuSpecific.toggleSoundOn)}</span>
+                  </button>
+                  <div className="border-t border-slate-200">
+                    <button
+                      onClick={() => {
+                        playClick();
+                        setShowSettingsMenu(false);
+                        returnToMenu();
+                      }}
+                      className="w-full px-4 py-2 text-left hover:bg-slate-50 transition-colors flex items-center gap-2 text-slate-700"
+                    >
+                      <Home size={16} className="text-slate-600"/>
+                      <span>{formatText(t.gameScreen.returnToMenu)}</span>
+                    </button>
+                  </div>
                 </div>
-              </PulseEffect>
-            ))}
+              )}
+            </div>
           </div>
-          <div className="w-20 sm:w-full max-w-xs">
-            <ProgressIndicator current={stars} total={5} />
+          
+          <div className="flex flex-col items-center gap-0.5 sm:gap-1">
+            <div className="flex gap-1 sm:gap-1.5 bg-slate-100 px-2 sm:px-3 py-1 sm:py-2 rounded-full">
+              {Array.from({ length: 5 }, (_, i) => (
+                <PulseEffect key={i} active={i < stars && particleActive}>
+                  <div className={`transition-all duration-500 ${i < stars ? 'scale-110' : 'scale-100'}`}>
+                    <Star 
+                      className={`w-4 h-4 sm:w-5 sm:h-5 ${i < stars ? 'text-yellow-400 fill-yellow-400 drop-shadow-sm' : 'text-slate-300'}`} 
+                      strokeWidth={2.5}
+                    />
+                  </div>
+                </PulseEffect>
+              ))}
+            </div>
+            <div className="w-20 sm:w-full max-w-xs">
+              <ProgressIndicator current={stars} total={5} />
+            </div>
           </div>
-        </div>
-        
-        <div className="flex gap-0.5 sm:gap-1">
-          {Array.from({ length: 3 }, (_, i) => (
-            <Heart key={i} className={`w-5 h-5 sm:w-7 sm:h-7 transition-all duration-300 ${i < hearts ? 'text-red-500 fill-red-500 animate-pulse-slow' : 'text-slate-200'}`} />
-          ))}
+          
+          <div className="flex flex-col items-end gap-1 sm:gap-1.5">
+            <div className="flex items-center gap-1 sm:gap-2">
+              <div className="flex items-center gap-1 sm:gap-1.5 bg-yellow-100/80 px-2 py-0.5 sm:py-1 rounded-full text-yellow-700 shadow-sm">
+                <Trophy size={14} className="sm:w-4 sm:h-4" />
+                <span className="text-xs sm:text-sm font-black">{score}</span>
+                <span className="hidden sm:inline text-[10px] font-bold uppercase tracking-wide text-yellow-700/80">{scoreLabel}</span>
+                <span className="sr-only sm:hidden">{scoreLabel}</span>
+              </div>
+              <div className="flex items-center gap-1 sm:gap-1.5 bg-purple-100/80 px-2 py-0.5 sm:py-1 rounded-full text-purple-700 shadow-sm">
+                <Sparkles size={14} className="sm:w-4 sm:h-4" />
+                <span className="text-xs sm:text-sm font-black">{currentLevel}</span>
+                <span className="hidden sm:inline text-[10px] font-bold uppercase tracking-wide text-purple-700/80">{levelLabel}</span>
+                <span className="sr-only sm:hidden">{levelLabel}</span>
+              </div>
+            </div>
+            <div className="flex gap-0.5 sm:gap-1">
+              {Array.from({ length: 3 }, (_, i) => (
+                <Heart key={i} className={`w-5 h-5 sm:w-7 sm:h-7 transition-all duration-300 ${i < hearts ? 'text-red-500 fill-red-500 animate-pulse-slow' : 'text-slate-200'}`} />
+              ))}
+            </div>
+          </div>
         </div>
       </div>
 

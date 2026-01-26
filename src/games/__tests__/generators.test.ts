@@ -160,7 +160,6 @@ describe('Generators', () => {
     });
 
     it('should add pre-filled positions for 6+ letter words', () => {
-      const rng = createRng(12345);
       const generator = Generators.word_builder;
       if (!generator) throw new Error('word_builder generator not found');
       

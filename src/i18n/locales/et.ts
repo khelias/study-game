@@ -128,6 +128,7 @@ export const et = {
     stats: 'Statistika',
     achievements: 'Saavutused',
     tutorial: 'Õpetus',
+    settings: 'Seaded',
     reset: 'Kustuta progress',
     sound: 'Heli',
     soundOn: 'Heli sisse',

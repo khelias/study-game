@@ -6,6 +6,7 @@ import {
   calculateGameSuccessScore,
 } from '../progression';
 import { createTestStats } from '../../test/utils';
+import { setLocale } from '../../i18n';
 
 describe('calculateOptimalDifficulty', () => {
   it('should return effective level for starter profile', () => {
@@ -117,6 +118,10 @@ describe('getNextLevelDifficulty', () => {
 });
 
 describe('getProgressionRecommendation', () => {
+  beforeEach(() => {
+    setLocale('et');
+  });
+
   it('should recommend start for new game', () => {
     const stats = createTestStats();
     const recommendation = getProgressionRecommendation(stats, 'word_builder');

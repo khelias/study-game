@@ -128,6 +128,7 @@ export const en = {
     stats: 'Statistics',
     achievements: 'Achievements',
     tutorial: 'Tutorial',
+    settings: 'Settings',
     reset: 'Reset progress',
     sound: 'Sound',
     soundOn: 'Sound on',

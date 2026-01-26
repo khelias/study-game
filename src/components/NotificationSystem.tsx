@@ -203,11 +203,9 @@ const NotificationItem: React.FC<NotificationItemProps> = ({ notification, onDis
   }, [exiting, notification.id, onDismiss]);
 
   useEffect(() => {
-    setVisible(false);
-    setExiting(false);
     const showTimer = setTimeout(() => setVisible(true), ENTER_DELAY_MS);
     return () => clearTimeout(showTimer);
-  }, [notification.id]);
+  }, []);
 
   useEffect(() => {
     return () => {

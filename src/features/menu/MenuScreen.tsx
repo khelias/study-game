@@ -39,7 +39,6 @@ export const MenuScreen: React.FC = () => {
   const recordGameStart = useGameStore(state => state.recordGameStart);
   
   const startGame = usePlaySessionStore(state => state.startGame);
-  const setShowAchievement = usePlaySessionStore(state => state.setShowAchievement);
   
   const { playClick } = useGameAudio(soundEnabled);
   
@@ -52,6 +51,7 @@ export const MenuScreen: React.FC = () => {
   const currentLocale = getLocale();
   const languageMenuRef = useRef<HTMLDivElement>(null);
   const settingsMenuRef = useRef<HTMLDivElement>(null);
+  const settingsLabel = formatText(t.menu.settings);
 
   // Close language menu when clicking outside
   useEffect(() => {
@@ -77,10 +77,7 @@ export const MenuScreen: React.FC = () => {
     playClick();
     
     // Record game start and check for achievements
-    const { newAchievements } = recordGameStart(gameType);
-    if (newAchievements.length > 0) {
-      setShowAchievement(newAchievements[0] ?? null);
-    }
+    recordGameStart(gameType);
     
     startGame(gameType);
   };
@@ -108,7 +105,7 @@ export const MenuScreen: React.FC = () => {
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 font-sans p-4 flex flex-col items-center animate-in fade-in">
       {/* Header */}
       <div className="w-full max-w-md mb-4 sm:mb-6 bg-gradient-to-r from-white to-slate-50 p-2 sm:p-4 rounded-2xl sm:rounded-3xl shadow-lg border-2 border-purple-200 backdrop-blur-sm">
-        <div className="flex flex-wrap justify-between items-center gap-2">
+        <div className="flex flex-wrap sm:flex-nowrap justify-between items-center gap-2">
           {/* Left side - Score and Stars */}
           <div className="flex items-center gap-2 sm:gap-4 min-w-0 flex-shrink">
             <div className="flex items-center gap-1 sm:gap-2">
@@ -143,9 +140,9 @@ export const MenuScreen: React.FC = () => {
                   setShowSettingsMenu(!showSettingsMenu);
                   playClick();
                 }} 
-                aria-label="Settings"
+                aria-label={settingsLabel}
                 className="p-1.5 sm:p-3 bg-slate-50 text-slate-600 rounded-lg sm:rounded-xl hover:bg-slate-100 transition-colors"
-                title="Settings"
+                title={settingsLabel}
               >
                 {showSettingsMenu ? <X size={14} className="sm:w-5 sm:h-5"/> : <Menu size={14} className="sm:w-5 sm:h-5"/>}
               </button>
