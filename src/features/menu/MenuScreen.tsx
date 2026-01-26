@@ -112,27 +112,23 @@ export const MenuScreen: React.FC = () => {
               <div className="bg-yellow-100 p-1.5 sm:p-2 rounded-lg text-yellow-600 flex-shrink-0"><Trophy size={18} className="sm:w-6 sm:h-6" /></div>
               <span className="font-black text-lg sm:text-2xl text-slate-700 whitespace-nowrap">{score}</span>
             </div>
-            {collectedStars > 0 && (
-              <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0">
-                <span className="text-xl sm:text-2xl">⭐</span>
-                <span className="font-black text-base sm:text-xl text-slate-700 whitespace-nowrap">{collectedStars}</span>
-                <span className="text-[10px] sm:text-xs text-slate-500 hidden sm:inline">{formatText(t.menuSpecific.starsLabel)}</span>
-              </div>
-            )}
+            <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0">
+              <span className="text-xl sm:text-2xl">⭐</span>
+              <span className="font-black text-base sm:text-xl text-slate-700 whitespace-nowrap">{collectedStars}</span>
+              <span className="text-[10px] sm:text-xs text-slate-500 hidden sm:inline">{formatText(t.menuSpecific.starsLabel)}</span>
+            </div>
           </div>
           {/* Right side - Action buttons */}
           <div className="flex items-center justify-end gap-1 sm:gap-2">
-            {unlockedAchievements.length > 0 && (
-              <button
-                onClick={() => setShowAchievements(true)}
-                className="flex items-center gap-0.5 sm:gap-1 px-1.5 sm:px-2 py-1 bg-purple-50 hover:bg-purple-100 rounded-lg transition-colors cursor-pointer flex-shrink-0"
-                title={`${unlockedAchievements.length} ${t.menuSpecific.achievementsCount}`}
-                aria-label={t.menuSpecific.showAchievements}
-              >
-                <span className="text-base sm:text-lg">🏅</span>
-                <span className="text-xs sm:text-sm font-bold text-purple-700">{unlockedAchievements.length}</span>
-              </button>
-            )}
+            <button
+              onClick={() => setShowAchievements(true)}
+              className="flex items-center gap-0.5 sm:gap-1 px-1.5 sm:px-2 py-1 bg-purple-50 hover:bg-purple-100 rounded-lg transition-colors cursor-pointer flex-shrink-0"
+              title={`${unlockedAchievements.length} ${t.menuSpecific.achievementsCount}`}
+              aria-label={t.menuSpecific.showAchievements}
+            >
+              <span className="text-base sm:text-lg">🏅</span>
+              <span className="text-xs sm:text-sm font-bold text-purple-700">{unlockedAchievements.length}</span>
+            </button>
             {/* Settings menu */}
             <div className="relative flex-shrink-0" ref={settingsMenuRef}>
               <button 

@@ -51,11 +51,13 @@ export interface GameStore {
   markTutorialSeen: () => void;
 }
 
+const DEFAULT_PROFILE: ProfileType = 'advanced';
+
 export const useGameStore = create<GameStore>()(
   persist(
     (set, get) => ({
       // Initial state
-      profile: (Object.keys(PROFILES)[0] as ProfileType) ?? 'starter',
+      profile: DEFAULT_PROFILE,
       levels: buildDefaultLevels(),
       stats: createStats(),
       unlockedAchievements: [],
@@ -178,7 +180,7 @@ export const useGameStore = create<GameStore>()(
         const confirmed = confirm(t.errors.confirmReset);
         if (confirmed) {
           set({
-            profile: Object.keys(PROFILES)[0],
+            profile: DEFAULT_PROFILE,
             levels: buildDefaultLevels(),
             stats: createStats(),
             unlockedAchievements: [],
@@ -250,7 +252,7 @@ export const useGameStore = create<GameStore>()(
         if (persistedState && typeof persistedState === 'object') {
           const stateObj = persistedState as Record<string, unknown>;
           const defaults = {
-            profile: (Object.keys(PROFILES)[0] as ProfileType) ?? 'starter',
+            profile: DEFAULT_PROFILE,
             levels: buildDefaultLevels(),
             stats: createStats(),
             unlockedAchievements: [],
