@@ -238,6 +238,11 @@ export const et = {
       instruction: 'PANE SILBID ÕIGESSE JÄRJEKORDA, ET SAADA SÕNA',
       correct: 'ÕIGE:',
     },
+    wordBuilder: {
+      preFilled: 'Vihje: mõned tähed on juba õiges kohas!',
+      useAllLetters: 'Kasuta kõiki õigeid tähti',
+      watchCase: 'Pane tähele suuri ja väikeseid tähti!',
+    },
     timeMatch: {
       selectCorrectTime: 'Vali õige kellaaeg',
       correctTimeIs: 'Õige aeg on',

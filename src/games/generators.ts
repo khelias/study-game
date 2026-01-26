@@ -1,4 +1,4 @@
-import { ALPHABET, WORD_DB, SCENE_DB, PROFILES } from './data';
+import { ALPHABET, WORD_DB, WORD_DB_EN, SCENE_DB, PROFILES } from './data';
 import { getRandom, uid } from '../engine/rng';
 import { getLocale } from '../i18n/index';
 import { generateSentence, getSceneName } from './sentenceTranslations';
@@ -17,10 +17,147 @@ import type {
   UnitConversionProblem,
   GeneratorFunction,
   SceneAnchor,
-  SceneSubject
+  SceneSubject,
+  LetterObject
 } from '../types/game';
 
 const profileMeta = (profileId: ProfileType) => PROFILES[profileId] || PROFILES.starter;
+
+// Helper function to check if a word contains diacritical marks
+function hasDiacritics(word: string): boolean {
+  return /[ŠŽÕÄÖÜ]/i.test(word);
+}
+
+// Helper function to apply letter case based on level
+function applyLetterCase(word: string, level: number, rng: RngFunction): string {
+  // Level 1-2: All uppercase (KASS)
+  if (level <= 2) {
+    return word.toUpperCase();
+  }
+  // Level 3-5: All lowercase (kass)
+  else if (level <= 5) {
+    return word.toLowerCase();
+  }
+  // Level 6-8: First letter uppercase (Kass)
+  else if (level <= 8) {
+    return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
+  }
+  // Level 9+: Mixed case (KaSs, KoEr)
+  else {
+    return word.split('').map((char, idx) => {
+      // First letter is always uppercase
+      if (idx === 0) return char.toUpperCase();
+      // Random case for other letters
+      return rng() > 0.5 ? char.toUpperCase() : char.toLowerCase();
+    }).join('');
+  }
+}
+
+// Helper function to add distractor letters
+function addDistractorLetters(
+  correctLetters: LetterObject[], 
+  count: number, 
+  language: string, 
+  rng: RngFunction
+): LetterObject[] {
+  if (count === 0) return correctLetters;
+  
+  const distractors: LetterObject[] = [];
+  
+  // Define visually and phonetically similar letters
+  const similarLetters: Record<string, string[]> = language === 'en' ? {
+    // English similar letters
+    'A': ['E', 'O', 'H'],
+    'B': ['D', 'P', 'R'],
+    'C': ['G', 'O', 'Q'],
+    'D': ['B', 'O', 'P'],
+    'E': ['F', 'A', 'B'],
+    'F': ['E', 'T', 'P'],
+    'G': ['C', 'O', 'Q'],
+    'H': ['N', 'K', 'A'],
+    'I': ['L', 'J', 'T'],
+    'J': ['I', 'L', 'T'],
+    'K': ['H', 'R', 'X'],
+    'L': ['I', 'T', 'J'],
+    'M': ['N', 'W', 'H'],
+    'N': ['M', 'H', 'R'],
+    'O': ['Q', 'C', 'G'],
+    'P': ['B', 'D', 'R'],
+    'Q': ['O', 'C', 'G'],
+    'R': ['P', 'B', 'K'],
+    'S': ['Z', 'C', 'G'],
+    'T': ['F', 'I', 'L'],
+    'U': ['V', 'W', 'Y'],
+    'V': ['U', 'Y', 'W'],
+    'W': ['M', 'V', 'U'],
+    'X': ['K', 'Y', 'Z'],
+    'Y': ['V', 'U', 'T'],
+    'Z': ['S', 'X', 'N']
+  } : {
+    // Estonian similar letters
+    'A': ['Ä', 'E', 'O'],
+    'Ä': ['A', 'E', 'Ö'],
+    'E': ['A', 'Ä', 'I'],
+    'I': ['E', 'L', 'J'],
+    'O': ['Ö', 'A', 'Q'],
+    'Ö': ['O', 'Ü', 'Õ'],
+    'U': ['Ü', 'V', 'Y'],
+    'Ü': ['U', 'Ö', 'Y'],
+    'Õ': ['O', 'Ö', 'A'],
+    'K': ['G', 'H', 'R'],
+    'G': ['K', 'Q', 'C'],
+    'P': ['B', 'R', 'D'],
+    'B': ['P', 'D', 'R'],
+    'T': ['D', 'L', 'F'],
+    'D': ['T', 'B', 'P'],
+    'S': ['Z', 'Š', 'C'],
+    'Š': ['S', 'Z', 'Ž'],
+    'Z': ['S', 'Ž', 'Š'],
+    'Ž': ['Z', 'Š', 'S'],
+    'L': ['I', 'T', 'J'],
+    'R': ['K', 'P', 'N'],
+    'M': ['N', 'W', 'H'],
+    'N': ['M', 'R', 'H']
+  };
+  
+  const correctChars = correctLetters.map(l => l.char.toUpperCase());
+  const availableLetters = language === 'en' 
+    ? 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('')
+    : ALPHABET;
+  
+  for (let i = 0; i < count; i++) {
+    let distractor: string;
+    
+    // Try to find a visually/phonetically similar letter
+    if (correctChars.length > 0 && rng() > 0.3) {
+      const targetChar = correctChars[Math.floor(rng() * correctChars.length)];
+      const similar = similarLetters[targetChar] as string[] | undefined;
+      if (similar && similar.length > 0) {
+        distractor = similar[Math.floor(rng() * similar.length)] as string;
+      } else {
+        // Fallback to random letter
+        distractor = availableLetters[Math.floor(rng() * availableLetters.length)] as string;
+      }
+    } else {
+      // Random letter from alphabet
+      distractor = availableLetters[Math.floor(rng() * availableLetters.length)] as string;
+    }
+    
+    // Ensure we don't add a letter that's already in the correct set
+    let attempts = 0;
+    while (correctChars.includes(distractor.toUpperCase()) && attempts < 20) {
+      distractor = availableLetters[Math.floor(rng() * availableLetters.length)];
+      attempts++;
+    }
+    
+    distractors.push({
+      char: distractor,
+      id: `distractor-${i}-${uid(rng)}`
+    });
+  }
+  
+  return [...correctLetters, ...distractors];
+}
 
 export const Generators: Record<string, GeneratorFunction> = {
   balance_scale: (level: number, rng: RngFunction = Math.random, profile: ProfileType = 'starter'): BalanceScaleProblem => {
@@ -65,42 +202,90 @@ export const Generators: Record<string, GeneratorFunction> = {
   
   word_builder: (level: number, rng: RngFunction = Math.random, profile: ProfileType = 'starter'): WordBuilderProblem => {
     const meta = profileMeta(profile);
-    // Improved progression: Level 1-2 = 3 letters, Level 3-4 = 4 letters, Level 5-7 = 5 letters, Level 8+ = 6-7 letters
-    // Advanced profile starts with slightly longer words
-    const baseLen = meta.difficultyOffset > 0 ? 4 : 3;
-    const levelGrowth = Math.floor((level - 1) / 2.5); // Sujuvam kasv
-    let len = Math.min(baseLen + levelGrowth, 7);
-    if (len < 3) len = 3; 
+    const locale = getLocale();
     
-    // Prefer words that haven't been used recently (better variation)
-    let list = WORD_DB[len] || WORD_DB[4];
-    if (!list || list.length === 0) {
-      // Fallback - find closest length
-      for (let i = len - 1; i >= 3 && (!list || list.length === 0); i--) {
-        list = WORD_DB[i];
-      }
-      if (!list || list.length === 0) list = WORD_DB[4] || [];
+    // Word length selection based on level
+    let len: number;
+    if (level <= 2) len = 3;
+    else if (level <= 4) len = 4;
+    else if (level <= 7) len = 5;
+    else if (level <= 9) len = 6;
+    else len = 7;
+    
+    // Profile boost - advanced gets slightly longer words
+    if (meta.difficultyOffset > 0) {
+      len = Math.min(len + 1, 7);
     }
     
-    const wordObj = getRandom(list, rng);
+    // Select appropriate word database
+    const wordDb = locale === 'en' ? WORD_DB_EN : WORD_DB;
+    
+    // Filter words by diacritics for levels 1-2 (Estonian only)
+    let availableWords = wordDb[len] || wordDb[4] || [];
+    if (locale !== 'en' && level <= 2) {
+      // For levels 1-2, prefer words without diacritics
+      const simpleWords = availableWords.filter(w => !hasDiacritics(w.w));
+      if (simpleWords.length > 0) {
+        availableWords = simpleWords;
+      }
+    }
+    
+    // Fallback if no words available
+    if (!availableWords || availableWords.length === 0) {
+      for (let i = len - 1; i >= 3 && (!availableWords || availableWords.length === 0); i--) {
+        availableWords = wordDb[i] || [];
+      }
+      if (!availableWords || availableWords.length === 0) {
+        availableWords = wordDb[4] || [];
+      }
+    }
+    
+    const wordObj = getRandom(availableWords, rng);
     if (!wordObj) {
       throw new Error('No word found for word_builder game');
-    } 
+    }
     
-    const letters = wordObj.w.split('').map((c, i) => ({ 
+    // Apply letter case transformation based on level
+    const displayWord = applyLetterCase(wordObj.w, level, rng);
+    
+    // Generate letter objects
+    let letters: LetterObject[] = displayWord.split('').map((c, i) => ({ 
       char: c, 
       id: `char-${i}-${uid(rng)}` 
     }));
     
-    // Better shuffling - ensure the word is truly shuffled
-    let shuffled; 
-    let attempts = 0;
-    do { 
-      shuffled = [...letters].sort(() => rng() - 0.5); 
-      attempts++;
-    } while (attempts < 10 && shuffled.length > 1 && shuffled.map(l => l.char).join('') === wordObj.w);
+    // Add distractor letters based on level
+    const distractorCount = level <= 2 ? 0 : level <= 4 ? 1 : level <= 7 ? 2 : 3;
+    if (distractorCount > 0) {
+      letters = addDistractorLetters(letters, distractorCount, locale, rng);
+    }
     
-    return { type: 'word_builder', target: wordObj.w, emoji: wordObj.e, shuffled, uid: uid(rng) };
+    // Shuffle all letters
+    const shuffled = [...letters].sort(() => rng() - 0.5);
+    
+    // Pre-filled positions for longer words
+    let preFilledPositions: number[] | undefined;
+    if (displayWord.length >= 6) {
+      const preFillCount = displayWord.length >= 7 ? 2 : 1;
+      preFilledPositions = [];
+      // Fill first position
+      if (preFillCount >= 1) {
+        preFilledPositions.push(0);
+      }
+      // Fill last position for 7+ letter words
+      if (preFillCount >= 2) {
+        preFilledPositions.push(displayWord.length - 1);
+      }
+    }
+    
+    return { 
+      type: 'word_builder', 
+      target: displayWord, 
+      emoji: wordObj.e, 
+      shuffled,
+      preFilledPositions,
+      uid: uid(rng) 
+    };
   },
 
   pattern: (level: number, rng: RngFunction = Math.random, profile: ProfileType = 'starter'): PatternProblem => {
