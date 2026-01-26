@@ -46,7 +46,7 @@ export const CATEGORIES: Record<string, Category> = {
 
 export const GAME_CONFIG: Record<string, GameConfig> = {
   // 5+ games - simpler, visual (7 games - added letter_match)
-  word_builder:    { id: 'word_builder', title: 'SÕNAMEISTER', theme: THEME.orange!, icon: 'Type', desc: 'Lao tähtedest sõna kokku', allowedProfiles: ['starter'], difficulty: 'easy', category: 'language' },
+  word_builder:    { id: 'word_builder', title: 'SÕNAMEISTER', theme: THEME.orange!, icon: 'Type', desc: 'Lao tähtedest sõna kokku', allowedProfiles: ['starter', 'advanced'], difficulty: 'easy', category: 'language' },
   syllable_builder:{ id: 'syllable_builder', title: 'SILBIMEISTER', theme: THEME.orange!, icon: 'Type', desc: 'Pane silbid sõnaks kokku', allowedProfiles: ['starter'], difficulty: 'easy', category: 'language' },
   pattern:         { id: 'pattern', title: 'MUSTRI-RONG', theme: THEME.teal!, icon: 'TrainFront', desc: 'Jätka mustrit', allowedProfiles: ['starter'], difficulty: 'easy', category: 'logic' },
   sentence_logic:  { id: 'sentence_logic', title: 'LAUSE-DETEKTIIV', theme: THEME.green!, icon: 'BookOpen', desc: 'Kus asub ese?', allowedProfiles: ['starter'], difficulty: 'medium', category: 'language' },
@@ -253,7 +253,7 @@ export const SCENE_DB: Record<string, Scene> = {
       {n:'KIVI', adess:'KIVIL', iness:'KIVIS', genitive:'KIVI', e:'🪨'}, 
       {n:'PÕÕSAS', adess:'PÕÕSAL', iness:'PÕÕSAS', genitive:'PÕÕSA', e:'🌿'}, 
       {n:'SEEN', adess:'SEENEL', iness:'SEENES', genitive:'SEENE', e:'🍄'}, 
-      {n:'KÄND', adess:'KÄNUL', iness:'KÄNNUS', genitive:'KÄNU', e:'🪵'}, 
+      {n:'KÄND', adess:'KÄNNUL', iness:'KÄNNUS', genitive:'KÄNNU', e:'🪵'}, 
       {n:'JÕGI', adess:'JÕEL', iness:'JÕES', genitive:'JÕE', e:'🏞️'}
     ], 
     positions: ['IN_FRONT', 'BEHIND', 'NEXT_TO', 'ON', 'UNDER'] 
@@ -321,7 +321,7 @@ export const SCENE_DB: Record<string, Scene> = {
       {n:'LILL', adess:'LILLEL', iness:'LILLES', genitive:'LILLE', e:'🌸'}, 
       {n:'TEKK', adess:'TEKIL', iness:'TEKIS', genitive:'TEKI', e:'🛌'},
       {n:'KIVI', adess:'KIVIL', iness:'KIVIS', genitive:'KIVI', e:'🪨'}, 
-      {n:'KÄND', adess:'KÄNUL', iness:'KÄNNUS', genitive:'KÄNU', e:'🪵'}
+      {n:'KÄND', adess:'KÄNNUL', iness:'KÄNNUS', genitive:'KÄNNU', e:'🪵'}
     ],
     positions: ['ON', 'UNDER', 'NEXT_TO', 'IN_FRONT', 'BEHIND', 'INSIDE']
   },

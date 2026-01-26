@@ -601,45 +601,40 @@ export const WordGameView: React.FC<WordGameViewProps> = ({ problem, onAnswer, s
   const [userWord, setUserWord] = useState<Array<{ char: string; id: string } | null>>([]);
   const [pool, setPool] = useState<Array<{ char: string; id: string }>>(problem.shuffled || []);
   const problemUid: string = problem.uid;
+  const buildInitialWord = useCallback((): Array<{ char: string; id: string } | null> => {
+    const next: Array<{ char: string; id: string } | null> = [];
+    for (let i = 0; i < problem.target.length; i++) {
+      if (problem.preFilledPositions?.includes(i)) {
+        next[i] = { char: problem.target[i], id: `prefilled-${i}` };
+      } else {
+        next[i] = null;
+      }
+    }
+    return next;
+  }, [problem.target, problem.preFilledPositions]);
+
+  const buildInitialPool = useCallback((): Array<{ char: string; id: string }> => {
+    const remainingPool = [...(problem.shuffled || [])];
+    problem.preFilledPositions?.forEach(idx => {
+      const char = problem.target[idx];
+      const indexInPool = remainingPool.findIndex(
+        l => l.char.toUpperCase() === char.toUpperCase()
+      );
+      if (indexInPool !== -1) {
+        remainingPool.splice(indexInPool, 1);
+      }
+    });
+    return remainingPool;
+  }, [problem.shuffled, problem.target, problem.preFilledPositions]);
   
   // Initialize userWord with pre-filled positions
   useEffect(() => { 
     const timer = setTimeout(() => {
-      const newUserWord: Array<{ char: string; id: string } | null> = [];
-      
-      // Initialize all positions
-      for (let i = 0; i < problem.target.length; i++) {
-        if (problem.preFilledPositions?.includes(i)) {
-          // Pre-fill this position
-          newUserWord[i] = {
-            char: problem.target[i],
-            id: `prefilled-${i}`
-          };
-        } else {
-          newUserWord[i] = null;
-        }
-      }
-      
-      setUserWord(newUserWord);
-      
-      // Remove pre-filled letters from pool
-      const remainingPool = [...(problem.shuffled || [])];
-      
-      // For each pre-filled position, remove one matching letter from pool
-      problem.preFilledPositions?.forEach(idx => {
-        const char = problem.target[idx];
-        const indexInPool = remainingPool.findIndex(
-          l => l.char.toUpperCase() === char.toUpperCase()
-        );
-        if (indexInPool !== -1) {
-          remainingPool.splice(indexInPool, 1);
-        }
-      });
-      
-      setPool(remainingPool);
+      setUserWord(buildInitialWord());
+      setPool(buildInitialPool());
     }, 0);
     return () => clearTimeout(timer);
-  }, [problemUid, problem.shuffled, problem.target, problem.preFilledPositions]);
+  }, [problemUid, buildInitialWord, buildInitialPool]);
   
   const isPreFilled = (index: number): boolean => {
     return problem.preFilledPositions?.includes(index) || false;
@@ -665,15 +660,8 @@ export const WordGameView: React.FC<WordGameViewProps> = ({ problem, onAnswer, s
       } else {
         setTimeout(() => { 
           onAnswer(false);
-          // Reset only non-prefilled positions
-          const resetWord = userWord.map((l, idx) => 
-            isPreFilled(idx) ? l : null
-          );
-          setUserWord(resetWord);
-          
-          // Return non-prefilled letters to pool
-          const lettersToReturn = newWord.filter((l, idx) => !isPreFilled(idx) && l !== null);
-          setPool([...pool, ...(lettersToReturn as LetterObject[])]);
+          setUserWord(buildInitialWord());
+          setPool(buildInitialPool());
         }, 500);
       }
     }

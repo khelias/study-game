@@ -73,6 +73,22 @@ export const et = {
     ],
   },
 
+  // Notification labels
+  notifications: {
+    correctTitle: 'Õige!',
+    wrongTitle: 'Proovi uuesti!',
+    streakSuffix: 'õiget järjest!',
+    hintTitle: 'Vihje',
+    tipTitle: 'Näpunäide',
+    infoTitle: 'Info',
+    achievementTitle: 'Saavutus!',
+    levelUpTitle: 'Tase tõusis!',
+    closeTip: 'Sulge näpunäide',
+    closeHint: 'Sulge vihje',
+    closeAchievement: 'Sulge saavutus',
+    closeLevelUp: 'Sulge taseme tõus',
+  },
+
   // Game categories
   categories: {
     language: {
@@ -248,18 +264,78 @@ export const et = {
       correctTimeIs: 'Õige aeg on',
     },
     hints: {
-      wordBuilder: 'Vihje: Sõna algab tähega',
-      syllableBuilder: 'Vihje: Sõna algab silbiga',
-      balanceScale: 'Vihje: Vasak pool on',
+      wordBuilder: 'Sõna algab tähega',
+      syllableBuilder: 'Sõna algab silbiga',
+      balanceScale: 'Vasak pool on',
       balanceScaleRight: 'parem pool on',
-      pattern: 'Vihje: Vaata, mis mustrit järgib rong!',
-      memoryMath: 'Vihje: Pööra kaardid ümber ja leia paarid!',
-      sentenceLogic: 'Vihje: Vaata, kus asub',
+      pattern: 'Vaata, mis mustrit järgib rong!',
+      memoryMath: 'Pööra kaardid ümber ja leia paarid!',
+      sentenceLogic: 'Vaata, kus asub',
       sentenceLogicScene: 'stseenis!',
-      roboPath: 'Vihje: Robot peab jõudma rohelise aknaga lahtrisse!',
-      timeMatch: 'Vihje: Vaata kella osuteid!',
-      unitConversion: 'Vihje: Arvuta ümber!',
+      roboPath: 'Robot peab jõudma rohelise aknaga lahtrisse!',
+      timeMatch: 'Vaata kella osuteid!',
+      unitConversion: 'Arvuta ümber!',
       default: 'Proovi veel!',
+    },
+    hintButton: {
+      show: 'Näita vihjet',
+      used: 'Vihje on juba kasutatud',
+    },
+    tipButton: {
+      show: 'Ava näpunäide',
+      unavailable: 'Näpunäide pole veel saadaval',
+    },
+    tips: {
+      word_builder: [
+        'Proovi mõelda, mis sõna võiks emoji järgi olla!',
+        'Vaata esimest tähte - see aitab alustada!',
+        'Mõtle, millised tähed sobivad kokku!',
+      ],
+      syllable_builder: [
+        'Silbid on sõna osad - proovi neid kokku panna!',
+        'Vaata, kuidas silbid kokku sobivad!',
+        'Mõtle, kuidas sõna kõlab, kui loed seda!',
+      ],
+      pattern: [
+        'Vaata, mis mustrit järgib rong!',
+        'Mõtle, mis järgmisena peaks tulema!',
+        'Vaata, kuidas emojid korduvad!',
+      ],
+      sentence_logic: [
+        'Loe lauset hoolikalt läbi!',
+        'Vaata, kus objektid stseenis asuvad!',
+        'Mõtle, mis on loogiline!',
+      ],
+      memory_math: [
+        'Pööra kaardid ümber ja leia paarid!',
+        'Mõtle, mis arvud kokku annavad tehte vastuse!',
+        'Proovi meelde jätta, kus mis kaart on!',
+      ],
+      balance_scale: [
+        'Arvuta, kui palju on vasakul pool!',
+        'Mõtle, mis arv tasakaalustab kaalud!',
+        'Vaata, kui palju on paremal pool!',
+      ],
+      robo_path: [
+        'Mõtle, kuidas robot peab liikuma!',
+        'Vaata, kus on takistused!',
+        'Proovi sammhaaval!',
+      ],
+      time_match: [
+        'Vaata kella osuteid!',
+        'Mõtle, mis kellaaeg on näidatud!',
+        'Tund on suurem number, minut väiksem!',
+      ],
+      letter_match: [
+        'Vaata suurt tähte ja leia väike!',
+        'Mõtle, mis täht sobib!',
+        'Suur ja väike täht on sama!',
+      ],
+      unit_conversion: [
+        'Loe küsimust hoolikalt!',
+        'Mõtle ühikute vahekordadele!',
+        'Kontrolli vastust väikese näitega!',
+      ],
     },
   },
 

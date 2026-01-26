@@ -73,6 +73,22 @@ export const en = {
     ],
   },
 
+  // Notification labels
+  notifications: {
+    correctTitle: 'Correct!',
+    wrongTitle: 'Try again!',
+    streakSuffix: 'correct in a row!',
+    hintTitle: 'Hint',
+    tipTitle: 'Tip',
+    infoTitle: 'Notice',
+    achievementTitle: 'Achievement!',
+    levelUpTitle: 'Level up!',
+    closeTip: 'Close tip',
+    closeHint: 'Close hint',
+    closeAchievement: 'Close achievement',
+    closeLevelUp: 'Close level up',
+  },
+
   // Game categories
   categories: {
     language: {
@@ -240,18 +256,78 @@ export const en = {
       watchCase: 'Watch upper and lower case!',
     },
     hints: {
-      wordBuilder: 'Hint: The word starts with letter',
-      syllableBuilder: 'Hint: The word starts with syllable',
-      balanceScale: 'Hint: Left side is',
+      wordBuilder: 'The word starts with letter',
+      syllableBuilder: 'The word starts with syllable',
+      balanceScale: 'Left side is',
       balanceScaleRight: 'right side is',
-      pattern: 'Hint: Look at the pattern the train follows!',
-      memoryMath: 'Hint: Flip the cards and find pairs!',
-      sentenceLogic: 'Hint: Look where',
+      pattern: 'Look at the pattern the train follows!',
+      memoryMath: 'Flip the cards and find pairs!',
+      sentenceLogic: 'Look where',
       sentenceLogicScene: 'is in the scene!',
-      roboPath: 'Hint: Robot must reach the cell with green window!',
-      timeMatch: 'Hint: Look at the clock hands!',
-      unitConversion: 'Hint: Calculate!',
+      roboPath: 'Robot must reach the cell with green window!',
+      timeMatch: 'Look at the clock hands!',
+      unitConversion: 'Calculate!',
       default: 'Try again!',
+    },
+    hintButton: {
+      show: 'Show hint',
+      used: 'Hint already used',
+    },
+    tipButton: {
+      show: 'Open tip',
+      unavailable: 'Tip not available yet',
+    },
+    tips: {
+      word_builder: [
+        'Try to guess the word from the emoji!',
+        'Look at the first letter — it helps you start!',
+        'Think about which letters go together!',
+      ],
+      syllable_builder: [
+        'Syllables are parts of a word — put them together!',
+        'See how the syllables fit together!',
+        'Say the word out loud as you build it!',
+      ],
+      pattern: [
+        'Look at the pattern the train follows!',
+        'Think what should come next!',
+        'Notice how the emojis repeat!',
+      ],
+      sentence_logic: [
+        'Read the sentence carefully!',
+        'Look where the objects are in the scene!',
+        'Think what is logical!',
+      ],
+      memory_math: [
+        'Flip the cards and find pairs!',
+        'Think which numbers make the equation!',
+        'Try to remember where each card is!',
+      ],
+      balance_scale: [
+        'Add up what is on the left!',
+        'Think which number balances the scales!',
+        'Check how much is on the right!',
+      ],
+      robo_path: [
+        'Think how the robot should move!',
+        'Look where the obstacles are!',
+        'Try it step by step!',
+      ],
+      time_match: [
+        'Look at the clock hands!',
+        'Think what time is shown!',
+        'Hour is the bigger number, minute the smaller one!',
+      ],
+      letter_match: [
+        'Look at the uppercase letter and find the lowercase!',
+        'Think which letter fits!',
+        'Uppercase and lowercase are the same letter!',
+      ],
+      unit_conversion: [
+        'Read the question carefully!',
+        'Think about how the units relate!',
+        'Use a small example to check your answer!',
+      ],
     },
   },
 

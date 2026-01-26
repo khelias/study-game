@@ -66,6 +66,15 @@ describe('playSessionStore', () => {
       expect(usePlaySessionStore.getState().stars).toBe(2);
     });
 
+    it('should reset stars', () => {
+      const { incrementStars, resetStars } = usePlaySessionStore.getState();
+      incrementStars();
+      incrementStars();
+      expect(usePlaySessionStore.getState().stars).toBe(2);
+      resetStars();
+      expect(usePlaySessionStore.getState().stars).toBe(0);
+    });
+
     it('should decrement hearts', () => {
       const { decrementHearts } = usePlaySessionStore.getState();
       
@@ -78,30 +87,36 @@ describe('playSessionStore', () => {
     });
   });
 
-  describe('Level Up Modal', () => {
-    it('should show and dismiss level up modal', () => {
-      const { showLevelUpModal, dismissLevelUpModal } = usePlaySessionStore.getState();
-      
-      showLevelUpModal();
-      expect(usePlaySessionStore.getState().showLevelUp).toBe(true);
-      
-      dismissLevelUpModal();
-      expect(usePlaySessionStore.getState().showLevelUp).toBe(false);
-      expect(usePlaySessionStore.getState().stars).toBe(0);
+  describe('Notifications', () => {
+    it('should add and remove notifications', () => {
+      const { addNotification, removeNotification } = usePlaySessionStore.getState();
+
+      addNotification({ type: 'info', message: 'Hello' });
+      const stateWithNotification = usePlaySessionStore.getState();
+      expect(stateWithNotification.notifications.length).toBe(1);
+      const [notification] = stateWithNotification.notifications;
+      expect(notification?.type).toBe('info');
+      expect(typeof notification?.createdAt).toBe('number');
+
+      if (notification) {
+        removeNotification(notification.id);
+      }
+      expect(usePlaySessionStore.getState().notifications.length).toBe(0);
+    });
+
+    it('should clear notifications', () => {
+      const { addNotification, clearNotifications } = usePlaySessionStore.getState();
+
+      addNotification({ type: 'info', message: 'One' });
+      addNotification({ type: 'hint', message: 'Two' });
+      expect(usePlaySessionStore.getState().notifications.length).toBe(2);
+
+      clearNotifications();
+      expect(usePlaySessionStore.getState().notifications.length).toBe(0);
     });
   });
 
-  describe('Feedback System', () => {
-    it('should set feedback message', () => {
-      const { setFeedbackMessage } = usePlaySessionStore.getState();
-      
-      setFeedbackMessage('Great job!', 'correct');
-      
-      const state = usePlaySessionStore.getState();
-      expect(state.feedbackMessage).toBe('Great job!');
-      expect(state.feedbackType).toBe('correct');
-    });
-
+  describe('Hints', () => {
     it('should show and hide hint', () => {
       const { setShowHint } = usePlaySessionStore.getState();
       

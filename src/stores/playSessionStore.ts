@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { createAdaptiveDifficulty, updateAdaptiveDifficulty as updateDifficulty } from '../engine/adaptiveDifficulty';
 import type { Problem } from '../types/game';
-import type { Notification } from '../components/NotificationSystem';
+import type { Notification, NotificationInput } from '../types/notification';
 
 type GameState = 'menu' | 'playing' | 'game_over';
 
@@ -12,13 +12,6 @@ interface AdaptiveDifficulty {
   consecutiveWrong: number;
   difficultyMultiplier: number;
   levelAdjustment: number;
-}
-
-interface AchievementData {
-  id: string;
-  title: string;
-  desc: string;
-  icon: string;
 }
 
 export interface PlaySessionStore {
@@ -35,18 +28,12 @@ export interface PlaySessionStore {
   // New unified notification system
   notifications: Notification[];
   
-  // Legacy state (kept for backward compatibility during migration)
-  showLevelUp: boolean;
-  showAchievement: AchievementData | null;
   bgClass: string;
   confetti: boolean;
   enhancedConfetti: boolean;
   particleActive: boolean;
   gameStartTime: number | null;
   showHint: boolean;
-  feedbackMessage: string | null;
-  feedbackType: 'info' | 'correct' | 'wrong' | 'streak' | 'hint';
-  showLearningTip: boolean;
   
   // Actions
   startGame: (gameType: string) => void;
@@ -56,23 +43,18 @@ export interface PlaySessionStore {
   returnToMenu: () => void;
   
   // New notification system actions
-  addNotification: (notification: Omit<Notification, 'id'>) => void;
+  addNotification: (notification: NotificationInput) => void;
   removeNotification: (id: string) => void;
   clearNotifications: () => void;
   
-  // Legacy actions (kept for backward compatibility during migration)
-  showLevelUpModal: () => void;
-  dismissLevelUpModal: () => void;
-  setShowAchievement: (achievement: AchievementData | null) => void;
   setBgClass: (bgClass: string) => void;
   setConfetti: (confetti: boolean) => void;
   setEnhancedConfetti: (enhanced: boolean) => void;
   setParticleActive: (active: boolean) => void;
   setShowHint: (show: boolean) => void;
-  setFeedbackMessage: (message: string | null, type?: 'info' | 'correct' | 'wrong' | 'streak' | 'hint') => void;
-  setShowLearningTip: (show: boolean) => void;
   updateAdaptiveDifficulty: (isCorrect: boolean, responseTime?: number) => void;
   incrementStars: () => number;
+  resetStars: () => void;
   decrementHearts: () => number;
   setScore: (score: number) => void;
   addScore: (points: number) => void;
@@ -92,18 +74,12 @@ const initialState = {
   // New notification system
   notifications: [] as Notification[],
   
-  // Legacy state
-  showLevelUp: false,
-  showAchievement: null,
   bgClass: 'bg-slate-50',
   confetti: false,
   enhancedConfetti: false,
   particleActive: false,
   gameStartTime: null,
   showHint: false,
-  feedbackMessage: null,
-  feedbackType: 'info' as const,
-  showLearningTip: true,
 };
 
 export const usePlaySessionStore = create<PlaySessionStore>((set, get) => ({
@@ -115,11 +91,10 @@ export const usePlaySessionStore = create<PlaySessionStore>((set, get) => ({
       gameType,
       gameState: 'playing',
       bgClass: 'bg-slate-50',
-      feedbackMessage: null,
+      notifications: [],
       stars: 0,
       hearts: 3,
       showHint: false,
-      showLearningTip: true,
       currentStreak: 0,
       gameStartTime: Date.now(),
       adaptiveDifficulty: createAdaptiveDifficulty(),
@@ -147,24 +122,8 @@ export const usePlaySessionStore = create<PlaySessionStore>((set, get) => ({
       gameType: null,
       problem: null,
       bgClass: 'bg-slate-50',
-      feedbackMessage: null,
+      notifications: [],
     });
-  },
-  
-  showLevelUpModal: () => {
-    set({ showLevelUp: true });
-  },
-  
-  dismissLevelUpModal: () => {
-    set({ 
-      showLevelUp: false,
-      confetti: false,
-      stars: 0,
-    });
-  },
-  
-  setShowAchievement: (achievement: AchievementData | null) => {
-    set({ showAchievement: achievement });
   },
   
   setBgClass: (bgClass: string) => {
@@ -187,14 +146,6 @@ export const usePlaySessionStore = create<PlaySessionStore>((set, get) => ({
     set({ showHint: show });
   },
   
-  setFeedbackMessage: (message: string | null, type: 'info' | 'correct' | 'wrong' | 'streak' | 'hint' = 'info') => {
-    set({ feedbackMessage: message, feedbackType: type });
-  },
-  
-  setShowLearningTip: (show: boolean) => {
-    set({ showLearningTip: show });
-  },
-  
   updateAdaptiveDifficulty: (isCorrect: boolean, responseTime?: number) => {
     const state = get();
     const updated = updateDifficulty(state.adaptiveDifficulty, isCorrect, responseTime || null);
@@ -206,6 +157,10 @@ export const usePlaySessionStore = create<PlaySessionStore>((set, get) => ({
     const newStars = currentStars + 1;
     set({ stars: newStars });
     return newStars;
+  },
+
+  resetStars: () => {
+    set({ stars: 0 });
   },
   
   decrementHearts: () => {
@@ -228,10 +183,11 @@ export const usePlaySessionStore = create<PlaySessionStore>((set, get) => ({
   },
   
   // New notification system actions
-  addNotification: (notification: Omit<Notification, 'id'>) => {
-    const id = `notification-${Date.now()}-${Math.random()}`;
+  addNotification: (notification: NotificationInput) => {
+    const createdAt = Date.now();
+    const id = `notification-${createdAt}-${Math.random()}`;
     set((state) => ({
-      notifications: [...state.notifications, { ...notification, id }],
+      notifications: [...state.notifications, { ...notification, id, createdAt }],
     }));
   },
   
