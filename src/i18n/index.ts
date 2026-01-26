@@ -39,11 +39,6 @@ function getStoredLocale(): SupportedLocale {
     return stored;
   }
   
-  // Try to detect from browser
-  const browserLang = navigator.language.split('-')[0];
-  if (browserLang === 'en') return 'en';
-  if (browserLang === 'et') return 'et';
-  
   return DEFAULT_LOCALE;
 }
 

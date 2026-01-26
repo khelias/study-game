@@ -256,6 +256,10 @@ export const en = {
       useAllLetters: 'Use all correct letters',
       watchCase: 'Watch upper and lower case!',
     },
+    timeMatch: {
+      selectCorrectTime: 'Choose the correct time',
+      correctTimeIs: 'Correct time is',
+    },
     hints: {
       wordBuilder: 'The word starts with letter',
       syllableBuilder: 'The word starts with syllable',

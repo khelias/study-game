@@ -104,10 +104,10 @@ export const MenuScreen: React.FC = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 font-sans p-4 flex flex-col items-center animate-in fade-in">
       {/* Header */}
-      <div className="w-full max-w-md mb-4 sm:mb-6 bg-gradient-to-r from-white to-slate-50 p-2 sm:p-4 rounded-2xl sm:rounded-3xl shadow-lg border-2 border-purple-200 backdrop-blur-sm">
-        <div className="flex flex-wrap sm:flex-nowrap justify-between items-center gap-2">
+      <div className="w-full max-w-md sm:max-w-lg lg:max-w-xl mb-3 sm:mb-5 bg-gradient-to-r from-white to-slate-50 p-2 sm:p-4 rounded-2xl sm:rounded-3xl shadow-lg border-2 border-purple-200 backdrop-blur-sm relative z-40">
+        <div className="flex items-center justify-between gap-2">
           {/* Left side - Score and Stars */}
-          <div className="flex items-center gap-2 sm:gap-4 min-w-0 flex-shrink">
+          <div className="flex items-center gap-2 sm:gap-4 min-w-0">
             <div className="flex items-center gap-1 sm:gap-2">
               <div className="bg-yellow-100 p-1.5 sm:p-2 rounded-lg text-yellow-600 flex-shrink-0"><Trophy size={18} className="sm:w-6 sm:h-6" /></div>
               <span className="font-black text-lg sm:text-2xl text-slate-700 whitespace-nowrap">{score}</span>
@@ -121,7 +121,7 @@ export const MenuScreen: React.FC = () => {
             )}
           </div>
           {/* Right side - Action buttons */}
-          <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0">
+          <div className="flex items-center justify-end gap-1 sm:gap-2">
             {unlockedAchievements.length > 0 && (
               <button
                 onClick={() => setShowAchievements(true)}
@@ -264,49 +264,23 @@ export const MenuScreen: React.FC = () => {
       )}
       
       {/* Title */}
-      <div className="flex items-center justify-between w-full max-w-md mb-4 sm:mb-6">
+      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between w-full max-w-md sm:max-w-lg lg:max-w-xl mb-3 sm:mb-5 gap-2 sm:gap-4">
         <div className="flex-1">
           <div className="flex items-center gap-2 sm:gap-3 mb-1 sm:mb-2">
             <div className="text-3xl sm:text-5xl animate-bounce">🚀</div>
-            <div>
-              <h1 className={`text-2xl sm:text-4xl font-black bg-gradient-to-r from-purple-600 via-pink-600 to-orange-600 bg-clip-text text-transparent ${profile === 'starter' ? 'tracking-tight' : 'tracking-normal'}`}>
-                {formatText(t.menu.title)}
-              </h1>
-              <div className="flex items-center gap-1 sm:gap-2 mt-0.5 sm:mt-1">
-                <span className={`text-[10px] sm:text-xs font-bold text-purple-600 bg-purple-100 px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-full ${profile === 'starter' ? 'uppercase' : ''}`}>
-                  {formatText(t.menuSpecific.subtitle)}
-                </span>
-              </div>
-            </div>
+            <h1 className={`text-2xl sm:text-4xl font-black bg-gradient-to-r from-purple-600 via-pink-600 to-orange-600 bg-clip-text text-transparent ${profile === 'starter' ? 'tracking-tight' : 'tracking-normal'}`}>
+              {formatText(t.menu.title)}
+            </h1>
           </div>
           <p className={`text-sm sm:text-base font-bold text-slate-700 mt-1 sm:mt-2 leading-relaxed ${profile === 'starter' ? 'uppercase' : ''}`}>
             {formatText(profile === 'starter' 
               ? t.menuSpecific.starterDescription
               : t.menuSpecific.advancedDescription)}
           </p>
-          {collectedStars > 0 && (
-            <div className="mt-2 flex items-center gap-2 flex-wrap">
-              {collectedStars >= 50 && collectedStars < 100 && (
-                <span className="text-xs bg-yellow-100 text-yellow-700 px-2 py-0.5 rounded-full font-bold">
-                  {formatText(t.menuSpecific.starCollector)}
-                </span>
-              )}
-              {collectedStars >= 100 && collectedStars < 250 && (
-                <span className="text-xs bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full font-bold">
-                  {formatText(t.menuSpecific.starMaster)}
-                </span>
-              )}
-              {collectedStars >= 250 && (
-                <span className="text-xs bg-gradient-to-r from-yellow-400 to-orange-400 text-white px-2 py-0.5 rounded-full font-bold">
-                  {formatText(t.menuSpecific.starLegend)}
-                </span>
-              )}
-            </div>
-          )}
         </div>
         <button
           onClick={() => setShowTutorial(true)}
-          className="px-2 sm:px-4 py-1.5 sm:py-2 bg-blue-100 hover:bg-blue-200 text-blue-700 rounded-lg sm:rounded-xl font-bold text-xs sm:text-sm transition-colors"
+          className="w-full sm:w-auto px-2 sm:px-4 py-1.5 sm:py-2 bg-blue-100 hover:bg-blue-200 text-blue-700 rounded-lg sm:rounded-xl font-bold text-xs sm:text-sm transition-colors"
           aria-label={formatText(t.menuSpecific.showTutorial)}
         >
           ❓ {formatText(t.menuSpecific.tutorial)}
@@ -314,7 +288,7 @@ export const MenuScreen: React.FC = () => {
       </div>
       
       {/* Profile selector */}
-      <div className="flex gap-2 sm:gap-3 mb-4 sm:mb-6 w-full max-w-md">
+      <div className="flex gap-2 sm:gap-3 mb-4 sm:mb-6 w-full max-w-md sm:max-w-lg lg:max-w-xl">
         {Object.values(PROFILES).map(p => (
           <button
             key={p.id}
@@ -343,18 +317,8 @@ export const MenuScreen: React.FC = () => {
         ))}
       </div>
       
-      {/* Game count */}
-      <div className="mb-4 sm:mb-6 text-center">
-        <div className="inline-flex items-center gap-1.5 sm:gap-2 bg-white/80 backdrop-blur-sm px-3 sm:px-4 py-1.5 sm:py-2 rounded-full border-2 border-purple-200 shadow-sm">
-          <span className="text-xl sm:text-2xl">🎮</span>
-          <span className="font-black text-xs sm:text-base text-slate-700">
-            {Object.entries(GAME_CONFIG).filter(([, conf]) => !conf.allowedProfiles || conf.allowedProfiles.includes(profile as ProfileType)).length} {formatText(t.menuSpecific.gamesCount)}
-          </span>
-        </div>
-      </div>
-
       {/* Games by category */}
-      <div className="w-full max-w-md pb-6 sm:pb-10">
+      <div className="w-full max-w-md sm:max-w-lg lg:max-w-xl pb-6 sm:pb-10">
         {Object.values(CATEGORIES).map(category => {
           const categoryGames = Object.entries(GAME_CONFIG)
             .filter(([, conf]) => 

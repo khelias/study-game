@@ -61,6 +61,7 @@ export const GameScreen: React.FC = () => {
   const tipShownOnceRef = useRef(false);
   const tipMessageRef = useRef<string | null>(null);
   const [canReopenTip, setCanReopenTip] = useState(false);
+  const [isCompactLayout, setIsCompactLayout] = useState(false);
   const [showSettingsMenu, setShowSettingsMenu] = useState(false);
   const settingsMenuRef = useRef<HTMLDivElement>(null);
   
@@ -97,6 +98,19 @@ export const GameScreen: React.FC = () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
   }, [showSettingsMenu]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const media = window.matchMedia('(max-width: 639px)');
+    const update = (): void => setIsCompactLayout(media.matches);
+    update();
+    if (typeof media.addEventListener === 'function') {
+      media.addEventListener('change', update);
+      return () => media.removeEventListener('change', update);
+    }
+    media.addListener(update);
+    return () => media.removeListener(update);
+  }, []);
   
   // Generate initial problem on mount
   useEffect(() => {
@@ -408,16 +422,18 @@ export const GameScreen: React.FC = () => {
           tipMessageRef.current = tipMessage;
           const tipTimer = setTimeout(() => {
             setCanReopenTip(true);
-            addNotification({
-              type: 'tip',
-              message: tipMessage,
-            });
+            if (!isCompactLayout) {
+              addNotification({
+                type: 'tip',
+                message: tipMessage,
+              });
+            }
           }, 0);
           return () => clearTimeout(tipTimer);
         }
       }
     }
-  }, [gameType, problem, notifications, addNotification, getTipsForGame]);
+  }, [gameType, problem, notifications, addNotification, getTipsForGame, isCompactLayout]);
   
   if (!gameType) {
     return null;
@@ -455,17 +471,17 @@ export const GameScreen: React.FC = () => {
       />
       
       {/* Header */}
-      <div className="flex justify-between items-center p-2 sm:p-3 bg-white/80 backdrop-blur-md border-b-3 sm:border-b-4 border-slate-200 sticky top-0 z-40 shadow-sm">
-        <div className="w-full max-w-2xl mx-auto flex items-center justify-between gap-2 sm:gap-3">
-          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-1 sm:gap-2">
+      <div className="flex justify-between items-center p-1.5 sm:p-3 bg-white/80 backdrop-blur-md border-b-2 sm:border-b-4 border-slate-200 sticky top-0 z-40 shadow-sm">
+        <div className="w-full max-w-2xl mx-auto grid grid-cols-2 items-center gap-1.5 px-2 sm:px-0 sm:flex sm:items-center sm:justify-between sm:gap-3">
+          <div className="flex items-center gap-2 sm:gap-3 order-1 sm:order-1">
             <button 
               onClick={() => {
                 playClick();
                 returnToMenu();
               }} 
               aria-label={t.gameScreen.returnToMenu}
-              className="bg-slate-100 hover:bg-slate-200 p-2 sm:p-3 rounded-lg sm:rounded-xl transition-colors active:scale-90">
-              <Home size={18} className="sm:w-5 sm:h-5 text-slate-600"/>
+              className="bg-slate-100 hover:bg-slate-200 p-1.5 sm:p-3 rounded-lg sm:rounded-xl transition-colors active:scale-90">
+              <Home size={16} className="sm:w-5 sm:h-5 text-slate-600"/>
             </button>
             <div className="relative" ref={settingsMenuRef}>
               <button 
@@ -476,9 +492,9 @@ export const GameScreen: React.FC = () => {
                 aria-label={settingsLabel}
                 title={settingsLabel}
                 aria-expanded={showSettingsMenu}
-                className="bg-slate-100 hover:bg-slate-200 p-2 sm:p-3 rounded-lg sm:rounded-xl transition-colors active:scale-90"
+                className="bg-slate-100 hover:bg-slate-200 p-1.5 sm:p-3 rounded-lg sm:rounded-xl transition-colors active:scale-90"
               >
-                {showSettingsMenu ? <X size={16} className="sm:w-5 sm:h-5 text-slate-600"/> : <Menu size={16} className="sm:w-5 sm:h-5 text-slate-600"/>}
+                {showSettingsMenu ? <X size={14} className="sm:w-5 sm:h-5 text-slate-600"/> : <Menu size={14} className="sm:w-5 sm:h-5 text-slate-600"/>}
               </button>
               {showSettingsMenu && (
                 <div className="absolute left-0 top-full mt-2 bg-white rounded-xl shadow-lg border-2 border-slate-200 overflow-hidden z-50 min-w-[180px]">
@@ -510,42 +526,49 @@ export const GameScreen: React.FC = () => {
             </div>
           </div>
           
-          <div className="flex flex-col items-center gap-0.5 sm:gap-1">
-            <div className="flex gap-1 sm:gap-1.5 bg-slate-100 px-2 sm:px-3 py-1 sm:py-2 rounded-full">
-              {Array.from({ length: 5 }, (_, i) => (
-                <PulseEffect key={i} active={i < stars && particleActive}>
-                  <div className={`transition-all duration-500 ${i < stars ? 'scale-110' : 'scale-100'}`}>
-                    <Star 
-                      className={`w-4 h-4 sm:w-5 sm:h-5 ${i < stars ? 'text-yellow-400 fill-yellow-400 drop-shadow-sm' : 'text-slate-300'}`} 
-                      strokeWidth={2.5}
-                    />
-                  </div>
-                </PulseEffect>
-              ))}
-            </div>
-            <div className="w-20 sm:w-full max-w-xs">
-              <ProgressIndicator current={stars} total={5} />
-            </div>
-          </div>
-          
-          <div className="flex flex-col items-end gap-1 sm:gap-1.5">
+          <div className="flex flex-col items-end gap-0.5 sm:gap-1.5 order-2 sm:order-3">
             <div className="flex items-center gap-1 sm:gap-2">
-              <div className="flex items-center gap-1 sm:gap-1.5 bg-yellow-100/80 px-2 py-0.5 sm:py-1 rounded-full text-yellow-700 shadow-sm">
-                <Trophy size={14} className="sm:w-4 sm:h-4" />
+              <div className="flex items-center gap-1 sm:gap-1.5 bg-yellow-100/80 px-1.5 py-0.5 sm:px-2 sm:py-1 rounded-full text-yellow-700 shadow-sm">
+                <Trophy size={13} className="sm:w-4 sm:h-4" />
                 <span className="text-xs sm:text-sm font-black">{score}</span>
                 <span className="hidden sm:inline text-[10px] font-bold uppercase tracking-wide text-yellow-700/80">{scoreLabel}</span>
                 <span className="sr-only sm:hidden">{scoreLabel}</span>
               </div>
-              <div className="flex items-center gap-1 sm:gap-1.5 bg-purple-100/80 px-2 py-0.5 sm:py-1 rounded-full text-purple-700 shadow-sm">
-                <Sparkles size={14} className="sm:w-4 sm:h-4" />
+              <div className="flex items-center gap-1 sm:gap-1.5 bg-purple-100/80 px-1.5 py-0.5 sm:px-2 sm:py-1 rounded-full text-purple-700 shadow-sm">
+                <Sparkles size={13} className="sm:w-4 sm:h-4" />
                 <span className="text-xs sm:text-sm font-black">{currentLevel}</span>
                 <span className="hidden sm:inline text-[10px] font-bold uppercase tracking-wide text-purple-700/80">{levelLabel}</span>
                 <span className="sr-only sm:hidden">{levelLabel}</span>
               </div>
             </div>
-            <div className="flex gap-0.5 sm:gap-1">
+            <div className="hidden sm:flex gap-0.5 sm:gap-1">
               {Array.from({ length: 3 }, (_, i) => (
                 <Heart key={i} className={`w-5 h-5 sm:w-7 sm:h-7 transition-all duration-300 ${i < hearts ? 'text-red-500 fill-red-500 animate-pulse-slow' : 'text-slate-200'}`} />
+              ))}
+            </div>
+          </div>
+
+          <div className="col-span-2 relative flex items-center justify-center order-3 sm:order-2 w-full">
+            <div className="flex flex-col items-center gap-0.5 sm:gap-1">
+              <div className="flex gap-0.5 sm:gap-1.5 bg-slate-100 px-1.5 sm:px-3 py-0.5 sm:py-2 rounded-full">
+              {Array.from({ length: 5 }, (_, i) => (
+                <PulseEffect key={i} active={i < stars && particleActive}>
+                  <div className={`transition-all duration-500 ${i < stars ? 'scale-110' : 'scale-100'}`}>
+                    <Star 
+                      className={`w-3.5 h-3.5 sm:w-5 sm:h-5 ${i < stars ? 'text-yellow-400 fill-yellow-400 drop-shadow-sm' : 'text-slate-300'}`} 
+                      strokeWidth={2.5}
+                    />
+                  </div>
+                </PulseEffect>
+              ))}
+              </div>
+              <div className="w-16 sm:w-full max-w-xs">
+                <ProgressIndicator current={stars} total={5} />
+              </div>
+            </div>
+            <div className="absolute right-0 top-1/2 -translate-y-1/2 flex gap-0.5 sm:hidden">
+              {Array.from({ length: 3 }, (_, i) => (
+                <Heart key={i} className={`w-4 h-4 transition-all duration-300 ${i < hearts ? 'text-red-500 fill-red-500 animate-pulse-slow' : 'text-slate-200'}`} />
               ))}
             </div>
           </div>

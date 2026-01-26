@@ -41,7 +41,7 @@ const NOTIFICATION_SLOT: Record<NotificationType, NotificationSlot> = {
 const DEFAULT_DURATION: Partial<Record<NotificationType, number>> = {
   correct: 500,
   streak: 500,
-  wrong: 1600,
+  wrong: 500,
   info: 1000,
   hint: 2200,
   achievement: 3000,
@@ -331,13 +331,13 @@ const ToastNotification: React.FC<ToastNotificationProps> = ({
     case 'wrong': {
       const message = stripEmojis(formatText(notification.message ?? t.notifications.wrongTitle));
       return (
-        <StandardToast
+        <HeroToast
           slot={slot}
           isShowing={isShowing}
-          icon={notification.emoji ?? '💪'}
+          emoji={notification.emoji ?? '💪'}
           message={message}
           role="alert"
-          tone="danger"
+          tone="support"
           attentionClass={isShowing ? 'animate-shake' : ''}
         />
       );
@@ -401,14 +401,16 @@ interface HeroToastProps {
   emoji: string;
   message: string;
   role: 'alert' | 'status';
-  tone: 'success' | 'celebration';
+  tone: 'success' | 'celebration' | 'support';
+  attentionClass?: string;
 }
 
-const HeroToast: React.FC<HeroToastProps> = ({ slot, isShowing, emoji, message, role, tone }) => {
-  const toneClasses =
-    tone === 'success'
-      ? 'bg-gradient-to-r from-green-500 to-emerald-500 border-green-600 text-white'
-      : 'bg-gradient-to-r from-orange-500 via-red-500 to-pink-500 border-orange-400 text-white';
+const HeroToast: React.FC<HeroToastProps> = ({ slot, isShowing, emoji, message, role, tone, attentionClass = '' }) => {
+  const toneClasses = {
+    success: 'bg-gradient-to-r from-green-500 to-emerald-500 border-green-600 text-white',
+    celebration: 'bg-gradient-to-r from-orange-500 via-red-500 to-pink-500 border-orange-400 text-white',
+    support: 'bg-gradient-to-r from-amber-400 via-orange-400 to-rose-500 border-amber-400 text-white',
+  }[tone];
 
   return (
     <div
@@ -416,6 +418,7 @@ const HeroToast: React.FC<HeroToastProps> = ({ slot, isShowing, emoji, message, 
         pointer-events-auto
         ${toneClasses}
         ${getToastStateClass(slot, isShowing)}
+        ${attentionClass}
         rounded-3xl border-4 shadow-2xl
         text-center max-w-sm w-full mx-4
         px-6 py-6 sm:px-8 sm:py-7

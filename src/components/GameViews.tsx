@@ -370,13 +370,13 @@ export const StandardGameView: React.FC<StandardGameViewProps> = ({ problem, onA
     if (hasAnswered) return;
     
     playSound('click', soundEnabled);
-    setHasAnswered(true);
     
     const isCorrect = problem.type === 'sentence_logic' 
       ? (typeof opt === 'object' && 'text' in opt ? opt.text === problem.answer : false)
       : opt === problem.answer;
     
     if (isCorrect) {
+      setHasAnswered(true);
       onAnswer(true); 
     } else { 
       const optId = typeof opt === 'object' && 'text' in opt ? opt.text : opt;
@@ -1670,7 +1670,7 @@ export const TimeDisplay: React.FC<TimeDisplayProps> = ({ hour, minute }) => {
   const hourLen = 46;
   const minuteLen = 70;
   return (
-    <div className="relative w-32 h-32 sm:w-44 sm:h-44">
+    <div className="relative w-48 h-48 sm:w-52 sm:h-52">
       <div className="absolute inset-0 rounded-full bg-white border-[6px] sm:border-[10px] border-blue-100 shadow-[0_10px_25px_rgba(59,130,246,0.12)]"></div>
       {/* minute ticks */}
       {Array.from({ length: 60 }).map((_, i) => (
@@ -1750,7 +1750,7 @@ export const TimeGameView: React.FC<TimeGameViewProps> = ({ problem, onAnswer, s
   };
 
   return (
-    <div className="flex flex-col items-center gap-4 sm:gap-6 w-full px-2">
+    <div className="flex flex-col items-center gap-4 sm:gap-6 w-full px-2 pt-2 sm:pt-4">
       <TimeDisplay hour={problem.display.hour} minute={problem.display.minute} />
       <div className="text-xs sm:text-sm font-semibold text-slate-500 mb-1 sm:mb-2">{formatText(t.gameScreen.timeMatch.selectCorrectTime)}</div>
       {feedback && <div className="text-[10px] sm:text-xs font-semibold text-red-500 -mt-1 sm:-mt-2 px-2 text-center">{formatText(feedback)}</div>}
