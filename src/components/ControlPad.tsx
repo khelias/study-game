@@ -25,7 +25,7 @@ export const ControlPad: React.FC<ControlPadProps> = ({
     <div 
       className={`grid grid-cols-3 ${className ?? ''}`}
       style={{ 
-        gap: compact ? 'clamp(0.375rem, 1.5vw, 0.625rem)' : 'clamp(0.5rem, 2vw, 0.75rem)'
+        gap: compact ? 'clamp(0.5rem, 2vw, 0.75rem)' : 'clamp(0.5rem, 2vw, 0.75rem)'
       }}
     >
       <div />
@@ -36,11 +36,11 @@ export const ControlPad: React.FC<ControlPadProps> = ({
         aria-label="Up"
         className={buttonClass}
         style={{
-          width: compact ? 'clamp(2.25rem, 8vw, 3rem)' : 'clamp(2.5rem, 9vw, 3.5rem)',
-          height: compact ? 'clamp(2.25rem, 8vw, 3rem)' : 'clamp(2.5rem, 9vw, 3.5rem)'
+          width: compact ? 'clamp(3.5rem, 12vw, 4.5rem)' : 'clamp(3.5rem, 12vw, 4.5rem)',
+          height: compact ? 'clamp(3.5rem, 12vw, 4.5rem)' : 'clamp(3.5rem, 12vw, 4.5rem)'
         }}
       >
-        <ArrowUp size={compact ? 'clamp(0.875rem, 3.5vw, 1.25rem)' : 'clamp(1rem, 4vw, 1.5rem)'} />
+        <ArrowUp size={compact ? 'clamp(1.5rem, 5vw, 2rem)' : 'clamp(1.5rem, 5vw, 2rem)'} />
       </button>
       <div />
 
@@ -51,11 +51,11 @@ export const ControlPad: React.FC<ControlPadProps> = ({
         aria-label="Left"
         className={buttonClass}
         style={{
-          width: compact ? 'clamp(2.25rem, 8vw, 3rem)' : 'clamp(2.5rem, 9vw, 3.5rem)',
-          height: compact ? 'clamp(2.25rem, 8vw, 3rem)' : 'clamp(2.5rem, 9vw, 3.5rem)'
+          width: compact ? 'clamp(3.5rem, 12vw, 4.5rem)' : 'clamp(3.5rem, 12vw, 4.5rem)',
+          height: compact ? 'clamp(3.5rem, 12vw, 4.5rem)' : 'clamp(3.5rem, 12vw, 4.5rem)'
         }}
       >
-        <ArrowLeft size={compact ? 'clamp(0.875rem, 3.5vw, 1.25rem)' : 'clamp(1rem, 4vw, 1.5rem)'} />
+        <ArrowLeft size={compact ? 'clamp(1.5rem, 5vw, 2rem)' : 'clamp(1.5rem, 5vw, 2rem)'} />
       </button>
       <div />
       <button
@@ -65,11 +65,11 @@ export const ControlPad: React.FC<ControlPadProps> = ({
         aria-label="Right"
         className={buttonClass}
         style={{
-          width: compact ? 'clamp(2.25rem, 8vw, 3rem)' : 'clamp(2.5rem, 9vw, 3.5rem)',
-          height: compact ? 'clamp(2.25rem, 8vw, 3rem)' : 'clamp(2.5rem, 9vw, 3.5rem)'
+          width: compact ? 'clamp(3.5rem, 12vw, 4.5rem)' : 'clamp(3.5rem, 12vw, 4.5rem)',
+          height: compact ? 'clamp(3.5rem, 12vw, 4.5rem)' : 'clamp(3.5rem, 12vw, 4.5rem)'
         }}
       >
-        <ArrowRight size={compact ? 'clamp(0.875rem, 3.5vw, 1.25rem)' : 'clamp(1rem, 4vw, 1.5rem)'} />
+        <ArrowRight size={compact ? 'clamp(1.5rem, 5vw, 2rem)' : 'clamp(1.5rem, 5vw, 2rem)'} />
       </button>
 
       <div />
@@ -80,11 +80,11 @@ export const ControlPad: React.FC<ControlPadProps> = ({
         aria-label="Down"
         className={`col-start-2 ${buttonClass}`}
         style={{
-          width: compact ? 'clamp(2.25rem, 8vw, 3rem)' : 'clamp(2.5rem, 9vw, 3.5rem)',
-          height: compact ? 'clamp(2.25rem, 8vw, 3rem)' : 'clamp(2.5rem, 9vw, 3.5rem)'
+          width: compact ? 'clamp(3.5rem, 12vw, 4.5rem)' : 'clamp(3.5rem, 12vw, 4.5rem)',
+          height: compact ? 'clamp(3.5rem, 12vw, 4.5rem)' : 'clamp(3.5rem, 12vw, 4.5rem)'
         }}
       >
-        <ArrowDown size={compact ? 'clamp(0.875rem, 3.5vw, 1.25rem)' : 'clamp(1rem, 4vw, 1.5rem)'} />
+        <ArrowDown size={compact ? 'clamp(1.5rem, 5vw, 2rem)' : 'clamp(1.5rem, 5vw, 2rem)'} />
       </button>
       <div />
     </div>
