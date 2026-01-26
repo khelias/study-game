@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo, useCallback } from 'react';
+import React, { useEffect, useState, useMemo, useCallback, useId } from 'react';
 import { ArrowRight, ArrowUp, ArrowDown, ArrowLeft, RotateCcw, Play } from 'lucide-react';
 import { playSound } from '../engine/audio';
 import { useTranslation } from '../i18n/useTranslation';
@@ -69,61 +69,102 @@ export const LevelUpModal: React.FC<LevelUpModalProps> = ({ level, onNext, gameC
 interface SvgWeightProps {
   x: number;
   y: number;
-  num: number;
-  color: 'blue' | 'red';
+  num?: number;
+  label?: string;
+  color: 'blue' | 'red' | 'neutral';
+  dashed?: boolean;
 }
 
-const SvgWeight: React.FC<SvgWeightProps> = ({ x, y, num, color }) => {
-  const isBlue: boolean = color === 'blue';
+const SvgWeight: React.FC<SvgWeightProps> = ({ x, y, num, label, color, dashed }) => {
+  const uid = useId();
+  const palette = useMemo(() => {
+    if (color === 'blue') {
+      return {
+        mainTop: '#93c5fd',
+        mainBottom: '#3b82f6',
+        sideFrom: '#2563eb',
+        sideTo: '#1e40af',
+        stroke: '#1d4ed8',
+        highlight: '#bfdbfe',
+        textFill: '#ffffff',
+        textStroke: '#1e3a8a'
+      };
+    }
+    if (color === 'red') {
+      return {
+        mainTop: '#fda4af',
+        mainBottom: '#ef4444',
+        sideFrom: '#dc2626',
+        sideTo: '#b91c1c',
+        stroke: '#dc2626',
+        highlight: '#fecaca',
+        textFill: '#ffffff',
+        textStroke: '#7f1d1d'
+      };
+    }
+    return {
+      mainTop: '#f3f4f6',
+      mainBottom: '#d1d5db',
+      sideFrom: '#9ca3af',
+      sideTo: '#6b7280',
+      stroke: '#9ca3af',
+      highlight: '#e5e7eb',
+      textFill: '#ef4444',
+      textStroke: '#dc2626'
+    };
+  }, [color]);
+  const displayText = label ?? String(num ?? '');
+  const fontSize = label ? 22 : 20;
   return (
     <g transform={`translate(${x}, ${y})`}>
-      {/* 3D efekt - ülemine osa */}
       <defs>
-        <linearGradient id={`weightGradTop-${color}-${num}`} x1="0%" y1="0%" x2="0%" y2="100%">
-          <stop offset="0%" stopColor={isBlue ? '#60a5fa' : '#f87171'} stopOpacity="1" />
-          <stop offset="100%" stopColor={isBlue ? '#3b82f6' : '#ef4444'} stopOpacity="1" />
+        <linearGradient id={`weightGradTop-${uid}`} x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" stopColor={palette.mainTop} stopOpacity="1" />
+          <stop offset="100%" stopColor={palette.mainBottom} stopOpacity="1" />
         </linearGradient>
-        <linearGradient id={`weightGradSide-${color}-${num}`} x1="0%" y1="0%" x2="100%" y2="0%">
-          <stop offset="0%" stopColor={isBlue ? '#3b82f6' : '#ef4444'} stopOpacity="1" />
-          <stop offset="100%" stopColor={isBlue ? '#1e40af' : '#dc2626'} stopOpacity="1" />
+        <linearGradient id={`weightGradSide-${uid}`} x1="0%" y1="0%" x2="100%" y2="0%">
+          <stop offset="0%" stopColor={palette.sideFrom} stopOpacity="1" />
+          <stop offset="100%" stopColor={palette.sideTo} stopOpacity="1" />
         </linearGradient>
-        <filter id={`weightShadow-${color}-${num}`}>
-          <feDropShadow dx="2" dy="3" stdDeviation="3" floodOpacity="0.4"/>
+        <filter id={`weightShadow-${uid}`}>
+          <feDropShadow dx="2" dy="3" stdDeviation="2.5" floodOpacity="0.35"/>
         </filter>
       </defs>
       
       {/* Varjutus alt */}
-      <ellipse cx="0" cy="8" rx="16" ry="4" fill="black" opacity="0.2" filter={`url(#weightShadow-${color}-${num})`} />
+      <ellipse cx="0" cy="8" rx="16" ry="4" fill="black" opacity="0.18" filter={`url(#weightShadow-${uid})`} />
       
       {/* 3D kaal - esikülg */}
       <rect x="-16" y="-22" width="32" height="32" rx="5" ry="5" 
-            fill={`url(#weightGradTop-${color}-${num})`} 
-            stroke={isBlue ? '#1e40af' : '#991b1b'} 
-            strokeWidth="2.5"
-            filter={`url(#weightShadow-${color}-${num})`} />
+            fill={`url(#weightGradTop-${uid})`} 
+            stroke={palette.stroke} 
+            strokeWidth="2.25"
+            strokeDasharray={dashed ? '5 3' : undefined}
+            filter={`url(#weightShadow-${uid})`} />
       
       {/* 3D efekt - parem külg (sügavus) */}
       <path d="M 16 -22 L 20 -18 L 20 10 L 16 10 Z" 
-            fill={`url(#weightGradSide-${color}-${num})`} 
+            fill={`url(#weightGradSide-${uid})`} 
             opacity="0.7" />
       
       {/* Ülemine kumerus (3D efekt) */}
-      <ellipse cx="0" cy="-22" rx="16" ry="6" fill={isBlue ? '#93c5fd' : '#fca5a5'} opacity="0.6" />
+      <ellipse cx="0" cy="-22" rx="16" ry="6" fill={palette.highlight} opacity="0.65" />
       
       {/* Numbri taust (parem loetavus) */}
-      <circle cx="0" cy="-5" r="10" fill="white" opacity="0.3" />
+      <circle cx="0" cy="-5" r="10" fill="white" opacity="0.25" />
       
       {/* Number - suurem ja selgem, alati nähtav */}
       <text x="0" y="2" textAnchor="middle" fill="white" 
-            fontSize="20" fontWeight="900" fontFamily="Arial, sans-serif"
-            stroke={isBlue ? '#1e3a8a' : '#991b1b'} strokeWidth="1"
+            fontSize={fontSize} fontWeight="900" fontFamily="Arial, sans-serif"
+            fill={palette.textFill}
+            stroke={palette.textStroke} strokeWidth="1"
             style={{ textShadow: '0 1px 2px rgba(0,0,0,0.8)' }}
             dominantBaseline="middle">
-        {num}
+        {displayText}
       </text>
       
       {/* Hiilgus efekt */}
-      <ellipse cx="-8" cy="-18" rx="4" ry="3" fill="white" opacity="0.4" />
+      <ellipse cx="-8" cy="-18" rx="4" ry="3" fill="white" opacity="0.35" />
     </g>
   );
 };
@@ -165,7 +206,7 @@ export const BalanceScaleView: React.FC<BalanceScaleViewProps> = ({ problem, onA
         onAnswer(leftSum === totalRight);
       } else {
         setDisabled((prev: number[]) => [...prev, weight]);
-        setTimeout(() => setTilt(newTilt > 0 ? 15 : -15), 300); 
+        setTimeout(() => setTilt(newTilt > 0 ? -15 : newTilt), 300); 
         onAnswer(leftSum === totalRight);
       }
     }, 1000);
@@ -236,13 +277,13 @@ export const BalanceScaleView: React.FC<BalanceScaleViewProps> = ({ problem, onA
                         {/* Täiustatud nõu - sinine */}
                         <defs>
                           <linearGradient id="bowlBlue" x1="0%" y1="0%" x2="0%" y2="100%">
-                            <stop offset="0%" stopColor="#dbeafe" />
+                            <stop offset="0%" stopColor="#eff6ff" />
                             <stop offset="50%" stopColor="#bfdbfe" />
                             <stop offset="100%" stopColor="#93c5fd" />
                           </linearGradient>
                         </defs>
-                        <path d="M -45 90 Q 0 125 45 90 Z" fill="url(#bowlBlue)" stroke="#3b82f6" strokeWidth="3.5" filter="url(#shadow)" />
-                        <path d="M -45 90 Q 0 120 45 90" fill="none" stroke="#60a5fa" strokeWidth="1.5" opacity="0.6" />
+                        <path d="M -45 90 Q 0 125 45 90 Z" fill="url(#bowlBlue)" stroke="#2563eb" strokeWidth="2.5" filter="url(#shadow)" />
+                        <path d="M -45 90 Q 0 120 45 90" fill="none" stroke="#93c5fd" strokeWidth="1.5" opacity="0.6" />
                         
                         <SvgWeight x={-15} y={110} num={problem.display.left[0] ?? 0} color="blue" />
                         <SvgWeight x={15} y={110} num={problem.display.left[1] ?? 0} color="blue" />
@@ -259,44 +300,16 @@ export const BalanceScaleView: React.FC<BalanceScaleViewProps> = ({ problem, onA
                         {/* Täiustatud nõu - punane */}
                         <defs>
                           <linearGradient id="bowlRed" x1="0%" y1="0%" x2="0%" y2="100%">
-                            <stop offset="0%" stopColor="#fee2e2" />
+                            <stop offset="0%" stopColor="#fff1f2" />
                             <stop offset="50%" stopColor="#fecaca" />
-                            <stop offset="100%" stopColor="#fca5a5" />
+                            <stop offset="100%" stopColor="#fda4af" />
                           </linearGradient>
                         </defs>
-                        <path d="M -45 90 Q 0 125 45 90 Z" fill="url(#bowlRed)" stroke="#ef4444" strokeWidth="3.5" filter="url(#shadow)" />
-                        <path d="M -45 90 Q 0 120 45 90" fill="none" stroke="#f87171" strokeWidth="1.5" opacity="0.6" />
+                        <path d="M -45 90 Q 0 125 45 90 Z" fill="url(#bowlRed)" stroke="#dc2626" strokeWidth="2.5" filter="url(#shadow)" />
+                        <path d="M -45 90 Q 0 120 45 90" fill="none" stroke="#fda4af" strokeWidth="1.5" opacity="0.6" />
                         
                         <SvgWeight x={-15} y={110} num={problem.display.right[0] ?? 0} color="red" />
-                        
-                        {/* Täiustatud küsimärgi kaal */}
-                        <g transform="translate(15, 110)">
-                          <defs>
-                            <linearGradient id="weightGradTop-question" x1="0%" y1="0%" x2="0%" y2="100%">
-                              <stop offset="0%" stopColor="#f3f4f6" />
-                              <stop offset="100%" stopColor="#e5e7eb" />
-                            </linearGradient>
-                          </defs>
-                          {/* Varjutus */}
-                          <ellipse cx="0" cy="8" rx="16" ry="4" fill="black" opacity="0.2" />
-                          {/* 3D kaal */}
-                          <rect x="-16" y="-22" width="32" height="32" rx="5" ry="5" 
-                                fill="url(#weightGradTop-question)" 
-                                stroke="#ef4444" 
-                                strokeWidth="2.5"
-                                strokeDasharray="5 3"
-                                filter="url(#shadow)" />
-                          {/* 3D efekt - parem külg */}
-                          <path d="M 16 -22 L 20 -18 L 20 10 L 16 10 Z" fill="#d1d5db" opacity="0.7" />
-                          {/* Hiilgus */}
-                          <ellipse cx="-8" cy="-18" rx="4" ry="3" fill="white" opacity="0.5" />
-                          {/* Küsimärk - suurem ja selgem */}
-                          <text x="0" y="2" textAnchor="middle" fill="#ef4444" 
-                                fontSize="22" fontWeight="900" fontFamily="Arial, sans-serif"
-                                stroke="#dc2626" strokeWidth="1"
-                                style={{ textShadow: '0 1px 2px rgba(0,0,0,0.3)' }}
-                                dominantBaseline="middle">?</text>
-                        </g>
+                        <SvgWeight x={15} y={110} label="?" color="neutral" dashed />
                     </g>
                 </g>
             </g>
@@ -1136,33 +1149,19 @@ export const RoboPathView: React.FC<RoboPathViewProps> = ({ problem, onAnswer, s
   const { formatText } = useProfileText();
   const [commands, setCommands] = useState<string[]>([]);
   const [robotPos, setRobotPos] = useState<[number, number]>(problem.start);
-  const [robotDirection, setRobotDirection] = useState<string>('DOWN');
-  const [status, setStatus] = useState<string>('planning');
-  const [startTime, setStartTime] = useState<number | null>(null);
-  const [elapsedTime, setElapsedTime] = useState<number>(0);
-  const [moveCount, setMoveCount] = useState<number>(0);
-  const [bestTime, setBestTime] = useState<number | null>(null);
-  const [showNumbers, setShowNumbers] = useState<boolean>(false);
-  const [hintLevel, setHintLevel] = useState<number>(0);
+  const [robotDirection, setRobotDirection] = useState<'UP' | 'DOWN' | 'LEFT' | 'RIGHT'>('DOWN');
+  const [status, setStatus] = useState<'planning' | 'moving' | 'crash' | 'win' | 'notReached'>('planning');
   const [stars, setStars] = useState<number>(0);
-  const [earnedXP, setEarnedXP] = useState<number>(0);
   const [currentCommandIndex, setCurrentCommandIndex] = useState<number>(-1);
+  const [showRetryPrompt, setShowRetryPrompt] = useState<boolean>(false);
+  const maxCommands = problem.maxCommands ?? 8;
+  const commandCount = commands.length;
   
   // Calculate Manhattan distance to goal
   const calculateDistance = useCallback((pos: [number, number]): number => {
     const goalPos = problem.end || problem.goal;
     return Math.abs(goalPos[0] - pos[0]) + Math.abs(goalPos[1] - pos[1]);
   }, [problem.end, problem.goal]);
-  
-  const currentDistance = calculateDistance(robotPos);
-  
-  // Get distance color
-  const getDistanceColor = (distance: number): string => {
-    const maxDist = problem.gridSize * 2;
-    if (distance <= maxDist * 0.3) return 'text-green-600';
-    if (distance <= maxDist * 0.6) return 'text-yellow-600';
-    return 'text-red-600';
-  };
   
   // Reset state when problem changes
   /* eslint-disable react-hooks/set-state-in-effect */
@@ -1171,75 +1170,38 @@ export const RoboPathView: React.FC<RoboPathViewProps> = ({ problem, onAnswer, s
       setRobotPos(problem.start); 
       setRobotDirection('DOWN');
       setStatus('planning');
-      const now = Date.now();
-      setStartTime(now);
-      setElapsedTime(0);
-      setMoveCount(0);
-      setHintLevel(0);
       setStars(0);
-      setEarnedXP(0);
       setCurrentCommandIndex(-1);
-      
-      // Load best results
-      const storageKey = `robo_best_${problem.uid}`;
-      try {
-        const saved = localStorage.getItem(storageKey);
-        if (saved) {
-          const best = JSON.parse(saved) as { time: number; moves: number; stars: number };
-          setBestTime(best.time);
-        }
-      } catch {
-        // Ignore
-      }
+      setShowRetryPrompt(false);
   }, [problem.uid, problem.start]);
   /* eslint-enable react-hooks/set-state-in-effect */
 
-  // Timer
-  useEffect(() => {
-    if (status !== 'planning' || !startTime) return;
-    
-    const interval = setInterval(() => {
-      setElapsedTime(Math.floor((Date.now() - startTime) / 1000));
-    }, 100);
-    
-    return () => clearInterval(interval);
-  }, [status, startTime]);
-
   const addCommand = useCallback((cmd: string): void => { 
-      const maxCommands = problem.maxCommands || 8;
-      if (status !== 'planning' || commands.length >= maxCommands) return; 
+      if (status !== 'planning' || commandCount >= maxCommands) return; 
       playSound('click', soundEnabled);
-      setCommands(prev => {
-        const newCommands = [...prev, cmd];
-        setMoveCount(newCommands.length);
-        return newCommands;
-      }); 
-  }, [status, commands.length, problem.maxCommands, soundEnabled]);
+      setCommands(prev => [...prev, cmd]); 
+  }, [status, commandCount, maxCommands, soundEnabled]);
   
   const removeCommand = useCallback(() => { 
-      if (status !== 'planning') return; 
+      if (status !== 'planning' || commandCount === 0) return; 
       playSound('click', soundEnabled);
-      setCommands(prev => {
-        const newCommands = prev.slice(0, -1);
-        setMoveCount(newCommands.length);
-        return newCommands;
-      }); 
-  }, [status, soundEnabled]);
+      setCommands(prev => prev.slice(0, -1)); 
+  }, [status, commandCount, soundEnabled]);
   
   const runSimulation = useCallback(async (): Promise<void> => {
-    if (commands.length === 0) return;
+    if (commandCount === 0) return;
     setStatus('moving');
     playSound('click', soundEnabled);
     
     const currentPos: [number, number] = [problem.start[0], problem.start[1]];
-    let currentDir = 'DOWN';
+    let currentDir: 'UP' | 'DOWN' | 'LEFT' | 'RIGHT' = 'DOWN';
     
     for (let i = 0; i < commands.length; i++) {
         const cmd = commands[i];
         setCurrentCommandIndex(i);
         await new Promise(r => setTimeout(r, 400));
         
-        let newDir = currentDir;
+        let newDir: 'UP' | 'DOWN' | 'LEFT' | 'RIGHT' = currentDir;
         if (cmd === 'UP') {
           currentPos[1] = Math.max(0, currentPos[1] - 1);
           newDir = 'UP';
@@ -1271,7 +1233,7 @@ export const RoboPathView: React.FC<RoboPathViewProps> = ({ problem, onAnswer, s
                 setCommands([]); 
                 setStatus('planning');
                 setCurrentCommandIndex(-1);
-            }, 1200); 
+            }, 2000); 
             return; 
         }
     }
@@ -1280,54 +1242,26 @@ export const RoboPathView: React.FC<RoboPathViewProps> = ({ problem, onAnswer, s
     
     const goalPos = problem.end || problem.goal;
     if (currentPos[0] === goalPos[0] && currentPos[1] === goalPos[1]) { 
-        const finalTime = Math.floor((Date.now() - (startTime || 0)) / 1000);
         const finalMoves = commands.length;
-        setElapsedTime(finalTime);
-        
         // Calculate stars based on optimal moves
         const optimal = problem.optimalMoves || calculateDistance(problem.start);
         let starCount = 1;
-        let xp = 30;
         
         if (finalMoves === optimal) {
           starCount = 3;
-          xp = 100;
         } else if (finalMoves <= optimal + 2) {
           starCount = 2;
-          xp = 60;
         }
         
         setStars(starCount);
-        setEarnedXP(xp);
         setStatus('win');
         
-        // Save best results
-        const storageKey = `robo_best_${problem.uid}`;
-        try {
-          const saved = localStorage.getItem(storageKey);
-          let shouldSave = false;
-          const saveData = { time: finalTime, moves: finalMoves, stars: starCount };
-          
-          if (saved) {
-            const best = JSON.parse(saved) as { time: number; moves: number; stars: number };
-            if (finalMoves < best.moves || (finalMoves === best.moves && finalTime < best.time) || starCount > best.stars) {
-              shouldSave = true;
-              setBestTime(Math.min(finalTime, best.time));
-            }
-          } else {
-            shouldSave = true;
-            setBestTime(finalTime);
-          }
-          
-          if (shouldSave) {
-            localStorage.setItem(storageKey, JSON.stringify(saveData));
-          }
-        } catch {
-          // Ignore storage errors
-        }
-        
         playSound('correct', soundEnabled);
-        setTimeout(() => onAnswer(true), 2500); 
+        if (starCount < 3) {
+          setShowRetryPrompt(true);
+          return;
+        }
+        setTimeout(() => onAnswer(true), 3000); 
     } else { 
         setStatus('notReached'); 
         playSound('wrong', soundEnabled);
@@ -1338,9 +1272,24 @@ export const RoboPathView: React.FC<RoboPathViewProps> = ({ problem, onAnswer, s
             setCommands([]); 
             setStatus('planning');
             setCurrentCommandIndex(-1);
-        }, 1200); 
+        }, 2000); 
     }
-  }, [commands, problem.start, problem.end, problem.goal, problem.gridSize, problem.obstacles, problem.optimalMoves, problem.uid, soundEnabled, startTime, calculateDistance, onAnswer]);
+  }, [commands, commandCount, problem.start, problem.end, problem.goal, problem.gridSize, problem.obstacles, problem.optimalMoves, soundEnabled, calculateDistance, onAnswer]);
+
+  const handleRetry = useCallback(() => {
+    setShowRetryPrompt(false);
+    setCommands([]);
+    setRobotPos(problem.start);
+    setRobotDirection('DOWN');
+    setStatus('planning');
+    setStars(0);
+    setCurrentCommandIndex(-1);
+  }, [problem.start]);
+
+  const handleNext = useCallback(() => {
+    setShowRetryPrompt(false);
+    onAnswer(true);
+  }, [onAnswer]);
 
   // Keyboard support
   useEffect(() => {
@@ -1375,30 +1324,29 @@ export const RoboPathView: React.FC<RoboPathViewProps> = ({ problem, onAnswer, s
       } else if (e.key === 'd' || e.key === 'D') {
         e.preventDefault();
         command = 'RIGHT';
-      } else if ((e.key === 'Backspace' || e.key === 'Delete') && commands.length > 0) {
+      } else if ((e.key === 'Backspace' || e.key === 'Delete') && commandCount > 0) {
         e.preventDefault();
         removeCommand();
         return;
-      } else if ((e.key === 'Enter' || e.key === ' ') && commands.length > 0) {
+      } else if ((e.key === 'Enter' || e.key === ' ') && commandCount > 0) {
         e.preventDefault();
         void runSimulation();
         return;
       }
       
-      if (command && commands.length < (problem.maxCommands || 8)) {
+      if (command && commandCount < maxCommands) {
         addCommand(command);
       }
     };
     
     window.addEventListener('keydown', handleKeyPress);
     return () => window.removeEventListener('keydown', handleKeyPress);
-  }, [status, commands.length, problem.maxCommands, addCommand, removeCommand, runSimulation]);
+  }, [status, commandCount, maxCommands, addCommand, removeCommand, runSimulation]);
 
   const renderCell = (x: number, y: number): React.ReactNode => {
      const isRobot = robotPos[0] === x && robotPos[1] === y;
      const isEnd = (problem.end?.[0] ?? problem.goal?.[0]) === x && (problem.end?.[1] ?? problem.goal?.[1]) === y;
      const isRock = problem.obstacles.some(o => o[0] === x && o[1] === y);
-     const cellDistance = showNumbers ? Math.abs((problem.end?.[0] ?? problem.goal?.[0] ?? 0) - x) + Math.abs((problem.end?.[1] ?? problem.goal?.[1] ?? 0) - y) : 0;
      
      // Robot rotation based on direction
      const robotRotation = robotDirection === 'UP' ? 'rotate-0' : 
@@ -1407,9 +1355,6 @@ export const RoboPathView: React.FC<RoboPathViewProps> = ({ problem, onAnswer, s
      
      return (
         <div key={`${x}-${y}`} className={`relative w-full aspect-square bg-gradient-to-br from-green-50 to-emerald-50 border-2 border-emerald-200 rounded-lg flex items-center justify-center text-3xl shadow-sm overflow-hidden transition-all duration-300 ${status === 'crash' && isRobot ? 'bg-red-200 animate-pulse' : ''}`}>
-            {showNumbers && !isRobot && !isEnd && !isRock && (
-              <div className="absolute top-0.5 right-1 text-[10px] font-bold text-slate-400">{cellDistance}</div>
-            )}
             {isEnd && (
               <div className="absolute inset-0 bg-gradient-to-br from-green-100 to-green-200 flex items-center justify-center border-4 border-green-400 rounded-lg">
                 <div className="text-4xl animate-pulse drop-shadow-lg">🔋</div>
@@ -1445,43 +1390,22 @@ export const RoboPathView: React.FC<RoboPathViewProps> = ({ problem, onAnswer, s
     <div className="w-full flex flex-col items-center max-w-sm mx-auto">
        {/* Stats panel */}
        <div className="w-full mb-3 bg-gradient-to-r from-indigo-50 to-purple-50 rounded-xl p-2 sm:p-4 border-2 border-indigo-200 shadow-lg">
-         <div className="grid grid-cols-3 gap-2 sm:gap-3 text-center">
-           <div className="bg-white rounded-lg sm:rounded-xl p-2 sm:p-3 shadow-sm border-2 border-indigo-100">
-             <div className="text-[10px] sm:text-xs font-bold text-slate-500 mb-0.5 sm:mb-1">⏱️ {t.roboPath.time}</div>
-             <div className="text-lg sm:text-2xl font-black text-indigo-600">{elapsedTime}s</div>
-             {bestTime && (
-               <div className="text-[9px] sm:text-xs text-green-600 font-semibold mt-0.5 sm:mt-1 hidden sm:block">
-                 {t.roboPath.bestTime} {bestTime}s
-               </div>
-             )}
-           </div>
+         <div className="grid grid-cols-2 gap-2 sm:gap-3 text-center">
            <div className="bg-white rounded-lg sm:rounded-xl p-2 sm:p-3 shadow-sm border-2 border-indigo-100">
              <div className="text-[10px] sm:text-xs font-bold text-slate-500 mb-0.5 sm:mb-1">🎯 {t.roboPath.commands}</div>
-             <div className="text-lg sm:text-2xl font-black text-purple-600">{moveCount}</div>
-             {problem.optimalMoves && (
-               <div className="text-[9px] sm:text-xs text-blue-600 font-semibold mt-0.5 sm:mt-1">
-                 Opt: {problem.optimalMoves}
-               </div>
-             )}
+             <div className="text-lg sm:text-2xl font-black text-purple-600">{commandCount}</div>
            </div>
            <div className="bg-white rounded-lg sm:rounded-xl p-2 sm:p-3 shadow-sm border-2 border-indigo-100">
-             <div className="text-[10px] sm:text-xs font-bold text-slate-500 mb-0.5 sm:mb-1">📊 MAX</div>
-             <div className="text-lg sm:text-2xl font-black text-teal-600">{problem.maxCommands || 8}</div>
+             <div className="text-[10px] sm:text-xs font-bold text-slate-500 mb-0.5 sm:mb-1">📊 {t.roboPath.max}</div>
+             <div className="text-lg sm:text-2xl font-black text-teal-600">{maxCommands}</div>
              <div className="text-[9px] sm:text-xs text-slate-400 mt-0.5 sm:mt-1">
-               {moveCount}/{problem.maxCommands || 8}
+               {commandCount}/{maxCommands}
              </div>
            </div>
          </div>
        </div>
        
-       {/* Distance indicator */}
-       {status === 'planning' && (
-         <div className={`mb-2 sm:mb-3 text-xs sm:text-sm font-bold text-center px-3 py-2 rounded-lg border-2 ${getDistanceColor(currentDistance)} bg-white shadow-sm transition-colors`}>
-           📍 {t.roboPath.distanceToGoal} <span className="text-lg">{currentDistance}</span> {t.roboPath.steps}
-         </div>
-       )}
-       
-       {/* Win celebration with stars and XP */}
+       {/* Win celebration with stars */}
        {status === 'win' && (
          <div className="mb-3 text-center bg-gradient-to-br from-yellow-100 to-orange-100 p-4 rounded-2xl border-4 border-yellow-400 shadow-xl">
            <div className="text-4xl mb-2 animate-bounce">
@@ -1491,13 +1415,28 @@ export const RoboPathView: React.FC<RoboPathViewProps> = ({ problem, onAnswer, s
              {stars === 3 ? t.roboPath.excellent : stars === 2 ? t.roboPath.good : t.roboPath.solved}
            </div>
            <div className="text-xs text-slate-600 mb-2">
-             {t.roboPath.youUsed} {commands.length} {t.roboPath.commands}
-             {problem.optimalMoves && ` | ${t.roboPath.optimalIs} ${problem.optimalMoves}`}
+             {t.roboPath.youUsed} {commandCount} {t.roboPath.commands}
            </div>
-           <div className="text-xs font-semibold text-purple-600 bg-purple-100 px-3 py-1 rounded-full inline-block">
-             {t.roboPath.earnedXP} +{earnedXP} XP
-           </div>
-           {stars < 3 && (
+           {showRetryPrompt && (
+             <div className="mt-3 bg-white/90 rounded-xl border-2 border-amber-300 p-3 text-xs text-amber-900 shadow-sm">
+               <div className="font-bold mb-2">{t.roboPath.tryAgainPrompt}</div>
+               <div className="flex gap-2">
+                 <button
+                   onClick={handleRetry}
+                   className="flex-1 bg-amber-500 text-white text-xs font-bold py-2 px-3 rounded-lg shadow-md hover:bg-amber-600 transition-colors"
+                 >
+                   {t.roboPath.tryAgainButton}
+                 </button>
+                 <button
+                   onClick={handleNext}
+                   className="flex-1 bg-emerald-500 text-white text-xs font-bold py-2 px-3 rounded-lg shadow-md hover:bg-emerald-600 transition-colors"
+                 >
+                   {t.roboPath.nextButton}
+                 </button>
+               </div>
+             </div>
+           )}
+           {stars < 3 && !showRetryPrompt && (
              <div className="text-[10px] text-orange-600 mt-2">
                {t.roboPath.tryAgainFor3Stars}
              </div>
@@ -1519,36 +1458,6 @@ export const RoboPathView: React.FC<RoboPathViewProps> = ({ problem, onAnswer, s
          </div>
        )}
        
-       {/* Hint system */}
-       {status === 'planning' && (
-         <div className="flex gap-2 mb-3 w-full">
-           <button 
-             onClick={() => setShowNumbers(!showNumbers)}
-             className="flex-1 bg-purple-500 text-white text-xs font-bold py-2 px-3 rounded-lg shadow-md hover:bg-purple-600 transition-colors"
-           >
-             {showNumbers ? t.roboPath.hideNumbers : t.roboPath.showNumbers}
-           </button>
-           <button 
-             onClick={() => {
-               setHintLevel(prev => Math.min(prev + 1, 3));
-               playSound('click', soundEnabled);
-             }}
-             disabled={hintLevel >= 3}
-             className="flex-1 bg-amber-500 text-white text-xs font-bold py-2 px-3 rounded-lg shadow-md hover:bg-amber-600 transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed"
-           >
-             {t.roboPath.hint} {hintLevel > 0 && `(${hintLevel}/3)`}
-           </button>
-         </div>
-       )}
-       
-       {hintLevel > 0 && status === 'planning' && (
-         <div className="mb-3 bg-amber-50 border-2 border-amber-400 p-3 rounded-xl text-xs text-amber-900">
-           {hintLevel >= 1 && <div className="mb-1">💡 {t.roboPath.hint1}</div>}
-           {hintLevel >= 2 && <div className="mb-1">💡 {t.roboPath.hint2}</div>}
-           {hintLevel >= 3 && <div>💡 {t.roboPath.hint3}</div>}
-         </div>
-       )}
-       
        {/* Grid */}
        <div className="grid gap-1 sm:gap-2 w-full mb-2 sm:mb-4 bg-gradient-to-br from-green-100 to-emerald-200 p-2 sm:p-4 rounded-xl sm:rounded-2xl border-2 sm:border-4 border-emerald-300 shadow-inner" style={{ gridTemplateColumns: `repeat(${problem.gridSize}, 1fr)` }}>
           {Array.from({ length: problem.gridSize * problem.gridSize }).map((_, i) => renderCell(i % problem.gridSize, Math.floor(i / problem.gridSize)))}
@@ -1556,7 +1465,7 @@ export const RoboPathView: React.FC<RoboPathViewProps> = ({ problem, onAnswer, s
        
        {/* Command queue with colors and indices */}
        <div className="flex gap-1 min-h-10 sm:min-h-12 w-full bg-slate-100 rounded-lg sm:rounded-xl mb-2 sm:mb-4 items-center px-2 py-2 overflow-x-auto border-2 border-slate-300 shadow-inner">
-           {commands.length === 0 && <span className="text-slate-400 text-xs sm:text-sm ml-2">{formatText(t.roboPath.addCommands)}</span>}
+           {commandCount === 0 && <span className="text-slate-400 text-xs sm:text-sm ml-2">{formatText(t.roboPath.addCommands)}</span>}
            {commands.map((c, i) => (
              <div key={i} className="relative flex-shrink-0">
                <div className={`min-w-[2rem] sm:min-w-[2.5rem] h-8 sm:h-10 ${getCommandColor(c)} text-white rounded-lg flex items-center justify-center font-black shadow-md text-base sm:text-xl border-b-4 transform transition-all ${currentCommandIndex === i ? 'scale-110 ring-4 ring-yellow-400 animate-pulse' : ''}`}>
@@ -1575,7 +1484,7 @@ export const RoboPathView: React.FC<RoboPathViewProps> = ({ problem, onAnswer, s
              <button 
                onClick={() => addCommand('UP')} 
                aria-label={t.roboPath.addCommandUp} 
-               disabled={status !== 'planning'} 
+               disabled={status !== 'planning' || commandCount >= maxCommands} 
                className="w-full h-12 sm:h-14 bg-blue-500 border-b-4 border-blue-700 text-white rounded-lg sm:rounded-xl flex items-center justify-center active:translate-y-1 hover:bg-blue-600 transition-all disabled:bg-gray-300 disabled:border-gray-400 shadow-lg"
              >
                <ArrowUp size={20} className="sm:w-6 sm:h-6" />
@@ -1585,7 +1494,7 @@ export const RoboPathView: React.FC<RoboPathViewProps> = ({ problem, onAnswer, s
              <button 
                onClick={() => addCommand('LEFT')} 
                aria-label={t.roboPath.addCommandLeft} 
-               disabled={status !== 'planning'} 
+               disabled={status !== 'planning' || commandCount >= maxCommands} 
                className="w-full h-12 sm:h-14 bg-yellow-500 border-b-4 border-yellow-700 text-white rounded-lg sm:rounded-xl flex items-center justify-center active:translate-y-1 hover:bg-yellow-600 transition-all disabled:bg-gray-300 disabled:border-gray-400 shadow-lg"
              >
                <ArrowLeft size={20} className="sm:w-6 sm:h-6" />
@@ -1595,7 +1504,7 @@ export const RoboPathView: React.FC<RoboPathViewProps> = ({ problem, onAnswer, s
              <button 
                onClick={() => addCommand('DOWN')} 
                aria-label={t.roboPath.addCommandDown} 
-               disabled={status !== 'planning'} 
+               disabled={status !== 'planning' || commandCount >= maxCommands} 
                className="w-full h-12 sm:h-14 bg-red-500 border-b-4 border-red-700 text-white rounded-lg sm:rounded-xl flex items-center justify-center active:translate-y-1 hover:bg-red-600 transition-all disabled:bg-gray-300 disabled:border-gray-400 shadow-lg"
              >
                <ArrowDown size={20} className="sm:w-6 sm:h-6" />
@@ -1605,7 +1514,7 @@ export const RoboPathView: React.FC<RoboPathViewProps> = ({ problem, onAnswer, s
              <button 
                onClick={() => addCommand('RIGHT')} 
                aria-label={t.roboPath.addCommandRight} 
-               disabled={status !== 'planning'} 
+               disabled={status !== 'planning' || commandCount >= maxCommands} 
                className="w-full h-12 sm:h-14 bg-green-500 border-b-4 border-green-700 text-white rounded-lg sm:rounded-xl flex items-center justify-center active:translate-y-1 hover:bg-green-600 transition-all disabled:bg-gray-300 disabled:border-gray-400 shadow-lg"
              >
                <ArrowRight size={20} className="sm:w-6 sm:h-6" />
@@ -1616,7 +1525,7 @@ export const RoboPathView: React.FC<RoboPathViewProps> = ({ problem, onAnswer, s
              <button 
                onClick={removeCommand} 
                aria-label={t.roboPath.removeCommand} 
-               disabled={status !== 'planning'} 
+               disabled={status !== 'planning' || commandCount === 0} 
                className="w-full h-12 sm:h-14 bg-orange-400 border-b-4 border-orange-600 text-white rounded-lg sm:rounded-xl flex items-center justify-center active:translate-y-1 hover:bg-orange-500 transition-all disabled:bg-gray-300 disabled:border-gray-400 shadow-lg"
              >
                <RotateCcw size={18} className="sm:w-5 sm:h-5" />
@@ -1626,10 +1535,10 @@ export const RoboPathView: React.FC<RoboPathViewProps> = ({ problem, onAnswer, s
              <button 
                onClick={() => void runSimulation()} 
                aria-label={t.roboPath.runRobot} 
-               disabled={status !== 'planning' || commands.length === 0} 
+               disabled={status !== 'planning' || commandCount === 0} 
                className="w-full h-12 sm:h-14 bg-gradient-to-r from-green-500 to-emerald-600 border-b-4 border-green-800 text-white font-black rounded-lg sm:rounded-xl flex items-center justify-center active:translate-y-1 shadow-xl gap-1 sm:gap-2 text-sm sm:text-lg hover:from-green-600 hover:to-emerald-700 transition-all disabled:from-gray-300 disabled:to-gray-400 disabled:border-gray-500"
              >
-               START <Play size={18} fill="white" className="sm:w-5 sm:h-5" />
+               {t.roboPath.runRobot} <Play size={18} fill="white" className="sm:w-5 sm:h-5" />
              </button>
            </div>
         </div>
