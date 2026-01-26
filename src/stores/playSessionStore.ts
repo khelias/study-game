@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { createAdaptiveDifficulty, updateAdaptiveDifficulty as updateDifficulty } from '../engine/adaptiveDifficulty';
 import type { Problem } from '../types/game';
+import type { Notification } from '../components/NotificationSystem';
 
 type GameState = 'menu' | 'playing' | 'game_over';
 
@@ -30,6 +31,11 @@ export interface PlaySessionStore {
   stars: number;
   currentStreak: number;
   adaptiveDifficulty: AdaptiveDifficulty;
+  
+  // New unified notification system
+  notifications: Notification[];
+  
+  // Legacy state (kept for backward compatibility during migration)
   showLevelUp: boolean;
   showAchievement: AchievementData | null;
   bgClass: string;
@@ -48,6 +54,13 @@ export interface PlaySessionStore {
   submitAnswer: (isCorrect: boolean) => void;
   endGame: () => void;
   returnToMenu: () => void;
+  
+  // New notification system actions
+  addNotification: (notification: Omit<Notification, 'id'>) => void;
+  removeNotification: (id: string) => void;
+  clearNotifications: () => void;
+  
+  // Legacy actions (kept for backward compatibility during migration)
   showLevelUpModal: () => void;
   dismissLevelUpModal: () => void;
   setShowAchievement: (achievement: AchievementData | null) => void;
@@ -75,6 +88,11 @@ const initialState = {
   stars: 0,
   currentStreak: 0,
   adaptiveDifficulty: createAdaptiveDifficulty(),
+  
+  // New notification system
+  notifications: [] as Notification[],
+  
+  // Legacy state
   showLevelUp: false,
   showAchievement: null,
   bgClass: 'bg-slate-50',
@@ -207,5 +225,23 @@ export const usePlaySessionStore = create<PlaySessionStore>((set, get) => ({
   
   resetSessionState: () => {
     set(initialState);
+  },
+  
+  // New notification system actions
+  addNotification: (notification: Omit<Notification, 'id'>) => {
+    const id = `notification-${Date.now()}-${Math.random()}`;
+    set((state) => ({
+      notifications: [...state.notifications, { ...notification, id }],
+    }));
+  },
+  
+  removeNotification: (id: string) => {
+    set((state) => ({
+      notifications: state.notifications.filter((n) => n.id !== id),
+    }));
+  },
+  
+  clearNotifications: () => {
+    set({ notifications: [] });
   },
 }));

@@ -97,7 +97,7 @@ const POSITION_TRANSLATIONS: Record<string, { et: string; en: string }> = {
 };
 
 // Get English form for anchor (simplified - no cases in English)
-function getAnchorEnglishForm(anchor: SceneAnchor, position: string): string {
+function getAnchorEnglishForm(anchor: SceneAnchor, _position: string): string {
   // For English, we use simple preposition structure
   // "next to the tree", "on the tree", "under the tree", etc.
   const baseName = OBJECT_TRANSLATIONS[anchor.n]?.en || anchor.n;
