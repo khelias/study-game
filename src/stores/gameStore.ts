@@ -4,6 +4,7 @@ import { APP_KEY, PROFILES, GAME_CONFIG } from '../games/data';
 import { createStats, recordGameStart, recordAnswer as recordStatsAnswer, recordLevelUp as recordStatsLevelUp, recordScore } from '../engine/stats';
 import { checkAchievements } from '../engine/achievements';
 import { getTranslations } from '../i18n';
+import { getAchievementCopy } from '../utils/achievementCopy';
 import type { ProfileType } from '../types/game';
 
 interface AchievementData {
@@ -89,12 +90,16 @@ export const useGameStore = create<GameStore>()(
         
         // Check for new achievements
         const newAchievements = checkAchievements(updatedStats, state.unlockedAchievements);
-        const achievementData: AchievementData[] = newAchievements.map(a => ({
-          id: a.id,
-          title: a.title,
-          desc: a.desc,
-          icon: a.icon
-        }));
+        const t = getTranslations();
+        const achievementData: AchievementData[] = newAchievements.map(a => {
+          const copy = getAchievementCopy(t, a.id);
+          return {
+            id: a.id,
+            title: copy.title,
+            desc: copy.desc,
+            icon: a.icon
+          };
+        });
         
         set({ 
           stats: updatedStats,
@@ -112,12 +117,16 @@ export const useGameStore = create<GameStore>()(
         
         // Check for new achievements
         const newAchievements = checkAchievements(updatedStats, state.unlockedAchievements);
-        const achievementData: AchievementData[] = newAchievements.map(a => ({
-          id: a.id,
-          title: a.title,
-          desc: a.desc,
-          icon: a.icon
-        }));
+        const t = getTranslations();
+        const achievementData: AchievementData[] = newAchievements.map(a => {
+          const copy = getAchievementCopy(t, a.id);
+          return {
+            id: a.id,
+            title: copy.title,
+            desc: copy.desc,
+            icon: a.icon
+          };
+        });
         
         set({ 
           stats: updatedStats,
@@ -146,12 +155,16 @@ export const useGameStore = create<GameStore>()(
         
         // Check for new achievements
         const newAchievements = checkAchievements(updatedStats, state.unlockedAchievements);
-        const achievementData: AchievementData[] = newAchievements.map(a => ({
-          id: a.id,
-          title: a.title,
-          desc: a.desc,
-          icon: a.icon
-        }));
+        const t = getTranslations();
+        const achievementData: AchievementData[] = newAchievements.map(a => {
+          const copy = getAchievementCopy(t, a.id);
+          return {
+            id: a.id,
+            title: copy.title,
+            desc: copy.desc,
+            icon: a.icon
+          };
+        });
         
         set({ 
           levels: updatedLevels,
@@ -204,12 +217,16 @@ export const useGameStore = create<GameStore>()(
         
         // Check for new achievements
         const newAchievements = checkAchievements(updatedStats, state.unlockedAchievements);
-        const achievementData: AchievementData[] = newAchievements.map(a => ({
-          id: a.id,
-          title: a.title,
-          desc: a.desc,
-          icon: a.icon
-        }));
+        const t = getTranslations();
+        const achievementData: AchievementData[] = newAchievements.map(a => {
+          const copy = getAchievementCopy(t, a.id);
+          return {
+            id: a.id,
+            title: copy.title,
+            desc: copy.desc,
+            icon: a.icon
+          };
+        });
         
         set({ 
           collectedStars: newCollectedStars,

@@ -15,6 +15,7 @@ import { ACHIEVEMENTS } from '../../engine/achievements';
 import { useTranslation } from '../../i18n/useTranslation';
 import { useProfileText } from '../../hooks/useProfileText';
 import { getLocale, setLocale, type SupportedLocale } from '../../i18n';
+import { getAchievementCopy } from '../../utils/achievementCopy';
 import type { ProfileType } from '../../types/game';
 import type { AchievementUnlock } from '../../types/achievement';
 
@@ -233,10 +234,11 @@ export const MenuScreen: React.FC = () => {
           unlockedAchievements={unlockedAchievements.map(id => {
             const achievement = ACHIEVEMENTS[id];
             if (!achievement) return null;
+            const copy = getAchievementCopy(t, achievement.id);
             return {
               id: achievement.id,
-              title: achievement.title,
-              desc: achievement.desc,
+              title: copy.title,
+              desc: copy.desc,
               icon: achievement.icon
             };
           }).filter((a): a is AchievementUnlock => a !== null)}

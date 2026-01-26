@@ -3,6 +3,8 @@ import React from 'react';
 import { TrendingUp, TrendingDown, Target, Award } from 'lucide-react';
 import { getProgressionRecommendation, calculateGameSuccessScore } from '../engine/progression';
 import { Stats } from '../types/stats';
+import { useTranslation } from '../i18n/useTranslation';
+import { useProfileText } from '../hooks/useProfileText';
 
 interface GameProgressionCardProps {
   gameType: string;
@@ -10,8 +12,12 @@ interface GameProgressionCardProps {
 }
 
 export const GameProgressionCard: React.FC<GameProgressionCardProps> = ({ gameType, stats }) => {
+  const t = useTranslation();
+  const { formatText } = useProfileText();
   const recommendation = getProgressionRecommendation(stats, gameType);
   const successScore: number = calculateGameSuccessScore(stats, gameType);
+  const recommendationLabel = formatText(t.progressionCard.recommendation);
+  const successScoreLabel = formatText(t.progressionCard.successScore);
   
   const getRecommendationIcon = (): React.ReactElement => {
     switch (recommendation.action) {
@@ -42,14 +48,14 @@ export const GameProgressionCard: React.FC<GameProgressionCardProps> = ({ gameTy
       <div className="flex items-center justify-between mb-2">
         <div className="flex items-center gap-2">
           {getRecommendationIcon()}
-          <span className="font-bold text-sm text-slate-700">Soovitus</span>
+          <span className="font-bold text-sm text-slate-700">{recommendationLabel}</span>
         </div>
         <div className="flex items-center gap-2">
-          <span className="text-xs text-slate-500">Edukuse skoor:</span>
+          <span className="text-xs text-slate-500">{successScoreLabel}:</span>
           <span className="font-black text-lg text-purple-600">{successScore}</span>
         </div>
       </div>
-      <p className="text-sm text-slate-600">{recommendation.message}</p>
+      <p className="text-sm text-slate-600">{formatText(recommendation.message)}</p>
       
       {/* Progress bar */}
       <div className="mt-3 w-full h-2 bg-slate-200 rounded-full overflow-hidden">
@@ -69,13 +75,22 @@ interface LevelProgressIndicatorProps {
 }
 
 export const LevelProgressIndicator: React.FC<LevelProgressIndicatorProps> = ({ current, next, progress }) => {
+  const t = useTranslation();
+  const { formatText } = useProfileText();
   const progressPercentage: number = (progress / 5) * 100;
+  const currentLabel = formatText(t.progressionCard.currentLevel);
+  const nextLabel = formatText(t.progressionCard.nextLevel);
+  const collectedLabel = formatText(
+    t.progressionCard.starsCollectedLabel
+      .replace('{current}', String(progress))
+      .replace('{total}', '5')
+  );
   
   return (
     <div className="w-full max-w-md mx-auto p-4 bg-white rounded-xl border-2 border-slate-200 shadow-sm">
       <div className="flex items-center justify-between mb-2">
-        <span className="text-sm font-bold text-slate-600">Praegune tase: {current}</span>
-        <span className="text-sm font-bold text-slate-600">Järgmine: {next}</span>
+        <span className="text-sm font-bold text-slate-600">{currentLabel}: {current}</span>
+        <span className="text-sm font-bold text-slate-600">{nextLabel}: {next}</span>
       </div>
       <div className="w-full h-4 bg-slate-200 rounded-full overflow-hidden">
         <div
@@ -84,7 +99,7 @@ export const LevelProgressIndicator: React.FC<LevelProgressIndicatorProps> = ({ 
         />
       </div>
       <div className="text-center mt-2 text-xs text-slate-500">
-        {progress} / 5 tähte kogutud
+        {collectedLabel}
       </div>
     </div>
   );

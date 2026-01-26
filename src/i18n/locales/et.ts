@@ -20,6 +20,11 @@ export const et = {
     loading: 'Laadimine...',
   },
 
+  // Accessibility
+  accessibility: {
+    skipToContent: 'Jäta vahele navigatsioon',
+  },
+
   // Error messages
   errors: {
     somethingWentWrong: 'Midagi läks valesti',
@@ -149,6 +154,7 @@ export const et = {
     correct: 'Õige',
     wrong: 'Vale',
     gameOver: 'Mäng läbi',
+    scoreMessage: 'Said {score} punkti!',
     returnToMenu: 'Tagasi menüüsse',
     levelUp: 'Tase tõusis!',
     newAchievement: 'Uus saavutus!',
@@ -164,6 +170,39 @@ export const et = {
     totalStars: 'Kogutud tähed',
     playTime: 'Mänguaeg',
     achievements: 'Saavutused',
+    streakSuffix: 'järjestikust õiget',
+    perGame: 'mängu kohta',
+    noGamesPlayed: 'Pole veel mängutüüpe mängitud',
+    mostPlayedGames: 'Kõige rohkem mängitud mängud',
+    gamesLabel: 'mängu',
+  },
+
+  // Learning progress
+  learningProgress: {
+    title: 'Õppimise edenemine',
+    scoreLabel: 'Õppimise skoor',
+    stages: {
+      master: 'Meister',
+      advanced: 'Edasijõudnud',
+      practicing: 'Harjutab',
+      beginner: 'Algaja',
+    },
+    metrics: {
+      accuracy: 'Täpsus',
+      level: 'Tase',
+      games: 'Mängud',
+    },
+    encouragement: {
+      high: '🎉 Väga tubli! Sa oled tõeline meister!',
+      low: '💪 Harjuta edasi! Iga samm loeb!',
+    },
+    skillOverviewTitle: 'Oskuste ülevaade',
+    skills: {
+      reading: 'Lugemine',
+      math: 'Matemaatika',
+      logic: 'Loogika',
+    },
+    skillSummary: '{games} mängu • Tase {level}',
   },
 
   // Achievements
@@ -172,6 +211,58 @@ export const et = {
     unlocked: 'Avatud',
     locked: 'Lukustatud',
     progress: 'Progress',
+    modalTitle: 'Saavutused 🏅',
+    collectedLabel: 'saavutust kogutud',
+    items: {
+      first_game: {
+        title: 'Esimene samm',
+        desc: 'Mängi oma esimest mängu',
+      },
+      perfect_5: {
+        title: 'Täiuslik seeria',
+        desc: 'Vastasid 5 ülesannet järjest õigesti',
+      },
+      word_master: {
+        title: 'Sõnameister',
+        desc: 'Lõpeta SÕNAMEISTER tase 5',
+      },
+      math_whiz: {
+        title: 'Matemaatikameister',
+        desc: 'Lõpeta MATEMAATIKA MÄLU tase 5',
+      },
+      pattern_pro: {
+        title: 'Mustriprofi',
+        desc: 'Lõpeta MUSTRI-RONG tase 5',
+      },
+      score_100: {
+        title: '100-punkter',
+        desc: 'Kogu 100 punkti',
+      },
+      score_500: {
+        title: '500-punkter',
+        desc: 'Kogu 500 punkti',
+      },
+      persistent: {
+        title: 'Püsivus',
+        desc: 'Mängi 10 mängu',
+      },
+      all_games: {
+        title: 'Kõik mängud',
+        desc: 'Proovi kõiki mängutüüpe',
+      },
+      star_collector_50: {
+        title: 'Tähtede koguja',
+        desc: 'Kogu 50 tähte',
+      },
+      star_collector_100: {
+        title: 'Tähtede meister',
+        desc: 'Kogu 100 tähte',
+      },
+      star_collector_250: {
+        title: 'Tähtede legenda',
+        desc: 'Kogu 250 tähte',
+      },
+    },
   },
 
   // Menu specific
@@ -259,6 +350,9 @@ export const et = {
       preFilled: 'Vihje: mõned tähed on juba õiges kohas!',
       useAllLetters: 'Kasuta kõiki õigeid tähti',
       watchCase: 'Pane tähele suuri ja väikeseid tähti!',
+    },
+    memoryMath: {
+      pairsLabel: 'Paarid',
     },
     timeMatch: {
       selectCorrectTime: 'Vali õige kellaaeg',
@@ -355,6 +449,15 @@ export const et = {
     keepPracticing: 'Jätka harjutamist!',
   },
 
+  // Progression card
+  progressionCard: {
+    recommendation: 'Soovitus',
+    successScore: 'Edu skoor',
+    currentLevel: 'Praegune tase',
+    nextLevel: 'Järgmine',
+    starsCollectedLabel: '{current} / {total} tähte kogutud',
+  },
+
   // Robo path game
   roboPath: {
     addCommandUp: 'Lisa käsk: üles',
@@ -392,6 +495,23 @@ export const et = {
     tryAgainButton: 'Proovi uuesti',
     nextButton: 'Edasi',
     stars: 'Tärnid:',
+  },
+
+  // Unit conversion game
+  unitConversion: {
+    question: 'Mitu {to} on {value} {from}?',
+    units: {
+      m: 'meetrit',
+      km: 'kilomeetrit',
+      cm: 'sentimeetrit',
+      mm: 'millimeetrit',
+      kg: 'kilogrammi',
+      g: 'grammi',
+      t: 'tonni',
+      l: 'liitrit',
+      ml: 'milliliitrit',
+      dl: 'detsiliitrit',
+    },
   },
 
   // Level up modal

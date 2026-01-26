@@ -3,6 +3,8 @@ import React from 'react';
 import { BarChart3, Trophy, Target, TrendingUp, Clock, Star } from 'lucide-react';
 import { Stats } from '../types/stats';
 import { AchievementUnlock } from '../types/achievement';
+import { useTranslation } from '../i18n/useTranslation';
+import { useProfileText } from '../hooks/useProfileText';
 
 interface StatsDashboardProps {
   stats: Stats;
@@ -10,6 +12,8 @@ interface StatsDashboardProps {
 }
 
 export const StatsDashboard: React.FC<StatsDashboardProps> = ({ stats, unlockedAchievements = [] }) => {
+  const t = useTranslation();
+  const { formatText } = useProfileText();
   const accuracy: number = stats.gamesPlayed > 0
     ? Math.round((stats.correctAnswers / (stats.correctAnswers + stats.wrongAnswers)) * 100)
     : 0;
@@ -37,40 +41,40 @@ export const StatsDashboard: React.FC<StatsDashboardProps> = ({ stats, unlockedA
   const statCards: StatCard[] = [
     {
       icon: Trophy,
-      label: 'Kokku mänge',
+      label: formatText(t.stats.gamesPlayed),
       value: stats.gamesPlayed,
       color: 'bg-yellow-100 text-yellow-700',
     },
     {
       icon: Target,
-      label: 'Täpsus',
+      label: formatText(t.stats.accuracy),
       value: `${accuracy}%`,
       color: 'bg-green-100 text-green-700',
       subtitle: `${stats.correctAnswers} / ${totalAnswers}`,
     },
     {
       icon: TrendingUp,
-      label: 'Parim seeria',
+      label: formatText(t.stats.bestStreak),
       value: stats.maxStreak,
       color: 'bg-blue-100 text-blue-700',
-      subtitle: 'järjestikust õiget',
+      subtitle: formatText(t.stats.streakSuffix),
     },
     {
       icon: Star,
-      label: 'Kogutud tähed',
+      label: formatText(t.stats.totalStars),
       value: stats.collectedStars || 0,
       color: 'bg-purple-100 text-purple-700',
     },
     {
       icon: Clock,
-      label: 'Mänguaeg',
+      label: formatText(t.stats.playTime),
       value: formatTime(stats.totalTimePlayed),
       color: 'bg-indigo-100 text-indigo-700',
-      subtitle: avgTimePerGame > 0 ? `~${formatTime(avgTimePerGame)} mängu kohta` : '',
+      subtitle: avgTimePerGame > 0 ? `~${formatTime(avgTimePerGame)} ${formatText(t.stats.perGame)}` : '',
     },
     {
       icon: BarChart3,
-      label: 'Saavutused',
+      label: formatText(t.stats.achievements),
       value: unlockedAchievements.length,
       color: 'bg-pink-100 text-pink-700',
     },
@@ -114,13 +118,15 @@ interface GameTypeStatsProps {
 }
 
 export const GameTypeStats: React.FC<GameTypeStatsProps> = ({ stats }) => {
+  const t = useTranslation();
+  const { formatText } = useProfileText();
   const gameTypes: Record<string, number> = stats.gamesByType || {};
   const totalGames: number = Object.values(gameTypes).reduce((a, b) => a + b, 0);
   
   if (totalGames === 0) {
     return (
       <div className="text-center text-slate-500 py-8">
-        Pole veel mängutüüpe mängitud
+        {formatText(t.stats.noGamesPlayed)}
       </div>
     );
   }
@@ -131,16 +137,18 @@ export const GameTypeStats: React.FC<GameTypeStatsProps> = ({ stats }) => {
   
   return (
     <div className="space-y-3">
-      <h3 className="text-lg font-black text-slate-800 mb-4">Kõige rohkem mängitud mängud</h3>
+      <h3 className="text-lg font-black text-slate-800 mb-4">{formatText(t.stats.mostPlayedGames)}</h3>
       {sortedTypes.map(([type, count]) => {
         const percentage: number = (count / totalGames) * 100;
+        const baseType = type.replace('_adv', '');
+        const gameLabel = t.games[baseType as keyof typeof t.games]?.title ?? type.replace(/_/g, ' ');
         return (
           <div key={type} className="space-y-1">
             <div className="flex justify-between items-center text-sm">
               <span className="font-semibold text-slate-700 capitalize">
-                {type.replace(/_/g, ' ')}
+                {formatText(gameLabel)}
               </span>
-              <span className="text-slate-500">{count} mängu</span>
+              <span className="text-slate-500">{count} {formatText(t.stats.gamesLabel)}</span>
             </div>
             <div className="w-full h-2 bg-slate-200 rounded-full overflow-hidden">
               <div

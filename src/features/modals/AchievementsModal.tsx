@@ -1,6 +1,9 @@
 import React from 'react';
 import { X } from 'lucide-react';
 import { ACHIEVEMENTS } from '../../engine/achievements';
+import { useTranslation } from '../../i18n/useTranslation';
+import { useProfileText } from '../../hooks/useProfileText';
+import { getAchievementCopy } from '../../utils/achievementCopy';
 
 interface AchievementsModalProps {
   unlockedAchievements: string[];
@@ -8,6 +11,8 @@ interface AchievementsModalProps {
 }
 
 export const AchievementsModal: React.FC<AchievementsModalProps> = ({ unlockedAchievements, onClose }) => {
+  const t = useTranslation();
+  const { formatText } = useProfileText();
   const allAchievements = Object.values(ACHIEVEMENTS);
   const unlockedSet: Set<string> = new Set(unlockedAchievements);
 
@@ -33,11 +38,11 @@ export const AchievementsModal: React.FC<AchievementsModalProps> = ({ unlockedAc
         style={{ margin: '0 auto' }}
       >
         <div className="flex justify-between items-center mb-6">
-          <h2 className="text-2xl font-black text-slate-800">Saavutused 🏅</h2>
+          <h2 className="text-2xl font-black text-slate-800">{formatText(t.achievements.modalTitle)}</h2>
           <button
             onClick={onClose}
             className="p-2 rounded-full bg-slate-100 hover:bg-slate-200 transition-colors"
-            aria-label="Sulge"
+            aria-label={formatText(t.common.close)}
           >
             <X size={20} className="text-slate-600" />
           </button>
@@ -47,12 +52,13 @@ export const AchievementsModal: React.FC<AchievementsModalProps> = ({ unlockedAc
           <div className="text-4xl font-black text-purple-600 mb-2">
             {unlockedAchievements.length} / {allAchievements.length}
           </div>
-          <p className="text-sm text-slate-600">medalit kogutud</p>
+          <p className="text-sm text-slate-600">{formatText(t.achievements.collectedLabel)}</p>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           {allAchievements.map((achievement) => {
             const isUnlocked: boolean = unlockedSet.has(achievement.id);
+            const copy = getAchievementCopy(t, achievement.id);
             return (
               <div
                 key={achievement.id}
@@ -76,14 +82,14 @@ export const AchievementsModal: React.FC<AchievementsModalProps> = ({ unlockedAc
                       font-black text-lg mb-1
                       ${isUnlocked ? 'text-slate-800' : 'text-slate-400'}
                     `}>
-                      {achievement.title}
+                      {formatText(copy.title)}
                       {isUnlocked && <span className="ml-2 text-yellow-500">✓</span>}
                     </h3>
                     <p className={`
                       text-sm
                       ${isUnlocked ? 'text-slate-600' : 'text-slate-400'}
                     `}>
-                      {achievement.desc}
+                      {formatText(copy.desc)}
                     </p>
                   </div>
                 </div>

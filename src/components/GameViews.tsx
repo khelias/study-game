@@ -4,6 +4,7 @@ import { playSound } from '../engine/audio';
 import { useTranslation } from '../i18n/useTranslation';
 import { useProfileText } from '../hooks/useProfileText';
 import { GameConfig } from '../types/game';
+import { buildUnitConversionQuestion } from '../utils/unitConversion';
 import type { 
   BalanceScaleProblem, 
   WordBuilderProblem, 
@@ -977,6 +978,8 @@ interface MemoryGameViewProps {
 }
 
 export const MemoryGameView: React.FC<MemoryGameViewProps> = ({ problem, onAnswer, soundEnabled }) => {
+  const t = useTranslation();
+  const { formatText } = useProfileText();
   const [cards, setCards] = useState<Array<{ id: string; content: string; matched?: boolean; flipped?: boolean; solved?: boolean; matchId?: string; type?: string }>>(problem.cards || []);
   const [flipped, setFlipped] = useState<number[]>([]); 
   const [matchedPairs, setMatchedPairs] = useState<number>(0);
@@ -1058,7 +1061,7 @@ export const MemoryGameView: React.FC<MemoryGameViewProps> = ({ problem, onAnswe
       {totalPairs > 0 && (
         <div className="w-full max-w-md mb-3 sm:mb-4">
           <div className="flex items-center justify-between mb-1 sm:mb-2">
-            <span className="text-xs sm:text-sm font-bold text-purple-700">Paarid: {matchedPairs}/{totalPairs}</span>
+            <span className="text-xs sm:text-sm font-bold text-purple-700">{formatText(t.gameScreen.memoryMath.pairsLabel)}: {matchedPairs}/{totalPairs}</span>
             <span className="text-xs sm:text-sm font-bold text-purple-700">{Math.round(progress)}%</span>
           </div>
           <div className="w-full h-3 sm:h-4 bg-purple-100 rounded-full overflow-hidden shadow-inner">
@@ -1690,8 +1693,13 @@ interface UnitConversionViewProps {
 }
 
 export const UnitConversionView: React.FC<UnitConversionViewProps> = ({ problem, onAnswer, soundEnabled }) => {
+  const t = useTranslation();
   const { formatText } = useProfileText();
   const [disabled, setDisabled] = useState<number[]>([]);
+  const questionText = useMemo(
+    () => buildUnitConversionQuestion(t, problem.value, problem.fromUnit, problem.toUnit),
+    [t, problem.value, problem.fromUnit, problem.toUnit]
+  );
   
   useEffect(() => { 
     setTimeout(() => setDisabled([]), 0);
@@ -1715,12 +1723,12 @@ export const UnitConversionView: React.FC<UnitConversionViewProps> = ({ problem,
       <div className="mb-4 sm:mb-6 p-4 sm:p-6 bg-white rounded-2xl sm:rounded-3xl border-b-6 sm:border-b-8 border-teal-200 shadow-lg text-center w-full max-w-md">
         {/* Küsimus */}
         <h2 className="text-lg sm:text-2xl font-black text-teal-700 mb-2 sm:mb-3">
-          {formatText(problem.question)}
+          {formatText(questionText)}
         </h2>
         
         {/* Teisendus visuaalselt */}
         <div className="text-xl sm:text-3xl font-bold text-slate-600 bg-teal-50 rounded-xl p-3 sm:p-4 border-2 border-teal-200">
-          {formatText(problem.question)}
+          {formatText(`${problem.value} ${problem.fromUnit} = ? ${problem.toUnit}`)}
         </div>
       </div>
 

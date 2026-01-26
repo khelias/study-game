@@ -6,8 +6,6 @@ describe('ACHIEVEMENTS', () => {
   it('should have all required achievement properties', () => {
     Object.values(ACHIEVEMENTS).forEach((achievement) => {
       expect(achievement).toHaveProperty('id');
-      expect(achievement).toHaveProperty('title');
-      expect(achievement).toHaveProperty('desc');
       expect(achievement).toHaveProperty('icon');
       expect(achievement).toHaveProperty('check');
       expect(typeof achievement.check).toBe('function');

@@ -2,6 +2,8 @@
 import React from 'react';
 import { TrendingUp, Target, BookOpen, Award } from 'lucide-react';
 import { Stats } from '../types/stats';
+import { useTranslation } from '../i18n/useTranslation';
+import { useProfileText } from '../hooks/useProfileText';
 
 interface LearningProgressProps {
   stats: Stats;
@@ -9,6 +11,8 @@ interface LearningProgressProps {
 }
 
 export const LearningProgress: React.FC<LearningProgressProps> = ({ stats, gameType }) => {
+  const t = useTranslation();
+  const { formatText } = useProfileText();
   const gameStats: number = stats.gamesByType?.[gameType] || 0;
   const maxLevel: number = stats.maxLevels?.[gameType] || 1;
   const accuracy: number = stats.gamesPlayed > 0
@@ -29,10 +33,10 @@ export const LearningProgress: React.FC<LearningProgressProps> = ({ stats, gameT
   }
   
   const getLearningStage = (): LearningStage => {
-    if (learningScore >= 80) return { label: 'Meister', emoji: '🏆', color: 'text-yellow-600' };
-    if (learningScore >= 60) return { label: 'Edasijõudnud', emoji: '⭐', color: 'text-blue-600' };
-    if (learningScore >= 40) return { label: 'Harjutaja', emoji: '📚', color: 'text-green-600' };
-    return { label: 'Algaja', emoji: '🌱', color: 'text-slate-600' };
+    if (learningScore >= 80) return { label: t.learningProgress.stages.master, emoji: '🏆', color: 'text-yellow-600' };
+    if (learningScore >= 60) return { label: t.learningProgress.stages.advanced, emoji: '⭐', color: 'text-blue-600' };
+    if (learningScore >= 40) return { label: t.learningProgress.stages.practicing, emoji: '📚', color: 'text-green-600' };
+    return { label: t.learningProgress.stages.beginner, emoji: '🌱', color: 'text-slate-600' };
   };
   
   const stage: LearningStage = getLearningStage();
@@ -42,7 +46,7 @@ export const LearningProgress: React.FC<LearningProgressProps> = ({ stats, gameT
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-lg font-black text-slate-800 flex items-center gap-2">
           <BookOpen size={20} className="text-purple-600" />
-          Õppimise Progress
+          {formatText(t.learningProgress.title)}
         </h3>
         <span className={`text-2xl ${stage.color}`}>{stage.emoji}</span>
       </div>
@@ -51,7 +55,7 @@ export const LearningProgress: React.FC<LearningProgressProps> = ({ stats, gameT
         {/* Learning Score */}
         <div>
           <div className="flex justify-between items-center mb-2">
-            <span className="text-sm font-semibold text-slate-600">Õppimise skoor</span>
+            <span className="text-sm font-semibold text-slate-600">{formatText(t.learningProgress.scoreLabel)}</span>
             <span className="text-xl font-black text-purple-700">{learningScore}%</span>
           </div>
           <div className="w-full h-3 bg-slate-200 rounded-full overflow-hidden">
@@ -61,7 +65,7 @@ export const LearningProgress: React.FC<LearningProgressProps> = ({ stats, gameT
             />
           </div>
           <div className="text-xs text-slate-500 mt-1 text-center">
-            {stage.emoji} {stage.label}
+            {stage.emoji} {formatText(stage.label)}
           </div>
         </div>
         
@@ -70,17 +74,17 @@ export const LearningProgress: React.FC<LearningProgressProps> = ({ stats, gameT
           <div className="text-center bg-white/50 rounded-xl p-3">
             <Target size={20} className="text-green-600 mx-auto mb-1" />
             <div className="text-lg font-black text-slate-800">{accuracy}%</div>
-            <div className="text-xs text-slate-600">Täpsus</div>
+            <div className="text-xs text-slate-600">{formatText(t.learningProgress.metrics.accuracy)}</div>
           </div>
           <div className="text-center bg-white/50 rounded-xl p-3">
             <TrendingUp size={20} className="text-blue-600 mx-auto mb-1" />
             <div className="text-lg font-black text-slate-800">{maxLevel}</div>
-            <div className="text-xs text-slate-600">Tase</div>
+            <div className="text-xs text-slate-600">{formatText(t.learningProgress.metrics.level)}</div>
           </div>
           <div className="text-center bg-white/50 rounded-xl p-3">
             <Award size={20} className="text-purple-600 mx-auto mb-1" />
             <div className="text-lg font-black text-slate-800">{gameStats}</div>
-            <div className="text-xs text-slate-600">Mänge</div>
+            <div className="text-xs text-slate-600">{formatText(t.learningProgress.metrics.games)}</div>
           </div>
         </div>
         
@@ -88,14 +92,14 @@ export const LearningProgress: React.FC<LearningProgressProps> = ({ stats, gameT
         {learningScore >= 80 && (
           <div className="bg-yellow-100 border-2 border-yellow-300 rounded-xl p-3 text-center">
             <div className="text-sm font-bold text-yellow-800">
-              🎉 Suurepärane! Oled tõeline meister!
+              {formatText(t.learningProgress.encouragement.high)}
             </div>
           </div>
         )}
         {learningScore < 40 && (
           <div className="bg-blue-100 border-2 border-blue-300 rounded-xl p-3 text-center">
             <div className="text-sm font-bold text-blue-800">
-              💪 Jätka harjutamist! Iga samm loeb!
+              {formatText(t.learningProgress.encouragement.low)}
             </div>
           </div>
         )}
@@ -116,19 +120,21 @@ interface Skill {
 }
 
 export const SkillBreakdown: React.FC<SkillBreakdownProps> = ({ stats }) => {
+  const t = useTranslation();
+  const { formatText } = useProfileText();
   const skills: Skill[] = [
     {
-      name: 'Lugemine',
+      name: t.learningProgress.skills.reading,
       games: ['word_builder', 'syllable_builder', 'letter_match', 'sentence_logic'],
       icon: '📖',
     },
     {
-      name: 'Matemaatika',
+      name: t.learningProgress.skills.math,
       games: ['memory_math', 'balance_scale', 'time_match'],
       icon: '🔢',
     },
     {
-      name: 'Loogika',
+      name: t.learningProgress.skills.logic,
       games: ['pattern', 'robo_path'],
       icon: '🧩',
     },
@@ -144,17 +150,22 @@ export const SkillBreakdown: React.FC<SkillBreakdownProps> = ({ stats }) => {
   
   return (
     <div className="space-y-4">
-      <h3 className="text-lg font-black text-slate-800 mb-4">Oskuste ülevaade</h3>
+      <h3 className="text-lg font-black text-slate-800 mb-4">{formatText(t.learningProgress.skillOverviewTitle)}</h3>
       {skills.map((skill, idx) => {
         const { totalGames, maxLevel } = calculateSkillLevel(skill.games);
         const skillScore: number = Math.min(100, (totalGames * 5) + (maxLevel * 10));
+        const summary = formatText(
+          t.learningProgress.skillSummary
+            .replace('{games}', String(totalGames))
+            .replace('{level}', String(maxLevel))
+        );
         
         return (
           <div key={idx} className="bg-white rounded-xl p-4 border-2 border-slate-200">
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center gap-2">
                 <span className="text-2xl">{skill.icon}</span>
-                <span className="font-bold text-slate-800">{skill.name}</span>
+                <span className="font-bold text-slate-800">{formatText(skill.name)}</span>
               </div>
               <span className="text-lg font-black text-slate-600">{skillScore}%</span>
             </div>
@@ -165,7 +176,7 @@ export const SkillBreakdown: React.FC<SkillBreakdownProps> = ({ stats }) => {
               />
             </div>
             <div className="text-xs text-slate-500 mt-2">
-              {totalGames} mängu • Tase {maxLevel}
+              {summary}
             </div>
           </div>
         );

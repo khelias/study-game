@@ -20,6 +20,11 @@ export const en = {
     loading: 'Loading...',
   },
 
+  // Accessibility
+  accessibility: {
+    skipToContent: 'Skip to main content',
+  },
+
   // Error messages
   errors: {
     somethingWentWrong: 'Something went wrong',
@@ -149,6 +154,7 @@ export const en = {
     correct: 'Correct',
     wrong: 'Wrong',
     gameOver: 'Game Over',
+    scoreMessage: 'You scored {score} points!',
     returnToMenu: 'Return to menu',
     levelUp: 'Level up!',
     newAchievement: 'New achievement!',
@@ -164,6 +170,39 @@ export const en = {
     totalStars: 'Total stars',
     playTime: 'Play time',
     achievements: 'Achievements',
+    streakSuffix: 'correct in a row',
+    perGame: 'per game',
+    noGamesPlayed: 'No game types played yet',
+    mostPlayedGames: 'Most played games',
+    gamesLabel: 'games',
+  },
+
+  // Learning progress
+  learningProgress: {
+    title: 'Learning Progress',
+    scoreLabel: 'Learning score',
+    stages: {
+      master: 'Master',
+      advanced: 'Advanced',
+      practicing: 'Practicing',
+      beginner: 'Beginner',
+    },
+    metrics: {
+      accuracy: 'Accuracy',
+      level: 'Level',
+      games: 'Games',
+    },
+    encouragement: {
+      high: '🎉 Great job! You are a true master!',
+      low: '💪 Keep practicing! Every step counts!',
+    },
+    skillOverviewTitle: 'Skills overview',
+    skills: {
+      reading: 'Reading',
+      math: 'Math',
+      logic: 'Logic',
+    },
+    skillSummary: '{games} games • Level {level}',
   },
 
   // Achievements
@@ -172,6 +211,58 @@ export const en = {
     unlocked: 'Unlocked',
     locked: 'Locked',
     progress: 'Progress',
+    modalTitle: 'Achievements 🏅',
+    collectedLabel: 'achievements collected',
+    items: {
+      first_game: {
+        title: 'First Step',
+        desc: 'Play your first game',
+      },
+      perfect_5: {
+        title: 'Perfect Streak',
+        desc: 'Answer 5 tasks in a row',
+      },
+      word_master: {
+        title: 'Word Master',
+        desc: 'Finish WORD MASTER level 5',
+      },
+      math_whiz: {
+        title: 'Math Whiz',
+        desc: 'Finish MATH MEMORY level 5',
+      },
+      pattern_pro: {
+        title: 'Pattern Pro',
+        desc: 'Finish PATTERN TRAIN level 5',
+      },
+      score_100: {
+        title: '100 Points',
+        desc: 'Collect 100 points',
+      },
+      score_500: {
+        title: '500 Points',
+        desc: 'Collect 500 points',
+      },
+      persistent: {
+        title: 'Persistent',
+        desc: 'Play 10 games',
+      },
+      all_games: {
+        title: 'All Games',
+        desc: 'Try every game type',
+      },
+      star_collector_50: {
+        title: 'Star Collector',
+        desc: 'Collect 50 stars',
+      },
+      star_collector_100: {
+        title: 'Star Master',
+        desc: 'Collect 100 stars',
+      },
+      star_collector_250: {
+        title: 'Star Legend',
+        desc: 'Collect 250 stars',
+      },
+    },
   },
 
   // Menu specific
@@ -251,10 +342,17 @@ export const en = {
         INSIDE: 'inside',
       },
     },
+    syllableBuilder: {
+      instruction: 'PUT THE SYLLABLES IN ORDER TO MAKE A WORD',
+      correct: 'CORRECT:',
+    },
     wordBuilder: {
       preFilled: 'Hint: some letters are already in place!',
       useAllLetters: 'Use all correct letters',
       watchCase: 'Watch upper and lower case!',
+    },
+    memoryMath: {
+      pairsLabel: 'Pairs',
     },
     timeMatch: {
       selectCorrectTime: 'Choose the correct time',
@@ -351,6 +449,15 @@ export const en = {
     keepPracticing: 'Keep practicing!',
   },
 
+  // Progression card
+  progressionCard: {
+    recommendation: 'Recommendation',
+    successScore: 'Success score',
+    currentLevel: 'Current level',
+    nextLevel: 'Next',
+    starsCollectedLabel: '{current} / {total} stars collected',
+  },
+
   // Robo path game
   roboPath: {
     addCommandUp: 'Add command: up',
@@ -388,6 +495,23 @@ export const en = {
     tryAgainButton: 'Try again',
     nextButton: 'Next',
     stars: 'Stars:',
+  },
+
+  // Unit conversion game
+  unitConversion: {
+    question: 'How many {to} are in {value} {from}?',
+    units: {
+      m: 'meters',
+      km: 'kilometers',
+      cm: 'centimeters',
+      mm: 'millimeters',
+      kg: 'kilograms',
+      g: 'grams',
+      t: 'tons',
+      l: 'liters',
+      ml: 'milliliters',
+      dl: 'deciliters',
+    },
   },
 
   // Level up modal

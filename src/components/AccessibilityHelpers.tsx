@@ -1,5 +1,7 @@
 // Accessibility helperid - parem ligipääsetavus
-import { useEffect } from 'react';
+import React, { ReactNode, useEffect } from 'react';
+import { useTranslation } from '../i18n/useTranslation';
+import { useProfileText } from '../hooks/useProfileText';
 
 // Keyboard navigation helper
 // eslint-disable-next-line react-refresh/only-export-components
@@ -21,9 +23,6 @@ export const useKeyboardNavigation = (
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [onEscape, onEnter]);
 };
-
-// Focus trap komponent
-import React, { ReactNode } from 'react';
 
 interface FocusTrapProps {
   children: ReactNode;
@@ -98,12 +97,14 @@ interface SkipToContentProps {
 }
 
 const SkipToContent: React.FC<SkipToContentProps> = ({ targetId = 'main-content' }) => {
+  const t = useTranslation();
+  const { formatText } = useProfileText();
   return (
     <a
       href={`#${targetId}`}
       className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-50 focus:px-4 focus:py-2 focus:bg-blue-500 focus:text-white focus:rounded-lg focus:font-bold"
     >
-      Jäta vahele navigatsioonile
+      {formatText(t.accessibility.skipToContent)}
     </a>
   );
 };

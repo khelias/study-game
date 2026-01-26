@@ -14,6 +14,7 @@ import { EnhancedConfetti, PulseEffect } from '../../components/EnhancedAnimatio
 import { ParticleEffect } from '../../components/ParticleEffect';
 import { ProgressIndicator } from '../../components/FeedbackSystem';
 import { useTranslation } from '../../i18n/useTranslation';
+import { buildUnitConversionQuestion } from '../../utils/unitConversion';
 import { useProfileText } from '../../hooks/useProfileText';
 
 import { GAME_CONFIG } from '../../games/data';
@@ -341,7 +342,7 @@ export const GameScreen: React.FC = () => {
         break;
       case 'unit_conversion':
         if (problem.type === 'unit_conversion') {
-          hintText = problem.question || t.gameScreen.hints.unitConversion;
+          hintText = buildUnitConversionQuestion(t, problem.value, problem.fromUnit, problem.toUnit);
         }
         break;
       default:

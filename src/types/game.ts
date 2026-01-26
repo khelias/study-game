@@ -198,7 +198,6 @@ export interface UnitConversionProblem extends BaseProblem {
   fromUnit: string;
   toUnit: string;
   category: string;
-  question: string;
   answer: number;
   options: number[];
 }

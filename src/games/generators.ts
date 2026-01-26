@@ -1,4 +1,5 @@
 import { ALPHABET, WORD_DB, WORD_DB_EN, SCENE_DB, PROFILES } from './data';
+import { SYLLABLE_WORDS } from './syllableWords';
 import { getRandom, uid } from '../engine/rng';
 import { getLocale } from '../i18n/index';
 import { generateSentence, getSceneName } from './sentenceTranslations';
@@ -664,198 +665,30 @@ export const Generators: Record<string, GeneratorFunction> = {
   },
 
   syllable_builder: (level: number, rng: RngFunction = Math.random, profile: ProfileType = 'starter'): SyllableBuilderProblem => {
-    const words = [
-      // 2 syllables - correctly syllabified in Estonian
-      { w: 'AU-TO', hint: '🚗', parts: 2 },
-      { w: 'KA-LA', hint: '🐟', parts: 2 },
-      { w: 'KO-ER', hint: '🐶', parts: 2 },
-      { w: 'KA-RU', hint: '🐻', parts: 2 },
-      { w: 'LU-MI', hint: '❄️', parts: 2 },
-      { w: 'MA-JA', hint: '🏠', parts: 2 },
-      { w: 'HE-LI', hint: '🔔', parts: 2 },
-      { w: 'MA-RI', hint: '🍓', parts: 2 },
-      { w: 'KO-DU', hint: '🏡', parts: 2 },
-      { w: 'JÕ-GI', hint: '🏞️', parts: 2 },
-      { w: 'ME-RI', hint: '🌊', parts: 2 },
-      { w: 'E-MA', hint: '👩', parts: 2 },
-      { w: 'I-SA', hint: '👨', parts: 2 },
-      { w: 'JÄ-NES', hint: '🐰', parts: 2 },
-      { w: 'RA-MAT', hint: '📖', parts: 2 },
-      { w: 'RO-BOT', hint: '🤖', parts: 2 },
-      { w: 'POR-GAND', hint: '🥕', parts: 2 },
-      { w: 'KAR-TUL', hint: '🥔', parts: 2 },
-      { w: 'TO-MAT', hint: '🍅', parts: 2 },
-      { w: 'JÄÄ-TIS', hint: '🍦', parts: 2 },
-      { w: 'KÜP-SIS', hint: '🍪', parts: 2 },
-      { w: 'KOMP-VEK', hint: '🍬', parts: 2 },
-      { w: 'LEN-NUK', hint: '✈️', parts: 2 },
-      { w: 'KO-PTER', hint: '🚁', parts: 2 },
-      { w: 'PÕR-SAS', hint: '🐖', parts: 2 },
-      { w: 'LAM-MAS', hint: '🐑', parts: 2 },
-      { w: 'HO-BU-NE', hint: '🐎', parts: 3 },
-      { w: 'LEH-ME', hint: '🐄', parts: 2 },
-      { w: 'KON-NI', hint: '🐸', parts: 2 },
-      { w: 'SII-LI', hint: '🦔', parts: 2 },
-      { w: 'TI-GU', hint: '🐌', parts: 2 },
-      { w: 'KIR-SI', hint: '🍒', parts: 2 },
-      { w: 'PLOOM', hint: '🍑', parts: 1 },
-      { w: 'MAA-SIK', hint: '🍓', parts: 2 },
-      { w: 'SID-RUN', hint: '🍋', parts: 2 },
-      { w: 'PÄH-KEL', hint: '🌰', parts: 2 },
-      { w: 'JUUST', hint: '🧀', parts: 1 },
-      { w: 'PI-TSA', hint: '🍕', parts: 2 },
-      { w: 'BUR-GER', hint: '🍔', parts: 2 },
-      { w: 'KUR-GI', hint: '🥒', parts: 2 },
-      { w: 'AR-BUUS', hint: '🍉', parts: 2 },
-      { w: 'TOO-LI', hint: '🪑', parts: 2 },
-      { w: 'LAM-PI', hint: '💡', parts: 2 },
-      { w: 'UK-SE', hint: '🚪', parts: 2 },
-      { w: 'KAP-PI', hint: '📦', parts: 2 },
-      { w: 'PLII-ATS', hint: '✏️', parts: 2 },
-      { w: 'AR-VU-TI', hint: '💻', parts: 2 },
-      { w: 'TE-LE-FON', hint: '📱', parts: 2 },
-      { w: 'EK-RAAN', hint: '🖥️', parts: 2 },
-      { w: 'KOH-VE-RI', hint: '🧳', parts: 2 },
-      { w: 'PRIL-LID', hint: '👓', parts: 2 },
-      { w: 'KIN-DAD', hint: '🧤', parts: 2 },
-      { w: 'MÜT-SI', hint: '🧢', parts: 2 },
-      { w: 'KELL', hint: '⌚', parts: 1 },
-      { w: 'PUS-LI', hint: '🧩', parts: 2 },
-      { w: 'KLOT-SID', hint: '🧱', parts: 2 },
-      { w: 'LU-SI-KAS', hint: '🥄', parts: 3 },
-      { w: 'NU-GA', hint: '🔪', parts: 2 },
-      { w: 'BUSS-I', hint: '🚌', parts: 2 },
-      { w: 'TRAM-MI', hint: '🚊', parts: 2 },
-      { w: 'RON-GI', hint: '🚆', parts: 2 },
-      { w: 'LAE-VI', hint: '⛵', parts: 2 },
-      { w: 'PAA-TI', hint: '🛶', parts: 2 },
-      { w: 'RA-TAS', hint: '🚲', parts: 2 },
-      { w: 'RU-LA', hint: '🛹', parts: 2 },
-      { w: 'SÕ-BRA', hint: '🤝', parts: 2 },
-      { w: 'AR-STI', hint: '🧑‍⚕️', parts: 2 },
-      { w: 'KOK-KI', hint: '👨‍🍳', parts: 2 },
-      { w: 'RÕÕ-MU', hint: '😄', parts: 2 },
-      { w: 'KUR-BUS', hint: '😢', parts: 2 },
-      { w: 'ÜLLA-TUS', hint: '😮', parts: 2 },
-      { w: 'U-NI', hint: '😴', parts: 2 },
-      { w: 'KOR-VI', hint: '🏀', parts: 2 },
-      { w: 'TEN-NIS', hint: '🎾', parts: 2 },
-      { w: 'GOL-FI', hint: '⛳', parts: 2 },
-      { w: 'UIS-KU', hint: '⛸️', parts: 2 },
-      { w: 'KEL-GI', hint: '🛷', parts: 2 },
-      { w: 'VIB-U', hint: '🏹', parts: 2 },
-      { w: 'KLAS-SI', hint: '🏫', parts: 2 },
-      { w: 'ÕPI-KU', hint: '📘', parts: 2 },
-      { w: 'MUUSI-KA', hint: '🎼', parts: 2 },
-      
-      // 3 syllables - correctly syllabified
-      { w: 'LI-MO-NAAD', hint: '🥤', parts: 3 },
-      { w: 'PO-LIT-SEI', hint: '👮', parts: 3 },
-      { w: 'LU-ME-IN-GEL', hint: '❄️', parts: 4 },
-      { w: 'MA-RA-TON', hint: '🏃', parts: 3 },
-      { w: 'TE-LE-FON', hint: '📱', parts: 3 },
-      { w: 'AR-VU-TI', hint: '💻', parts: 3 },
-      { w: 'ÕPI-LA-NE', hint: '👨‍🎓', parts: 3 },
-      { w: 'ÕPE-TA-JA', hint: '🧑‍🏫', parts: 3 },
-      { w: 'E-LE-VANT', hint: '🐘', parts: 3 },
-      { w: 'KI-RAHV', hint: '🦒', parts: 2 },
-      { w: 'PING-VIIN', hint: '🐧', parts: 3 },
-      { w: 'KRO-KO-DILL', hint: '🐊', parts: 3 },
-      { w: 'KILP-KONN', hint: '🐢', parts: 3 },
-      { w: 'RE-BA-NE', hint: '🦊', parts: 3 },
-      { w: 'SE-BRA', hint: '🦓', parts: 3 },
-      { w: 'LÕ-VI', hint: '🦁', parts: 3 },
-      { w: 'TII-GER', hint: '🐯', parts: 3 },
-      { w: 'PAN-DA', hint: '🐼', parts: 3 },
-      { w: 'KI-RAH-VI', hint: '🦒', parts: 3 },
-      { w: 'PING-VIIN', hint: '🐧', parts: 3 },
-      { w: 'ÄMB-LIK', hint: '🕷️', parts: 3 },
-      { w: 'DRAA-KON', hint: '🐉', parts: 3 },
-      { w: 'BUR-GER', hint: '🍔', parts: 3 },
-      { w: 'KAR-TU-LI', hint: '🥔', parts: 3 },
-      { w: 'POR-GAND', hint: '🥕', parts: 2 },
-      { w: 'MAA-SI-KAS', hint: '🍓', parts: 3 },
-      { w: 'AR-BUUS', hint: '🍉', parts: 2 },
-      { w: 'SID-RUN', hint: '🍋', parts: 2 },
-      { w: 'KOMP-VEK', hint: '🍬', parts: 2 },
-      { w: 'JÄÄ-TIS', hint: '🍦', parts: 2 },
-      { w: 'KÜP-SIS', hint: '🍪', parts: 2 },
-      { w: 'KOOK', hint: '🍰', parts: 1 },
-      { w: 'ME-SI', hint: '🍯', parts: 3 },
-      { w: 'KOH-VI', hint: '☕', parts: 3 },
-      { w: 'TE-E', hint: '🫖', parts: 3 },
-      { w: 'VOODI', hint: '🛌', parts: 2 },
-      { w: 'KÖÖK', hint: '🍳', parts: 1 },
-      { w: 'DII-VAN', hint: '🛋️', parts: 2 },
-      { w: 'KÄÄ-RID', hint: '✂️', parts: 2 },
-      { w: 'PRIL-LID', hint: '👓', parts: 2 },
-      { w: 'KIN-DAD', hint: '🧤', parts: 2 },
-      { w: 'KLOT-SID', hint: '🧱', parts: 2 },
-      { w: 'LU-SI-KAS', hint: '🥄', parts: 3 },
-      { w: 'NU-GA', hint: '🔪', parts: 3 },
-      { w: 'LEN-NUK', hint: '✈️', parts: 2 },
-      { w: 'KOP-TER', hint: '🚁', parts: 2 },
-      { w: 'MO-PEED', hint: '🛵', parts: 2 },
-      { w: 'VEOK', hint: '🚚', parts: 1 },
-      { w: 'TROL-LI-BUSS', hint: '🚎', parts: 3 },
-      { w: 'VANA-EMA', hint: '👵', parts: 3 },
-      { w: 'VANA-ISA', hint: '👴', parts: 3 },
-      { w: 'PÄÄST-JA', hint: '🧑‍🚒', parts: 3 },
-      { w: 'MAAD-LUS', hint: '🤼', parts: 3 },
-      { w: 'JALG-PALL', hint: '⚽', parts: 3 },
-      { w: 'KORV-PALL', hint: '🏀', parts: 3 },
-      { w: 'VÕRK-PALL', hint: '🏐', parts: 3 },
-      { w: 'JÕU-SAAL', hint: '🏋️', parts: 3 },
-      { w: 'JOOKS-MINE', hint: '🏃', parts: 3 },
-      { w: 'UJU-MINE', hint: '🏊', parts: 3 },
-      { w: 'PU-NA-NE', hint: '🔴', parts: 3 },
-      { w: 'SI-NI-NE', hint: '🔵', parts: 3 },
-      { w: 'RO-HE-LI-NE', hint: '🟢', parts: 4 },
-      { w: 'KOL-LA-NE', hint: '🟡', parts: 3 },
-      { w: 'VAL-GE', hint: '⚪', parts: 2 },
-      { w: 'LIL-LA', hint: '🟣', parts: 2 },
-      { w: 'O-RANŽ', hint: '🟠', parts: 2 },
-      { w: 'PE-A', hint: '👤', parts: 2 },
-      { w: 'KÄ-SI', hint: '✋', parts: 2 },
-      { w: 'JAL-GA', hint: '🦵', parts: 2 },
-      { w: 'SIL-MA', hint: '👁️', parts: 2 },
-      { w: 'KÕR-VA', hint: '👂', parts: 2 },
-      { w: 'NI-NA', hint: '👃', parts: 2 },
-      { w: 'SU-U', hint: '👄', parts: 2 },
-      { w: 'VIH-MA', hint: '🌧️', parts: 2 },
-      { w: 'LU-ME-SA-DU', hint: '❄️', parts: 4 },
-      { w: 'TUI-SKU', hint: '🌨️', parts: 2 },
-      { w: 'PÄI-KE', hint: '☀️', parts: 2 },
-      { w: 'PIL-VE', hint: '☁️', parts: 2 },
-      { w: 'VIH-MA-VAR-JU', hint: '🌦️', parts: 4 },
-      
-      // 4 silpi
-      { w: 'HE-LI-KOP-TER', hint: '🚁', parts: 4 },
-      { w: 'TE-LE-VI-SI-OON', hint: '📺', parts: 5 },
-      { w: 'MA-GA-MIS-TU-BA', hint: '🛏️', parts: 5 },
-      { w: 'KIR-JU-TUS-LAUD', hint: '🪑', parts: 4 },
-      { w: 'VII-NA-MA-RI', hint: '🍇', parts: 4 },
-      { w: 'A-NA-NASS', hint: '🍍', parts: 3 },
-      { w: 'MO-TOOR-RA-TAS', hint: '🏍️', parts: 4 },
-      { w: 'VAN-NI-TU-BA', hint: '🛁', parts: 4 },
-    ];
+    const locale = getLocale();
+    const words = SYLLABLE_WORDS[locale] ?? SYLLABLE_WORDS.et;
     // Filter by level - higher levels have longer words
     const meta = profileMeta(profile);
     // Sujuvam progressioon: Level 1-2 = 2 silpi, Level 3-5 = 3 silpi, Level 6+ = 3-4 silpi
     const targetParts = level <= 2 ? 2 : level <= 5 ? 3 : level <= 7 ? 3 : 4;
-    const filtered = words.filter(item => {
-      const partsCount = item.parts || item.w.split('-').length;
-      if (meta.difficultyOffset > 0) {
-        // Advanced profile - can be slightly harder
-        return partsCount >= Math.max(2, targetParts - (level <= 3 ? 0 : 1));
-      }
-      return partsCount <= targetParts;
+    const isAdvanced = meta.difficultyOffset > 0;
+    const minParts = isAdvanced
+      ? Math.max(2, targetParts - (level > 3 ? 1 : 0))
+      : 2;
+    const maxParts = isAdvanced ? targetParts + 1 : targetParts;
+    let filtered = words.filter(item => {
+      const partsCount = item.syllables.length;
+      return partsCount >= minParts && partsCount <= maxParts;
     });
+    if (filtered.length === 0) {
+      const smallestDiff = Math.min(...words.map(item => Math.abs(item.syllables.length - targetParts)));
+      filtered = words.filter(item => Math.abs(item.syllables.length - targetParts) === smallestDiff);
+    }
     const wordObj = getRandom(filtered, rng);
     if (!wordObj) {
       throw new Error('No word found for syllable_builder game');
     }
-    const syllables = wordObj.w.split('-');
+    const syllables = wordObj.syllables;
     const shuffled = syllables.map((text, i) => ({ 
       text, 
       id: `syl-${i}-${uid(rng)}` 
@@ -864,7 +697,7 @@ export const Generators: Record<string, GeneratorFunction> = {
     return { 
       type: 'syllable_builder', 
       target: syllables.join(''),
-      emoji: wordObj.hint,
+      emoji: wordObj.emoji,
       syllables,
       shuffled,
       uid: uid(rng) 
@@ -904,17 +737,17 @@ export const Generators: Record<string, GeneratorFunction> = {
     // Unit conversion definitions
     const conversions = {
       length: [
-        { from: 'm', to: 'cm', factor: 100, emoji: '📏', name: 'meetrit', toName: 'sentimeetrit' },
-        { from: 'km', to: 'm', factor: 1000, emoji: '📐', name: 'kilomeetrit', toName: 'meetrit' },
-        { from: 'cm', to: 'mm', factor: 10, emoji: '📏', name: 'sentimeetrit', toName: 'millimeetrit' }
+        { from: 'm', to: 'cm', factor: 100, emoji: '📏' },
+        { from: 'km', to: 'm', factor: 1000, emoji: '📐' },
+        { from: 'cm', to: 'mm', factor: 10, emoji: '📏' }
       ],
       mass: [
-        { from: 'kg', to: 'g', factor: 1000, emoji: '⚖️', name: 'kilogrammi', toName: 'grammi' },
-        { from: 't', to: 'kg', factor: 1000, emoji: '🏋️', name: 'tonni', toName: 'kilogrammi' }
+        { from: 'kg', to: 'g', factor: 1000, emoji: '⚖️' },
+        { from: 't', to: 'kg', factor: 1000, emoji: '🏋️' }
       ],
       volume: [
-        { from: 'l', to: 'ml', factor: 1000, emoji: '🧪', name: 'liitrit', toName: 'milliliitrit' },
-        { from: 'l', to: 'dl', factor: 10, emoji: '🥛', name: 'liitrit', toName: 'detsiliitrit' }
+        { from: 'l', to: 'ml', factor: 1000, emoji: '🧪' },
+        { from: 'l', to: 'dl', factor: 10, emoji: '🥛' }
       ]
     };
 
@@ -1026,15 +859,12 @@ export const Generators: Record<string, GeneratorFunction> = {
 
     const options = [correctAnswer, ...uniqueWrong.slice(0, 3)].sort(() => rng() - 0.5);
 
-    const question = `Mitu ${selectedConversion.toName} on ${value} ${selectedConversion.name}?`;
-
     return {
       type: 'unit_conversion',
       value,
       fromUnit: selectedConversion.from,
       toUnit: selectedConversion.to,
       category: unitType,
-      question,
       answer: correctAnswer,
       options,
       uid: uid(rng)

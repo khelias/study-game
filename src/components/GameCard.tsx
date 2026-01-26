@@ -47,13 +47,15 @@ export const GameCard: React.FC<GameCardProps> = ({
   const difficultyText = gameConfig.difficulty 
     ? t.difficulty[gameConfig.difficulty as keyof typeof t.difficulty] || gameConfig.difficulty
     : null;
+  const levelLabel = formatText(t.game.level);
+  const ariaLabel = `${formatText(gameTitle)} - ${formatText(gameDesc)} - ${levelLabel} ${level}`;
   
   return (
     <FadeIn delay={delay}>
       <button
         onClick={onClick}
         disabled={isLocked}
-        aria-label={`${gameConfig.title} - ${gameConfig.desc} - Tase ${level}`}
+        aria-label={ariaLabel}
         className={`
           group relative flex items-center gap-4 p-5 rounded-3xl w-full
           ${gameConfig.theme.bg} border-4 ${gameConfig.theme.border}

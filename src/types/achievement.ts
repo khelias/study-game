@@ -7,8 +7,6 @@ import { Stats } from './stats';
 // Achievement definition
 export interface Achievement {
   id: string;
-  title: string;
-  desc: string;
   icon: string;
   check: (stats: Stats) => boolean;
 }
