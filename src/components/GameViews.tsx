@@ -154,10 +154,10 @@ const SvgWeight: React.FC<SvgWeightProps> = ({ x, y, num, label, color, dashed }
       {/* Top curvature (3D effect) */}
       <ellipse cx="0" cy="-22" rx="16" ry="6" fill={palette.highlight} opacity="0.65" />
       
-      {/* Number background (better readability) */}
+      {/* Number background */}
       <circle cx="0" cy="-5" r="10" fill="white" opacity="0.25" />
       
-      {/* Number - larger and clearer, always visible */}
+      {/* Number */}
       <text x="0" y="2" textAnchor="middle"
             fontSize={fontSize} fontWeight="900" fontFamily="Arial, sans-serif"
             fill={palette.textFill}
@@ -221,7 +221,7 @@ export const BalanceScaleView: React.FC<BalanceScaleViewProps> = ({ problem, onA
       <div className="relative w-full max-w-sm h-56 sm:h-64 mb-3 sm:mb-4 flex justify-center overflow-hidden">
         <svg width="100%" height="100%" viewBox="0 0 340 240" preserveAspectRatio="xMidYMid meet" className="overflow-visible" style={{ minHeight: '240px' }}>
             <defs>
-                {/* Enhanced golden gradient for scale */}
+                {/* Golden gradient for scale */}
                 <linearGradient id="gradGold" x1="0%" y1="0%" x2="100%" y2="0%">
                   <stop offset="0%" stopColor="#fbbf24" />
                   <stop offset="50%" stopColor="#f59e0b" />
@@ -239,7 +239,7 @@ export const BalanceScaleView: React.FC<BalanceScaleViewProps> = ({ problem, onA
                 <filter id="shadowStrong"><feDropShadow dx="3" dy="4" stdDeviation="4" floodOpacity="0.5"/></filter>
             </defs>
             
-            {/* Enhanced base - 3D effect */}
+            {/* Base with 3D effect */}
             <path d="M 120 230 L 220 230 Q 230 230 225 220 L 180 140 L 160 140 L 115 220 Q 110 230 120 230" 
                   fill="url(#gradGoldVertical)" 
                   filter="url(#shadowStrong)" 
@@ -248,7 +248,7 @@ export const BalanceScaleView: React.FC<BalanceScaleViewProps> = ({ problem, onA
             {/* Base shadow */}
             <ellipse cx="170" cy="230" rx="55" ry="8" fill="black" opacity="0.3" />
             
-            {/* Enhanced support post */}
+            {/* Support post */}
             <rect x="165" y="60" width="10" height="100" 
                   fill="url(#gradPole)" 
                   filter="url(#shadow)"
@@ -258,7 +258,7 @@ export const BalanceScaleView: React.FC<BalanceScaleViewProps> = ({ problem, onA
                   rx="2" />
             
             <g style={{ transform: `rotate(${tilt}deg)`, transformOrigin: '170px 60px', transition: 'transform 1.2s cubic-bezier(0.34, 1.56, 0.64, 1)' }}>
-                {/* Enhanced scale - 3D effect */}
+                {/* Scale with 3D effect */}
                 <rect x="50" y="55" width="240" height="10" rx="5" 
                       fill="url(#gradGold)" 
                       filter="url(#shadowStrong)" 
@@ -267,18 +267,18 @@ export const BalanceScaleView: React.FC<BalanceScaleViewProps> = ({ problem, onA
                 {/* Scale top glow */}
                 <rect x="50" y="55" width="240" height="4" rx="5" fill="#fcd34d" opacity="0.6" />
                 
-                {/* Enhanced center point */}
+                {/* Center point */}
                 <circle cx="170" cy="60" r="8" fill="url(#gradGoldVertical)" filter="url(#shadowStrong)" stroke="#b45309" strokeWidth="2" />
                 <circle cx="170" cy="60" r="5" fill="#fbbf24" opacity="0.8" />
                 <g transform="translate(60, 60)">
                     <g style={{ transform: `rotate(${-tilt}deg)`, transformOrigin: '0px 0px', transition: 'transform 1.2s' }}>
-                        {/* Enhanced ropes - 3D effect */}
+                        {/* Ropes with 3D effect */}
                         <line x1="0" y1="0" x2="-25" y2="90" stroke="#64748b" strokeWidth="3" strokeLinecap="round" />
                         <line x1="0" y1="0" x2="25" y2="90" stroke="#64748b" strokeWidth="3" strokeLinecap="round" />
                         <line x1="0" y1="0" x2="-25" y2="90" stroke="#cbd5e1" strokeWidth="1.5" strokeLinecap="round" opacity="0.6" />
                         <line x1="0" y1="0" x2="25" y2="90" stroke="#cbd5e1" strokeWidth="1.5" strokeLinecap="round" opacity="0.6" />
                         
-                        {/* Enhanced bowl - blue */}
+                        {/* Bowl - blue */}
                         <defs>
                           <linearGradient id="bowlBlue" x1="0%" y1="0%" x2="0%" y2="100%">
                             <stop offset="0%" stopColor="#eff6ff" />
@@ -295,13 +295,13 @@ export const BalanceScaleView: React.FC<BalanceScaleViewProps> = ({ problem, onA
                 </g>
                 <g transform="translate(280, 60)">
                     <g style={{ transform: `rotate(${-tilt}deg)`, transformOrigin: '0px 0px', transition: 'transform 1.2s' }}>
-                        {/* Enhanced ropes - 3D effect */}
+                        {/* Ropes with 3D effect */}
                         <line x1="0" y1="0" x2="-25" y2="90" stroke="#64748b" strokeWidth="3" strokeLinecap="round" />
                         <line x1="0" y1="0" x2="25" y2="90" stroke="#64748b" strokeWidth="3" strokeLinecap="round" />
                         <line x1="0" y1="0" x2="-25" y2="90" stroke="#cbd5e1" strokeWidth="1.5" strokeLinecap="round" opacity="0.6" />
                         <line x1="0" y1="0" x2="25" y2="90" stroke="#cbd5e1" strokeWidth="1.5" strokeLinecap="round" opacity="0.6" />
                         
-                        {/* Enhanced bowl - red */}
+                        {/* Bowl - red */}
                         <defs>
                           <linearGradient id="bowlRed" x1="0%" y1="0%" x2="0%" y2="100%">
                             <stop offset="0%" stopColor="#fff1f2" />
@@ -1116,7 +1116,7 @@ export const MemoryGameView: React.FC<MemoryGameViewProps> = ({ problem, onAnswe
         </div>
       )}
       
-      {/* Enhanced cards - more colorful and attractive, compact on mobile */}
+      {/* Cards */}
       <div className="w-full grid grid-cols-4 gap-2 sm:gap-3 md:gap-4 aspect-square max-w-md mx-auto relative">
         {showCelebration && (
           <div className="absolute inset-0 flex items-center justify-center z-50 pointer-events-none">
@@ -1145,14 +1145,14 @@ export const MemoryGameView: React.FC<MemoryGameViewProps> = ({ problem, onAnswe
                 }
               `}
             >
-              {/* Card back - enhanced */}
+              {/* Card back */}
               {!isFlipped && (
                 <div className="absolute inset-0 flex items-center justify-center">
                   <div className="text-4xl opacity-80">🧠</div>
                 </div>
               )}
               
-              {/* Card front - enhanced */}
+              {/* Card front */}
               <div className={`${isFlipped ? 'block' : 'hidden'} transition-opacity duration-300`}>
                 <div className={`
                   px-2 py-1 rounded-lg

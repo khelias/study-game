@@ -1,4 +1,4 @@
-// Enhanced animations and visual effects
+// Animations and visual effects
 import React, { ReactNode } from 'react';
 
 interface Position {
@@ -174,7 +174,7 @@ interface EnhancedConfettiProps {
   onComplete?: () => void;
 }
 
-// Confetti effect - enhanced version
+// Confetti effect
 export const EnhancedConfetti: React.FC<EnhancedConfettiProps> = ({ active, onComplete }) => {
   const [particles, setParticles] = React.useState<Particle[]>([]);
   
