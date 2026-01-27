@@ -407,7 +407,7 @@ export const et = {
       mathSnake: 'Söö õunu ja vaata, millal tuleb matemaatika õun!',
       timeMatch: 'Vaata kella osuteid!',
       unitConversion: 'Arvuta ümber!',
-      compareSizes: 'Võrdle suurusi hoolikalt!',
+      compare_sizes: 'Võrdle suurusi hoolikalt!',
       default: 'Proovi veel!',
     },
     hintButton: {
@@ -619,7 +619,7 @@ export const et = {
       title: 'NUMBRIMADU',
       desc: 'Sööda madu tehetega',
     },
-    compareSizes: {
+    compare_sizes: {
       title: 'SUURUSTE VÕRDLEMINE',
       desc: 'Võrdle esemete suurusi',
       instruction: 'Milline sümbol on õige?',

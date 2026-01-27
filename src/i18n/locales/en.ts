@@ -407,7 +407,7 @@ export const en = {
       mathSnake: 'Eat apples and watch for the math apple!',
       timeMatch: 'Look at the clock hands!',
       unitConversion: 'Calculate!',
-      compareSizes: 'Compare the sizes carefully!',
+      compare_sizes: 'Compare the sizes carefully!',
       default: 'Try again!',
     },
     hintButton: {
@@ -619,7 +619,7 @@ export const en = {
       title: 'NUMBER SNAKE',
       desc: 'Feed the snake with equations',
     },
-    compareSizes: {
+    compare_sizes: {
       title: 'SIZE COMPARE',
       desc: 'Compare object sizes',
       instruction: 'Which symbol is correct?',

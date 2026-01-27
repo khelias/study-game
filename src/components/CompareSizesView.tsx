@@ -87,77 +87,83 @@ export const CompareSizesView: React.FC<CompareSizesViewProps> = ({
   };
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-[400px] p-4 sm:p-8">
+    <div className="flex flex-col items-center justify-center min-h-[400px] p-4 sm:p-8 bg-gradient-to-b from-blue-50/30 via-purple-50/20 to-green-50/30">
       {/* Instruction - emphasize symbol selection */}
-      <div className="text-lg sm:text-2xl font-bold mb-6 sm:mb-8 text-gray-700 text-center">
-        {t.games.compareSizes.symbolInstruction}
+      <div className="text-xl sm:text-2xl lg:text-3xl font-black mb-6 sm:mb-8 text-gray-800 text-center drop-shadow-sm">
+        {t.games.compare_sizes.symbolInstruction}
       </div>
 
       {/* Comparison display */}
-      <div className="flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-6 lg:gap-8 mb-8 sm:mb-12 w-full max-w-4xl">
+      <div className="flex flex-row items-center justify-center gap-3 sm:gap-5 lg:gap-8 mb-10 sm:mb-14 w-full max-w-5xl">
         {/* Left item */}
         <div 
-          className="flex flex-col items-center justify-center bg-blue-100 rounded-2xl p-4 sm:p-6 lg:p-8 min-w-[140px] sm:min-w-[180px] lg:min-w-[200px] min-h-[140px] sm:min-h-[180px] lg:min-h-[200px] border-2 sm:border-4 border-blue-300 flex-1 max-w-xs"
-          aria-label={t.games.compareSizes.leftItem}
+          className="flex flex-col items-center justify-center bg-gradient-to-br from-blue-50 to-blue-100 rounded-3xl p-4 sm:p-5 lg:p-7 min-w-[110px] sm:min-w-[150px] lg:min-w-[200px] min-h-[110px] sm:min-h-[150px] lg:min-h-[200px] border-3 sm:border-4 border-blue-400 shadow-xl hover:shadow-2xl transition-shadow duration-300 flex-1 max-w-xs relative overflow-hidden"
+          aria-label={t.games.compare_sizes.leftItem}
         >
+          {/* Decorative gradient overlay */}
+          <div className="absolute inset-0 bg-gradient-to-br from-blue-200/20 to-transparent pointer-events-none"></div>
           {isDiceMode ? (
-            <div className="flex flex-col items-center gap-2 sm:gap-4">
+            <div className="flex flex-col items-center gap-2 sm:gap-4 relative z-10">
               {renderDiceDisplay(problem.leftItem.value)}
               {problem.showNumbers && (
-                <div className="text-2xl sm:text-3xl lg:text-4xl font-bold text-blue-600 mt-2">
+                <div className="text-2xl sm:text-3xl lg:text-4xl font-black text-blue-700 mt-2 drop-shadow-sm">
                   {problem.leftItem.value}
                 </div>
               )}
             </div>
           ) : (
-            <div className="text-4xl sm:text-5xl lg:text-6xl font-bold text-blue-600">
+            <div className="text-5xl sm:text-6xl lg:text-7xl font-black text-blue-600 drop-shadow-md relative z-10">
               {problem.leftItem.display}
             </div>
           )}
         </div>
 
-        {/* Middle comparison symbol placeholder - big question mark */}
-        <div className="flex flex-col items-center flex-shrink-0">
-          <div className="text-5xl sm:text-6xl lg:text-7xl font-bold text-purple-600 animate-pulse">
-            ?
+        {/* Middle comparison symbol placeholder - more elegant */}
+        <div className="flex flex-col items-center justify-center flex-shrink-0 px-2 sm:px-3">
+          <div className="w-16 h-16 sm:w-20 sm:h-20 lg:w-24 lg:h-24 rounded-full bg-gradient-to-br from-purple-100 to-purple-200 border-3 sm:border-4 border-purple-400 flex items-center justify-center shadow-lg">
+            <div className="text-3xl sm:text-4xl lg:text-5xl font-black text-purple-600 animate-pulse">
+              ?
+            </div>
           </div>
-          <div className="text-xs sm:text-sm text-gray-500 mt-1 sm:mt-2">
-            {t.games.compareSizes.selectSymbol}
+          <div className="text-[10px] sm:text-xs font-semibold text-purple-700 mt-2 text-center max-w-[80px]">
+            {t.games.compare_sizes.selectSymbol}
           </div>
         </div>
 
         {/* Right item */}
         <div 
-          className="flex flex-col items-center justify-center bg-green-100 rounded-2xl p-4 sm:p-6 lg:p-8 min-w-[140px] sm:min-w-[180px] lg:min-w-[200px] min-h-[140px] sm:min-h-[180px] lg:min-h-[200px] border-2 sm:border-4 border-green-300 flex-1 max-w-xs"
-          aria-label={t.games.compareSizes.rightItem}
+          className="flex flex-col items-center justify-center bg-gradient-to-br from-green-50 to-green-100 rounded-3xl p-4 sm:p-5 lg:p-7 min-w-[110px] sm:min-w-[150px] lg:min-w-[200px] min-h-[110px] sm:min-h-[150px] lg:min-h-[200px] border-3 sm:border-4 border-green-400 shadow-xl hover:shadow-2xl transition-shadow duration-300 flex-1 max-w-xs relative overflow-hidden"
+          aria-label={t.games.compare_sizes.rightItem}
         >
+          {/* Decorative gradient overlay */}
+          <div className="absolute inset-0 bg-gradient-to-br from-green-200/20 to-transparent pointer-events-none"></div>
           {isDiceMode ? (
-            <div className="flex flex-col items-center gap-2 sm:gap-4">
+            <div className="flex flex-col items-center gap-2 sm:gap-4 relative z-10">
               {renderDiceDisplay(problem.rightItem.value)}
               {problem.showNumbers && (
-                <div className="text-2xl sm:text-3xl lg:text-4xl font-bold text-green-600 mt-2">
+                <div className="text-2xl sm:text-3xl lg:text-4xl font-black text-green-700 mt-2 drop-shadow-sm">
                   {problem.rightItem.value}
                 </div>
               )}
             </div>
           ) : (
-            <div className="text-4xl sm:text-5xl lg:text-6xl font-bold text-green-600">
+            <div className="text-5xl sm:text-6xl lg:text-7xl font-black text-green-600 drop-shadow-md relative z-10">
               {problem.rightItem.display}
             </div>
           )}
         </div>
       </div>
 
-      {/* Symbol selection buttons - ALWAYS 3 slots for consistency */}
-      <div className="flex gap-3 sm:gap-4 lg:gap-6 flex-wrap justify-center max-w-2xl">
-        {(['left', 'right', 'equal'] as const).map((option) => {
+      {/* Symbol selection buttons - ALWAYS 3 slots for consistency, improved styling */}
+      <div className="flex gap-3 sm:gap-4 lg:gap-5 justify-center max-w-2xl">
+        {(['left', 'equal', 'right'] as const).map((option) => {
           const symbol = getSymbol(option);
           const isAvailable = problem.options.includes(option);
           const label = option === 'left' 
-            ? `${symbol} (${t.games.compareSizes.leftBigger})` 
+            ? `${symbol} (${t.games.compare_sizes.leftBigger})` 
             : option === 'right' 
-            ? `${symbol} (${t.games.compareSizes.rightBigger})` 
-            : `${symbol} (${t.games.compareSizes.equal})`;
+            ? `${symbol} (${t.games.compare_sizes.rightBigger})` 
+            : `${symbol} (${t.games.compare_sizes.equal})`;
           
           return (
             <button
@@ -165,39 +171,47 @@ export const CompareSizesView: React.FC<CompareSizesViewProps> = ({
               onClick={() => isAvailable && handleAnswer(option)}
               disabled={!isAvailable || selectedAnswer !== null}
               className={`
-                flex flex-col items-center gap-2 sm:gap-3 px-4 sm:px-6 lg:px-8 py-3 sm:py-4 lg:py-5 rounded-xl sm:rounded-2xl font-bold
-                transition-all transform ${isAvailable && selectedAnswer === null ? 'hover:scale-105 active:scale-95' : ''}
+                flex flex-col items-center justify-center gap-1.5 sm:gap-2 px-4 sm:px-5 lg:px-7 py-3 sm:py-4 lg:py-5 
+                rounded-2xl sm:rounded-3xl font-bold relative overflow-hidden
+                transition-all duration-300 transform ${isAvailable && selectedAnswer === null ? 'hover:scale-110 hover:-translate-y-1 active:scale-95' : ''}
                 ${selectedAnswer === option 
                   ? selectedAnswer === problem.answer 
-                    ? 'bg-green-500 text-white' 
-                    : 'bg-red-500 text-white'
+                    ? 'bg-gradient-to-br from-green-500 to-green-600 text-white shadow-2xl ring-4 ring-green-300' 
+                    : 'bg-gradient-to-br from-red-500 to-red-600 text-white shadow-2xl ring-4 ring-red-300'
                   : isAvailable
-                  ? 'bg-gradient-to-br from-purple-500 to-indigo-600 text-white hover:from-purple-600 hover:to-indigo-700'
-                  : 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                  ? 'bg-gradient-to-br from-purple-500 via-purple-600 to-indigo-600 text-white hover:from-purple-600 hover:via-purple-700 hover:to-indigo-700 shadow-xl hover:shadow-2xl'
+                  : 'bg-gradient-to-br from-gray-200 to-gray-300 text-gray-400 cursor-not-allowed shadow-md'
                 }
-                border-2 sm:border-4 ${
+                border-3 sm:border-4 ${
                   selectedAnswer === option
                     ? selectedAnswer === problem.answer
-                      ? 'border-green-700'
-                      : 'border-red-700'
+                      ? 'border-green-400'
+                      : 'border-red-400'
                     : isAvailable
-                    ? 'border-purple-700 hover:border-purple-800'
+                    ? 'border-purple-400 hover:border-purple-500'
                     : 'border-gray-300'
                 }
-                ${!isAvailable || selectedAnswer !== null ? 'opacity-50' : ''} shadow-lg sm:shadow-xl min-w-[80px] sm:min-w-[100px]
+                ${!isAvailable || selectedAnswer !== null ? 'opacity-60' : ''}
+                min-w-[70px] sm:min-w-[90px] lg:min-w-[110px]
               `}
               aria-label={label}
               aria-disabled={!isAvailable}
             >
-              {/* Large symbol display */}
-              <span className="text-3xl sm:text-4xl lg:text-5xl font-black">
+              {/* Shine effect overlay for available buttons */}
+              {isAvailable && selectedAnswer === null && (
+                <div className="absolute inset-0 bg-gradient-to-br from-white/30 to-transparent pointer-events-none"></div>
+              )}
+              
+              {/* Symbol display with better styling */}
+              <span className="text-2xl sm:text-3xl lg:text-4xl font-black drop-shadow-lg relative z-10">
                 {symbol}
               </span>
+              
               {/* Text label */}
-              <span className="text-xs sm:text-sm font-medium text-center">
-                {option === 'left' ? t.games.compareSizes.leftBigger 
-                  : option === 'right' ? t.games.compareSizes.rightBigger 
-                  : t.games.compareSizes.equal}
+              <span className="text-[10px] sm:text-xs font-semibold text-center relative z-10 leading-tight">
+                {option === 'left' ? t.games.compare_sizes.leftBigger 
+                  : option === 'right' ? t.games.compare_sizes.rightBigger 
+                  : t.games.compare_sizes.equal}
               </span>
             </button>
           );
