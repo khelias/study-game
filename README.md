@@ -152,118 +152,31 @@ npm run lint
 
 ### Project Structure
 
-```
-study-game/
-├── public/                 # Static files
-│   └── favicon.svg
-├── src/
-│   ├── components/         # React components
-│   │   ├── gameViews/      # Individual game view components
-│   │   │   ├── BalanceScaleView.tsx
-│   │   │   ├── StandardGameView.tsx
-│   │   │   ├── WordGameView.tsx
-│   │   │   ├── SyllableGameView.tsx
-│   │   │   ├── PatternTrainView.tsx
-│   │   │   ├── MemoryGameView.tsx
-│   │   │   ├── RoboPathView.tsx
-│   │   │   ├── TimeGameView.tsx
-│   │   │   ├── UnitConversionView.tsx
-│   │   │   └── index.ts
-│   │   ├── shared/         # Shared/reusable components
-│   │   │   ├── LevelUpModal.tsx
-│   │   │   ├── Confetti.tsx
-│   │   │   ├── TimeDisplay.tsx
-│   │   │   ├── SvgWeight.tsx
-│   │   │   └── index.ts
-│   │   ├── GameHeader.tsx  # Game screen header
-│   │   ├── SettingsMenu.tsx # Settings dropdown
-│   │   ├── FeedbackSystem.tsx  # Feedback system
-│   │   ├── EnhancedAnimations.tsx  # Animations
-│   │   └── ...
-│   ├── engine/            # Game engine (core logic)
-│   │   ├── adaptiveDifficulty.ts  # Adaptive difficulty
-│   │   ├── achievements.ts  # Achievement system
-│   │   ├── answerHandler.ts # Answer processing logic
-│   │   ├── mathSnake.ts    # Math snake game logic
-│   │   ├── stats.ts        # Statistics
-│   │   ├── audio.ts        # Audio system
-│   │   ├── progression.ts  # Progression logic
-│   │   └── rng.ts          # Random number generation
-│   ├── features/          # Feature-based structure
-│   │   ├── gameplay/      # Game functions
-│   │   │   ├── GameScreen.tsx
-│   │   │   ├── GameRenderer.tsx
-│   │   │   └── GameOverScreen.tsx
-│   │   ├── menu/          # Menu functions
-│   │   └── modals/        # Modal components
-│   ├── games/             # Game data
-│   │   ├── data.ts        # Game configuration
-│   │   └── generators.ts  # Problem generation
-│   ├── hooks/             # React hooks
-│   │   ├── useAnswerHandler.ts # Answer handling logic
-│   │   ├── useGameHints.ts  # Hint generation
-│   │   ├── useGameTips.ts  # Tip display
-│   │   ├── useGameEngine.ts
-│   │   ├── useGameAudio.ts
-│   │   └── ...
-│   ├── stores/            # Zustand stores
-│   │   ├── gameStore.ts   # Persistent game state
-│   │   └── playSessionStore.ts  # Session state
-│   ├── utils/             # Utils
-│   │   ├── errorHandler.ts  # Error handling
-│   │   └── performanceOptimizations.ts  # Performance optimizations
-│   ├── i18n/              # Internationalization
-│   │   ├── locales/       # Translations
-│   │   │   ├── et.ts      # Estonian (default)
-│   │   │   └── en.ts      # English
-│   │   └── useTranslation.tsx
-│   ├── App.tsx            # Main component
-│   └── main.tsx           # Entry point
-├── .gitignore
-├── index.html
-├── package.json
-├── vite.config.js
-├── tailwind.config.js
-├── ARCHITECTURE.md        # Architecture documentation
-└── README.md
-```
+The project follows a feature-based architecture with clear separation of concerns:
+
+- **`src/components/`** - React UI components (game views, shared components)
+- **`src/engine/`** - Pure business logic (RNG, scoring, progression, achievements)
+- **`src/features/`** - Feature workflows (gameplay, menu, modals)
+- **`src/games/`** - Game data, generators, and registry system
+- **`src/hooks/`** - Custom React hooks for game logic
+- **`src/stores/`** - Zustand state management (persistent & session)
+- **`src/i18n/`** - Internationalization system
+
+For detailed project structure and architecture, see [ARCHITECTURE.md](./ARCHITECTURE.md).
 
 ### Adding a New Game
 
-1. **Add game configuration** `src/games/data.ts`
-   ```typescript
-   new_game: {
-     id: 'new_game',
-     title: 'NEW GAME',
-     theme: THEME.blue,
-     icon: 'Icon',
-     desc: 'Game description',
-     allowedProfiles: ['starter'],
-     difficulty: 'easy'
-   }
-   ```
+The game registry system makes adding new games simple and scalable. No need to modify `GameRenderer.tsx` anymore!
 
-2. **Add generation logic** `src/games/generators.ts`
-   ```typescript
-   generateNewGame(level, rng) {
-     // Generate problem
-   }
-   ```
+**Quick steps:**
+1. Add game configuration to `src/games/data.ts`
+2. Add generator function to `src/games/generators.ts`
+3. Create validator in `src/games/validators.ts`
+4. Create game view component in `src/components/gameViews/`
+5. Register the game in `src/games/registrations.ts`
+6. Add translations to `src/i18n/locales/`
 
-3. **Create game view component** `src/components/gameViews/NewGameView.tsx`
-   ```typescript
-   export const NewGameView: React.FC<NewGameViewProps> = ({ problem, onAnswer, soundEnabled }) => {
-     // Game UI
-   }
-   ```
-
-4. **Add to GameRenderer** `src/features/gameplay/GameRenderer.tsx`
-   ```typescript
-   case 'new_game':
-     return <NewGameView problem={problem as NewGameProblem} onAnswer={onAnswer} soundEnabled={soundEnabled} />;
-   ```
-
-5. **Add translations** `src/i18n/locales/et.ts` and `en.ts`
+For detailed instructions with code examples, see [ARCHITECTURE.md - Adding a New Game](./ARCHITECTURE.md#adding-a-new-game).
 
 ### Adaptive Difficulty
 
@@ -486,15 +399,4 @@ Private project - all rights reserved.
 ---
 
 **Version:** 2.2  
-**Created:** 2026  
-**Last updated:** 2026-01-27
-
-### Recent Updates
-
-**2026-01-27: Major Refactoring for Scalability**
-- Refactored `GameScreen` from 837 to 311 lines (60% reduction)
-- Split monolithic `GameViews.tsx` (1802 lines) into individual game view files
-- Extracted answer handling logic to engine module
-- Created specialized hooks for answer handling, hints, and tips
-- Improved component organization with `gameViews/` and `shared/` directories
-- Enhanced code maintainability and scalability
+**Created:** 2026

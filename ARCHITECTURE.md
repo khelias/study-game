@@ -73,7 +73,10 @@ src/
 ├── games/             # Game data and logic
 │   ├── __tests__/
 │   ├── data.ts        # Game configuration
-│   └── generators.ts  # Problem generation
+│   ├── generators.ts  # Problem generation
+│   ├── registry.ts     # Game registry system
+│   ├── registrations.ts # Game auto-registration
+│   └── validators.ts  # Answer validation functions
 ├── hooks/             # React hooks
 │   ├── __tests__/
 │   ├── useAchievements.ts
@@ -308,6 +311,22 @@ User Action → Component → Hook/Store Action → State Update → Component R
 - Each game type has its own generation function
 - Difficulty progression
 
+### `games/registry.ts`
+- Centralized game registry system
+- Enables zero-touch game addition
+- Supports dynamic game loading
+- Scales to 50+ games without code bloat
+
+### `games/registrations.ts`
+- Auto-registration of all games
+- Runs automatically on import
+- Registers games with their components, generators, validators, and configs
+
+### `games/validators.ts`
+- Answer validation functions for each game type
+- Pure functions that validate user answers
+- Type-safe validation logic
+
 ## Component Architecture
 
 ### Game Views
@@ -447,11 +466,64 @@ When monetization is needed, you can:
 
 ### Adding a New Game
 
+The game registry system makes adding new games simple and scalable:
+
 1. **Add game configuration** `games/data.ts`
+   ```typescript
+   new_game: {
+     id: 'new_game',
+     title: 'NEW GAME',
+     theme: THEME.blue,
+     icon: 'Icon',
+     desc: 'Game description',
+     allowedProfiles: ['starter'],
+     difficulty: 'easy',
+     category: 'logic'
+   }
+   ```
+
 2. **Add generation logic** `games/generators.ts`
-3. **Create game view component** `components/gameViews/NewGameView.tsx`
-4. **Add to GameRenderer** `features/gameplay/GameRenderer.tsx`
-5. **Add translations** `i18n/locales/et.ts` and `en.ts`
+   ```typescript
+   new_game: (level, rng, profile) => {
+     // Generate problem
+     return { type: 'new_game', ... };
+   }
+   ```
+
+3. **Create validator** `games/validators.ts`
+   ```typescript
+   export const validateNewGame: AnswerValidator = (problem, userAnswer) => {
+     if (problem.type !== 'new_game') return false;
+     return userAnswer === problem.answer;
+   };
+   ```
+
+4. **Create game view component** `components/gameViews/NewGameView.tsx`
+   ```typescript
+   export const NewGameView: React.FC<NewGameViewProps> = ({ 
+     problem, 
+     onAnswer, 
+     soundEnabled 
+   }) => {
+     // Game UI
+   };
+   ```
+
+5. **Register the game** `games/registrations.ts`
+   ```typescript
+   gameRegistry.register({
+     id: 'new_game',
+     component: NewGameView,
+     generator: Generators.new_game,
+     config: GAME_CONFIG.new_game,
+     validator: validateNewGame,
+     allowedProfiles: GAME_CONFIG.new_game.allowedProfiles,
+   });
+   ```
+
+6. **Add translations** `i18n/locales/et.ts` and `en.ts`
+
+**Note:** No need to modify `GameRenderer.tsx` anymore! The registry automatically handles game rendering.
 
 ### Adding a New Feature
 
@@ -506,31 +578,6 @@ GitHub Actions workflow:
 - Lint check
 - FTP deploy
 
-## Refactoring History
-
-### 2026-01-27: Major Refactoring for Scalability
-
-**GameScreen Refactoring:**
-- Reduced from 837 to 311 lines (60% reduction)
-- Extracted answer handling logic to `engine/answerHandler.ts`
-- Created custom hooks: `useAnswerHandler`, `useGameHints`, `useGameTips`
-- Extracted UI components: `GameHeader`, `SettingsMenu`
-- Improved separation of concerns and maintainability
-
-**GameViews Refactoring:**
-- Split monolithic `GameViews.tsx` (1802 lines) into individual files
-- Created `components/gameViews/` directory with one file per game type
-- Extracted shared components to `components/shared/`
-- Improved scalability and maintainability
-- Each game view is now independently testable and maintainable
-
-**Benefits:**
-- Better code organization
-- Easier to add new games
-- Improved testability
-- Better separation of concerns
-- Follows single responsibility principle
-
 ## Future Plans
 
 ### Possible Extensions
@@ -553,11 +600,13 @@ GitHub Actions workflow:
 The project is well-structured, extensible, and testable. The architecture supports:
 - ✅ Multi-language support (i18n)
 - ✅ Monetization system (structure)
+- ✅ Game registry system (scales to 50+ games)
 - ✅ Extensibility
 - ✅ Testability
 - ✅ Code quality
 - ✅ Accessibility
 - ✅ Scalable component architecture
 - ✅ Modular game views
+- ✅ Zero-touch game addition
 
 Everything is ready for future development and expansion!

@@ -1,8 +1,11 @@
 import { useState, useCallback } from 'react';
-import { Generators } from '../games/generators';
+import { gameRegistry } from '../games/registry';
 import { getEffectiveLevel } from '../engine/adaptiveDifficulty';
 import { createRng } from '../engine/rng';
 import type { Problem, ProfileType } from '../types/game';
+
+// Import registrations to ensure games are registered
+import '../games/registrations';
 
 interface AdaptiveDifficulty {
   recentAccuracy: boolean[];
@@ -56,11 +59,14 @@ export function useGameEngine() {
     let prob: Problem;
     let key: string;
     
-    const generator = Generators[type];
-    if (!generator) {
-      console.error(`Generator not found for type: ${type}`);
+    // Get generator from registry
+    const gameEntry = gameRegistry.get(type);
+    if (!gameEntry) {
+      console.error(`Game not found in registry: ${type}`);
       return null;
     }
+    
+    const generator = gameEntry.generator;
     
     // Try up to 15 times to generate a unique problem
     do {
@@ -94,33 +100,15 @@ export function useGameEngine() {
   const validateAnswer = useCallback((problem: Problem, userAnswer: unknown): boolean => {
     if (!problem) return false;
     
-    // The actual validation is handled by the game views
-    // This is a placeholder for any additional validation logic
-    switch(problem.type) {
-      case 'word_builder':
-        return userAnswer === problem.target;
-      case 'syllable_builder':
-        return userAnswer === problem.target;
-      case 'letter_match':
-        return userAnswer === (problem.answer ?? problem.targetLetter);
-      case 'sentence_logic':
-      case 'pattern':
-      case 'time_match':
-        return userAnswer === problem.answer;
-      case 'balance_scale':
-      case 'unit_conversion':
-        return userAnswer === problem.answer;
-      case 'math_snake':
-        return userAnswer === problem.math?.answer;
-      case 'memory_math':
-      case 'robo_path':
-        // These don't have simple answer validation
-        return false;
-      default: {
-        // TypeScript narrowing - this should never happen
-        return false;
-      }
+    // Get validator from registry
+    const gameEntry = gameRegistry.get(problem.type);
+    if (!gameEntry) {
+      console.warn(`Game not found in registry for validation: ${problem.type}`);
+      return false;
     }
+    
+    // Use the registered validator
+    return gameEntry.validator(problem, userAnswer);
   }, []);
 
   return {
