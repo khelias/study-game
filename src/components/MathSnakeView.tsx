@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { playSound } from '../engine/audio';
 import { useTranslation } from '../i18n/useTranslation';
 import { useProfileText } from '../hooks/useProfileText';
@@ -18,14 +18,31 @@ export const MathSnakeView: React.FC<MathSnakeViewProps> = ({ problem, onAnswer,
   const t = useTranslation();
   const { formatText } = useProfileText();
   const [status, setStatus] = useState<'idle' | 'correct' | 'wrong'>('idle');
+  const [justAte, setJustAte] = useState(false);
+  const prevSnakeLengthRef = useRef(problem.snake.length);
   
   // Reset status when problem changes
   React.useEffect(() => {
     setStatus('idle');
   }, [problem.uid]);
 
+  // Detect when snake eats and trigger animation
+  useEffect(() => {
+    if (problem.snake.length > prevSnakeLengthRef.current) {
+      prevSnakeLengthRef.current = problem.snake.length;
+      // Use setTimeout to defer state update and avoid cascading renders
+      const ateTimer = setTimeout(() => setJustAte(true), 0);
+      const resetTimer = setTimeout(() => setJustAte(false), 400);
+      return () => {
+        clearTimeout(ateTimer);
+        clearTimeout(resetTimer);
+      };
+    }
+    prevSnakeLengthRef.current = problem.snake.length;
+  }, [problem.snake.length]);
+
   const snakeSegments = useMemo(() => {
-    const map = new Map<string, { type: 'head' | 'body' | 'tail'; prev?: [number, number]; next?: [number, number] }>();
+    const map = new Map<string, { type: 'head' | 'body' | 'tail'; prev?: [number, number]; next?: [number, number]; index: number }>();
     problem.snake.forEach((pos, index) => {
       const prev = index > 0 ? problem.snake[index - 1] : undefined;
       const next = index < problem.snake.length - 1 ? problem.snake[index + 1] : undefined;
@@ -33,6 +50,7 @@ export const MathSnakeView: React.FC<MathSnakeViewProps> = ({ problem, onAnswer,
         type: index === 0 ? 'head' : index === problem.snake.length - 1 ? 'tail' : 'body',
         prev,
         next,
+        index,
       });
     });
     return map;
@@ -74,6 +92,36 @@ export const MathSnakeView: React.FC<MathSnakeViewProps> = ({ problem, onAnswer,
     if (to[0] === from[0] - 1 && to[1] === from[1]) return 'left';
     if (to[0] === from[0] + 1 && to[1] === from[1]) return 'right';
     return null;
+  };
+
+  const getSegmentColors = (index: number, isHead: boolean, isTail: boolean) => {
+    if (isHead) {
+      return {
+        gradient: 'from-emerald-300 via-emerald-500 to-emerald-700',
+        border: 'border-emerald-800/70',
+        shadow: '0 4px 8px rgba(16,185,129,0.5), inset 0 1px 2px rgba(255,255,255,0.7)',
+      };
+    }
+    if (isTail) {
+      return {
+        gradient: 'from-emerald-400 via-emerald-500 to-emerald-600',
+        border: 'border-emerald-700/50',
+        shadow: '0 2px 4px rgba(16,185,129,0.3)',
+      };
+    }
+    // Alternating pattern for body segments
+    const isEven = index % 2 === 0;
+    return isEven 
+      ? {
+          gradient: 'from-emerald-300 via-emerald-400 to-emerald-500',
+          border: 'border-emerald-600/50',
+          shadow: '0 2px 4px rgba(16,185,129,0.4)',
+        }
+      : {
+          gradient: 'from-emerald-500 via-emerald-600 to-emerald-700',
+          border: 'border-emerald-800/50',
+          shadow: '0 2px 4px rgba(16,185,129,0.5)',
+        };
   };
 
   const renderCell = (x: number, y: number): React.ReactNode => {
@@ -128,94 +176,192 @@ export const MathSnakeView: React.FC<MathSnakeViewProps> = ({ problem, onAnswer,
             {apple.kind === 'math' ? (
               <div 
                 className="flex items-center justify-center drop-shadow-lg animate-bounce-subtle"
-                style={{ fontSize: 'clamp(1rem, 4vw, 1.5rem)' }}
+                style={{ 
+                  fontSize: 'clamp(1rem, 4vw, 1.5rem)',
+                  filter: 'drop-shadow(0 0 8px rgba(251, 191, 36, 0.6)) drop-shadow(0 0 12px rgba(251, 191, 36, 0.4))',
+                }}
               >
                 ⭐
               </div>
             ) : (
               <div 
                 className="flex items-center justify-center drop-shadow-lg animate-bounce-subtle"
-                style={{ fontSize: 'clamp(1.25rem, 5vw, 2rem)' }}
+                style={{ 
+                  fontSize: 'clamp(1.25rem, 5vw, 2rem)',
+                  filter: 'drop-shadow(0 0 6px rgba(239, 68, 68, 0.5)) drop-shadow(0 0 10px rgba(239, 68, 68, 0.3))',
+                }}
               >
                 🍎
               </div>
             )}
           </div>
         )}
-        {(isBody || isHead || isTail) && (
+        {(isBody || isHead || isTail) && segment && (
           <div className="absolute inset-0 flex items-center justify-center">
-            {connectionDirs.map((dir, idx) => (
-              <div
-                key={`${key}-${dir}-${idx}`}
-                className="absolute rounded-full bg-gradient-to-br from-emerald-400 via-emerald-500 to-emerald-600 border border-emerald-700/50"
-                style={connectorStyle(dir as 'up' | 'down' | 'left' | 'right')}
-              />
-            ))}
+            {connectionDirs.map((dir, idx) => {
+              const colors = getSegmentColors(segment.index, isHead, isTail);
+              return (
+                <div
+                  key={`${key}-${dir}-${idx}`}
+                  className={`absolute rounded-full bg-gradient-to-br ${colors.gradient} border ${colors.border}`}
+                  style={{
+                    ...connectorStyle(dir as 'up' | 'down' | 'left' | 'right'),
+                    boxShadow: colors.shadow,
+                  }}
+                >
+                  {/* Scale pattern overlay for body segments */}
+                  {isBody && (
+                    <div 
+                      className="absolute inset-0 rounded-full bg-gradient-to-br from-white/20 to-transparent"
+                      style={{ transform: 'translateY(-15%)' }}
+                    />
+                  )}
+                </div>
+              );
+            })}
             {isTail && (
               <div 
-                className="absolute rounded-full bg-emerald-700/80 shadow-sm" 
+                className="absolute rounded-full bg-gradient-to-br from-emerald-600 via-emerald-700 to-emerald-800 shadow-sm" 
                 style={{
                   ...tailTipStyle(),
                   width: 'clamp(0.5rem, 2vw, 0.75rem)',
-                  height: 'clamp(0.5rem, 2vw, 0.75rem)'
+                  height: 'clamp(0.5rem, 2vw, 0.75rem)',
+                  boxShadow: '0 1px 2px rgba(0,0,0,0.3), inset 0 1px 1px rgba(255,255,255,0.2)',
                 }}
-              ></div>
+              >
+                {/* Highlight on tail tip */}
+                <div 
+                  className="absolute inset-0 rounded-full bg-gradient-to-br from-white/30 to-transparent"
+                  style={{ transform: 'translateY(-20%)' }}
+                />
+              </div>
             )}
             {isHead && (
               <>
+                {/* Glow ring when eating */}
+                {justAte && (
+                  <div 
+                    className="absolute rounded-full border-4 border-emerald-400 animate-ping"
+                    style={{
+                      width: 'clamp(2rem, 8vw, 3.5rem)',
+                      height: 'clamp(2rem, 8vw, 3.5rem)',
+                    }}
+                  />
+                )}
                 <div
-                  className="absolute rounded-full bg-gradient-to-br from-emerald-300 via-emerald-500 to-emerald-700 border-2 border-emerald-800/70"
+                  className="absolute rounded-full bg-gradient-to-br from-emerald-300 via-emerald-500 to-emerald-700 border-2 border-emerald-800/70 transition-transform duration-200"
                   style={{
                     width: 'clamp(1.25rem, 5vw, 2rem)',
                     height: 'clamp(1.25rem, 5vw, 2rem)',
-                    transform: `rotate(${headRotation()})`,
+                    transform: `rotate(${headRotation()}) ${justAte && segment && segment.index < 3 ? 'scale(1.15)' : ''}`,
                     boxShadow: '0 4px 8px rgba(16,185,129,0.5), inset 0 1px 2px rgba(255,255,255,0.7)',
                   }}
                 >
+                  {/* Shine/highlight overlay on head */}
                   <div 
-                    className="absolute rounded-full bg-white shadow-sm"
+                    className="absolute inset-0 rounded-full bg-gradient-to-br from-white/40 to-transparent"
+                    style={{ transform: 'translateY(-15%)' }}
+                  />
+                  {/* Eyes - white background with inset shadow */}
+                  <div 
+                    className="absolute rounded-full bg-white"
                     style={{
                       top: 'clamp(0.25rem, 1vw, 0.5rem)',
                       left: 'clamp(0.375rem, 1.5vw, 0.625rem)',
                       width: 'clamp(0.375rem, 1.5vw, 0.625rem)',
-                      height: 'clamp(0.375rem, 1.5vw, 0.625rem)'
+                      height: 'clamp(0.375rem, 1.5vw, 0.625rem)',
+                      boxShadow: 'inset 0 1px 2px rgba(0,0,0,0.2)',
                     }}
                   ></div>
                   <div 
-                    className="absolute rounded-full bg-white shadow-sm"
+                    className="absolute rounded-full bg-white"
                     style={{
                       top: 'clamp(0.25rem, 1vw, 0.5rem)',
                       right: 'clamp(0.375rem, 1.5vw, 0.625rem)',
                       width: 'clamp(0.375rem, 1.5vw, 0.625rem)',
-                      height: 'clamp(0.375rem, 1.5vw, 0.625rem)'
+                      height: 'clamp(0.375rem, 1.5vw, 0.625rem)',
+                      boxShadow: 'inset 0 1px 2px rgba(0,0,0,0.2)',
                     }}
                   ></div>
+                  {/* Pupils - dilate when eating */}
                   <div 
-                    className="absolute rounded-full bg-slate-900"
+                    className={`absolute rounded-full bg-slate-900 transition-transform duration-200 ${justAte ? 'scale-125' : ''}`}
                     style={{
                       top: 'clamp(0.375rem, 1.5vw, 0.625rem)',
                       left: 'clamp(0.5rem, 2vw, 0.875rem)',
                       width: 'clamp(0.125rem, 0.5vw, 0.25rem)',
-                      height: 'clamp(0.125rem, 0.5vw, 0.25rem)'
+                      height: 'clamp(0.125rem, 0.5vw, 0.25rem)',
                     }}
                   ></div>
                   <div 
-                    className="absolute rounded-full bg-slate-900"
+                    className={`absolute rounded-full bg-slate-900 transition-transform duration-200 ${justAte ? 'scale-125' : ''}`}
                     style={{
                       top: 'clamp(0.375rem, 1.5vw, 0.625rem)',
                       right: 'clamp(0.5rem, 2vw, 0.875rem)',
                       width: 'clamp(0.125rem, 0.5vw, 0.25rem)',
-                      height: 'clamp(0.125rem, 0.5vw, 0.25rem)'
+                      height: 'clamp(0.125rem, 0.5vw, 0.25rem)',
                     }}
                   ></div>
+                  {/* Tongue when eating */}
+                  {justAte && (
+                    <div 
+                      className="absolute bg-red-500 rounded-full"
+                      style={{
+                        bottom: 'clamp(0.125rem, 0.5vw, 0.25rem)',
+                        left: '50%',
+                        width: 'clamp(0.25rem, 1vw, 0.375rem)',
+                        height: 'clamp(0.375rem, 1.5vw, 0.625rem)',
+                        transform: 'translateX(-50%) translateY(50%)',
+                      }}
+                    />
+                  )}
                 </div>
+                {/* +1 indicator when eating */}
+                {justAte && (
+                  <div 
+                    className="absolute font-bold text-emerald-600 animate-ping"
+                    style={{
+                      top: 'clamp(-1rem, -4vw, -1.5rem)',
+                      left: 'clamp(-0.5rem, -2vw, -0.75rem)',
+                      fontSize: 'clamp(0.75rem, 3vw, 1rem)',
+                    }}
+                  >
+                    +1
+                  </div>
+                )}
+                {/* Sparkle particles when eating */}
+                {justAte && (
+                  <>
+                    <div 
+                      className="absolute animate-ping"
+                      style={{
+                        top: 'clamp(-0.75rem, -3vw, -1rem)',
+                        right: 'clamp(-0.5rem, -2vw, -0.75rem)',
+                        fontSize: 'clamp(0.625rem, 2.5vw, 0.875rem)',
+                      }}
+                    >
+                      ✨
+                    </div>
+                    <div 
+                      className="absolute animate-ping"
+                      style={{
+                        bottom: 'clamp(-0.5rem, -2vw, -0.75rem)',
+                        left: 'clamp(-0.75rem, -3vw, -1rem)',
+                        fontSize: 'clamp(0.625rem, 2.5vw, 0.875rem)',
+                        animationDelay: '0.1s',
+                      }}
+                    >
+                      ✨
+                    </div>
+                  </>
+                )}
                 {status === 'wrong' && (
                   <div 
-                    className="absolute"
+                    className="absolute animate-bounce"
                     style={{
                       top: 'clamp(-0.5rem, -2vw, -0.75rem)',
                       right: 'clamp(-0.5rem, -2vw, -0.75rem)',
-                      fontSize: 'clamp(0.875rem, 3vw, 1.25rem)'
+                      fontSize: 'clamp(0.875rem, 3vw, 1.25rem)',
                     }}
                   >
                     💥
@@ -223,11 +369,11 @@ export const MathSnakeView: React.FC<MathSnakeViewProps> = ({ problem, onAnswer,
                 )}
                 {status === 'correct' && (
                   <div 
-                    className="absolute"
+                    className="absolute animate-spin"
                     style={{
                       top: 'clamp(-0.5rem, -2vw, -0.75rem)',
                       right: 'clamp(-0.5rem, -2vw, -0.75rem)',
-                      fontSize: 'clamp(0.875rem, 3vw, 1.25rem)'
+                      fontSize: 'clamp(0.875rem, 3vw, 1.25rem)',
                     }}
                   >
                     ✨
