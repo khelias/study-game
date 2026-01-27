@@ -24,18 +24,38 @@
 
 ```
 src/
-├── components/          # General React components
+├── components/          # React components
+│   ├── gameViews/      # Individual game view components
+│   │   ├── BalanceScaleView.tsx
+│   │   ├── StandardGameView.tsx
+│   │   ├── WordGameView.tsx
+│   │   ├── SyllableGameView.tsx
+│   │   ├── PatternTrainView.tsx
+│   │   ├── MemoryGameView.tsx
+│   │   ├── RoboPathView.tsx
+│   │   ├── TimeGameView.tsx
+│   │   ├── UnitConversionView.tsx
+│   │   └── index.ts
+│   ├── shared/         # Shared/reusable components
+│   │   ├── LevelUpModal.tsx
+│   │   ├── Confetti.tsx
+│   │   ├── TimeDisplay.tsx
+│   │   ├── SvgWeight.tsx
+│   │   └── index.ts
 │   ├── AccessibilityHelpers.tsx
-│   ├── AchievementModal.tsx
 │   ├── FeedbackSystem.tsx
 │   ├── GameCard.tsx
+│   ├── GameHeader.tsx
+│   ├── SettingsMenu.tsx
 │   └── ...
 ├── engine/             # Game engine (core logic)
 │   ├── __tests__/      # Engine tests
 │   ├── achievements.ts
 │   ├── adaptiveDifficulty.ts
+│   ├── answerHandler.ts # Answer processing logic
 │   ├── audio.ts
 │   ├── errorBoundary.tsx
+│   ├── mathSnake.ts
 │   ├── progression.ts
 │   ├── rng.ts
 │   └── stats.ts
@@ -57,10 +77,14 @@ src/
 ├── hooks/             # React hooks
 │   ├── __tests__/
 │   ├── useAchievements.ts
+│   ├── useAnswerHandler.ts # Answer handling logic
 │   ├── useGameAudio.ts
 │   ├── useGameEngine.ts
+│   ├── useGameHints.ts    # Hint generation logic
 │   ├── useGameState.ts
-│   └── useLocalStorage.ts
+│   ├── useGameTips.ts     # Tip display logic
+│   ├── useLocalStorage.ts
+│   └── useProfileText.ts
 ├── i18n/              # Internationalization
 │   ├── locales/       # Translations
 │   │   ├── et.ts      # Estonian (default)
@@ -79,13 +103,17 @@ src/
 ├── types/             # TypeScript types
 │   ├── achievement.ts
 │   ├── game.ts
+│   ├── notification.ts
 │   ├── profile.ts
 │   └── stats.ts
 ├── utils/             # Utilities
 │   ├── __tests__/
+│   ├── achievementCopy.ts
 │   ├── errorHandler.ts
 │   ├── performance.ts
-│   └── performanceOptimizations.ts
+│   ├── performanceOptimizations.ts
+│   ├── unitConversion.ts
+│   └── zIndex.ts
 ├── test/              # Test utilities
 │   ├── setup.ts
 │   └── utils.tsx
@@ -110,28 +138,41 @@ Larger features are organized under `features/` folder:
 - Each feature is independent and contains all necessary components
 - This allows easy extension and testing
 
-### 3. Type Safety
+### 3. Modular Component Architecture
+
+Components are organized by purpose:
+- **`components/gameViews/`** - Individual game view components (one per game type)
+- **`components/shared/`** - Reusable components used across multiple features
+- **`components/`** - General-purpose UI components
+
+This modular structure makes it easy to:
+- Find specific game implementations
+- Reuse shared components
+- Maintain and test individual components
+- Add new games without touching existing code
+
+### 4. Type Safety
 
 - All files use TypeScript
 - Strict type checking (`strict: true`)
 - Types are defined in `types/` folder
 - No `any` types (ESLint rule)
 
-### 4. Testability
+### 5. Testability
 
 - **Engine tests** - Critical business logic is tested
 - **Component tests** - UI components are tested
 - **Test coverage** - 70%+ threshold
 - **Deterministic tests** - Seeded RNG
 
-### 5. Internationalization (i18n)
+### 6. Internationalization (i18n)
 
 - Translation system is ready for multiple languages
 - All strings are separated into translation files
 - Type-safe translations
 - Easy addition of new languages
 
-### 6. Monetization Ready
+### 7. Monetization Ready
 
 - Monetization structure is ready
 - Feature flags system
@@ -158,13 +199,14 @@ The project uses two main stores:
 - **Current problem** - Currently played problem
 - **Session data** - Score, hearts, stars
 - **Adaptive difficulty** - Session difficulty level
+- **Notifications** - In-game notifications
 
 **Persistence**: Not saved (only during session)
 
 ### State Flow
 
 ```
-User Action → Component → Store Action → State Update → Component Re-render
+User Action → Component → Hook/Store Action → State Update → Component Re-render
 ```
 
 ## Game Engine
@@ -197,9 +239,61 @@ User Action → Component → Store Action → State Update → Component Re-ren
 - Condition checking
 - Duplicate unlocking prevention
 
+#### `answerHandler.ts` - Answer Processing
+- Pure business logic for processing game answers
+- Handles math snake and standard game types
+- Returns structured results for UI coordination
+- Testable and reusable
+
+#### `mathSnake.ts` - Math Snake Game Logic
+- Snake movement and collision detection
+- Apple spawning logic
+- Math challenge generation
+- Game state resolution
+
 #### `audio.ts` - Audio System
 - Sound playback
 - Audio settings management
+
+## Custom Hooks
+
+### Game Logic Hooks
+
+#### `useAnswerHandler` - Answer Handling
+- Encapsulates answer processing logic
+- Coordinates between engine and UI
+- Handles achievements, scoring, and feedback
+- Manages game state transitions
+
+#### `useGameHints` - Hint Generation
+- Generates hints for different game types
+- Handles hint display logic
+- Game-type-specific hint content
+
+#### `useGameTips` - Tip Display
+- Manages tip display logic
+- Shows tips once per session
+- Allows manual tip replay
+- Responsive layout awareness
+
+#### `useGameEngine` - Game Engine
+- Problem generation
+- Answer validation
+- RNG access
+
+#### `useGameAudio` - Audio
+- Sound effect playback
+- Respects user preferences
+
+### State Management Hooks
+
+#### `useGameState` - Game State
+- Unified game state access
+- Combines store selectors
+
+#### `useAchievements` - Achievements
+- Achievement tracking
+- Achievement display logic
 
 ## Game Data
 
@@ -213,6 +307,38 @@ User Action → Component → Store Action → State Update → Component Re-ren
 - Problem generation functions
 - Each game type has its own generation function
 - Difficulty progression
+
+## Component Architecture
+
+### Game Views
+
+Each game type has its own view component in `components/gameViews/`:
+- **BalanceScaleView** - Balance scale problems
+- **StandardGameView** - Sentence logic and letter match
+- **WordGameView** - Word builder
+- **SyllableGameView** - Syllable builder
+- **PatternTrainView** - Pattern recognition
+- **MemoryGameView** - Memory math matching
+- **RoboPathView** - Robot path programming
+- **TimeGameView** - Time matching
+- **UnitConversionView** - Unit conversion
+
+### Shared Components
+
+Reusable components in `components/shared/`:
+- **LevelUpModal** - Level up celebration
+- **Confetti** - Confetti animation
+- **TimeDisplay** - Analog clock display
+- **SvgWeight** - SVG weight for balance scale
+
+### UI Components
+
+General-purpose components:
+- **GameHeader** - Game screen header with score, level, hearts, stars
+- **SettingsMenu** - Settings dropdown menu
+- **GameCard** - Game selection card
+- **FeedbackSystem** - Feedback and notifications
+- **NotificationSystem** - Unified notification display
 
 ## Internationalization (i18n)
 
@@ -323,8 +449,9 @@ When monetization is needed, you can:
 
 1. **Add game configuration** `games/data.ts`
 2. **Add generation logic** `games/generators.ts`
-3. **Add game view** `components/GameViews.tsx`
-4. **Integrate** `features/gameplay/GameRenderer.tsx`
+3. **Create game view component** `components/gameViews/NewGameView.tsx`
+4. **Add to GameRenderer** `features/gameplay/GameRenderer.tsx`
+5. **Add translations** `i18n/locales/et.ts` and `en.ts`
 
 ### Adding a New Feature
 
@@ -379,6 +506,31 @@ GitHub Actions workflow:
 - Lint check
 - FTP deploy
 
+## Refactoring History
+
+### 2026-01-27: Major Refactoring for Scalability
+
+**GameScreen Refactoring:**
+- Reduced from 837 to 311 lines (60% reduction)
+- Extracted answer handling logic to `engine/answerHandler.ts`
+- Created custom hooks: `useAnswerHandler`, `useGameHints`, `useGameTips`
+- Extracted UI components: `GameHeader`, `SettingsMenu`
+- Improved separation of concerns and maintainability
+
+**GameViews Refactoring:**
+- Split monolithic `GameViews.tsx` (1802 lines) into individual files
+- Created `components/gameViews/` directory with one file per game type
+- Extracted shared components to `components/shared/`
+- Improved scalability and maintainability
+- Each game view is now independently testable and maintainable
+
+**Benefits:**
+- Better code organization
+- Easier to add new games
+- Improved testability
+- Better separation of concerns
+- Follows single responsibility principle
+
 ## Future Plans
 
 ### Possible Extensions
@@ -405,5 +557,7 @@ The project is well-structured, extensible, and testable. The architecture suppo
 - ✅ Testability
 - ✅ Code quality
 - ✅ Accessibility
+- ✅ Scalable component architecture
+- ✅ Modular game views
 
 Everything is ready for future development and expansion!

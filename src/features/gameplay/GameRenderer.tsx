@@ -1,15 +1,15 @@
 import React from 'react';
-import { 
-  BalanceScaleView, 
-  StandardGameView, 
-  WordGameView, 
-  PatternTrainView, 
-  MemoryGameView, 
-  RoboPathView, 
-  SyllableGameView, 
-  TimeGameView, 
-  UnitConversionView 
-} from '../../components/GameViews';
+import {
+  BalanceScaleView,
+  StandardGameView,
+  WordGameView,
+  PatternTrainView,
+  MemoryGameView,
+  RoboPathView,
+  SyllableGameView,
+  TimeGameView,
+  UnitConversionView,
+} from '../../components/gameViews';
 import { MathSnakeView } from '../../components/MathSnakeView';
 import { CompareSizesView } from '../../components/CompareSizesView';
 import type { 

@@ -15,7 +15,7 @@ import { useAnswerHandler } from '../../hooks/useAnswerHandler';
 import { useGameHints } from '../../hooks/useGameHints';
 import { useGameTips } from '../../hooks/useGameTips';
 import { GameRenderer } from './GameRenderer';
-import { Confetti } from '../../components/GameViews';
+import { Confetti } from '../../components/shared/Confetti';
 import { NotificationSystem } from '../../components/NotificationSystem';
 import { HintButton } from '../../components/HintButton';
 import { TipButton } from '../../components/TipButton';
