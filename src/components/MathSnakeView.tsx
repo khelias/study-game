@@ -196,10 +196,10 @@ export const MathSnakeView: React.FC<MathSnakeViewProps> = ({ problem, onAnswer,
             )}
           </div>
         )}
-        {(isBody || isHead || isTail) && (
+        {(isBody || isHead || isTail) && segment && (
           <div className="absolute inset-0 flex items-center justify-center">
             {connectionDirs.map((dir, idx) => {
-              const colors = getSegmentColors(segment?.index || 0, isHead || false, isTail || false);
+              const colors = getSegmentColors(segment.index, isHead || false, isTail || false);
               return (
                 <div
                   key={`${key}-${dir}-${idx}`}
@@ -250,7 +250,7 @@ export const MathSnakeView: React.FC<MathSnakeViewProps> = ({ problem, onAnswer,
                 )}
                 <div
                   className={`absolute rounded-full bg-gradient-to-br from-emerald-300 via-emerald-500 to-emerald-700 border-2 border-emerald-800/70 transition-transform duration-200 ${
-                    justAte && segment?.index !== undefined && segment.index < 3 ? 'scale-115' : ''
+                    justAte && segment && segment.index < 3 ? 'scale-115' : ''
                   }`}
                   style={{
                     width: 'clamp(1.25rem, 5vw, 2rem)',
