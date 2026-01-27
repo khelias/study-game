@@ -44,6 +44,10 @@ export const CompareSizesView: React.FC<CompareSizesViewProps> = ({
     return Equal;
   };
 
+  // Memoize visual bar count for performance
+  const leftBarCount = problem.leftItem.visual ? problem.leftItem.visual.length : 0;
+  const rightBarCount = problem.rightItem.visual ? problem.rightItem.visual.length : 0;
+
   return (
     <div className="flex flex-col items-center justify-center min-h-[400px] p-8">
       {/* Instruction */}
@@ -64,7 +68,7 @@ export const CompareSizesView: React.FC<CompareSizesViewProps> = ({
             </div>
           ) : (
             <div className="flex flex-col gap-2">
-              {problem.leftItem.visual && problem.leftItem.visual.split('').map((_, idx) => (
+              {Array.from({ length: leftBarCount }, (_, idx) => (
                 <div 
                   key={idx} 
                   className="w-16 h-8 bg-blue-500 rounded"
@@ -91,7 +95,7 @@ export const CompareSizesView: React.FC<CompareSizesViewProps> = ({
             </div>
           ) : (
             <div className="flex flex-col gap-2">
-              {problem.rightItem.visual && problem.rightItem.visual.split('').map((_, idx) => (
+              {Array.from({ length: rightBarCount }, (_, idx) => (
                 <div 
                   key={idx} 
                   className="w-16 h-8 bg-green-500 rounded"

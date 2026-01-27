@@ -1004,6 +1004,9 @@ export const Generators: Record<string, GeneratorFunction> = {
     const meta = profileMeta(profile);
     const effectiveLevel = level + meta.difficultyOffset;
     
+    // Constants for visual representation
+    const MAX_VISUAL_BLOCKS = 10;
+    
     // Level progression:
     // 1-2: Large visual differences (bars/circles), no numbers
     // 3-4: Smaller visual differences, introduce numbers up to 10
@@ -1057,8 +1060,8 @@ export const Generators: Record<string, GeneratorFunction> = {
     }
     
     // Create visual representations
-    const leftVisual = showNumbers ? '' : '█'.repeat(Math.min(leftValue, 10));
-    const rightVisual = showNumbers ? '' : '█'.repeat(Math.min(rightValue, 10));
+    const leftVisual = showNumbers ? '' : '█'.repeat(Math.min(leftValue, MAX_VISUAL_BLOCKS));
+    const rightVisual = showNumbers ? '' : '█'.repeat(Math.min(rightValue, MAX_VISUAL_BLOCKS));
     
     // Create display strings
     const leftDisplay = showNumbers ? String(leftValue) : leftVisual;
