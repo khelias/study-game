@@ -104,22 +104,32 @@ function getAnchorEnglishForm(anchor: SceneAnchor, _position: string): string {
   return baseName.toLowerCase();
 }
 
-// Scene name translations  
-const SCENE_NAME_TRANSLATIONS: Record<string, { et: string; en: string }> = {
-  'Forest': { et: 'Mets', en: 'Forest' },
-  'Space': { et: 'Kosmos', en: 'Space' },
-  'Room': { et: 'Tuba', en: 'Room' },
-  'School': { et: 'Kool', en: 'School' },
-  'Park': { et: 'Park', en: 'Park' },
-  'Beach': { et: 'Rand', en: 'Beach' },
-  'Kitchen': { et: 'Köök', en: 'Kitchen' },
-  'Street': { et: 'Tänav', en: 'Street' },
+// Scene name translations - map English keys to localized names
+const SCENE_NAME_TRANSLATIONS: Record<string, { et: string }> = {
+  'Forest': { et: 'Mets' },
+  'Space': { et: 'Kosmos' },
+  'Room': { et: 'Tuba' },
+  'School': { et: 'Kool' },
+  'Park': { et: 'Park' },
+  'Beach': { et: 'Rand' },
+  'Kitchen': { et: 'Köök' },
+  'Street': { et: 'Tänav' },
 };
 
-export function getSceneName(sceneName: string, locale: 'et' | 'en' = 'et'): string {
-  const translation = SCENE_NAME_TRANSLATIONS[sceneName];
-  if (!translation) return sceneName;
-  return locale === 'en' ? translation.en : translation.et;
+/**
+ * Get localized scene name
+ * @param sceneKey - English scene key (e.g., 'Forest', 'Kitchen')
+ * @param locale - Target locale ('et' or 'en')
+ * @returns Localized scene name
+ */
+export function getSceneName(sceneKey: string, locale: 'et' | 'en' = 'et'): string {
+  if (locale === 'en') {
+    // For English, the key itself is the name
+    return sceneKey;
+  }
+  // For Estonian, look up the translation
+  const translation = SCENE_NAME_TRANSLATIONS[sceneKey];
+  return translation ? translation.et : sceneKey;
 }
 
 // Get subject English name
