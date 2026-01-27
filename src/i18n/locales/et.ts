@@ -427,6 +427,10 @@ export const et = {
       lengthLabel: 'Pikkus',
       nextMathLabel: 'Järgmine tehe',
     },
+    selectLevel: 'Vali tase',
+    currentLevel: 'Praegune tase',
+    selectNewLevel: 'Vali uus tase',
+    game: 'Mäng',
     hints: {
       wordBuilder: 'Sõna algab tähega',
       syllableBuilder: 'Sõna algab silbiga',

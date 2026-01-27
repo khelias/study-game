@@ -268,7 +268,7 @@ export const MathSnakeView: React.FC<MathSnakeViewProps> = ({ problem, onAnswer,
                     className="absolute rounded-full bg-white"
                     style={{
                       top: 'clamp(0.25rem, 1vw, 0.5rem)',
-                      left: 'clamp(0.375rem, 1.5vw, 0.625rem)',
+                      left: 'clamp(0.2rem, 0.8vw, 0.4rem)',
                       width: 'clamp(0.375rem, 1.5vw, 0.625rem)',
                       height: 'clamp(0.375rem, 1.5vw, 0.625rem)',
                       boxShadow: 'inset 0 1px 2px rgba(0,0,0,0.2)',
@@ -278,7 +278,7 @@ export const MathSnakeView: React.FC<MathSnakeViewProps> = ({ problem, onAnswer,
                     className="absolute rounded-full bg-white"
                     style={{
                       top: 'clamp(0.25rem, 1vw, 0.5rem)',
-                      right: 'clamp(0.375rem, 1.5vw, 0.625rem)',
+                      right: 'clamp(0.2rem, 0.8vw, 0.4rem)',
                       width: 'clamp(0.375rem, 1.5vw, 0.625rem)',
                       height: 'clamp(0.375rem, 1.5vw, 0.625rem)',
                       boxShadow: 'inset 0 1px 2px rgba(0,0,0,0.2)',
@@ -289,7 +289,7 @@ export const MathSnakeView: React.FC<MathSnakeViewProps> = ({ problem, onAnswer,
                     className={`absolute rounded-full bg-slate-900 transition-transform duration-200 ${justAte ? 'scale-125' : ''}`}
                     style={{
                       top: 'clamp(0.375rem, 1.5vw, 0.625rem)',
-                      left: 'clamp(0.5rem, 2vw, 0.875rem)',
+                      left: 'clamp(0.35rem, 1.4vw, 0.6rem)',
                       width: 'clamp(0.125rem, 0.5vw, 0.25rem)',
                       height: 'clamp(0.125rem, 0.5vw, 0.25rem)',
                     }}
@@ -298,7 +298,7 @@ export const MathSnakeView: React.FC<MathSnakeViewProps> = ({ problem, onAnswer,
                     className={`absolute rounded-full bg-slate-900 transition-transform duration-200 ${justAte ? 'scale-125' : ''}`}
                     style={{
                       top: 'clamp(0.375rem, 1.5vw, 0.625rem)',
-                      right: 'clamp(0.5rem, 2vw, 0.875rem)',
+                      right: 'clamp(0.35rem, 1.4vw, 0.6rem)',
                       width: 'clamp(0.125rem, 0.5vw, 0.25rem)',
                       height: 'clamp(0.125rem, 0.5vw, 0.25rem)',
                     }}

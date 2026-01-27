@@ -427,6 +427,10 @@ export const en = {
       lengthLabel: 'Length',
       nextMathLabel: 'Math in',
     },
+    selectLevel: 'Select Level',
+    currentLevel: 'Current level',
+    selectNewLevel: 'Select new level',
+    game: 'Game',
     hints: {
       wordBuilder: 'The word starts with letter',
       syllableBuilder: 'The word starts with syllable',
