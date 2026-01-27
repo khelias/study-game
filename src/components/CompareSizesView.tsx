@@ -11,7 +11,7 @@ interface CompareSizesViewProps {
 
 // Dice face dots patterns (1-6) - using CSS Grid for robust scaling
 const DiceFace: React.FC<{ value: number }> = ({ value }) => {
-  const getDotPattern = (val: number) => {
+  const getDotPattern = (val: number): boolean[] => {
     const patterns: Record<number, boolean[]> = {
       1: [false, false, false, false, true, false, false, false, false],
       2: [true, false, false, false, false, false, false, false, true],
@@ -20,7 +20,7 @@ const DiceFace: React.FC<{ value: number }> = ({ value }) => {
       5: [true, false, true, false, true, false, true, false, true],
       6: [true, false, true, true, false, true, true, false, true],
     };
-    return patterns[val] || patterns[1];
+    return patterns[val] ?? patterns[1]!;
   };
 
   const pattern = getDotPattern(value);

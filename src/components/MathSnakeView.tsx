@@ -39,6 +39,7 @@ export const MathSnakeView: React.FC<MathSnakeViewProps> = ({ problem, onAnswer,
       };
     }
     prevSnakeLengthRef.current = problem.snake.length;
+    return undefined;
   }, [problem.snake.length]);
 
   const snakeSegments = useMemo(() => {

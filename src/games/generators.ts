@@ -1005,7 +1005,6 @@ export const Generators: Record<string, GeneratorFunction> = {
     const effectiveLevel = level + meta.difficultyOffset;
     
     // Constants for visual representation
-    const MAX_VISUAL_BLOCKS = 10;
     const MAX_DICE_VALUE = 6;
     
     // REDESIGNED Level progression - More challenging and balanced:

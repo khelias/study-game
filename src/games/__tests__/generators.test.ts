@@ -384,7 +384,7 @@ describe('Generators', () => {
       const rng = createRng(12345);
       const generator = Generators.compare_sizes;
       if (!generator) throw new Error('compare_sizes generator not found');
-      const problem = generator(1, rng, 'starter');
+      const problem = generator(1, rng, 'starter') as CompareSizesProblem;
       
       expect(problem.type).toBe('compare_sizes');
       expect(problem.leftItem).toHaveProperty('value');
@@ -400,7 +400,7 @@ describe('Generators', () => {
       const rng = createRng(12345);
       const generator = Generators.compare_sizes;
       if (!generator) throw new Error('compare_sizes generator not found');
-      const problem = generator(1, rng, 'starter');
+      const problem = generator(1, rng, 'starter') as CompareSizesProblem;
       
       const leftValue = problem.leftItem.value;
       const rightValue = problem.rightItem.value;
@@ -413,7 +413,7 @@ describe('Generators', () => {
       const rng = createRng(12345);
       const generator = Generators.compare_sizes;
       if (!generator) throw new Error('compare_sizes generator not found');
-      const problem = generator(5, rng, 'starter'); // Use level 5 to ensure 'equal' is in options
+      const problem = generator(5, rng, 'starter') as CompareSizesProblem; // Use level 5 to ensure 'equal' is in options
       
       expect(problem.options).toContain(problem.answer);
     });
@@ -424,8 +424,8 @@ describe('Generators', () => {
       const generator = Generators.compare_sizes;
       if (!generator) throw new Error('compare_sizes generator not found');
       
-      const problem1 = generator(1, rng1, 'starter');
-      const problem2 = generator(1, rng2, 'starter');
+      const problem1 = generator(1, rng1, 'starter') as CompareSizesProblem;
+      const problem2 = generator(1, rng2, 'starter') as CompareSizesProblem;
       
       expect(problem1.answer).toBe(problem2.answer);
       expect(problem1.leftItem.value).toBe(problem2.leftItem.value);
@@ -436,7 +436,7 @@ describe('Generators', () => {
       const rng = createRng(12345);
       const generator = Generators.compare_sizes;
       if (!generator) throw new Error('compare_sizes generator not found');
-      const problem = generator(1, rng, 'starter');
+      const problem = generator(1, rng, 'starter') as CompareSizesProblem;
       
       // Level 1-3 use dice only, no numbers
       expect(problem.showNumbers).toBe(false);
@@ -446,7 +446,7 @@ describe('Generators', () => {
       const rng = createRng(12345);
       const generator = Generators.compare_sizes;
       if (!generator) throw new Error('compare_sizes generator not found');
-      const problem = generator(4, rng, 'starter');
+      const problem = generator(4, rng, 'starter') as CompareSizesProblem;
       
       // Level 4+ show numbers (with or alongside dice)
       expect(problem.showNumbers).toBe(true);
@@ -456,7 +456,7 @@ describe('Generators', () => {
       const rng = createRng(12345);
       const generator = Generators.compare_sizes;
       if (!generator) throw new Error('compare_sizes generator not found');
-      const problem = generator(1, rng, 'starter');
+      const problem = generator(1, rng, 'starter') as CompareSizesProblem;
       
       // Symbols should ALWAYS be shown now - this is the main learning objective
       expect(problem.showSymbols).toBe(true);
@@ -467,8 +467,8 @@ describe('Generators', () => {
       const rng2 = createRng(12345);
       const generator = Generators.compare_sizes;
       if (!generator) throw new Error('compare_sizes generator not found');
-      const problem1 = generator(1, rng1, 'starter');
-      const problem7 = generator(7, rng2, 'starter');
+      const problem1 = generator(1, rng1, 'starter') as CompareSizesProblem;
+      const problem7 = generator(7, rng2, 'starter') as CompareSizesProblem;
       
       // Both levels should show symbols
       expect(problem1.showSymbols).toBe(true);
@@ -479,7 +479,7 @@ describe('Generators', () => {
       const rng = createRng(12345);
       const generator = Generators.compare_sizes;
       if (!generator) throw new Error('compare_sizes generator not found');
-      const problem = generator(1, rng, 'starter');
+      const problem = generator(1, rng, 'starter') as CompareSizesProblem;
       
       expect(problem.options.length).toBe(2);
       expect(problem.options).toContain('left');
@@ -491,7 +491,7 @@ describe('Generators', () => {
       const rng = createRng(12345);
       const generator = Generators.compare_sizes;
       if (!generator) throw new Error('compare_sizes generator not found');
-      const problem = generator(2, rng, 'starter');
+      const problem = generator(2, rng, 'starter') as CompareSizesProblem;
       
       expect(problem.options.length).toBe(3);
       expect(problem.options).toContain('left');
@@ -503,7 +503,7 @@ describe('Generators', () => {
       const rng = createRng(12345);
       const generator = Generators.compare_sizes;
       if (!generator) throw new Error('compare_sizes generator not found');
-      const problem = generator(1, rng, 'starter');
+      const problem = generator(1, rng, 'starter') as CompareSizesProblem;
       
       // Level 1 should use dice emoji visualization
       expect(problem.leftItem.visual).toContain('🎲');
@@ -515,8 +515,8 @@ describe('Generators', () => {
       const generator = Generators.compare_sizes;
       if (!generator) throw new Error('compare_sizes generator not found');
       
-      const problem1 = generator(1, rng1, 'starter');
-      const problem7 = generator(7, rng2, 'starter');
+      const problem1 = generator(1, rng1, 'starter') as CompareSizesProblem;
+      const problem7 = generator(7, rng2, 'starter') as CompareSizesProblem;
       
       // Level 1 max is 6 (single die), level 7 max is 30
       const maxValue1 = Math.max(problem1.leftItem.value, problem1.rightItem.value);
@@ -532,8 +532,8 @@ describe('Generators', () => {
       const generator = Generators.compare_sizes;
       if (!generator) throw new Error('compare_sizes generator not found');
       
-      const starterProblem = generator(1, rng1, 'starter');
-      const advancedProblem = generator(1, rng2, 'advanced');
+      const starterProblem = generator(1, rng1, 'starter') as CompareSizesProblem;
+      const advancedProblem = generator(1, rng2, 'advanced') as CompareSizesProblem;
       
       // Advanced profile should show numbers at level 1 (effective level 3)
       // Starter at level 1 should not show numbers (effective level 1)
@@ -553,7 +553,7 @@ describe('Generators', () => {
       if (!generator) throw new Error('compare_sizes generator not found');
       
       // Level 2 should have equal option available
-      const problem = generator(2, rng, 'starter');
+      const problem = generator(2, rng, 'starter') as CompareSizesProblem;
       expect(problem.options).toContain('equal');
       expect(problem.options.length).toBe(3);
     });
@@ -564,10 +564,10 @@ describe('Generators', () => {
       
       // Generate multiple problems at different levels
       const level1Problems = Array.from({ length: 20 }, (_, i) => 
-        generator(1, createRng(11111 + i), 'starter')
+        generator(1, createRng(11111 + i), 'starter') as CompareSizesProblem
       );
       const level8Problems = Array.from({ length: 20 }, (_, i) => 
-        generator(8, createRng(11111 + i), 'starter')
+        generator(8, createRng(11111 + i), 'starter') as CompareSizesProblem
       );
       
       // Calculate average gap for each level
