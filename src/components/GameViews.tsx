@@ -135,10 +135,10 @@ const SvgWeight: React.FC<SvgWeightProps> = ({ x, y, num, label, color, dashed }
         </filter>
       </defs>
       
-      {/* Varjutus alt */}
+      {/* Shadow from bottom */}
       <ellipse cx="0" cy="8" rx="16" ry="4" fill="black" opacity="0.18" filter={`url(#weightShadow-${uid})`} />
       
-      {/* 3D kaal - esikülg */}
+      {/* 3D weight - front */}
       <rect x="-16" y="-22" width="32" height="32" rx="5" ry="5" 
             fill={`url(#weightGradTop-${uid})`} 
             stroke={palette.stroke} 
@@ -146,18 +146,18 @@ const SvgWeight: React.FC<SvgWeightProps> = ({ x, y, num, label, color, dashed }
             strokeDasharray={dashed ? '5 3' : undefined}
             filter={`url(#weightShadow-${uid})`} />
       
-      {/* 3D efekt - parem külg (sügavus) */}
+      {/* 3D effect - right side (depth) */}
       <path d="M 16 -22 L 20 -18 L 20 10 L 16 10 Z" 
             fill={`url(#weightGradSide-${uid})`} 
             opacity="0.7" />
       
-      {/* Ülemine kumerus (3D efekt) */}
+      {/* Top curvature (3D effect) */}
       <ellipse cx="0" cy="-22" rx="16" ry="6" fill={palette.highlight} opacity="0.65" />
       
-      {/* Numbri taust (parem loetavus) */}
+      {/* Number background (better readability) */}
       <circle cx="0" cy="-5" r="10" fill="white" opacity="0.25" />
       
-      {/* Number - suurem ja selgem, alati nähtav */}
+      {/* Number - larger and clearer, always visible */}
       <text x="0" y="2" textAnchor="middle"
             fontSize={fontSize} fontWeight="900" fontFamily="Arial, sans-serif"
             fill={palette.textFill}
@@ -167,7 +167,7 @@ const SvgWeight: React.FC<SvgWeightProps> = ({ x, y, num, label, color, dashed }
         {displayText}
       </text>
       
-      {/* Hiilgus efekt */}
+      {/* Glow effect */}
       <ellipse cx="-8" cy="-18" rx="4" ry="3" fill="white" opacity="0.35" />
     </g>
   );
@@ -221,7 +221,7 @@ export const BalanceScaleView: React.FC<BalanceScaleViewProps> = ({ problem, onA
       <div className="relative w-full max-w-sm h-56 sm:h-64 mb-3 sm:mb-4 flex justify-center overflow-hidden">
         <svg width="100%" height="100%" viewBox="0 0 340 240" preserveAspectRatio="xMidYMid meet" className="overflow-visible" style={{ minHeight: '240px' }}>
             <defs>
-                {/* Täiustatud kuldne gradient kaalule */}
+                {/* Enhanced golden gradient for scale */}
                 <linearGradient id="gradGold" x1="0%" y1="0%" x2="100%" y2="0%">
                   <stop offset="0%" stopColor="#fbbf24" />
                   <stop offset="50%" stopColor="#f59e0b" />
@@ -239,16 +239,16 @@ export const BalanceScaleView: React.FC<BalanceScaleViewProps> = ({ problem, onA
                 <filter id="shadowStrong"><feDropShadow dx="3" dy="4" stdDeviation="4" floodOpacity="0.5"/></filter>
             </defs>
             
-            {/* Täiustatud alus - 3D efekt */}
+            {/* Enhanced base - 3D effect */}
             <path d="M 120 230 L 220 230 Q 230 230 225 220 L 180 140 L 160 140 L 115 220 Q 110 230 120 230" 
                   fill="url(#gradGoldVertical)" 
                   filter="url(#shadowStrong)" 
                   stroke="#b45309" 
                   strokeWidth="2" />
-            {/* Aluse varjutus */}
+            {/* Base shadow */}
             <ellipse cx="170" cy="230" rx="55" ry="8" fill="black" opacity="0.3" />
             
-            {/* Täiustatud tugipost */}
+            {/* Enhanced support post */}
             <rect x="165" y="60" width="10" height="100" 
                   fill="url(#gradPole)" 
                   filter="url(#shadow)"
@@ -258,27 +258,27 @@ export const BalanceScaleView: React.FC<BalanceScaleViewProps> = ({ problem, onA
                   rx="2" />
             
             <g style={{ transform: `rotate(${tilt}deg)`, transformOrigin: '170px 60px', transition: 'transform 1.2s cubic-bezier(0.34, 1.56, 0.64, 1)' }}>
-                {/* Täiustatud kaal - 3D efekt */}
+                {/* Enhanced scale - 3D effect */}
                 <rect x="50" y="55" width="240" height="10" rx="5" 
                       fill="url(#gradGold)" 
                       filter="url(#shadowStrong)" 
                       stroke="#b45309" 
                       strokeWidth="1.5" />
-                {/* Kaalu ülemine hiilgus */}
+                {/* Scale top glow */}
                 <rect x="50" y="55" width="240" height="4" rx="5" fill="#fcd34d" opacity="0.6" />
                 
-                {/* Täiustatud keskpunkt */}
+                {/* Enhanced center point */}
                 <circle cx="170" cy="60" r="8" fill="url(#gradGoldVertical)" filter="url(#shadowStrong)" stroke="#b45309" strokeWidth="2" />
                 <circle cx="170" cy="60" r="5" fill="#fbbf24" opacity="0.8" />
                 <g transform="translate(60, 60)">
                     <g style={{ transform: `rotate(${-tilt}deg)`, transformOrigin: '0px 0px', transition: 'transform 1.2s' }}>
-                        {/* Täiustatud köied - 3D efekt */}
+                        {/* Enhanced ropes - 3D effect */}
                         <line x1="0" y1="0" x2="-25" y2="90" stroke="#64748b" strokeWidth="3" strokeLinecap="round" />
                         <line x1="0" y1="0" x2="25" y2="90" stroke="#64748b" strokeWidth="3" strokeLinecap="round" />
                         <line x1="0" y1="0" x2="-25" y2="90" stroke="#cbd5e1" strokeWidth="1.5" strokeLinecap="round" opacity="0.6" />
                         <line x1="0" y1="0" x2="25" y2="90" stroke="#cbd5e1" strokeWidth="1.5" strokeLinecap="round" opacity="0.6" />
                         
-                        {/* Täiustatud nõu - sinine */}
+                        {/* Enhanced bowl - blue */}
                         <defs>
                           <linearGradient id="bowlBlue" x1="0%" y1="0%" x2="0%" y2="100%">
                             <stop offset="0%" stopColor="#eff6ff" />
@@ -295,13 +295,13 @@ export const BalanceScaleView: React.FC<BalanceScaleViewProps> = ({ problem, onA
                 </g>
                 <g transform="translate(280, 60)">
                     <g style={{ transform: `rotate(${-tilt}deg)`, transformOrigin: '0px 0px', transition: 'transform 1.2s' }}>
-                        {/* Täiustatud köied - 3D efekt */}
+                        {/* Enhanced ropes - 3D effect */}
                         <line x1="0" y1="0" x2="-25" y2="90" stroke="#64748b" strokeWidth="3" strokeLinecap="round" />
                         <line x1="0" y1="0" x2="25" y2="90" stroke="#64748b" strokeWidth="3" strokeLinecap="round" />
                         <line x1="0" y1="0" x2="-25" y2="90" stroke="#cbd5e1" strokeWidth="1.5" strokeLinecap="round" opacity="0.6" />
                         <line x1="0" y1="0" x2="25" y2="90" stroke="#cbd5e1" strokeWidth="1.5" strokeLinecap="round" opacity="0.6" />
                         
-                        {/* Täiustatud nõu - punane */}
+                        {/* Enhanced bowl - red */}
                         <defs>
                           <linearGradient id="bowlRed" x1="0%" y1="0%" x2="0%" y2="100%">
                             <stop offset="0%" stopColor="#fff1f2" />
@@ -334,20 +334,20 @@ export const BalanceScaleView: React.FC<BalanceScaleViewProps> = ({ problem, onA
                    ? 'bg-slate-400 border-slate-500 text-slate-200' 
                    : 'bg-gradient-to-br from-orange-400 to-orange-600 border-orange-700 text-white hover:from-orange-500 hover:to-orange-700 hover:shadow-2xl'
                }`}>
-                   {/* 3D efekt - ülemine osa */}
+                   {/* 3D effect - top part */}
                    <div className={`absolute top-0 left-0 right-0 h-1/3 rounded-t-xl sm:rounded-t-2xl ${
                      isDisabled ? 'bg-slate-300' : 'bg-orange-300'
                    } opacity-60`}></div>
                    
-                   {/* Rõngas üleval */}
+                   {/* Ring on top */}
                    <div className={`absolute -top-2 sm:-top-3 left-1/2 -translate-x-1/2 w-4 h-3 sm:w-6 sm:h-4 rounded-t-full border-3 sm:border-4 ${
                      isDisabled ? 'border-slate-500 bg-slate-400' : 'border-orange-700 bg-gradient-to-b from-orange-300 to-orange-500'
                    }`}></div>
                    
-                   {/* Number - suurem ja selgem */}
+                   {/* Number - larger and clearer */}
                    <span className="font-black text-lg sm:text-2xl relative z-10 drop-shadow-md">{opt}</span>
                    
-                   {/* Hiilgus efekt */}
+                   {/* Glow effect */}
                    {!isDisabled && (
                      <div className="absolute top-2 left-2 w-3 h-3 bg-white rounded-full opacity-40"></div>
                    )}
@@ -1100,7 +1100,7 @@ export const MemoryGameView: React.FC<MemoryGameViewProps> = ({ problem, onAnswe
 
   return (
     <div className="w-full mt-2 sm:mt-4 flex flex-col items-center px-2">
-      {/* Progress bar - kompaktne mobiilil */}
+      {/* Progress bar - compact on mobile */}
       {totalPairs > 0 && (
         <div className="w-full max-w-md mb-3 sm:mb-4">
           <div className="flex items-center justify-between mb-1 sm:mb-2">
@@ -1116,7 +1116,7 @@ export const MemoryGameView: React.FC<MemoryGameViewProps> = ({ problem, onAnswe
         </div>
       )}
       
-      {/* Täiustatud kaardid - värvikamad ja atraktiivsemad, kompaktne mobiilil */}
+      {/* Enhanced cards - more colorful and attractive, compact on mobile */}
       <div className="w-full grid grid-cols-4 gap-2 sm:gap-3 md:gap-4 aspect-square max-w-md mx-auto relative">
         {showCelebration && (
           <div className="absolute inset-0 flex items-center justify-center z-50 pointer-events-none">
@@ -1771,7 +1771,7 @@ export const UnitConversionView: React.FC<UnitConversionViewProps> = ({ problem,
         </div>
       </div>
 
-      {/* Valikud - 2x2 grid */}
+      {/* Options - 2x2 grid */}
       <div className="grid grid-cols-2 gap-3 sm:gap-4 w-full max-w-md">
         {problem.options.map((opt, idx) => {
           const isDisabled = disabled.includes(opt);
