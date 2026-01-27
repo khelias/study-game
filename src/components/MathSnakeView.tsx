@@ -29,13 +29,14 @@ export const MathSnakeView: React.FC<MathSnakeViewProps> = ({ problem, onAnswer,
   // Detect when snake eats and trigger animation
   useEffect(() => {
     if (problem.snake.length > prevSnakeLengthRef.current) {
-      const ateTimer = setTimeout(() => setJustAte(true), 0);
-      const resetTimer = setTimeout(() => setJustAte(false), 400);
       prevSnakeLengthRef.current = problem.snake.length;
-      return () => {
-        clearTimeout(ateTimer);
-        clearTimeout(resetTimer);
-      };
+      // Use setTimeout to defer state update and avoid cascading renders
+      const ateTimer = setTimeout(() => {
+        setJustAte(true);
+        const resetTimer = setTimeout(() => setJustAte(false), 400);
+        return () => clearTimeout(resetTimer);
+      }, 0);
+      return () => clearTimeout(ateTimer);
     }
     prevSnakeLengthRef.current = problem.snake.length;
   }, [problem.snake.length]);
@@ -249,12 +250,12 @@ export const MathSnakeView: React.FC<MathSnakeViewProps> = ({ problem, onAnswer,
                 )}
                 <div
                   className={`absolute rounded-full bg-gradient-to-br from-emerald-300 via-emerald-500 to-emerald-700 border-2 border-emerald-800/70 transition-transform duration-200 ${
-                    justAte && segment?.index !== undefined && segment.index < 3 ? 'scale-110' : ''
+                    justAte && segment?.index !== undefined && segment.index < 3 ? 'scale-115' : ''
                   }`}
                   style={{
                     width: 'clamp(1.25rem, 5vw, 2rem)',
                     height: 'clamp(1.25rem, 5vw, 2rem)',
-                    transform: `rotate(${headRotation()}) ${justAte && segment?.index !== undefined && segment.index < 3 ? 'scale(1.15)' : ''}`,
+                    transform: `rotate(${headRotation()})`,
                     boxShadow: '0 4px 8px rgba(16,185,129,0.5), inset 0 1px 2px rgba(255,255,255,0.7)',
                   }}
                 >
@@ -370,12 +371,11 @@ export const MathSnakeView: React.FC<MathSnakeViewProps> = ({ problem, onAnswer,
                 )}
                 {status === 'correct' && (
                   <div 
-                    className="absolute"
+                    className="absolute animate-spin"
                     style={{
                       top: 'clamp(-0.5rem, -2vw, -0.75rem)',
                       right: 'clamp(-0.5rem, -2vw, -0.75rem)',
                       fontSize: 'clamp(0.875rem, 3vw, 1.25rem)',
-                      animation: 'spin 0.5s linear',
                     }}
                   >
                     ✨
