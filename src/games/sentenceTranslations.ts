@@ -104,23 +104,22 @@ function getAnchorEnglishForm(anchor: SceneAnchor, _position: string): string {
   return baseName.toLowerCase();
 }
 
-// Scene name translations
-const SCENE_NAME_TRANSLATIONS: Record<string, { en: string }> = {
-  'Mets': { en: 'Forest' },
-  'Kosmos': { en: 'Space' },
-  'Tuba': { en: 'Room' },
-  'Kool': { en: 'School' },
-  'Park': { en: 'Park' },
-  'Rand': { en: 'Beach' },
-  'Köök': { en: 'Kitchen' },
-  'Tänav': { en: 'Street' },
+// Scene name translations  
+const SCENE_NAME_TRANSLATIONS: Record<string, { et: string; en: string }> = {
+  'Forest': { et: 'Mets', en: 'Forest' },
+  'Space': { et: 'Kosmos', en: 'Space' },
+  'Room': { et: 'Tuba', en: 'Room' },
+  'School': { et: 'Kool', en: 'School' },
+  'Park': { et: 'Park', en: 'Park' },
+  'Beach': { et: 'Rand', en: 'Beach' },
+  'Kitchen': { et: 'Köök', en: 'Kitchen' },
+  'Street': { et: 'Tänav', en: 'Street' },
 };
 
 export function getSceneName(sceneName: string, locale: 'et' | 'en' = 'et'): string {
-  if (locale === 'en') {
-    return SCENE_NAME_TRANSLATIONS[sceneName]?.en || sceneName;
-  }
-  return sceneName;
+  const translation = SCENE_NAME_TRANSLATIONS[sceneName];
+  if (!translation) return sceneName;
+  return locale === 'en' ? translation.en : translation.et;
 }
 
 // Get subject English name

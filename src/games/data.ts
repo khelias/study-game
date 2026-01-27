@@ -16,62 +16,62 @@ export const THEME: Record<string, Theme> = {
 export const CATEGORIES: Record<string, Category> = {
   language: { 
     id: 'language', 
-    name: 'Keele mängud', 
+    name: 'Language Games', 
     emoji: '🔤',
-    description: 'Sõnad, tähed ja laused',
+    description: 'Words, letters and sentences',
     color: 'orange'
   },
   math: { 
     id: 'math', 
-    name: 'Matemaatika', 
+    name: 'Math', 
     emoji: '🔢',
-    description: 'Arvutamine ja mõõtmine',
+    description: 'Calculations and measurements',
     color: 'purple'
   },
   logic: { 
     id: 'logic', 
-    name: 'Loogika', 
+    name: 'Logic', 
     emoji: '🧩',
-    description: 'Mustrid ja programmeerimine',
+    description: 'Patterns and programming',
     color: 'teal'
   },
   memory: { 
     id: 'memory', 
-    name: 'Mälu', 
+    name: 'Memory', 
     emoji: '🧠',
-    description: 'Mälumängud',
+    description: 'Memory games',
     color: 'blue'
   }
 };
 
 export const GAME_CONFIG: Record<string, GameConfig> = {
   // 5+ games - simpler, visual (7 games - added letter_match)
-  word_builder:    { id: 'word_builder', title: 'SÕNAMEISTER', theme: THEME.orange!, icon: 'Type', desc: 'Lao tähtedest sõna kokku', allowedProfiles: ['starter', 'advanced'], difficulty: 'easy', category: 'language' },
-  syllable_builder:{ id: 'syllable_builder', title: 'SILBIMEISTER', theme: THEME.orange!, icon: 'Type', desc: 'Pane silbid sõnaks kokku', allowedProfiles: ['starter'], difficulty: 'easy', category: 'language' },
-  pattern:         { id: 'pattern', title: 'MUSTRI-RONG', theme: THEME.teal!, icon: 'TrainFront', desc: 'Jätka mustrit', allowedProfiles: ['starter'], difficulty: 'easy', category: 'logic' },
-  sentence_logic:  { id: 'sentence_logic', title: 'LAUSE-DETEKTIIV', theme: THEME.green!, icon: 'BookOpen', desc: 'Kus asub ese?', allowedProfiles: ['starter'], difficulty: 'medium', category: 'language' },
-  memory_math:     { id: 'memory_math', title: 'MATEMAATIKA MÄLU', theme: THEME.purple!, icon: 'Brain', desc: 'Leia tehe ja vastus', allowedProfiles: ['starter'], difficulty: 'medium', category: 'math' },
-  robo_path:       { id: 'robo_path', title: 'ROBO-RADA', theme: THEME.indigo!, icon: 'Bot', desc: 'Programmeerirobot', allowedProfiles: ['starter'], difficulty: 'medium', category: 'logic' },
-  math_snake:      { id: 'math_snake', title: 'NUMBRIMADU', theme: THEME.green!, icon: 'Gamepad2', desc: 'Liigu ja kogu õunu', allowedProfiles: ['starter'], difficulty: 'medium', category: 'math' },
-  letter_match:    { id: 'letter_match', title: 'TÄHE-DETEKTIIV', theme: THEME.pink!, icon: 'Type', desc: 'Leia õige täht', allowedProfiles: ['starter'], difficulty: 'easy', category: 'language' },
-  unit_conversion: { id: 'unit_conversion', title: 'MÕÕTÜHIKUD', theme: THEME.teal!, icon: 'Ruler', desc: 'Muunda ühikuid', allowedProfiles: ['starter'], difficulty: 'medium', category: 'math' },
+  word_builder:    { id: 'word_builder', title: 'WORD MASTER', theme: THEME.orange!, icon: 'Type', desc: 'Build a word from letters', allowedProfiles: ['starter', 'advanced'], difficulty: 'easy', category: 'language' },
+  syllable_builder:{ id: 'syllable_builder', title: 'SYLLABLE MASTER', theme: THEME.orange!, icon: 'Type', desc: 'Put syllables together into a word', allowedProfiles: ['starter'], difficulty: 'easy', category: 'language' },
+  pattern:         { id: 'pattern', title: 'PATTERN TRAIN', theme: THEME.teal!, icon: 'TrainFront', desc: 'Continue the pattern', allowedProfiles: ['starter'], difficulty: 'easy', category: 'logic' },
+  sentence_logic:  { id: 'sentence_logic', title: 'SENTENCE DETECTIVE', theme: THEME.green!, icon: 'BookOpen', desc: 'Where is the object?', allowedProfiles: ['starter'], difficulty: 'medium', category: 'language' },
+  memory_math:     { id: 'memory_math', title: 'MATH MEMORY', theme: THEME.purple!, icon: 'Brain', desc: 'Find the equation and answer', allowedProfiles: ['starter'], difficulty: 'medium', category: 'math' },
+  robo_path:       { id: 'robo_path', title: 'ROBO PATH', theme: THEME.indigo!, icon: 'Bot', desc: 'Program the robot', allowedProfiles: ['starter'], difficulty: 'medium', category: 'logic' },
+  math_snake:      { id: 'math_snake', title: 'NUMBER SNAKE', theme: THEME.green!, icon: 'Gamepad2', desc: 'Move and collect apples', allowedProfiles: ['starter'], difficulty: 'medium', category: 'math' },
+  letter_match:    { id: 'letter_match', title: 'LETTER DETECTIVE', theme: THEME.pink!, icon: 'Type', desc: 'Find the correct letter', allowedProfiles: ['starter'], difficulty: 'easy', category: 'language' },
+  unit_conversion: { id: 'unit_conversion', title: 'UNITS', theme: THEME.teal!, icon: 'Ruler', desc: 'Convert units', allowedProfiles: ['starter'], difficulty: 'medium', category: 'math' },
   
   // 8+ games - harder, logical (7 games - added letter_match_adv)
-  balance_scale:   { id: 'balance_scale', title: 'KAALUD', theme: THEME.blue!, icon: 'Scale', desc: 'Tasakaalusta kaalud', allowedProfiles: ['advanced'], difficulty: 'hard', category: 'math' },
-  time_match:      { id: 'time_match', title: 'KELLAMÄNG', theme: THEME.blue!, icon: 'Clock3', desc: 'Määra kellaaeg', allowedProfiles: ['advanced'], difficulty: 'hard', category: 'math' },
-  memory_math_adv: { id: 'memory_math', title: 'MATEMAATIKA MÄLU', theme: THEME.purple!, icon: 'Brain', desc: 'Leia tehe ja vastus', allowedProfiles: ['advanced'], difficulty: 'hard', category: 'math' },
-  robo_path_adv:   { id: 'robo_path', title: 'ROBO-RADA', theme: THEME.indigo!, icon: 'Bot', desc: 'Programmeerirobot', allowedProfiles: ['advanced'], difficulty: 'hard', category: 'logic' },
-  math_snake_adv:  { id: 'math_snake', title: 'NUMBRIMADU', theme: THEME.green!, icon: 'Gamepad2', desc: 'Liigu ja kogu õunu', allowedProfiles: ['advanced'], difficulty: 'hard', category: 'math' },
-  sentence_logic_adv: { id: 'sentence_logic', title: 'LAUSE-DETEKTIIV', theme: THEME.green!, icon: 'BookOpen', desc: 'Kus asub ese?', allowedProfiles: ['advanced'], difficulty: 'hard', category: 'language' },
-  pattern_adv:      { id: 'pattern', title: 'MUSTRI-RONG', theme: THEME.teal!, icon: 'TrainFront', desc: 'Jätka mustrit', allowedProfiles: ['advanced'], difficulty: 'hard', category: 'logic' },
-  letter_match_adv: { id: 'letter_match', title: 'TÄHE-DETEKTIIV', theme: THEME.pink!, icon: 'Type', desc: 'Leia õige täht', allowedProfiles: ['advanced'], difficulty: 'medium', category: 'language' },
-  unit_conversion_adv: { id: 'unit_conversion', title: 'MÕÕTÜHIKUD', theme: THEME.teal!, icon: 'Ruler', desc: 'Muunda ühikuid', allowedProfiles: ['advanced'], difficulty: 'hard', category: 'math' },
+  balance_scale:   { id: 'balance_scale', title: 'SCALES', theme: THEME.blue!, icon: 'Scale', desc: 'Balance the scales', allowedProfiles: ['advanced'], difficulty: 'hard', category: 'math' },
+  time_match:      { id: 'time_match', title: 'CLOCK GAME', theme: THEME.blue!, icon: 'Clock3', desc: 'Set the time', allowedProfiles: ['advanced'], difficulty: 'hard', category: 'math' },
+  memory_math_adv: { id: 'memory_math', title: 'MATH MEMORY', theme: THEME.purple!, icon: 'Brain', desc: 'Find the equation and answer', allowedProfiles: ['advanced'], difficulty: 'hard', category: 'math' },
+  robo_path_adv:   { id: 'robo_path', title: 'ROBO PATH', theme: THEME.indigo!, icon: 'Bot', desc: 'Program the robot', allowedProfiles: ['advanced'], difficulty: 'hard', category: 'logic' },
+  math_snake_adv:  { id: 'math_snake', title: 'NUMBER SNAKE', theme: THEME.green!, icon: 'Gamepad2', desc: 'Move and collect apples', allowedProfiles: ['advanced'], difficulty: 'hard', category: 'math' },
+  sentence_logic_adv: { id: 'sentence_logic', title: 'SENTENCE DETECTIVE', theme: THEME.green!, icon: 'BookOpen', desc: 'Where is the object?', allowedProfiles: ['advanced'], difficulty: 'hard', category: 'language' },
+  pattern_adv:      { id: 'pattern', title: 'PATTERN TRAIN', theme: THEME.teal!, icon: 'TrainFront', desc: 'Continue the pattern', allowedProfiles: ['advanced'], difficulty: 'hard', category: 'logic' },
+  letter_match_adv: { id: 'letter_match', title: 'LETTER DETECTIVE', theme: THEME.pink!, icon: 'Type', desc: 'Find the correct letter', allowedProfiles: ['advanced'], difficulty: 'medium', category: 'language' },
+  unit_conversion_adv: { id: 'unit_conversion', title: 'UNITS', theme: THEME.teal!, icon: 'Ruler', desc: 'Convert units', allowedProfiles: ['advanced'], difficulty: 'hard', category: 'math' },
 };
 
 // Profiles are extensible with difficulty offset
 export const PROFILES: Record<ProfileType, Profile> = {
-  starter:  { id: 'starter', label: '5+', desc: 'Koolieelik', levelStart: 1, difficultyOffset: 0, emoji: '👧' },
-  advanced: { id: 'advanced', label: '7+', desc: 'Koolilaps', levelStart: 3, difficultyOffset: 2, emoji: '🧒' }
+  starter:  { id: 'starter', label: '5+', desc: 'Preschooler', levelStart: 1, difficultyOffset: 0, emoji: '👧' },
+  advanced: { id: 'advanced', label: '7+', desc: 'School child', levelStart: 3, difficultyOffset: 2, emoji: '🧒' }
 };
 
 export const ICONS: Record<string, string> = {
@@ -89,7 +89,7 @@ export const ICONS: Record<string, string> = {
 
 export const ALPHABET: string[] = 'ABCDEFGHIJKLMNOPRSŠZŽTUVÕÄÖÜ'.split('');
 
-// Based on emojis; only Estonian words, mostly <=7 letters
+// Based on emojis; Estonian words for language learning games, mostly <=7 letters
 const BASE_WORDS: WordObject[] = [
   // nature and weather
   { w: 'PUU', e: '🌳' }, { w: 'PÕÕSAS', e: '🌿' }, { w: 'LILL', e: '🌸' }, { w: 'LEHT', e: '🍃' },
@@ -98,7 +98,7 @@ const BASE_WORDS: WordObject[] = [
   { w: 'PÄIKE', e: '☀️' }, { w: 'KUU', e: '🌙' }, { w: 'TÄHT', e: '⭐' }, { w: 'ÄIKE', e: '🌩️' },
   { w: 'LUMI', e: '❄️' }, { w: 'JÄÄ', e: '🧊' }, { w: 'TUUL', e: '🌬️' }, { w: 'VIKERKAAR', e: '🌈' },
 
-  // loomad
+  // animals
   { w: 'KOER', e: '🐶' }, { w: 'KASS', e: '🐱' }, { w: 'HIIR', e: '🐭' }, { w: 'JÄNES', e: '🐰' },
   { w: 'REBANE', e: '🦊' }, { w: 'KARU', e: '🐻' }, { w: 'SEBRA', e: '🦓' }, { w: 'LÕVI', e: '🦁' },
   { w: 'TIIGER', e: '🐯' }, { w: 'PANDA', e: '🐼' }, { w: 'ELEVANT', e: '🐘' }, { w: 'KAELKIRJAK', e: '🦒' },
@@ -245,7 +245,7 @@ export const WORD_DB_EN: Record<number, WordObject[]> = BASE_WORDS_EN.reduce<Rec
 export const SCENE_DB: Record<string, Scene> = {
   forest: { 
     bg: 'bg-gradient-to-b from-green-200 to-green-300', 
-    name: 'Mets',
+    name: 'Forest',
     subjects: [
       {n:'REBANE', e:'🦊'}, {n:'JÄNES', e:'🐰'}, {n:'KARU', e:'🐻'}, {n:'SIIL', e:'🦔'}, 
       {n:'ORAV', e:'🐿️'}, {n:'HUNT', e:'🐺'}, {n:'PÕDER', e:'🫎'}, {n:'KITS', e:'🐐'},
@@ -263,7 +263,7 @@ export const SCENE_DB: Record<string, Scene> = {
   },
   space: { 
     bg: 'bg-gradient-to-b from-slate-800 via-purple-900 to-slate-900', 
-    name: 'Kosmos',
+    name: 'Space',
     subjects: [
       {n:'RAKETT', e:'🚀'}, {n:'UFO', e:'🛸'}, {n:'ASTRONAUT', e:'👨‍🚀'}, {n:'TÄHT', e:'⭐'},
       {n:'PLANEET', e:'🪐'}, {n:'KOMEET', e:'☄️'}, {n:'SATELLIIT', e:'🛰️'}
@@ -278,7 +278,7 @@ export const SCENE_DB: Record<string, Scene> = {
   },
   room: { 
     bg: 'bg-gradient-to-b from-orange-50 to-yellow-50', 
-    name: 'Tuba',
+    name: 'Room',
     subjects: [
       {n:'AUTO', e:'🚗'}, {n:'PALL', e:'⚽'}, {n:'KARU', e:'🧸'}, {n:'KASS', e:'🐱'}, 
       {n:'KOER', e:'🐶'}, {n:'ROBOT', e:'🤖'}, {n:'PUSLE', e:'🧩'}, {n:'RAAMAT', e:'📖'}
@@ -296,7 +296,7 @@ export const SCENE_DB: Record<string, Scene> = {
   },
   school: {
     bg: 'bg-gradient-to-b from-blue-100 to-blue-200',
-    name: 'Kool',
+    name: 'School',
     subjects: [
       {n:'ÕPILANE', e:'👨‍🎓'}, {n:'ÕPETAJA', e:'🧑‍🏫'}, {n:'RAAMAT', e:'📖'}, {n:'PLIIATS', e:'✏️'},
       {n:'KALKULAATOR', e:'🔢'}, {n:'KUSTUTI', e:'🧹'}, {n:'ÕPIK', e:'📘'}
@@ -330,7 +330,7 @@ export const SCENE_DB: Record<string, Scene> = {
   },
   beach: {
     bg: 'bg-gradient-to-b from-cyan-200 to-blue-300',
-    name: 'Rand',
+    name: 'Beach',
     subjects: [
       {n:'LAPS', e:'🧒'}, {n:'PALL', e:'⚽'}, {n:'KALLA', e:'🐚'}, {n:'ÕHUPALL', e:'🎈'},
       {n:'KREVETT', e:'🦐'}, {n:'KRABI', e:'🦀'}
@@ -345,7 +345,7 @@ export const SCENE_DB: Record<string, Scene> = {
   },
   kitchen: {
     bg: 'bg-gradient-to-b from-yellow-50 to-orange-50',
-    name: 'Köök',
+    name: 'Kitchen',
     subjects: [
       {n:'ÕUN', e:'🍎'}, {n:'LEIB', e:'🥖'}, {n:'KÜPSIS', e:'🍪'}, {n:'KOKK', e:'👨‍🍳'},
       {n:'KARTUL', e:'🥔'}, {n:'TOMAT', e:'🍅'}, {n:'MUNA', e:'🥚'}
@@ -362,7 +362,7 @@ export const SCENE_DB: Record<string, Scene> = {
   },
   street: {
     bg: 'bg-gradient-to-b from-gray-200 to-gray-300',
-    name: 'Tänav',
+    name: 'Street',
     subjects: [
       {n:'AUTO', e:'🚗'}, {n:'BUSS', e:'🚌'}, {n:'RATAS', e:'🚲'}, {n:'LAPS', e:'🧒'},
       {n:'KOER', e:'🐶'}, {n:'PALL', e:'⚽'}
