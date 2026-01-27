@@ -87,7 +87,7 @@ export const CompareSizesView: React.FC<CompareSizesViewProps> = ({
   };
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-[400px] p-4 sm:p-8 bg-gradient-to-b from-blue-50/30 via-purple-50/20 to-green-50/30">
+    <div className="w-full flex flex-col items-center px-4 sm:px-6 max-w-2xl mx-auto pt-4 sm:pt-6 animate-in fade-in duration-300">
       {/* Instruction - emphasize symbol selection */}
       <div className="text-xl sm:text-2xl lg:text-3xl font-black mb-6 sm:mb-8 text-gray-800 text-center drop-shadow-sm">
         {t.games.compare_sizes.symbolInstruction}

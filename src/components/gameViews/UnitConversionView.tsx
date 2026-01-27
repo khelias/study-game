@@ -29,7 +29,8 @@ export const UnitConversionView: React.FC<UnitConversionViewProps> = ({ problem,
   );
   
   useEffect(() => { 
-    setTimeout(() => setDisabled([]), 0);
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setDisabled([]);
   }, [problem.uid]);
 
   const handleChoice = (opt: number): void => {
@@ -45,7 +46,7 @@ export const UnitConversionView: React.FC<UnitConversionViewProps> = ({ problem,
   };
 
   return (
-    <div className="w-full flex flex-col items-center animate-in fade-in zoom-in duration-300 px-2">
+    <div className="w-full flex flex-col items-center px-4 sm:px-6 max-w-2xl mx-auto pt-4 sm:pt-6 animate-in fade-in duration-300">
       {/* Task display */}
       <div className="mb-4 sm:mb-6 p-4 sm:p-6 bg-white rounded-2xl sm:rounded-3xl border-b-6 sm:border-b-8 border-teal-200 shadow-lg text-center w-full max-w-md">
         {/* Question */}

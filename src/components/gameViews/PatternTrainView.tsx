@@ -29,17 +29,16 @@ export const PatternTrainView: React.FC<PatternTrainViewProps> = ({ problem, onA
   const patternPreview = useMemo(() => problem.patternCycle.join(' '), [problem.patternCycle]);
   
   useEffect(() => { 
-    const timer = setTimeout(() => {
-      setDisabled([]); 
-      setTrainState('enter'); 
-      setSelectedOption(null);
-      setFeedbackChoice(null);
-    }, 0);
-    const t = setTimeout(() => setTrainState('idle'), 600); 
-    return () => {
-      clearTimeout(timer);
-      clearTimeout(t);
-    };
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setDisabled([]); 
+     
+    setTrainState('enter'); 
+     
+    setSelectedOption(null);
+     
+    setFeedbackChoice(null);
+    const timer = setTimeout(() => setTrainState('idle'), 600); 
+    return () => clearTimeout(timer);
   }, [problemUid]);
 
   const handleChoice = (opt: string, idx: number): void => {
@@ -68,7 +67,7 @@ export const PatternTrainView: React.FC<PatternTrainViewProps> = ({ problem, onA
   };
 
   return (
-    <div className="w-full flex flex-col items-center px-2 sm:px-4">
+    <div className="w-full flex flex-col items-center px-4 sm:px-6 max-w-2xl mx-auto pt-4 sm:pt-6 animate-in fade-in duration-300">
       <div className="w-full max-w-3xl text-center mb-3 sm:mb-4">
         <div className="text-[10px] sm:text-xs font-bold uppercase tracking-wide text-teal-600">
           {formatText(t.gameScreen.pattern.tagline)}
@@ -117,30 +116,35 @@ export const PatternTrainView: React.FC<PatternTrainViewProps> = ({ problem, onA
         </div>
       </div>
 
-      {feedbackChoice && (
-        <div className="w-full max-w-3xl mt-3 sm:mt-4 rounded-2xl border-2 border-amber-200 bg-amber-50 px-3 sm:px-4 py-3 sm:py-4 text-amber-900 shadow-sm">
-          <div className="text-sm sm:text-base font-black">{formatText(t.gameScreen.pattern.feedbackTitle)}</div>
-          <div className="text-xs sm:text-sm mt-1">
-            {formatText(
-              t.gameScreen.pattern.feedbackReason
-                .replace('{pattern}', patternPreview)
-                .replace('{answer}', problem.answer)
-            )}
-          </div>
-          <div className="mt-2 flex items-center gap-2 text-xs sm:text-sm">
-            <span className="font-semibold">{formatText(t.gameScreen.pattern.feedbackChoiceLabel)}</span>
-            <span className="text-xl">{feedbackChoice}</span>
-          </div>
-          <div className="mt-2 flex items-center gap-2 text-xs sm:text-sm">
-            <span className="font-semibold">{formatText(t.gameScreen.pattern.patternLabel)}</span>
-            <div className="flex items-center gap-1 text-lg">
-              {problem.patternCycle.map((item, index) => (
-                <span key={`${item}-${index}`}>{item}</span>
-              ))}
+      {/* Feedback - always reserve space to prevent layout shift */}
+      <div className={`w-full max-w-3xl mt-3 sm:mt-4 rounded-2xl border-2 border-amber-200 bg-amber-50 px-3 sm:px-4 py-3 sm:py-4 text-amber-900 shadow-sm transition-opacity duration-300 ${
+        feedbackChoice ? 'opacity-100' : 'opacity-0 h-0 py-0 mt-0 overflow-hidden'
+      }`}>
+        {feedbackChoice && (
+          <>
+            <div className="text-sm sm:text-base font-black">{formatText(t.gameScreen.pattern.feedbackTitle)}</div>
+            <div className="text-xs sm:text-sm mt-1">
+              {formatText(
+                t.gameScreen.pattern.feedbackReason
+                  .replace('{pattern}', patternPreview)
+                  .replace('{answer}', problem.answer)
+              )}
             </div>
-          </div>
-        </div>
-      )}
+            <div className="mt-2 flex items-center gap-2 text-xs sm:text-sm">
+              <span className="font-semibold">{formatText(t.gameScreen.pattern.feedbackChoiceLabel)}</span>
+              <span className="text-xl">{feedbackChoice}</span>
+            </div>
+            <div className="mt-2 flex items-center gap-2 text-xs sm:text-sm">
+              <span className="font-semibold">{formatText(t.gameScreen.pattern.patternLabel)}</span>
+              <div className="flex items-center gap-1 text-lg">
+                {problem.patternCycle.map((item, index) => (
+                  <span key={`${item}-${index}`}>{item}</span>
+                ))}
+              </div>
+            </div>
+          </>
+        )}
+      </div>
       
       <div className="grid grid-cols-3 gap-2 sm:gap-4 w-full max-w-md mt-4 sm:mt-5">
         {problem.options.map((opt, idx) => {

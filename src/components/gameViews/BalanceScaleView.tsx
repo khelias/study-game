@@ -4,7 +4,7 @@
  * Game view for balance scale problems.
  */
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { playSound } from '../../engine/audio';
 import type { BalanceScaleProblem } from '../../types/game';
 import { SvgWeight } from '../shared/SvgWeight';
@@ -19,14 +19,14 @@ export const BalanceScaleView: React.FC<BalanceScaleViewProps> = ({ problem, onA
   const problemUid: string = problem.uid;
   const [disabled, setDisabled] = useState<number[]>([]);
   const [tilt, setTilt] = useState<number>(-10);
-  const [prevUid, setPrevUid] = useState<string>(problemUid);
 
-  // Reset state when problem changes (derived state pattern)
-  if (problemUid !== prevUid) {
+  // Reset state when problem changes
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setDisabled([]);
+     
     setTilt(-10);
-    setPrevUid(problemUid);
-  }
+  }, [problemUid]);
 
   const handleChoice = (weight: number): void => {
     playSound('click', soundEnabled);
@@ -53,7 +53,7 @@ export const BalanceScaleView: React.FC<BalanceScaleViewProps> = ({ problem, onA
   };
 
   return (
-    <div className="w-full flex flex-col items-center animate-in fade-in slide-in-from-bottom-4 duration-500 px-2">
+    <div className="w-full flex flex-col items-center px-4 sm:px-6 max-w-2xl mx-auto pt-4 sm:pt-6 animate-in fade-in duration-300">
       <div className="relative w-full max-w-sm h-56 sm:h-64 mb-3 sm:mb-4 flex justify-center overflow-hidden">
         <svg width="100%" height="100%" viewBox="0 0 340 240" preserveAspectRatio="xMidYMid meet" className="overflow-visible" style={{ minHeight: '240px' }}>
             <defs>

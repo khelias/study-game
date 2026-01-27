@@ -27,11 +27,10 @@ export const StandardGameView: React.FC<StandardGameViewProps> = ({ problem, onA
   const problemUid: string = problem.uid;
   
   useEffect(() => { 
-    const timer = setTimeout(() => {
-      setDisabled([]);
-      setHasAnswered(false);
-    }, 0);
-    return () => clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setDisabled([]);
+     
+    setHasAnswered(false);
   }, [problemUid]);
 
 
@@ -211,7 +210,7 @@ export const StandardGameView: React.FC<StandardGameViewProps> = ({ problem, onA
   };
 
   return (
-    <div className="w-full mt-2 sm:mt-4 flex flex-col items-center animate-in fade-in zoom-in duration-300 px-2">
+    <div className="w-full flex flex-col items-center px-4 sm:px-6 max-w-2xl mx-auto pt-4 sm:pt-6 animate-in fade-in duration-300">
       <div className="mb-4 sm:mb-6 p-3 sm:p-6 bg-white rounded-2xl sm:rounded-3xl border-b-6 sm:border-b-8 border-green-200 shadow-sm text-center w-full">
          {problem.type === 'letter_match' ? (
             <div className="flex justify-center items-center gap-2 sm:gap-4 text-4xl sm:text-6xl font-black text-pink-500">

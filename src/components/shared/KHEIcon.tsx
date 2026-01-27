@@ -13,7 +13,7 @@ interface KHEIconProps {
 }
 
 export const KHEIcon: React.FC<KHEIconProps> = ({ 
-  size, 
+  size: _size, 
   className = '' 
 }) => {
   // Match home button size: w-4 h-4 sm:w-5 sm:h-5 (16px/20px)

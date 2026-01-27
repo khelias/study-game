@@ -27,19 +27,14 @@ export const RoboPathView: React.FC<RoboPathViewProps> = ({ problem, onAnswer, s
   const [robotPos, setRobotPos] = useState<[number, number]>(problem.start);
   const [robotDirection, setRobotDirection] = useState<'UP' | 'DOWN' | 'LEFT' | 'RIGHT'>('DOWN');
   const [status, setStatus] = useState<'planning' | 'moving' | 'crash' | 'win' | 'notReached'>('planning');
-  const [stars, setStars] = useState<number>(0);
   const [currentCommandIndex, setCurrentCommandIndex] = useState<number>(-1);
-  const [showRetryPrompt, setShowRetryPrompt] = useState<boolean>(false);
   const [showHintMarker, setShowHintMarker] = useState<boolean>(false);
+  const [showRetryModal, setShowRetryModal] = useState<boolean>(false);
+  const [finalMoves, setFinalMoves] = useState<number>(0);
   const coalPos = problem.coal ?? problem.coins?.[0];
   const maxCommands = problem.maxCommands ?? 8;
   const commandCount = commands.length;
   
-  // Calculate Manhattan distance to goal
-  const calculateDistance = useCallback((pos: [number, number]): number => {
-    const goalPos = problem.end || problem.goal;
-    return Math.abs(goalPos[0] - pos[0]) + Math.abs(goalPos[1] - pos[1]);
-  }, [problem.end, problem.goal]);
   
   // Reset state when problem changes
   /* eslint-disable react-hooks/set-state-in-effect */
@@ -48,10 +43,10 @@ export const RoboPathView: React.FC<RoboPathViewProps> = ({ problem, onAnswer, s
       setRobotPos(problem.start); 
       setRobotDirection('DOWN');
       setStatus('planning');
-      setStars(0);
       setCurrentCommandIndex(-1);
-      setShowRetryPrompt(false);
       setShowHintMarker(false);
+      setShowRetryModal(false);
+      setFinalMoves(0);
   }, [problem.uid, problem.start]);
   /* eslint-enable react-hooks/set-state-in-effect */
 
@@ -106,8 +101,10 @@ export const RoboPathView: React.FC<RoboPathViewProps> = ({ problem, onAnswer, s
             setStatus('crash'); 
             setShowHintMarker(true);
             playSound('wrong', soundEnabled);
+            // Call onAnswer immediately for instant feedback
+            onAnswer(false);
+            // Reset state after animation completes
             setTimeout(() => { 
-                onAnswer(false); 
                 setRobotPos(problem.start); 
                 setRobotDirection('DOWN');
                 setCommands([]); 
@@ -122,32 +119,29 @@ export const RoboPathView: React.FC<RoboPathViewProps> = ({ problem, onAnswer, s
     
     const goalPos = problem.end || problem.goal;
     if (currentPos[0] === goalPos[0] && currentPos[1] === goalPos[1]) { 
-        const finalMoves = commands.length;
-        // Calculate stars based on optimal moves
-        const optimal = problem.optimalMoves || calculateDistance(problem.start);
-        let starCount = 1;
+        const movesUsed = commands.length;
+        const optimal = problem.optimalMoves || (Math.abs(goalPos[0] - problem.start[0]) + Math.abs(goalPos[1] - problem.start[1]));
+        const isPerfect = movesUsed === optimal;
         
-        if (finalMoves === optimal) {
-          starCount = 3;
-        } else if (finalMoves <= optimal + 2) {
-          starCount = 2;
-        }
-        
-        setStars(starCount);
         setStatus('win');
-        
         playSound('correct', soundEnabled);
-        if (starCount < 3) {
-          setShowRetryPrompt(true);
-          return;
+        setFinalMoves(movesUsed);
+        
+        // If perfect route, proceed immediately
+        if (isPerfect) {
+          onAnswer(true);
+        } else {
+          // Show retry modal for non-perfect routes
+          setShowRetryModal(true);
         }
-        setTimeout(() => onAnswer(true), 3000); 
     } else { 
         setStatus('notReached'); 
         setShowHintMarker(true);
         playSound('wrong', soundEnabled);
+        // Call onAnswer immediately for instant feedback
+        onAnswer(false);
+        // Reset state after animation completes
         setTimeout(() => { 
-            onAnswer(false); 
             setRobotPos(problem.start);
             setRobotDirection('DOWN');
             setCommands([]); 
@@ -155,22 +149,7 @@ export const RoboPathView: React.FC<RoboPathViewProps> = ({ problem, onAnswer, s
             setCurrentCommandIndex(-1);
         }, 2000); 
     }
-  }, [commands, commandCount, problem.start, problem.end, problem.goal, problem.gridSize, problem.obstacles, problem.optimalMoves, soundEnabled, calculateDistance, onAnswer]);
-
-  const handleRetry = useCallback(() => {
-    setShowRetryPrompt(false);
-    setCommands([]);
-    setRobotPos(problem.start);
-    setRobotDirection('DOWN');
-    setStatus('planning');
-    setStars(0);
-    setCurrentCommandIndex(-1);
-  }, [problem.start]);
-
-  const handleNext = useCallback(() => {
-    setShowRetryPrompt(false);
-    onAnswer(true);
-  }, [onAnswer]);
+  }, [commands, commandCount, problem.start, problem.end, problem.goal, problem.gridSize, problem.obstacles, problem.optimalMoves, soundEnabled, onAnswer]);
 
   // Keyboard support
   useEffect(() => {
@@ -279,75 +258,59 @@ export const RoboPathView: React.FC<RoboPathViewProps> = ({ problem, onAnswer, s
     return 'bg-white border-indigo-200';
   };
 
+  const handleRetry = useCallback(() => {
+    setShowRetryModal(false);
+    setCommands([]);
+    setRobotPos(problem.start);
+    setRobotDirection('DOWN');
+    setStatus('planning');
+    setCurrentCommandIndex(-1);
+    setShowHintMarker(false);
+  }, [problem.start]);
+
+  const handleContinue = useCallback(() => {
+    setShowRetryModal(false);
+    onAnswer(true);
+  }, [onAnswer]);
+
   return (
-    <div className="w-full flex flex-col items-center max-w-sm mx-auto">
-       {/* Stats panel */}
-       <div className="w-full mb-3 bg-gradient-to-r from-indigo-50 to-purple-50 rounded-xl p-2 sm:p-4 border-2 border-indigo-200 shadow-lg">
-         <div className="grid grid-cols-2 gap-2 sm:gap-3 text-center">
-           <div className="bg-white rounded-lg sm:rounded-xl p-2 sm:p-3 shadow-sm border-2 border-indigo-100">
-             <div className="text-[10px] sm:text-xs font-bold text-slate-500 mb-0.5 sm:mb-1">🎯 {t.roboPath.commands}</div>
-             <div className="text-lg sm:text-2xl font-black text-purple-600">{commandCount}</div>
-           </div>
-           <div className="bg-white rounded-lg sm:rounded-xl p-2 sm:p-3 shadow-sm border-2 border-indigo-100">
-             <div className="text-[10px] sm:text-xs font-bold text-slate-500 mb-0.5 sm:mb-1">📊 {t.roboPath.max}</div>
-             <div className="text-lg sm:text-2xl font-black text-teal-600">{maxCommands}</div>
-             <div className="text-[9px] sm:text-xs text-slate-400 mt-0.5 sm:mt-1">
-               {commandCount}/{maxCommands}
+    <div className="w-full flex flex-col items-center px-4 sm:px-6 max-w-2xl mx-auto pt-4 sm:pt-6 animate-in fade-in duration-300">
+       {/* Retry Modal */}
+       {showRetryModal && (
+         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+           <div className="bg-white rounded-2xl p-6 sm:p-8 max-w-md w-full shadow-2xl animate-in zoom-in duration-300">
+             <div className="text-center mb-4">
+               <div className="text-4xl mb-3">🎯</div>
+               <h3 className="text-xl sm:text-2xl font-black text-slate-800 mb-2">
+                 {formatText(t.roboPath.greatJob)}
+               </h3>
+               <p className="text-sm sm:text-base text-slate-600 mb-4">
+                 {formatText(t.roboPath.youUsed)} {finalMoves} {formatText(t.roboPath.commands)}.
+                 {problem.optimalMoves && (
+                   <span className="block mt-2">
+                     {formatText(t.roboPath.optimalIs)} {problem.optimalMoves}.
+                   </span>
+                 )}
+               </p>
+               <p className="text-sm text-slate-500 mb-6">
+                 {formatText(t.roboPath.tryAgainForBetter)}
+               </p>
+             </div>
+             <div className="flex gap-3">
+               <button
+                 onClick={handleRetry}
+                 className="flex-1 bg-orange-500 hover:bg-orange-600 text-white font-bold py-3 px-4 rounded-xl transition-colors shadow-lg"
+               >
+                 {formatText(t.roboPath.tryAgainButton)}
+               </button>
+               <button
+                 onClick={handleContinue}
+                 className="flex-1 bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-4 rounded-xl transition-colors shadow-lg"
+               >
+                 {formatText(t.roboPath.continueButton)}
+               </button>
              </div>
            </div>
-         </div>
-       </div>
-       
-       {/* Win celebration with stars */}
-       {status === 'win' && (
-         <div className="mb-3 text-center bg-gradient-to-br from-yellow-100 to-orange-100 p-4 rounded-2xl border-4 border-yellow-400 shadow-xl">
-           <div className="text-4xl mb-2 animate-bounce">
-             {stars === 3 ? '⭐⭐⭐' : stars === 2 ? '⭐⭐' : '⭐'}
-           </div>
-           <div className="text-sm font-bold text-green-700 mb-1">
-             {stars === 3 ? t.roboPath.excellent : stars === 2 ? t.roboPath.good : t.roboPath.solved}
-           </div>
-           <div className="text-xs text-slate-600 mb-2">
-             {t.roboPath.youUsed} {commandCount} {t.roboPath.commands}
-           </div>
-           {showRetryPrompt && (
-             <div className="mt-3 bg-white/90 rounded-xl border-2 border-amber-300 p-3 text-xs text-amber-900 shadow-sm">
-               <div className="font-bold mb-2">{t.roboPath.tryAgainPrompt}</div>
-               <div className="flex gap-2">
-                 <button
-                   onClick={handleRetry}
-                   className="flex-1 bg-amber-500 text-white text-xs font-bold py-2 px-3 rounded-lg shadow-md hover:bg-amber-600 transition-colors"
-                 >
-                   {t.roboPath.tryAgainButton}
-                 </button>
-                 <button
-                   onClick={handleNext}
-                   className="flex-1 bg-emerald-500 text-white text-xs font-bold py-2 px-3 rounded-lg shadow-md hover:bg-emerald-600 transition-colors"
-                 >
-                   {t.roboPath.nextButton}
-                 </button>
-               </div>
-             </div>
-           )}
-           {stars < 3 && !showRetryPrompt && (
-             <div className="text-[10px] text-orange-600 mt-2">
-               {t.roboPath.tryAgainFor3Stars}
-             </div>
-           )}
-         </div>
-       )}
-       
-       {/* Crash/Not reached feedback */}
-       {status === 'crash' && (
-         <div className="mb-3 text-center bg-red-100 p-3 rounded-xl border-2 border-red-400 animate-pulse">
-           <div className="text-sm font-bold text-red-700">{t.roboPath.crashWithStone}</div>
-           <div className="text-xs text-red-600 mt-1">{t.roboPath.avoidObstacles}</div>
-         </div>
-       )}
-       
-       {status === 'notReached' && (
-         <div className="mb-3 text-center bg-orange-100 p-3 rounded-xl border-2 border-orange-400 animate-pulse">
-           <div className="text-sm font-bold text-orange-700">{t.roboPath.needMoreCommands}</div>
          </div>
        )}
 
@@ -371,7 +334,18 @@ export const RoboPathView: React.FC<RoboPathViewProps> = ({ problem, onAnswer, s
        </div>
        
        {/* Command queue with colors and indices */}
-       <div className="flex gap-1 min-h-10 sm:min-h-12 w-full bg-slate-100 rounded-lg sm:rounded-xl mb-2 sm:mb-4 items-center px-2 py-2 overflow-x-auto border-2 border-slate-300 shadow-inner">
+       <div className="w-full mb-2 sm:mb-3">
+         <div className="flex items-center justify-between mb-1">
+           <span className="text-xs sm:text-sm font-semibold text-slate-600">
+             {formatText(t.roboPath.commands)}: {commandCount}/{maxCommands}
+           </span>
+           {commandCount >= maxCommands - 1 && commandCount < maxCommands && (
+             <span className="text-xs text-amber-600 font-semibold">
+               ⚠️ {maxCommands - commandCount} {formatText(t.roboPath.steps)}
+             </span>
+           )}
+         </div>
+         <div className="flex gap-1 min-h-10 sm:min-h-12 w-full bg-slate-100 rounded-lg sm:rounded-xl items-center px-2 py-2 overflow-x-auto border-2 border-slate-300 shadow-inner">
            {commandCount === 0 && <span className="text-slate-400 text-xs sm:text-sm ml-2">{formatText(t.roboPath.addCommands)}</span>}
            {commands.map((c, i) => (
              <div key={i} className="relative flex-shrink-0">
@@ -383,6 +357,7 @@ export const RoboPathView: React.FC<RoboPathViewProps> = ({ problem, onAnswer, s
                </div>
              </div>
            ))}
+         </div>
        </div>
        
        {/* Control buttons */}

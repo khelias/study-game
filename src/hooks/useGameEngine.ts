@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useRef } from 'react';
 import { gameRegistry } from '../games/registry';
 import { getEffectiveLevel } from '../engine/adaptiveDifficulty';
 import { createRng } from '../engine/rng';
@@ -43,18 +43,21 @@ const makeKey = (prob: Problem | null): string => {
 
 export function useGameEngine() {
   const [rng] = useState(() => {
+    if (typeof window === 'undefined') {
+      return createRng(Date.now());
+    }
     const params = new URLSearchParams(window.location.search);
     const seedParam = params.get('seed');
     const parsed = seedParam ? parseInt(seedParam, 10) : null;
     return createRng(Number.isFinite(parsed) && parsed !== null ? parsed : Date.now());
   });
   
-  const [lastKeys, setLastKeys] = useState<Record<string, string[]>>({});
+  const lastKeysRef = useRef<Record<string, string[]>>({});
 
   const getRng = useCallback(() => rng, [rng]);
 
   const generateUniqueProblem = useCallback((type: string, level: number, profile: string): Problem | null => {
-    const buffer = lastKeys[type] || [];
+    const buffer = lastKeysRef.current[type] || [];
     let attempt = 0;
     let prob: Problem;
     let key: string;
@@ -76,10 +79,10 @@ export function useGameEngine() {
     } while (attempt < 15 && buffer.includes(key));
     
     const nextBuffer = [key, ...buffer].slice(0, 20); // Keep last 20 problems
-    setLastKeys(prev => ({ ...prev, [type]: nextBuffer }));
+    lastKeysRef.current = { ...lastKeysRef.current, [type]: nextBuffer };
     
     return prob;
-  }, [rng, lastKeys]);
+  }, [rng]);
 
   const generateUniqueProblemForGame = useCallback((gameType: string, level: number, profile: string, adaptiveDifficulty: AdaptiveDifficulty): Problem | null => {
     try {

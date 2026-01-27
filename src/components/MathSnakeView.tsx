@@ -402,7 +402,7 @@ export const MathSnakeView: React.FC<MathSnakeViewProps> = ({ problem, onAnswer,
   const gameTitle = gameType ? (t.games[gameType.replace('_adv', '') as keyof typeof t.games]?.title || gameType) : '';
 
   return (
-    <div className="w-full flex flex-col items-center animate-in fade-in slide-in-from-bottom-4 duration-500 px-2 sm:px-3 md:px-4" style={{ maxWidth: '100vw' }}>
+    <div className="w-full flex flex-col items-center px-4 sm:px-6 max-w-2xl mx-auto pt-4 sm:pt-6 animate-in fade-in duration-300">
       {/* Game Title Badge */}
       {gameTitle && (
         <div className="w-full mb-2 flex justify-center" style={{ maxWidth: 'min(90vw, 28rem, 100%)' }}>

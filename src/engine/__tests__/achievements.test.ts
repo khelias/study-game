@@ -138,6 +138,8 @@ describe('checkAchievements', () => {
         syllable_builder: 1,
         time_match: 1,
         math_snake: 1,
+        unit_conversion: 1,
+        compare_sizes: 1,
       },
     });
     const unlocked: string[] = [];

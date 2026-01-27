@@ -28,13 +28,14 @@ export const MemoryGameView: React.FC<MemoryGameViewProps> = ({ problem, onAnswe
   const problemUid: string = problem.uid;
   
   useEffect(() => { 
-    const timer = setTimeout(() => {
-      setCards(problem.cards); 
-      setFlipped([]); 
-      setMatchedPairs(0);
-      setShowCelebration(false);
-    }, 0);
-    return () => clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setCards(problem.cards); 
+     
+    setFlipped([]); 
+     
+    setMatchedPairs(0);
+     
+    setShowCelebration(false);
   }, [problemUid, problem.cards]);
   
   const handleCard = (index: number): void => {
@@ -97,7 +98,7 @@ export const MemoryGameView: React.FC<MemoryGameViewProps> = ({ problem, onAnswe
   const progress = (matchedPairs / totalPairs) * 100;
 
   return (
-    <div className="w-full mt-2 sm:mt-4 flex flex-col items-center px-2">
+    <div className="w-full flex flex-col items-center px-4 sm:px-6 max-w-2xl mx-auto pt-4 sm:pt-6 animate-in fade-in duration-300">
       {/* Progress bar - compact on mobile */}
       {totalPairs > 0 && (
         <div className="w-full max-w-md mb-3 sm:mb-4">
@@ -136,7 +137,7 @@ export const MemoryGameView: React.FC<MemoryGameViewProps> = ({ problem, onAnswe
                 text-sm sm:text-lg md:text-xl font-black transition-all duration-300 
                 shadow-lg
                 ${card.solved 
-                  ? 'opacity-0 scale-0 pointer-events-none' 
+                  ? 'opacity-20 scale-95 pointer-events-none' 
                   : isFlipped
                   ? 'bg-gradient-to-br from-white to-purple-50 border-3 sm:border-4 border-purple-500 text-purple-800 scale-100 shadow-xl' 
                   : 'bg-gradient-to-br from-purple-500 to-purple-700 border-3 sm:border-4 border-purple-800 text-transparent scale-100 hover:from-purple-600 hover:to-purple-800 hover:scale-105 active:scale-95'

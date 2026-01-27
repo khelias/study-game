@@ -43,7 +43,8 @@ export function processMathSnakeAnswer(context: AnswerHandlerContext): AnswerRes
     throw new Error('processMathSnakeAnswer called for non-math-snake game');
   }
 
-  const points = isCorrect ? 10 : 0;
+  // Points only come from eating apples, not from answering math questions
+  const points = 0;
   let updatedProblem: Problem | null = null;
   let gameOver = false;
 
@@ -56,7 +57,7 @@ export function processMathSnakeAnswer(context: AnswerHandlerContext): AnswerRes
     return {
       shouldShowFeedback: true,
       shouldShowParticles: true,
-      shouldIncrementScore: true,
+      shouldIncrementScore: false, // No points for answering math questions
       shouldIncrementStars: true,
       shouldDecrementHearts: false,
       shouldEndGame: gameOver,

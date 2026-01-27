@@ -14,7 +14,7 @@ interface SmartGamesLogoProps {
 }
 
 export const SmartGamesLogo: React.FC<SmartGamesLogoProps> = ({ 
-  size, 
+  size: _size, 
   className = '',
   showText = false
 }) => {

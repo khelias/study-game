@@ -36,13 +36,13 @@ export const SyllableGameView: React.FC<SyllableGameViewProps> = ({ problem, onA
   const colors: string[] = ['bg-orange-100 text-orange-700 border-orange-300', 'bg-teal-100 text-teal-700 border-teal-300', 'bg-blue-100 text-blue-700 border-blue-300', 'bg-pink-100 text-pink-700 border-pink-300'];
 
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setCurrent([]);
-      setPool(poolFromProblem());
-      setGhost(false);
-    }, 0);
-    return () => clearTimeout(timer);
-  }, [poolFromProblem]);
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setCurrent([]);
+     
+    setPool(poolFromProblem());
+     
+    setGhost(false);
+  }, [problem.uid, poolFromProblem]);
 
   const handleSelect = (item: SyllablePart): void => {
     playSound('click', soundEnabled);
@@ -77,14 +77,17 @@ export const SyllableGameView: React.FC<SyllableGameViewProps> = ({ problem, onA
   };
 
   return (
-    <div className="flex flex-col items-center mt-2 sm:mt-4 w-full animate-in fade-in slide-in-from-right-4 duration-500 px-2">
+    <div className="w-full flex flex-col items-center px-4 sm:px-6 max-w-2xl mx-auto pt-4 sm:pt-6 animate-in fade-in duration-300">
       <div className="text-3xl sm:text-4xl mb-1 sm:mb-2">{problem.emoji || problem.hint || '🧩'}</div>
       <div className="text-xs sm:text-sm font-semibold text-slate-600 mb-2 px-2 text-center">{formatText(t.gameScreen.syllableBuilder.instruction)}</div>
-      {ghost && (
-        <div className="mb-2 text-[10px] sm:text-xs font-semibold text-slate-400">
-          {formatText(t.gameScreen.syllableBuilder.correct)} {problem.syllables.join('-')}
-        </div>
-      )}
+      {/* Ghost feedback - always reserve space to prevent layout shift */}
+      <div className={`mb-2 text-[10px] sm:text-xs font-semibold text-slate-400 min-h-[1rem] transition-opacity duration-300 ${
+        ghost ? 'opacity-100' : 'opacity-0'
+      }`}>
+        {ghost && (
+          <>{formatText(t.gameScreen.syllableBuilder.correct)} {problem.syllables.join('-')}</>
+        )}
+      </div>
       <div className="flex gap-1.5 sm:gap-2 mb-4 sm:mb-6 min-h-[3rem] sm:min-h-[3.5rem] flex-wrap justify-center">
         {Array.from({ length: problem.syllables.length }).map((_, i) => (
           <button 

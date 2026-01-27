@@ -57,11 +57,10 @@ export const WordGameView: React.FC<WordGameViewProps> = ({ problem, onAnswer, s
   
   // Initialize userWord with pre-filled positions
   useEffect(() => { 
-    const timer = setTimeout(() => {
-      setUserWord(buildInitialWord());
-      setPool(buildInitialPool());
-    }, 0);
-    return () => clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setUserWord(buildInitialWord());
+     
+    setPool(buildInitialPool());
   }, [problemUid, buildInitialWord, buildInitialPool]);
   
   const isPreFilled = (index: number): boolean => {
@@ -107,15 +106,17 @@ export const WordGameView: React.FC<WordGameViewProps> = ({ problem, onAnswer, s
   };
 
   return (
-    <div className="flex flex-col items-center mt-2 sm:mt-4 w-full animate-in fade-in slide-in-from-right-4 duration-500 px-2">
+    <div className="w-full flex flex-col items-center px-4 sm:px-6 max-w-2xl mx-auto pt-4 sm:pt-6 animate-in fade-in duration-300">
       <div className="text-6xl sm:text-9xl mb-4 sm:mb-8 animate-bounce filter drop-shadow-xl">{problem.emoji}</div>
       
-      {/* Show hint if there are pre-filled positions */}
-      {problem.preFilledPositions && problem.preFilledPositions.length > 0 && (
-        <div className="mb-2 text-sm sm:text-base text-orange-600 font-bold">
-          💡 {t.gameScreen.wordBuilder.preFilled}
-        </div>
-      )}
+      {/* Hint - always reserve space to prevent layout shift */}
+      <div className={`mb-2 text-sm sm:text-base text-orange-600 font-bold min-h-[1.5rem] transition-opacity duration-300 ${
+        problem.preFilledPositions && problem.preFilledPositions.length > 0 ? 'opacity-100' : 'opacity-0'
+      }`}>
+        {problem.preFilledPositions && problem.preFilledPositions.length > 0 && (
+          <>💡 {t.gameScreen.wordBuilder.preFilled}</>
+        )}
+      </div>
       
       {/* Silhouette positions */}
       <div className="flex gap-1.5 sm:gap-2 mb-4 sm:mb-8 min-h-[3.5rem] sm:min-h-[4.5rem] flex-wrap justify-center">

@@ -26,11 +26,10 @@ export const TimeGameView: React.FC<TimeGameViewProps> = ({ problem, onAnswer, s
   const [feedback, setFeedback] = useState<string | null>(null);
 
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setDisabled([]);
-      setFeedback(null);
-    }, 0);
-    return () => clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setDisabled([]);
+     
+    setFeedback(null);
   }, [problem.uid]);
 
   const handleChoice = (opt: string): void => {
@@ -47,10 +46,15 @@ export const TimeGameView: React.FC<TimeGameViewProps> = ({ problem, onAnswer, s
   };
 
   return (
-    <div className="flex flex-col items-center gap-4 sm:gap-6 w-full px-2 pt-2 sm:pt-4">
+    <div className="w-full flex flex-col items-center px-4 sm:px-6 max-w-2xl mx-auto pt-4 sm:pt-6 animate-in fade-in duration-300">
       <TimeDisplay hour={problem.display.hour} minute={problem.display.minute} />
       <div className="text-xs sm:text-sm font-semibold text-slate-500 mb-1 sm:mb-2">{formatText(t.gameScreen.timeMatch.selectCorrectTime)}</div>
-      {feedback && <div className="text-[10px] sm:text-xs font-semibold text-red-500 -mt-1 sm:-mt-2 px-2 text-center">{formatText(feedback)}</div>}
+      {/* Feedback - always reserve space to prevent layout shift */}
+      <div className={`text-[10px] sm:text-xs font-semibold text-red-500 -mt-1 sm:-mt-2 px-2 text-center min-h-[1.25rem] transition-opacity duration-300 ${
+        feedback ? 'opacity-100' : 'opacity-0'
+      }`}>
+        {feedback && formatText(feedback)}
+      </div>
       <div className="grid grid-cols-3 gap-2 sm:gap-3 w-full max-w-sm">
         {problem.options.map((opt, idx) => (
           <button

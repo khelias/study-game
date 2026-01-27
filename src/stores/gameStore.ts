@@ -59,6 +59,7 @@ export interface GameStore {
   setScore: (score: number) => void;
   addScore: (points: number) => void;
   markTutorialSeen: () => void;
+  setLevel: (gameType: string, level: number) => void; // Manually set level for a game
 }
 
 const DEFAULT_PROFILE: ProfileType = 'advanced';
@@ -306,6 +307,23 @@ export const useGameStore = create<GameStore>()(
       
       markTutorialSeen: () => {
         set({ hasSeenTutorial: true });
+      },
+      
+      setLevel: (gameType: string, level: number) => {
+        const state = get();
+        // Ensure level is at least 1
+        const newLevel = Math.max(1, level);
+        
+        // Update levels
+        const updatedLevels = {
+          ...state.levels,
+          [state.profile]: {
+            ...state.levels[state.profile],
+            [gameType]: newLevel
+          }
+        };
+        
+        set({ levels: updatedLevels });
       },
     }),
     {

@@ -66,9 +66,10 @@ export const StatsModal: React.FC<StatsModalProps> = ({ stats, unlockedAchieveme
                   {Object.entries(stats.maxLevels).map(([gameType, level]) => {
                     const config = GAME_CONFIG[gameType];
                     if (!config) return null;
+                    const gameTitle = t.games[config.id as keyof typeof t.games]?.title || config.title;
                     return (
                       <div key={gameType} className="flex justify-between items-center bg-white p-3 rounded-xl">
-                        <span className="text-sm font-semibold text-slate-600">{config.title}</span>
+                        <span className="text-sm font-semibold text-slate-600">{gameTitle}</span>
                         <span className="text-lg font-black text-slate-800">{level}</span>
                       </div>
                     );

@@ -6,7 +6,7 @@
  */
 
 import React, { useEffect, useRef, useState } from 'react';
-import { Loader2, Trophy } from 'lucide-react';
+import { Loader2, Trophy, TrendingUp } from 'lucide-react';
 import { useGameStore } from '../../stores/gameStore';
 import { usePlaySessionStore } from '../../stores/playSessionStore';
 import { useGameEngine } from '../../hooks/useGameEngine';
@@ -26,9 +26,14 @@ import { SettingsMenu } from '../../components/SettingsMenu';
 import { StatsModal } from '../modals/StatsModal';
 import { AchievementsModal } from '../modals/AchievementsModal';
 import { ShopModal } from '../modals/ShopModal';
+import { LevelSelectorModal } from '../modals/LevelSelectorModal';
 import { moveMathSnake } from '../../engine/mathSnake';
 import { calculateLevelUpRequirement } from '../../engine/progression';
+import { ACHIEVEMENTS } from '../../engine/achievements';
+import { getAchievementCopy } from '../../utils/achievementCopy';
+import { useTranslation } from '../../i18n/useTranslation';
 import type { Direction, ProfileType } from '../../types/game';
+import type { AchievementUnlock } from '../../types/achievement';
 
 export const GameScreen: React.FC = () => {
   // Global state
@@ -38,6 +43,7 @@ export const GameScreen: React.FC = () => {
   const soundEnabled = useGameStore(state => state.soundEnabled);
   const toggleSound = useGameStore(state => state.toggleSound);
   const recordLevelUp = useGameStore(state => state.recordLevelUp);
+  const setLevel = useGameStore(state => state.setLevel);
   const addGlobalScore = useGameStore(state => state.addScore);
   const updateStats = useGameStore(state => state.updateStats);
 
@@ -85,11 +91,28 @@ export const GameScreen: React.FC = () => {
   const [showStats, setShowStats] = useState(false);
   const [showAchievements, setShowAchievements] = useState(false);
   const [showShop, setShowShop] = useState(false);
+  const [showLevelSelector, setShowLevelSelector] = useState(false);
   const settingsMenuRef = useRef<HTMLDivElement>(null);
   
   // Get stats and achievements for modals
   const stats = useGameStore(state => state.stats);
-  const unlockedAchievements = useGameStore(state => state.unlockedAchievements);
+  const unlockedAchievementIds = useGameStore(state => state.unlockedAchievements);
+  const t = useTranslation();
+  
+  // Convert achievement IDs to AchievementUnlock objects
+  const unlockedAchievements: AchievementUnlock[] = unlockedAchievementIds
+    .map(id => {
+      const achievement = ACHIEVEMENTS[id];
+      if (!achievement) return null;
+      const copy = getAchievementCopy(t, achievement.id);
+      return {
+        id: achievement.id,
+        title: copy.title,
+        desc: copy.desc,
+        icon: achievement.icon,
+      };
+    })
+    .filter((a): a is AchievementUnlock => a !== null);
 
   // Track achievement notifications - compute directly from notifications
   const achievementShown = notifications.some(n => n.type === 'achievement');
@@ -305,13 +328,47 @@ export const GameScreen: React.FC = () => {
       </GameHeader>
 
       <div className="flex-1 flex flex-col items-center p-4 max-w-2xl mx-auto w-full relative">
+        {/* Level Badge - floating in top left of game area, clickable */}
+        <div
+          onClick={() => setShowLevelSelector(true)}
+          className="absolute top-2 left-2 sm:top-4 sm:left-4 z-30 flex items-center gap-1.5 bg-purple-50 border-purple-200 rounded-lg shadow-md hover:bg-purple-100 hover:border-purple-300 transition-colors cursor-pointer"
+          style={{ 
+            padding: '0.375rem 0.625rem',
+            boxSizing: 'border-box',
+            border: '1px solid',
+            borderColor: 'rgb(233, 213, 255)',
+            width: 'fit-content',
+            height: 'fit-content'
+          }}
+          role="button"
+          tabIndex={0}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              setShowLevelSelector(true);
+            }
+          }}
+          aria-label="Change level"
+        >
+          <TrendingUp size={14} className="text-purple-600 w-3.5 h-3.5 sm:w-4 sm:h-4 flex-shrink-0" />
+          <span className="text-xs sm:text-sm font-bold text-purple-700 whitespace-nowrap">{currentLevel}</span>
+        </div>
+        
         {/* Session Score Badge - floating in top right of game area */}
-        {score > 0 && (
-          <div className="absolute top-2 right-2 sm:top-4 sm:right-4 z-30 flex items-center gap-1.5 bg-blue-50 border border-blue-200 px-2.5 py-1.5 rounded-lg shadow-md">
-            <Trophy size={14} className="text-blue-600 w-3.5 h-3.5 sm:w-4 sm:h-4 flex-shrink-0" />
-            <span className="text-xs sm:text-sm font-bold text-blue-700 whitespace-nowrap">{score}</span>
-          </div>
-        )}
+        <div 
+          className="absolute top-2 right-2 sm:top-4 sm:right-4 z-30 flex items-center gap-1.5 bg-blue-50 border-blue-200 rounded-lg shadow-md"
+          style={{ 
+            padding: '0.375rem 0.625rem',
+            boxSizing: 'border-box',
+            border: '1px solid',
+            borderColor: 'rgb(191, 219, 254)',
+            width: 'fit-content',
+            height: 'fit-content'
+          }}
+        >
+          <Trophy size={14} className="text-blue-600 w-3.5 h-3.5 sm:w-4 sm:h-4 flex-shrink-0" />
+          <span className="text-xs sm:text-sm font-bold text-blue-700 whitespace-nowrap">{score}</span>
+        </div>
         
         {!problem ? (
           <Loader2 className="animate-spin mt-20 text-slate-400" size={48} />
@@ -343,7 +400,7 @@ export const GameScreen: React.FC = () => {
       )}
       {showAchievements && (
         <AchievementsModal
-          unlockedAchievements={unlockedAchievements}
+          unlockedAchievements={unlockedAchievementIds}
           onClose={() => setShowAchievements(false)}
         />
       )}
@@ -351,6 +408,21 @@ export const GameScreen: React.FC = () => {
         <ShopModal
           onClose={() => setShowShop(false)}
           openedFromNoHearts={hearts <= 0}
+        />
+      )}
+      {showLevelSelector && gameType && (
+        <LevelSelectorModal
+          currentLevel={currentLevel}
+          gameType={gameType}
+          onClose={() => setShowLevelSelector(false)}
+          onLevelChange={(newLevel) => {
+            setLevel(gameType, newLevel);
+            // Reset level progress and regenerate problem for new level
+            resetLevelProgress();
+            const newProblem = generateUniqueProblemForGame(gameType, newLevel, profileId, adaptiveDifficulty);
+            setProblem(newProblem);
+            setShowLevelSelector(false);
+          }}
         />
       )}
 
