@@ -206,12 +206,12 @@ function addDistractorLetters(
 export const Generators: Record<string, GeneratorFunction> = {
   balance_scale: (level: number, rng: RngFunction = Math.random, profile: ProfileType = 'starter'): BalanceScaleProblem => {
     const meta = profileMeta(profile);
-    // Parandatud progressioon: Level 1 = 4-7, Level 5 = 10-15, Level 10 = 15-22
-    // Alustame lihtsamalt
+    // Improved progression: Level 1 = 4-7, Level 5 = 10-15, Level 10 = 15-22
+    // Start easier
     const baseMin = 4;
     const baseMax = 7;
-    const levelGrowth = Math.floor(level * 0.6); // Sujuvam kasv
-    const profileBoost = meta.difficultyOffset * 1.5; // Advanced profiil +3 (mitte +4)
+    const levelGrowth = Math.floor(level * 0.6); // Smoother growth
+    const profileBoost = meta.difficultyOffset * 1.5; // Advanced profile +3 (not +4)
     const minSum = baseMin + levelGrowth + profileBoost;
     const maxSum = baseMax + Math.floor(level * 0.9) + profileBoost;
     const total = Math.floor(rng() * (maxSum - minSum + 1)) + minSum;
@@ -427,13 +427,13 @@ export const Generators: Record<string, GeneratorFunction> = {
   memory_math: (level: number, rng: RngFunction = Math.random, profile: ProfileType = 'starter'): MemoryMathProblem => {
     const meta = profileMeta(profile);
     const harder = meta.difficultyOffset > 0;
-    // Parandatud card count progressioon - sujuvam
+    // Improved card count progression - smoother
     const baseCards = harder ? 8 : 6;
-    const cardGrowth = Math.floor(level / 2.5); // Sujuvam kasv
+    const cardGrowth = Math.floor(level / 2.5); // Smoother growth
     const cardCount = Math.min(baseCards + cardGrowth * 2, harder ? 14 : 12);
-    // Parandatud maxSum progressioon - sujuvam
+    // Improved maxSum progression - smoother
     const baseMax = harder ? 15 : 10;
-    const sumGrowth = Math.floor(level * 2); // Aeglasem kasv
+    const sumGrowth = Math.floor(level * 2); // Slower growth
     const maxSum = Math.min(baseMax + sumGrowth, harder ? 35 : 25); 
     const pairs: Array<{ eq: string; ans: number }> = [];
     const cards: Array<{ id: string; content: string; matched?: boolean }> = [];
@@ -630,7 +630,7 @@ export const Generators: Record<string, GeneratorFunction> = {
   robo_path: (level: number, rng: RngFunction = Math.random, profile: ProfileType = 'starter'): RoboPathProblem => {
     const meta = profileMeta(profile);
     const harder = meta.difficultyOffset > 0;
-    // Sujuvam grid size progressioon
+    // Smoother grid size progression
     const baseGrid = harder ? 4 : 3;
     const gridGrowth = level >= 4 ? 1 : 0; // Level 4+ = +1 grid size
     const gridSize = Math.min(baseGrid + gridGrowth, 5);
@@ -797,7 +797,7 @@ export const Generators: Record<string, GeneratorFunction> = {
     const words = SYLLABLE_WORDS[locale] ?? SYLLABLE_WORDS.et;
     // Filter by level - higher levels have longer words
     const meta = profileMeta(profile);
-    // Sujuvam progressioon: Level 1-2 = 2 silpi, Level 3-5 = 3 silpi, Level 6+ = 3-4 silpi
+    // Smoother progression: Level 1-2 = 2 syllables, Level 3-5 = 3 syllables, Level 6+ = 3-4 syllables
     const targetParts = level <= 2 ? 2 : level <= 5 ? 3 : level <= 7 ? 3 : 4;
     const isAdvanced = meta.difficultyOffset > 0;
     const minParts = isAdvanced
@@ -833,7 +833,7 @@ export const Generators: Record<string, GeneratorFunction> = {
   },
 
   time_match: (level: number, rng: RngFunction = Math.random, _profile: ProfileType = 'advanced'): TimeMatchProblem => {
-    // Sujuvam step progressioon
+    // Smoother step progression
     const step = level <= 2 ? 30 : level <= 4 ? 15 : level <= 6 ? 10 : 5; // minute step
     const hour24 = Math.floor(rng() * 24);
     const minute = Math.floor(rng() * (60/step)) * step;

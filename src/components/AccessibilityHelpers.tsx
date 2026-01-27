@@ -1,4 +1,4 @@
-// Accessibility helperid - parem ligipääsetavus
+// Accessibility helpers - better accessibility
 import React, { ReactNode, useEffect } from 'react';
 import { useTranslation } from '../i18n/useTranslation';
 import { useProfileText } from '../hooks/useProfileText';

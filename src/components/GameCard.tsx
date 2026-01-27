@@ -1,4 +1,4 @@
-// Täiustatud mängukaart komponent - parem UI/UX
+// Enhanced game card component - better UI/UX
 import React, { useMemo } from 'react';
 import { FadeIn } from './EnhancedAnimations';
 import { GameConfig } from '../types/game';

@@ -1,4 +1,4 @@
-// Error boundary komponent React'i jaoks
+// Error boundary component for React
 import { Component, ErrorInfo, ReactNode } from 'react';
 import { getTranslations } from '../i18n';
 
