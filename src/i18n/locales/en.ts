@@ -407,6 +407,7 @@ export const en = {
       mathSnake: 'Eat apples and watch for the math apple!',
       timeMatch: 'Look at the clock hands!',
       unitConversion: 'Calculate!',
+      compareSizes: 'Compare the sizes carefully!',
       default: 'Try again!',
     },
     hintButton: {
@@ -472,6 +473,11 @@ export const en = {
         'Read the question carefully!',
         'Think about how the units relate!',
         'Use a small example to check your answer!',
+      ],
+      compare_sizes: [
+        'Look at both sides carefully!',
+        'Count or compare the sizes!',
+        'Think which one is bigger!',
       ],
     },
   },
@@ -612,6 +618,18 @@ export const en = {
     math_snake: {
       title: 'NUMBER SNAKE',
       desc: 'Feed the snake with equations',
+    },
+    compareSizes: {
+      title: 'SIZE COMPARE',
+      desc: 'Compare object sizes',
+      instruction: 'Which symbol is correct?',
+      symbolInstruction: 'Choose the correct comparison symbol',
+      selectSymbol: 'Select symbol',
+      leftBigger: 'Left is bigger',
+      rightBigger: 'Right is bigger',
+      equal: 'They are equal',
+      leftItem: 'Left item',
+      rightItem: 'Right item',
     },
   },
 

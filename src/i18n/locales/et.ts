@@ -407,6 +407,7 @@ export const et = {
       mathSnake: 'Söö õunu ja vaata, millal tuleb matemaatika õun!',
       timeMatch: 'Vaata kella osuteid!',
       unitConversion: 'Arvuta ümber!',
+      compareSizes: 'Võrdle suurusi hoolikalt!',
       default: 'Proovi veel!',
     },
     hintButton: {
@@ -472,6 +473,11 @@ export const et = {
         'Loe küsimust hoolikalt!',
         'Mõtle ühikute vahekordadele!',
         'Kontrolli vastust väikese näitega!',
+      ],
+      compare_sizes: [
+        'Vaata mõlemat poolt hoolikalt!',
+        'Loe või võrdle suurusi!',
+        'Mõtle, kumb on suurem!',
       ],
     },
   },
@@ -612,6 +618,18 @@ export const et = {
     math_snake: {
       title: 'NUMBRIMADU',
       desc: 'Sööda madu tehetega',
+    },
+    compareSizes: {
+      title: 'SUURUSTE VÕRDLEMINE',
+      desc: 'Võrdle esemete suurusi',
+      instruction: 'Milline sümbol on õige?',
+      symbolInstruction: 'Vali õige võrdlussümbol',
+      selectSymbol: 'Vali sümbol',
+      leftBigger: 'Vasak on suurem',
+      rightBigger: 'Parem on suurem',
+      equal: 'Nad on võrdsed',
+      leftItem: 'Vasak ese',
+      rightItem: 'Parem ese',
     },
   },
 

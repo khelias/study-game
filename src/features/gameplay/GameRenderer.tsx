@@ -11,6 +11,7 @@ import {
   UnitConversionView 
 } from '../../components/GameViews';
 import { MathSnakeView } from '../../components/MathSnakeView';
+import { CompareSizesView } from '../../components/CompareSizesView';
 import type { 
   Problem,
   BalanceScaleProblem,
@@ -24,6 +25,7 @@ import type {
   UnitConversionProblem,
   SentenceLogicProblem,
   LetterMatchProblem,
+  CompareSizesProblem,
   Direction
 } from '../../types/game';
 import { useTranslation } from '../../i18n/useTranslation';
@@ -78,6 +80,9 @@ export const GameRenderer: React.FC<GameRendererProps> = ({ gameType, problem, o
     
     case 'unit_conversion':
       return <UnitConversionView problem={problem as UnitConversionProblem} onAnswer={onAnswer} soundEnabled={soundEnabled} />;
+    
+    case 'compare_sizes':
+      return <CompareSizesView problem={problem as CompareSizesProblem} onAnswer={onAnswer} soundEnabled={soundEnabled} />;
     
     case 'letter_match':
     case 'sentence_logic':
