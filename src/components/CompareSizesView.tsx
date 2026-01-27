@@ -9,7 +9,7 @@ interface CompareSizesViewProps {
   soundEnabled: boolean;
 }
 
-// Dice face dots patterns (1-6)
+// Dice face dots patterns (1-6) - using CSS Grid for robust scaling
 const DiceFace: React.FC<{ value: number }> = ({ value }) => {
   const getDotPattern = (val: number) => {
     const patterns: Record<number, boolean[]> = {
@@ -26,12 +26,14 @@ const DiceFace: React.FC<{ value: number }> = ({ value }) => {
   const pattern = getDotPattern(value);
   
   return (
-    <div className="w-20 h-20 bg-white border-4 border-gray-800 rounded-lg shadow-lg flex flex-wrap p-2 gap-1">
-      {pattern.map((hasDot, idx) => (
-        <div key={idx} className="w-5 h-5 flex items-center justify-center">
-          {hasDot && <div className="w-4 h-4 bg-gray-900 rounded-full" />}
-        </div>
-      ))}
+    <div className="w-16 h-16 sm:w-20 sm:h-20 bg-white border-2 sm:border-4 border-gray-800 rounded-lg shadow-lg aspect-square p-1 sm:p-2">
+      <div className="grid grid-cols-3 grid-rows-3 w-full h-full gap-0.5 sm:gap-1">
+        {pattern.map((hasDot, idx) => (
+          <div key={idx} className="flex items-center justify-center">
+            {hasDot && <div className="w-2.5 h-2.5 sm:w-4 sm:h-4 bg-gray-900 rounded-full" />}
+          </div>
+        ))}
+      </div>
     </div>
   );
 };
@@ -67,7 +69,7 @@ export const CompareSizesView: React.FC<CompareSizesViewProps> = ({
   // Check if we're using dice visualization
   const isDiceMode = problem.leftItem.visual && problem.leftItem.visual.includes('🎲');
   
-  // Render dice display
+  // Render dice display with responsive layout
   const renderDiceDisplay = (value: number) => {
     if (value <= 6) {
       return <DiceFace value={value} />;
@@ -76,7 +78,7 @@ export const CompareSizesView: React.FC<CompareSizesViewProps> = ({
       const firstDie = Math.min(6, value - 6);
       const secondDie = 6;
       return (
-        <div className="flex gap-3">
+        <div className="flex flex-wrap gap-2 sm:gap-3 justify-center">
           <DiceFace value={secondDie} />
           <DiceFace value={firstDie} />
         </div>
@@ -85,71 +87,72 @@ export const CompareSizesView: React.FC<CompareSizesViewProps> = ({
   };
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-[400px] p-8">
+    <div className="flex flex-col items-center justify-center min-h-[400px] p-4 sm:p-8">
       {/* Instruction - emphasize symbol selection */}
-      <div className="text-2xl font-bold mb-8 text-gray-700 text-center">
+      <div className="text-lg sm:text-2xl font-bold mb-6 sm:mb-8 text-gray-700 text-center">
         {t.games.compareSizes.symbolInstruction}
       </div>
 
       {/* Comparison display */}
-      <div className="flex items-center justify-center gap-8 mb-12">
+      <div className="flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-6 lg:gap-8 mb-8 sm:mb-12 w-full max-w-4xl">
         {/* Left item */}
         <div 
-          className="flex flex-col items-center justify-center bg-blue-100 rounded-2xl p-8 min-w-[200px] min-h-[200px] border-4 border-blue-300"
+          className="flex flex-col items-center justify-center bg-blue-100 rounded-2xl p-4 sm:p-6 lg:p-8 min-w-[140px] sm:min-w-[180px] lg:min-w-[200px] min-h-[140px] sm:min-h-[180px] lg:min-h-[200px] border-2 sm:border-4 border-blue-300 flex-1 max-w-xs"
           aria-label={t.games.compareSizes.leftItem}
         >
           {isDiceMode ? (
-            <div className="flex flex-col items-center gap-4">
+            <div className="flex flex-col items-center gap-2 sm:gap-4">
               {renderDiceDisplay(problem.leftItem.value)}
               {problem.showNumbers && (
-                <div className="text-4xl font-bold text-blue-600 mt-2">
+                <div className="text-2xl sm:text-3xl lg:text-4xl font-bold text-blue-600 mt-2">
                   {problem.leftItem.value}
                 </div>
               )}
             </div>
           ) : (
-            <div className="text-6xl font-bold text-blue-600">
+            <div className="text-4xl sm:text-5xl lg:text-6xl font-bold text-blue-600">
               {problem.leftItem.display}
             </div>
           )}
         </div>
 
         {/* Middle comparison symbol placeholder - big question mark */}
-        <div className="flex flex-col items-center">
-          <div className="text-7xl font-bold text-purple-600 animate-pulse">
+        <div className="flex flex-col items-center flex-shrink-0">
+          <div className="text-5xl sm:text-6xl lg:text-7xl font-bold text-purple-600 animate-pulse">
             ?
           </div>
-          <div className="text-sm text-gray-500 mt-2">
+          <div className="text-xs sm:text-sm text-gray-500 mt-1 sm:mt-2">
             {t.games.compareSizes.selectSymbol}
           </div>
         </div>
 
         {/* Right item */}
         <div 
-          className="flex flex-col items-center justify-center bg-green-100 rounded-2xl p-8 min-w-[200px] min-h-[200px] border-4 border-green-300"
+          className="flex flex-col items-center justify-center bg-green-100 rounded-2xl p-4 sm:p-6 lg:p-8 min-w-[140px] sm:min-w-[180px] lg:min-w-[200px] min-h-[140px] sm:min-h-[180px] lg:min-h-[200px] border-2 sm:border-4 border-green-300 flex-1 max-w-xs"
           aria-label={t.games.compareSizes.rightItem}
         >
           {isDiceMode ? (
-            <div className="flex flex-col items-center gap-4">
+            <div className="flex flex-col items-center gap-2 sm:gap-4">
               {renderDiceDisplay(problem.rightItem.value)}
               {problem.showNumbers && (
-                <div className="text-4xl font-bold text-green-600 mt-2">
+                <div className="text-2xl sm:text-3xl lg:text-4xl font-bold text-green-600 mt-2">
                   {problem.rightItem.value}
                 </div>
               )}
             </div>
           ) : (
-            <div className="text-6xl font-bold text-green-600">
+            <div className="text-4xl sm:text-5xl lg:text-6xl font-bold text-green-600">
               {problem.rightItem.display}
             </div>
           )}
         </div>
       </div>
 
-      {/* Symbol selection buttons - MAIN FOCUS */}
-      <div className="flex gap-6 flex-wrap justify-center">
-        {problem.options.map((option) => {
+      {/* Symbol selection buttons - ALWAYS 3 slots for consistency */}
+      <div className="flex gap-3 sm:gap-4 lg:gap-6 flex-wrap justify-center max-w-2xl">
+        {(['left', 'right', 'equal'] as const).map((option) => {
           const symbol = getSymbol(option);
+          const isAvailable = problem.options.includes(option);
           const label = option === 'left' 
             ? `${symbol} (${t.games.compareSizes.leftBigger})` 
             : option === 'right' 
@@ -159,34 +162,39 @@ export const CompareSizesView: React.FC<CompareSizesViewProps> = ({
           return (
             <button
               key={option}
-              onClick={() => handleAnswer(option)}
-              disabled={selectedAnswer !== null}
+              onClick={() => isAvailable && handleAnswer(option)}
+              disabled={!isAvailable || selectedAnswer !== null}
               className={`
-                flex flex-col items-center gap-3 px-10 py-6 rounded-2xl font-bold
-                transition-all transform hover:scale-110 active:scale-95
+                flex flex-col items-center gap-2 sm:gap-3 px-4 sm:px-6 lg:px-8 py-3 sm:py-4 lg:py-5 rounded-xl sm:rounded-2xl font-bold
+                transition-all transform ${isAvailable && selectedAnswer === null ? 'hover:scale-105 active:scale-95' : ''}
                 ${selectedAnswer === option 
                   ? selectedAnswer === problem.answer 
                     ? 'bg-green-500 text-white' 
                     : 'bg-red-500 text-white'
-                  : 'bg-gradient-to-br from-purple-500 to-indigo-600 text-white hover:from-purple-600 hover:to-indigo-700'
+                  : isAvailable
+                  ? 'bg-gradient-to-br from-purple-500 to-indigo-600 text-white hover:from-purple-600 hover:to-indigo-700'
+                  : 'bg-gray-200 text-gray-400 cursor-not-allowed'
                 }
-                border-4 ${
+                border-2 sm:border-4 ${
                   selectedAnswer === option
                     ? selectedAnswer === problem.answer
                       ? 'border-green-700'
                       : 'border-red-700'
-                    : 'border-purple-700 hover:border-purple-800'
+                    : isAvailable
+                    ? 'border-purple-700 hover:border-purple-800'
+                    : 'border-gray-300'
                 }
-                disabled:opacity-50 shadow-xl
+                ${!isAvailable || selectedAnswer !== null ? 'opacity-50' : ''} shadow-lg sm:shadow-xl min-w-[80px] sm:min-w-[100px]
               `}
               aria-label={label}
+              aria-disabled={!isAvailable}
             >
               {/* Large symbol display */}
-              <span className="text-6xl font-black">
+              <span className="text-3xl sm:text-4xl lg:text-5xl font-black">
                 {symbol}
               </span>
               {/* Text label */}
-              <span className="text-sm font-medium">
+              <span className="text-xs sm:text-sm font-medium text-center">
                 {option === 'left' ? t.games.compareSizes.leftBigger 
                   : option === 'right' ? t.games.compareSizes.rightBigger 
                   : t.games.compareSizes.equal}
@@ -196,19 +204,19 @@ export const CompareSizesView: React.FC<CompareSizesViewProps> = ({
         })}
       </div>
 
-      {/* Hint area for accessibility */}
+      {/* Screen reader feedback only - visually hidden */}
       {selectedAnswer && (
         <div 
-          className="mt-8 text-center text-xl font-bold"
+          className="sr-only"
           role="status"
           aria-live="polite"
         >
           {selectedAnswer === problem.answer ? (
-            <span className="text-green-600">
+            <span>
               {t.feedback.correct[0]}
             </span>
           ) : (
-            <span className="text-red-600">
+            <span>
               {t.feedback.wrong[0]}
             </span>
           )}
