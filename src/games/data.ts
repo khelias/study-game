@@ -55,6 +55,7 @@ export const GAME_CONFIG: Record<string, GameConfig> = {
   math_snake:      { id: 'math_snake', title: 'NUMBER SNAKE', theme: THEME.green!, icon: 'Gamepad2', desc: 'Move and collect apples', allowedProfiles: ['starter'], difficulty: 'medium', category: 'math' },
   letter_match:    { id: 'letter_match', title: 'LETTER DETECTIVE', theme: THEME.pink!, icon: 'Type', desc: 'Find the correct letter', allowedProfiles: ['starter'], difficulty: 'easy', category: 'language' },
   unit_conversion: { id: 'unit_conversion', title: 'UNITS', theme: THEME.teal!, icon: 'Ruler', desc: 'Convert units', allowedProfiles: ['starter'], difficulty: 'medium', category: 'math' },
+  compare_sizes:   { id: 'compare_sizes', title: 'SIZE COMPARE', theme: THEME.blue!, icon: 'Scale', desc: 'Compare object sizes', allowedProfiles: ['starter', 'advanced'], difficulty: 'easy', category: 'math' },
   
   // 8+ games - harder, logical (7 games - added letter_match_adv)
   balance_scale:   { id: 'balance_scale', title: 'SCALES', theme: THEME.blue!, icon: 'Scale', desc: 'Balance the scales', allowedProfiles: ['advanced'], difficulty: 'hard', category: 'math' },

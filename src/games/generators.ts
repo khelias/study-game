@@ -17,6 +17,7 @@ import type {
   SyllableBuilderProblem,
   LetterMatchProblem,
   UnitConversionProblem,
+  CompareSizesProblem,
   GeneratorFunction,
   SceneAnchor,
   SceneSubject,
@@ -995,6 +996,96 @@ export const Generators: Record<string, GeneratorFunction> = {
       category: unitType,
       answer: correctAnswer,
       options,
+      uid: uid(rng)
+    };
+  },
+
+  compare_sizes: (level: number, rng: RngFunction = Math.random, profile: ProfileType = 'starter'): CompareSizesProblem => {
+    const meta = profileMeta(profile);
+    const effectiveLevel = level + meta.difficultyOffset;
+    
+    // Level progression:
+    // 1-2: Large visual differences (bars/circles), no numbers
+    // 3-4: Smaller visual differences, introduce numbers up to 10
+    // 5-6: Numbers up to 20, equal appears more often
+    // 7-8: Numbers up to 50, show comparison symbols (>, <, =)
+    // 9-10: Numbers up to 100, mixed representations
+    // 11+: Story contexts, numbers up to 100
+    
+    const showNumbers = effectiveLevel >= 3;
+    const showSymbols = effectiveLevel >= 7;
+    const maxValue = effectiveLevel <= 2 ? 10 
+                   : effectiveLevel <= 4 ? 10
+                   : effectiveLevel <= 6 ? 20
+                   : effectiveLevel <= 8 ? 50
+                   : 100;
+    
+    // Difficulty affects how close the values are
+    const minDifference = effectiveLevel <= 2 ? 5 
+                        : effectiveLevel <= 4 ? 3
+                        : effectiveLevel <= 6 ? 2
+                        : 1;
+    
+    // Equal appears less frequently at lower levels
+    const equalChance = effectiveLevel <= 2 ? 0.1
+                      : effectiveLevel <= 4 ? 0.15
+                      : effectiveLevel <= 6 ? 0.25
+                      : 0.3;
+    
+    let leftValue: number;
+    let rightValue: number;
+    let answer: 'left' | 'right' | 'equal';
+    
+    if (rng() < equalChance) {
+      // Equal case
+      leftValue = Math.floor(rng() * maxValue) + 1;
+      rightValue = leftValue;
+      answer = 'equal';
+    } else {
+      // Different values
+      leftValue = Math.floor(rng() * maxValue) + 1;
+      
+      // Ensure minimum difference
+      let rightValue_temp: number;
+      let attempts = 0;
+      do {
+        rightValue_temp = Math.floor(rng() * maxValue) + 1;
+        attempts++;
+      } while (Math.abs(leftValue - rightValue_temp) < minDifference && attempts < 20);
+      
+      rightValue = rightValue_temp;
+      answer = leftValue > rightValue ? 'left' : 'right';
+    }
+    
+    // Create visual representations
+    const leftVisual = showNumbers ? '' : '█'.repeat(Math.min(leftValue, 10));
+    const rightVisual = showNumbers ? '' : '█'.repeat(Math.min(rightValue, 10));
+    
+    // Create display strings
+    const leftDisplay = showNumbers ? String(leftValue) : leftVisual;
+    const rightDisplay = showNumbers ? String(rightValue) : rightVisual;
+    
+    // Create options based on level
+    const options: Array<'left' | 'right' | 'equal'> = effectiveLevel <= 4 
+      ? ['left', 'right'] // Only bigger/smaller at lower levels
+      : ['left', 'right', 'equal']; // Add equal option at higher levels
+    
+    return {
+      type: 'compare_sizes',
+      leftItem: {
+        value: leftValue,
+        display: leftDisplay,
+        visual: leftVisual
+      },
+      rightItem: {
+        value: rightValue,
+        display: rightDisplay,
+        visual: rightVisual
+      },
+      answer,
+      options,
+      showNumbers,
+      showSymbols,
       uid: uid(rng)
     };
   }

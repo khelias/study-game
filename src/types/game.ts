@@ -227,6 +227,17 @@ export interface UnitConversionProblem extends BaseProblem {
   options: number[];
 }
 
+// Compare sizes problem
+export interface CompareSizesProblem extends BaseProblem {
+  type: 'compare_sizes';
+  leftItem: { value: number; display: string; visual?: string };
+  rightItem: { value: number; display: string; visual?: string };
+  answer: 'left' | 'right' | 'equal';
+  options: Array<'left' | 'right' | 'equal'>;
+  showNumbers: boolean;
+  showSymbols: boolean;
+}
+
 // Answer metadata for game-specific actions
 // Union type for all problems
 export type Problem =
@@ -240,7 +251,8 @@ export type Problem =
   | TimeMatchProblem
   | SyllableBuilderProblem
   | LetterMatchProblem
-  | UnitConversionProblem;
+  | UnitConversionProblem
+  | CompareSizesProblem;
 
 // RNG function type
 export type RngFunction = () => number;
