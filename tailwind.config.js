@@ -16,9 +16,6 @@ export default {
       animation: {
         shake: 'shake 0.5s ease-in-out',
       },
-      scale: {
-        '115': '1.15',
-      },
     },
   },
   plugins: [],

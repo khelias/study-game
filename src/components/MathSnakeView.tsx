@@ -199,7 +199,7 @@ export const MathSnakeView: React.FC<MathSnakeViewProps> = ({ problem, onAnswer,
         {(isBody || isHead || isTail) && segment && (
           <div className="absolute inset-0 flex items-center justify-center">
             {connectionDirs.map((dir, idx) => {
-              const colors = getSegmentColors(segment.index, isHead || false, isTail || false);
+              const colors = getSegmentColors(segment.index, isHead, isTail);
               return (
                 <div
                   key={`${key}-${dir}-${idx}`}
@@ -249,13 +249,11 @@ export const MathSnakeView: React.FC<MathSnakeViewProps> = ({ problem, onAnswer,
                   />
                 )}
                 <div
-                  className={`absolute rounded-full bg-gradient-to-br from-emerald-300 via-emerald-500 to-emerald-700 border-2 border-emerald-800/70 transition-transform duration-200 ${
-                    justAte && segment && segment.index < 3 ? 'scale-115' : ''
-                  }`}
+                  className="absolute rounded-full bg-gradient-to-br from-emerald-300 via-emerald-500 to-emerald-700 border-2 border-emerald-800/70 transition-transform duration-200"
                   style={{
                     width: 'clamp(1.25rem, 5vw, 2rem)',
                     height: 'clamp(1.25rem, 5vw, 2rem)',
-                    transform: `rotate(${headRotation()})`,
+                    transform: `rotate(${headRotation()}) ${justAte && segment && segment.index < 3 ? 'scale(1.15)' : ''}`,
                     boxShadow: '0 4px 8px rgba(16,185,129,0.5), inset 0 1px 2px rgba(255,255,255,0.7)',
                   }}
                 >
