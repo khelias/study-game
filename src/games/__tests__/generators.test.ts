@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { Generators } from '../generators';
 import { createRng } from '../../engine/rng';
-import type { BalanceScaleProblem, WordBuilderProblem, PatternProblem, MathSnakeProblem } from '../../types/game';
+import type { BalanceScaleProblem, WordBuilderProblem, PatternProblem, MathSnakeProblem, CompareSizesProblem } from '../../types/game';
 
 describe('Generators', () => {
   describe('balance_scale', () => {
@@ -376,6 +376,151 @@ describe('Generators', () => {
       const advancedProblem = generator(1, rng2, 'advanced') as WordBuilderProblem;
       
       expect(advancedProblem.target.length).toBeGreaterThanOrEqual(starterProblem.target.length);
+    });
+  });
+
+  describe('compare_sizes', () => {
+    it('should generate valid compare sizes problem', () => {
+      const rng = createRng(12345);
+      const generator = Generators.compare_sizes;
+      if (!generator) throw new Error('compare_sizes generator not found');
+      const problem = generator(1, rng, 'starter');
+      
+      expect(problem.type).toBe('compare_sizes');
+      expect(problem.leftItem).toHaveProperty('value');
+      expect(problem.leftItem).toHaveProperty('display');
+      expect(problem.rightItem).toHaveProperty('value');
+      expect(problem.rightItem).toHaveProperty('display');
+      expect(['left', 'right', 'equal']).toContain(problem.answer);
+      expect(problem.options).toBeInstanceOf(Array);
+      expect(problem.options.length).toBeGreaterThanOrEqual(2);
+    });
+
+    it('should compute correct answer', () => {
+      const rng = createRng(12345);
+      const generator = Generators.compare_sizes;
+      if (!generator) throw new Error('compare_sizes generator not found');
+      const problem = generator(1, rng, 'starter');
+      
+      const leftValue = problem.leftItem.value;
+      const rightValue = problem.rightItem.value;
+      const expectedAnswer = leftValue > rightValue ? 'left' : leftValue < rightValue ? 'right' : 'equal';
+      
+      expect(problem.answer).toBe(expectedAnswer);
+    });
+
+    it('should include correct answer in options (when applicable)', () => {
+      const rng = createRng(12345);
+      const generator = Generators.compare_sizes;
+      if (!generator) throw new Error('compare_sizes generator not found');
+      const problem = generator(5, rng, 'starter'); // Use level 5 to ensure 'equal' is in options
+      
+      expect(problem.options).toContain(problem.answer);
+    });
+
+    it('should generate consistent problems with same seed', () => {
+      const rng1 = createRng(12345);
+      const rng2 = createRng(12345);
+      const generator = Generators.compare_sizes;
+      if (!generator) throw new Error('compare_sizes generator not found');
+      
+      const problem1 = generator(1, rng1, 'starter');
+      const problem2 = generator(1, rng2, 'starter');
+      
+      expect(problem1.answer).toBe(problem2.answer);
+      expect(problem1.leftItem.value).toBe(problem2.leftItem.value);
+      expect(problem1.rightItem.value).toBe(problem2.rightItem.value);
+    });
+
+    it('should not show numbers at level 1-2', () => {
+      const rng = createRng(12345);
+      const generator = Generators.compare_sizes;
+      if (!generator) throw new Error('compare_sizes generator not found');
+      const problem = generator(1, rng, 'starter');
+      
+      expect(problem.showNumbers).toBe(false);
+    });
+
+    it('should show numbers at level 3+', () => {
+      const rng = createRng(12345);
+      const generator = Generators.compare_sizes;
+      if (!generator) throw new Error('compare_sizes generator not found');
+      const problem = generator(3, rng, 'starter');
+      
+      expect(problem.showNumbers).toBe(true);
+    });
+
+    it('should not show symbols at level 1-6', () => {
+      const rng = createRng(12345);
+      const generator = Generators.compare_sizes;
+      if (!generator) throw new Error('compare_sizes generator not found');
+      const problem = generator(5, rng, 'starter');
+      
+      expect(problem.showSymbols).toBe(false);
+    });
+
+    it('should show symbols at level 7+', () => {
+      const rng = createRng(12345);
+      const generator = Generators.compare_sizes;
+      if (!generator) throw new Error('compare_sizes generator not found');
+      const problem = generator(7, rng, 'starter');
+      
+      expect(problem.showSymbols).toBe(true);
+    });
+
+    it('should have only 2 options at lower levels', () => {
+      const rng = createRng(12345);
+      const generator = Generators.compare_sizes;
+      if (!generator) throw new Error('compare_sizes generator not found');
+      const problem = generator(2, rng, 'starter');
+      
+      expect(problem.options.length).toBe(2);
+      expect(problem.options).toContain('left');
+      expect(problem.options).toContain('right');
+      expect(problem.options).not.toContain('equal');
+    });
+
+    it('should have 3 options at higher levels', () => {
+      const rng = createRng(12345);
+      const generator = Generators.compare_sizes;
+      if (!generator) throw new Error('compare_sizes generator not found');
+      const problem = generator(5, rng, 'starter');
+      
+      expect(problem.options.length).toBe(3);
+      expect(problem.options).toContain('left');
+      expect(problem.options).toContain('right');
+      expect(problem.options).toContain('equal');
+    });
+
+    it('should increase max value with level', () => {
+      const rng1 = createRng(12345);
+      const rng2 = createRng(12345);
+      const generator = Generators.compare_sizes;
+      if (!generator) throw new Error('compare_sizes generator not found');
+      
+      const problem1 = generator(1, rng1, 'starter');
+      const problem7 = generator(7, rng2, 'starter');
+      
+      // Level 1 max is 10, level 7 max is 50
+      const maxValue1 = Math.max(problem1.leftItem.value, problem1.rightItem.value);
+      const maxValue7 = Math.max(problem7.leftItem.value, problem7.rightItem.value);
+      
+      expect(maxValue1).toBeLessThanOrEqual(10);
+      expect(maxValue7).toBeGreaterThan(10);
+    });
+
+    it('should generate harder problems for advanced profile', () => {
+      const rng1 = createRng(12345);
+      const rng2 = createRng(12345);
+      const generator = Generators.compare_sizes;
+      if (!generator) throw new Error('compare_sizes generator not found');
+      
+      const starterProblem = generator(1, rng1, 'starter');
+      const advancedProblem = generator(1, rng2, 'advanced');
+      
+      // Advanced profile should show numbers even at level 1 (effective level 3)
+      expect(starterProblem.showNumbers).toBe(false);
+      expect(advancedProblem.showNumbers).toBe(true);
     });
   });
 });

@@ -1026,10 +1026,9 @@ export const Generators: Record<string, GeneratorFunction> = {
                         : effectiveLevel <= 6 ? 2
                         : 1;
     
-    // Equal appears less frequently at lower levels
-    const equalChance = effectiveLevel <= 2 ? 0.1
-                      : effectiveLevel <= 4 ? 0.15
-                      : effectiveLevel <= 6 ? 0.25
+    // Equal appears less frequently at lower levels (and not at all at levels 1-4)
+    const equalChance = effectiveLevel <= 4 ? 0
+                      : effectiveLevel <= 6 ? 0.2
                       : 0.3;
     
     let leftValue: number;
