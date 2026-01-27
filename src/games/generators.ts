@@ -1035,7 +1035,7 @@ export const Generators: Record<string, GeneratorFunction> = {
                         : effectiveLevel <= 7 ? 1
                         : 1;
     
-    // Equal appears from level 2+ (earlier introduction)
+    // Equal appears from level 2+ (effectiveLevel > 1)
     const equalChance = effectiveLevel <= 1 ? 0
                       : effectiveLevel <= 3 ? 0.2  // 20% chance at level 2-3
                       : effectiveLevel <= 5 ? 0.25 // 25% chance
@@ -1058,11 +1058,13 @@ export const Generators: Record<string, GeneratorFunction> = {
       // Ensure minimum difference but prefer smaller gaps at higher levels
       let rightValue_temp: number;
       let attempts = 0;
-      const maxGap = effectiveLevel <= 3 ? maxValue : Math.min(5, Math.floor(maxValue / 4));
+      const MAX_DIFFICULTY_GAP = 5;
+      const maxGap = effectiveLevel <= 3 ? maxValue : Math.min(MAX_DIFFICULTY_GAP, Math.floor(maxValue / 4));
+      const RANDOM_VALUE_CHANCE = 0.3;  // 30% chance for any value
       
       do {
         // At higher levels, prefer values close to leftValue for increased difficulty
-        if (effectiveLevel >= 6 && rng() > 0.3) {
+        if (effectiveLevel >= 6 && rng() > RANDOM_VALUE_CHANCE) {
           // 70% chance to generate a nearby value
           const offset = Math.floor(rng() * maxGap) + minDifference;
           rightValue_temp = rng() > 0.5 ? leftValue + offset : leftValue - offset;
@@ -1081,6 +1083,8 @@ export const Generators: Record<string, GeneratorFunction> = {
     
     // Determine representation mode - prefer visual at higher levels without numbers
     let representationMode: 'dice' | 'number' | 'mixed' = 'number';
+    const DICE_MODE_PROBABILITY = 0.6;  // 60% dice, 40% numbers
+    
     if (useDice && !showNumbers) {
       // Pure dice mode (levels 1-3)
       representationMode = 'dice';
@@ -1089,7 +1093,7 @@ export const Generators: Record<string, GeneratorFunction> = {
       representationMode = 'dice';
     } else if (effectiveLevel >= 6 && effectiveLevel <= 9 && leftValue <= 12 && rightValue <= 12) {
       // At levels 6-9, use dice for smaller numbers (more visual challenge)
-      representationMode = rng() > 0.4 ? 'dice' : 'number';  // 60% dice, 40% numbers
+      representationMode = rng() > (1 - DICE_MODE_PROBABILITY) ? 'dice' : 'number';
     }
     
     // Create visual representations
