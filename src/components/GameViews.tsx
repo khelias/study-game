@@ -1145,14 +1145,14 @@ export const MemoryGameView: React.FC<MemoryGameViewProps> = ({ problem, onAnswe
                 }
               `}
             >
-              {/* Kaardi tagakülg - täiustatud */}
+              {/* Card back - enhanced */}
               {!isFlipped && (
                 <div className="absolute inset-0 flex items-center justify-center">
                   <div className="text-4xl opacity-80">🧠</div>
                 </div>
               )}
               
-              {/* Kaardi esikülg - täiustatud */}
+              {/* Card front - enhanced */}
               <div className={`${isFlipped ? 'block' : 'hidden'} transition-opacity duration-300`}>
                 <div className={`
                   px-2 py-1 rounded-lg
@@ -1160,7 +1160,7 @@ export const MemoryGameView: React.FC<MemoryGameViewProps> = ({ problem, onAnswe
                 `}>
                   {card.content}
                 </div>
-                {/* Väike ikoon tüübi jaoks */}
+                {/* Small icon for type */}
                 <div className="absolute top-1 right-1 text-xs">
                   {isMath ? '➕' : '🎯'}
                 </div>
@@ -1178,7 +1178,7 @@ export const MemoryGameView: React.FC<MemoryGameViewProps> = ({ problem, onAnswe
       </div>
       
       <style>{`
-        /* Eemaldatud pöörlemise animatsioonid - lihtsam ja rahulikum */
+        /* Removed rotation animations - simpler and calmer */
       `}</style>
     </div>
   );

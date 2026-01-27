@@ -100,7 +100,7 @@ interface FadeInProps {
   delay?: number;
 }
 
-// Fade in animatsioon uute ülesannete jaoks
+// Fade in animation for new tasks
 export const FadeIn: React.FC<FadeInProps> = ({ children, delay = 0 }) => {
   return (
     <div 
@@ -132,7 +132,7 @@ interface BounceOnClickProps {
   onClick?: (e: React.MouseEvent<HTMLDivElement>) => void;
 }
 
-// Bounce animatsioon nuppude jaoks
+// Bounce animation for buttons
 export const BounceOnClick: React.FC<BounceOnClickProps> = ({ children, onClick }) => {
   const [bouncing, setBouncing] = React.useState(false);
   
@@ -174,7 +174,7 @@ interface EnhancedConfettiProps {
   onComplete?: () => void;
 }
 
-// Confetti efekt täiustatud versioon
+// Confetti effect - enhanced version
 export const EnhancedConfetti: React.FC<EnhancedConfettiProps> = ({ active, onComplete }) => {
   const [particles, setParticles] = React.useState<Particle[]>([]);
   
