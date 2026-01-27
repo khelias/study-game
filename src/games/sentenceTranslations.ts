@@ -118,9 +118,21 @@ const SCENE_NAME_TRANSLATIONS: Record<string, { et: string }> = {
 
 /**
  * Get localized scene name
- * @param sceneKey - English scene key (e.g., 'Forest', 'Kitchen')
- * @param locale - Target locale ('et' or 'en')
- * @returns Localized scene name
+ * 
+ * This function translates scene names from English keys to the target locale.
+ * The English keys (e.g., 'Forest', 'Kitchen') serve as both the base identifier
+ * and the English translation. For Estonian, it looks up the translation.
+ * 
+ * @param sceneKey - English scene key (e.g., 'Forest', 'Kitchen', 'Space')
+ * @param locale - Target locale: 'et' for Estonian, 'en' for English (default: 'et')
+ * @returns Localized scene name - returns the English key for 'en' locale, 
+ *          or the Estonian translation for 'et' locale
+ * 
+ * @example
+ * getSceneName('Forest', 'en') // Returns: 'Forest'
+ * getSceneName('Forest', 'et') // Returns: 'Mets'
+ * getSceneName('Kitchen', 'en') // Returns: 'Kitchen'
+ * getSceneName('Kitchen', 'et') // Returns: 'Köök'
  */
 export function getSceneName(sceneKey: string, locale: 'et' | 'en' = 'et'): string {
   if (locale === 'en') {
