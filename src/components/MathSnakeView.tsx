@@ -31,12 +31,12 @@ export const MathSnakeView: React.FC<MathSnakeViewProps> = ({ problem, onAnswer,
     if (problem.snake.length > prevSnakeLengthRef.current) {
       prevSnakeLengthRef.current = problem.snake.length;
       // Use setTimeout to defer state update and avoid cascading renders
-      const ateTimer = setTimeout(() => {
-        setJustAte(true);
-        const resetTimer = setTimeout(() => setJustAte(false), 400);
-        return () => clearTimeout(resetTimer);
-      }, 0);
-      return () => clearTimeout(ateTimer);
+      const ateTimer = setTimeout(() => setJustAte(true), 0);
+      const resetTimer = setTimeout(() => setJustAte(false), 400);
+      return () => {
+        clearTimeout(ateTimer);
+        clearTimeout(resetTimer);
+      };
     }
     prevSnakeLengthRef.current = problem.snake.length;
   }, [problem.snake.length]);
