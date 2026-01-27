@@ -1008,37 +1008,39 @@ export const Generators: Record<string, GeneratorFunction> = {
     const MAX_VISUAL_BLOCKS = 10;
     const MAX_DICE_VALUE = 6;
     
-    // REDESIGNED Level progression - Focus on symbols from the start:
-    // 1-2: Dice (1-6) with symbols - concrete visual + symbol practice
-    // 3-4: Dice + Numbers (1-12, double dice) with symbols
-    // 5-6: Numbers (1-20) with symbols, introduce equal
-    // 7-8: Mixed: dice/domino/numbers (1-30) with all symbols
-    // 9-10: Numbers (1-50) with closer values
-    // 11+: Numbers (1-100) with all operators and story problems
+    // REDESIGNED Level progression - More challenging and balanced:
+    // 1: Dice (1-6) with symbols - concrete visual + symbol practice
+    // 2-3: Dice (1-6) with symbols, introduce equality
+    // 4-5: Dice + Numbers (1-12, double dice) with all symbols
+    // 6-7: Numbers (1-20) with closer values and all symbols
+    // 8-9: Mixed: dice/numbers (1-30) with smaller gaps
+    // 10+: Numbers (1-50+) with very close values
     
     const showSymbols = true; // Always show symbols - this is the focus!
-    const useDice = effectiveLevel <= 4;
-    const showNumbers = effectiveLevel >= 3;
+    const useDice = effectiveLevel <= 5;
+    const showNumbers = effectiveLevel >= 4;
     
-    const maxValue = effectiveLevel <= 2 ? MAX_DICE_VALUE 
-                   : effectiveLevel <= 4 ? MAX_DICE_VALUE * 2 // double dice
-                   : effectiveLevel <= 6 ? 20
-                   : effectiveLevel <= 8 ? 30
-                   : effectiveLevel <= 10 ? 50
+    const maxValue = effectiveLevel <= 1 ? MAX_DICE_VALUE 
+                   : effectiveLevel <= 3 ? MAX_DICE_VALUE
+                   : effectiveLevel <= 5 ? MAX_DICE_VALUE * 2 // double dice
+                   : effectiveLevel <= 7 ? 20
+                   : effectiveLevel <= 9 ? 30
+                   : effectiveLevel <= 11 ? 50
                    : 100;
     
-    // Difficulty affects how close the values are
-    const minDifference = effectiveLevel <= 2 ? 2 
-                        : effectiveLevel <= 4 ? 2
-                        : effectiveLevel <= 6 ? 1
-                        : effectiveLevel <= 8 ? 1
+    // Difficulty affects how close the values are - more challenging gaps
+    const minDifference = effectiveLevel <= 1 ? 2 
+                        : effectiveLevel <= 3 ? 1
+                        : effectiveLevel <= 5 ? 1
+                        : effectiveLevel <= 7 ? 1
                         : 1;
     
-    // Equal appears from level 5+
-    const equalChance = effectiveLevel <= 4 ? 0
-                      : effectiveLevel <= 6 ? 0.25
-                      : effectiveLevel <= 8 ? 0.3
-                      : 0.35;
+    // Equal appears from level 2+ (effectiveLevel > 1)
+    const equalChance = effectiveLevel <= 1 ? 0
+                      : effectiveLevel <= 3 ? 0.2  // 20% chance at level 2-3
+                      : effectiveLevel <= 5 ? 0.25 // 25% chance
+                      : effectiveLevel <= 7 ? 0.3  // 30% chance
+                      : 0.35;  // 35% chance at higher levels
     
     let leftValue: number;
     let rightValue: number;
@@ -1050,14 +1052,28 @@ export const Generators: Record<string, GeneratorFunction> = {
       rightValue = leftValue;
       answer = 'equal';
     } else {
-      // Different values
+      // Different values - use smaller gaps for more challenge
       leftValue = Math.floor(rng() * maxValue) + 1;
       
-      // Ensure minimum difference
+      // Ensure minimum difference but prefer smaller gaps at higher levels
       let rightValue_temp: number;
       let attempts = 0;
+      const MAX_DIFFICULTY_GAP = 5;
+      const maxGap = effectiveLevel <= 3 ? maxValue : Math.min(MAX_DIFFICULTY_GAP, Math.floor(maxValue / 4));
+      const RANDOM_VALUE_CHANCE = 0.3;  // 30% chance for any value
+      
       do {
-        rightValue_temp = Math.floor(rng() * maxValue) + 1;
+        // At higher levels, prefer values close to leftValue for increased difficulty
+        if (effectiveLevel >= 6 && rng() > RANDOM_VALUE_CHANCE) {
+          // 70% chance to generate a nearby value
+          const offset = Math.floor(rng() * maxGap) + minDifference;
+          rightValue_temp = rng() > 0.5 ? leftValue + offset : leftValue - offset;
+          // Clamp to valid range
+          rightValue_temp = Math.max(1, Math.min(maxValue, rightValue_temp));
+        } else {
+          // 30% chance for any value (or always at lower levels)
+          rightValue_temp = Math.floor(rng() * maxValue) + 1;
+        }
         attempts++;
       } while (Math.abs(leftValue - rightValue_temp) < minDifference && attempts < 20);
       
@@ -1065,13 +1081,19 @@ export const Generators: Record<string, GeneratorFunction> = {
       answer = leftValue > rightValue ? 'left' : 'right';
     }
     
-    // Determine representation mode
+    // Determine representation mode - prefer visual at higher levels without numbers
     let representationMode: 'dice' | 'number' | 'mixed' = 'number';
-    if (useDice) {
+    const DICE_MODE_PROBABILITY = 0.6;  // 60% dice, 40% numbers
+    
+    if (useDice && !showNumbers) {
+      // Pure dice mode (levels 1-3)
       representationMode = 'dice';
-    } else if (effectiveLevel >= 7 && effectiveLevel <= 8) {
-      // At levels 7-8, randomly mix dice and numbers for variety
-      representationMode = rng() > 0.5 ? 'dice' : 'number';
+    } else if (useDice && showNumbers) {
+      // Dice with numbers (levels 4-5)
+      representationMode = 'dice';
+    } else if (effectiveLevel >= 6 && effectiveLevel <= 9 && leftValue <= 12 && rightValue <= 12) {
+      // At levels 6-9, use dice for smaller numbers (more visual challenge)
+      representationMode = rng() > (1 - DICE_MODE_PROBABILITY) ? 'dice' : 'number';
     }
     
     // Create visual representations
@@ -1082,10 +1104,10 @@ export const Generators: Record<string, GeneratorFunction> = {
     const leftDisplay = showNumbers || representationMode === 'number' ? String(leftValue) : leftVisual;
     const rightDisplay = showNumbers || representationMode === 'number' ? String(rightValue) : rightVisual;
     
-    // ALWAYS provide symbol options (>, <, =) - this is the main learning objective
-    const options: Array<'left' | 'right' | 'equal'> = effectiveLevel <= 4 
-      ? ['left', 'right'] // Only > and < at lower levels
-      : ['left', 'right', 'equal']; // Add = at higher levels
+    // ALWAYS provide symbol options (>, <, =) based on level
+    const options: Array<'left' | 'right' | 'equal'> = effectiveLevel <= 1 
+      ? ['left', 'right'] // Only > and < at level 1
+      : ['left', 'right', 'equal']; // Add = from level 2+
     
     return {
       type: 'compare_sizes',

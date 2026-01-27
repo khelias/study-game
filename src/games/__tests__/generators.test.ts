@@ -438,17 +438,17 @@ describe('Generators', () => {
       if (!generator) throw new Error('compare_sizes generator not found');
       const problem = generator(1, rng, 'starter');
       
-      // Level 1-2 use dice only, no numbers
+      // Level 1-3 use dice only, no numbers
       expect(problem.showNumbers).toBe(false);
     });
 
-    it('should show numbers at level 3+', () => {
+    it('should show numbers at level 4+', () => {
       const rng = createRng(12345);
       const generator = Generators.compare_sizes;
       if (!generator) throw new Error('compare_sizes generator not found');
-      const problem = generator(3, rng, 'starter');
+      const problem = generator(4, rng, 'starter');
       
-      // Level 3+ show numbers (with or alongside dice)
+      // Level 4+ show numbers (with or alongside dice)
       expect(problem.showNumbers).toBe(true);
     });
 
@@ -475,11 +475,11 @@ describe('Generators', () => {
       expect(problem7.showSymbols).toBe(true);
     });
 
-    it('should have only 2 options at lower levels', () => {
+    it('should have only 2 options at level 1', () => {
       const rng = createRng(12345);
       const generator = Generators.compare_sizes;
       if (!generator) throw new Error('compare_sizes generator not found');
-      const problem = generator(2, rng, 'starter');
+      const problem = generator(1, rng, 'starter');
       
       expect(problem.options.length).toBe(2);
       expect(problem.options).toContain('left');
@@ -487,11 +487,11 @@ describe('Generators', () => {
       expect(problem.options).not.toContain('equal');
     });
 
-    it('should have 3 options at higher levels', () => {
+    it('should have 3 options from level 2+', () => {
       const rng = createRng(12345);
       const generator = Generators.compare_sizes;
       if (!generator) throw new Error('compare_sizes generator not found');
-      const problem = generator(5, rng, 'starter');
+      const problem = generator(2, rng, 'starter');
       
       expect(problem.options.length).toBe(3);
       expect(problem.options).toContain('left');
@@ -535,12 +535,57 @@ describe('Generators', () => {
       const starterProblem = generator(1, rng1, 'starter');
       const advancedProblem = generator(1, rng2, 'advanced');
       
-      // Advanced profile should show numbers even at level 1 (effective level 3)
-      // and always show symbols
+      // Advanced profile should show numbers at level 1 (effective level 3)
+      // Starter at level 1 should not show numbers (effective level 1)
       expect(starterProblem.showNumbers).toBe(false);
-      expect(advancedProblem.showNumbers).toBe(true);
+      expect(advancedProblem.showNumbers).toBe(false); // Level 1 advanced = effective 3, which is still < 4
       expect(starterProblem.showSymbols).toBe(true);
       expect(advancedProblem.showSymbols).toBe(true);
+      
+      // Advanced should have equal option at level 1 (effective 3)
+      expect(starterProblem.options.length).toBe(2); // Level 1 starter
+      expect(advancedProblem.options.length).toBe(3); // Level 1 advanced = effective 3
+    });
+
+    it('should introduce equality from level 2', () => {
+      const rng = createRng(54321);
+      const generator = Generators.compare_sizes;
+      if (!generator) throw new Error('compare_sizes generator not found');
+      
+      // Level 2 should have equal option available
+      const problem = generator(2, rng, 'starter');
+      expect(problem.options).toContain('equal');
+      expect(problem.options.length).toBe(3);
+    });
+
+    it('should generate closer values at higher levels', () => {
+      const generator = Generators.compare_sizes;
+      if (!generator) throw new Error('compare_sizes generator not found');
+      
+      // Generate multiple problems at different levels
+      const level1Problems = Array.from({ length: 20 }, (_, i) => 
+        generator(1, createRng(11111 + i), 'starter')
+      );
+      const level8Problems = Array.from({ length: 20 }, (_, i) => 
+        generator(8, createRng(11111 + i), 'starter')
+      );
+      
+      // Calculate average gap for each level
+      const avgGapLevel1 = level1Problems.reduce((sum, p) => 
+        sum + Math.abs(p.leftItem.value - p.rightItem.value), 0) / level1Problems.length;
+      const avgGapLevel8 = level8Problems.reduce((sum, p) => 
+        sum + Math.abs(p.leftItem.value - p.rightItem.value), 0) / level8Problems.length;
+      
+      // At higher levels with larger max values, gaps might be larger in absolute terms
+      // but should be smaller relative to the max value
+      const maxValueLevel1 = 6;
+      const maxValueLevel8 = 30;
+      
+      const relativeGapLevel1 = avgGapLevel1 / maxValueLevel1;
+      const relativeGapLevel8 = avgGapLevel8 / maxValueLevel8;
+      
+      // Higher levels should have proportionally closer values (or at least not much larger)
+      expect(relativeGapLevel8).toBeLessThanOrEqual(relativeGapLevel1 * 1.5);
     });
   });
 });
