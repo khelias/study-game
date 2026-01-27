@@ -33,6 +33,7 @@ The game uses adaptive difficulty that automatically adjusts task complexity bas
 5. **MATH MEMORY** - Math memory game
 6. **ROBO PATH** - Programming basics
 7. **LETTER DETECTIVE** - Letter recognition
+8. **SIZE COMPARE** - Compare object sizes (bigger/smaller/equal)
 
 #### Advanced profile (1st grade+)
 1. **BALANCE SCALE** - Mathematical logic practice
@@ -42,6 +43,7 @@ The game uses adaptive difficulty that automatically adjusts task complexity bas
 5. **SENTENCE DETECTIVE** (enhanced) - More complex logic tasks
 6. **PATTERN TRAIN** (enhanced) - More complex patterns
 7. **LETTER DETECTIVE** (enhanced) - More complex letter tasks
+8. **SIZE COMPARE** (enhanced) - More complex comparisons with symbols
 
 ### 🌟 Key Enhancements
 
