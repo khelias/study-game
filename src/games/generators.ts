@@ -1006,33 +1006,39 @@ export const Generators: Record<string, GeneratorFunction> = {
     
     // Constants for visual representation
     const MAX_VISUAL_BLOCKS = 10;
+    const MAX_DICE_VALUE = 6;
     
-    // Level progression:
-    // 1-2: Large visual differences (bars/circles), no numbers
-    // 3-4: Smaller visual differences, introduce numbers up to 10
-    // 5-6: Numbers up to 20, equal appears more often
-    // 7-8: Numbers up to 50, show comparison symbols (>, <, =)
-    // 9-10: Numbers up to 100, mixed representations
-    // 11+: Story contexts, numbers up to 100
+    // REDESIGNED Level progression - Focus on symbols from the start:
+    // 1-2: Dice (1-6) with symbols - concrete visual + symbol practice
+    // 3-4: Dice + Numbers (1-12, double dice) with symbols
+    // 5-6: Numbers (1-20) with symbols, introduce equal
+    // 7-8: Mixed: dice/domino/numbers (1-30) with all symbols
+    // 9-10: Numbers (1-50) with closer values
+    // 11+: Numbers (1-100) with all operators and story problems
     
+    const showSymbols = true; // Always show symbols - this is the focus!
+    const useDice = effectiveLevel <= 4;
     const showNumbers = effectiveLevel >= 3;
-    const showSymbols = effectiveLevel >= 7;
-    const maxValue = effectiveLevel <= 2 ? 10 
-                   : effectiveLevel <= 4 ? 10
+    
+    const maxValue = effectiveLevel <= 2 ? MAX_DICE_VALUE 
+                   : effectiveLevel <= 4 ? MAX_DICE_VALUE * 2 // double dice
                    : effectiveLevel <= 6 ? 20
-                   : effectiveLevel <= 8 ? 50
+                   : effectiveLevel <= 8 ? 30
+                   : effectiveLevel <= 10 ? 50
                    : 100;
     
     // Difficulty affects how close the values are
-    const minDifference = effectiveLevel <= 2 ? 5 
-                        : effectiveLevel <= 4 ? 3
-                        : effectiveLevel <= 6 ? 2
+    const minDifference = effectiveLevel <= 2 ? 2 
+                        : effectiveLevel <= 4 ? 2
+                        : effectiveLevel <= 6 ? 1
+                        : effectiveLevel <= 8 ? 1
                         : 1;
     
-    // Equal appears less frequently at lower levels (and not at all at levels 1-4)
+    // Equal appears from level 5+
     const equalChance = effectiveLevel <= 4 ? 0
-                      : effectiveLevel <= 6 ? 0.2
-                      : 0.3;
+                      : effectiveLevel <= 6 ? 0.25
+                      : effectiveLevel <= 8 ? 0.3
+                      : 0.35;
     
     let leftValue: number;
     let rightValue: number;
@@ -1059,18 +1065,27 @@ export const Generators: Record<string, GeneratorFunction> = {
       answer = leftValue > rightValue ? 'left' : 'right';
     }
     
+    // Determine representation mode
+    let representationMode: 'dice' | 'number' | 'mixed' = 'number';
+    if (useDice) {
+      representationMode = 'dice';
+    } else if (effectiveLevel >= 7 && effectiveLevel <= 8) {
+      // At levels 7-8, randomly mix dice and numbers for variety
+      representationMode = rng() > 0.5 ? 'dice' : 'number';
+    }
+    
     // Create visual representations
-    const leftVisual = showNumbers ? '' : '█'.repeat(Math.min(leftValue, MAX_VISUAL_BLOCKS));
-    const rightVisual = showNumbers ? '' : '█'.repeat(Math.min(rightValue, MAX_VISUAL_BLOCKS));
+    const leftVisual = representationMode === 'dice' ? '🎲'.repeat(Math.min(leftValue, MAX_DICE_VALUE)) : '';
+    const rightVisual = representationMode === 'dice' ? '🎲'.repeat(Math.min(rightValue, MAX_DICE_VALUE)) : '';
     
     // Create display strings
-    const leftDisplay = showNumbers ? String(leftValue) : leftVisual;
-    const rightDisplay = showNumbers ? String(rightValue) : rightVisual;
+    const leftDisplay = showNumbers || representationMode === 'number' ? String(leftValue) : leftVisual;
+    const rightDisplay = showNumbers || representationMode === 'number' ? String(rightValue) : rightVisual;
     
-    // Create options based on level
+    // ALWAYS provide symbol options (>, <, =) - this is the main learning objective
     const options: Array<'left' | 'right' | 'equal'> = effectiveLevel <= 4 
-      ? ['left', 'right'] // Only bigger/smaller at lower levels
-      : ['left', 'right', 'equal']; // Add equal option at higher levels
+      ? ['left', 'right'] // Only > and < at lower levels
+      : ['left', 'right', 'equal']; // Add = at higher levels
     
     return {
       type: 'compare_sizes',
@@ -1086,7 +1101,7 @@ export const Generators: Record<string, GeneratorFunction> = {
       },
       answer,
       options,
-      showNumbers,
+      showNumbers: showNumbers || representationMode === 'number',
       showSymbols,
       uid: uid(rng)
     };

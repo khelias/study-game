@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { ChevronLeft, ChevronRight, Equal } from 'lucide-react';
 import type { CompareSizesProblem } from '../types/game';
 import { useTranslation } from '../i18n/useTranslation';
 import { playSound } from '../engine/audio';
@@ -9,6 +8,33 @@ interface CompareSizesViewProps {
   onAnswer: (isCorrect: boolean) => void;
   soundEnabled: boolean;
 }
+
+// Dice face dots patterns (1-6)
+const DiceFace: React.FC<{ value: number }> = ({ value }) => {
+  const getDotPattern = (val: number) => {
+    const patterns: Record<number, boolean[]> = {
+      1: [false, false, false, false, true, false, false, false, false],
+      2: [true, false, false, false, false, false, false, false, true],
+      3: [true, false, false, false, true, false, false, false, true],
+      4: [true, false, true, false, false, false, true, false, true],
+      5: [true, false, true, false, true, false, true, false, true],
+      6: [true, false, true, true, false, true, true, false, true],
+    };
+    return patterns[val] || patterns[1];
+  };
+
+  const pattern = getDotPattern(value);
+  
+  return (
+    <div className="w-20 h-20 bg-white border-4 border-gray-800 rounded-lg shadow-lg flex flex-wrap p-2 gap-1">
+      {pattern.map((hasDot, idx) => (
+        <div key={idx} className="w-5 h-5 flex items-center justify-center">
+          {hasDot && <div className="w-4 h-4 bg-gray-900 rounded-full" />}
+        </div>
+      ))}
+    </div>
+  );
+};
 
 export const CompareSizesView: React.FC<CompareSizesViewProps> = ({ 
   problem, 
@@ -38,21 +64,31 @@ export const CompareSizesView: React.FC<CompareSizesViewProps> = ({
     return '=';
   };
 
-  const getIcon = (option: 'left' | 'right' | 'equal') => {
-    if (option === 'left') return ChevronLeft;
-    if (option === 'right') return ChevronRight;
-    return Equal;
+  // Check if we're using dice visualization
+  const isDiceMode = problem.leftItem.visual && problem.leftItem.visual.includes('🎲');
+  
+  // Render dice display
+  const renderDiceDisplay = (value: number) => {
+    if (value <= 6) {
+      return <DiceFace value={value} />;
+    } else {
+      // For double dice (7-12), show two dice
+      const firstDie = Math.min(6, value - 6);
+      const secondDie = 6;
+      return (
+        <div className="flex gap-3">
+          <DiceFace value={secondDie} />
+          <DiceFace value={firstDie} />
+        </div>
+      );
+    }
   };
-
-  // Memoize visual bar count for performance
-  const leftBarCount = problem.leftItem.visual ? problem.leftItem.visual.length : 0;
-  const rightBarCount = problem.rightItem.visual ? problem.rightItem.visual.length : 0;
 
   return (
     <div className="flex flex-col items-center justify-center min-h-[400px] p-8">
-      {/* Instruction */}
+      {/* Instruction - emphasize symbol selection */}
       <div className="text-2xl font-bold mb-8 text-gray-700 text-center">
-        {t.games.compareSizes.instruction}
+        {t.games.compareSizes.symbolInstruction}
       </div>
 
       {/* Comparison display */}
@@ -62,26 +98,30 @@ export const CompareSizesView: React.FC<CompareSizesViewProps> = ({
           className="flex flex-col items-center justify-center bg-blue-100 rounded-2xl p-8 min-w-[200px] min-h-[200px] border-4 border-blue-300"
           aria-label={t.games.compareSizes.leftItem}
         >
-          {problem.showNumbers ? (
-            <div className="text-6xl font-bold text-blue-600">
-              {problem.leftItem.display}
+          {isDiceMode ? (
+            <div className="flex flex-col items-center gap-4">
+              {renderDiceDisplay(problem.leftItem.value)}
+              {problem.showNumbers && (
+                <div className="text-4xl font-bold text-blue-600 mt-2">
+                  {problem.leftItem.value}
+                </div>
+              )}
             </div>
           ) : (
-            <div className="flex flex-col gap-2">
-              {Array.from({ length: leftBarCount }, (_, idx) => (
-                <div 
-                  key={idx} 
-                  className="w-16 h-8 bg-blue-500 rounded"
-                  aria-hidden="true"
-                />
-              ))}
+            <div className="text-6xl font-bold text-blue-600">
+              {problem.leftItem.display}
             </div>
           )}
         </div>
 
-        {/* VS separator */}
-        <div className="text-4xl font-bold text-gray-400">
-          {problem.showSymbols ? '?' : 'VS'}
+        {/* Middle comparison symbol placeholder - big question mark */}
+        <div className="flex flex-col items-center">
+          <div className="text-7xl font-bold text-purple-600 animate-pulse">
+            ?
+          </div>
+          <div className="text-sm text-gray-500 mt-2">
+            {t.games.compareSizes.selectSymbol}
+          </div>
         </div>
 
         {/* Right item */}
@@ -89,33 +129,32 @@ export const CompareSizesView: React.FC<CompareSizesViewProps> = ({
           className="flex flex-col items-center justify-center bg-green-100 rounded-2xl p-8 min-w-[200px] min-h-[200px] border-4 border-green-300"
           aria-label={t.games.compareSizes.rightItem}
         >
-          {problem.showNumbers ? (
-            <div className="text-6xl font-bold text-green-600">
-              {problem.rightItem.display}
+          {isDiceMode ? (
+            <div className="flex flex-col items-center gap-4">
+              {renderDiceDisplay(problem.rightItem.value)}
+              {problem.showNumbers && (
+                <div className="text-4xl font-bold text-green-600 mt-2">
+                  {problem.rightItem.value}
+                </div>
+              )}
             </div>
           ) : (
-            <div className="flex flex-col gap-2">
-              {Array.from({ length: rightBarCount }, (_, idx) => (
-                <div 
-                  key={idx} 
-                  className="w-16 h-8 bg-green-500 rounded"
-                  aria-hidden="true"
-                />
-              ))}
+            <div className="text-6xl font-bold text-green-600">
+              {problem.rightItem.display}
             </div>
           )}
         </div>
       </div>
 
-      {/* Answer options */}
-      <div className="flex gap-4 flex-wrap justify-center">
+      {/* Symbol selection buttons - MAIN FOCUS */}
+      <div className="flex gap-6 flex-wrap justify-center">
         {problem.options.map((option) => {
-          const Icon = getIcon(option);
+          const symbol = getSymbol(option);
           const label = option === 'left' 
-            ? t.games.compareSizes.leftBigger 
+            ? `${symbol} (${t.games.compareSizes.leftBigger})` 
             : option === 'right' 
-            ? t.games.compareSizes.rightBigger 
-            : t.games.compareSizes.equal;
+            ? `${symbol} (${t.games.compareSizes.rightBigger})` 
+            : `${symbol} (${t.games.compareSizes.equal})`;
           
           return (
             <button
@@ -123,31 +162,35 @@ export const CompareSizesView: React.FC<CompareSizesViewProps> = ({
               onClick={() => handleAnswer(option)}
               disabled={selectedAnswer !== null}
               className={`
-                flex items-center gap-3 px-8 py-4 rounded-xl font-bold text-lg
-                transition-all transform hover:scale-105 active:scale-95
+                flex flex-col items-center gap-3 px-10 py-6 rounded-2xl font-bold
+                transition-all transform hover:scale-110 active:scale-95
                 ${selectedAnswer === option 
                   ? selectedAnswer === problem.answer 
                     ? 'bg-green-500 text-white' 
                     : 'bg-red-500 text-white'
-                  : 'bg-white text-gray-700 hover:bg-gray-100'
+                  : 'bg-gradient-to-br from-purple-500 to-indigo-600 text-white hover:from-purple-600 hover:to-indigo-700'
                 }
                 border-4 ${
                   selectedAnswer === option
                     ? selectedAnswer === problem.answer
-                      ? 'border-green-600'
-                      : 'border-red-600'
-                    : 'border-gray-300'
+                      ? 'border-green-700'
+                      : 'border-red-700'
+                    : 'border-purple-700 hover:border-purple-800'
                 }
-                disabled:opacity-50
+                disabled:opacity-50 shadow-xl
               `}
               aria-label={label}
             >
-              <Icon className="w-6 h-6" aria-hidden="true" />
-              {problem.showSymbols ? (
-                <span className="text-2xl">{getSymbol(option)}</span>
-              ) : (
-                <span>{label}</span>
-              )}
+              {/* Large symbol display */}
+              <span className="text-6xl font-black">
+                {symbol}
+              </span>
+              {/* Text label */}
+              <span className="text-sm font-medium">
+                {option === 'left' ? t.games.compareSizes.leftBigger 
+                  : option === 'right' ? t.games.compareSizes.rightBigger 
+                  : t.games.compareSizes.equal}
+              </span>
             </button>
           );
         })}
@@ -156,16 +199,16 @@ export const CompareSizesView: React.FC<CompareSizesViewProps> = ({
       {/* Hint area for accessibility */}
       {selectedAnswer && (
         <div 
-          className="mt-8 text-center text-lg"
+          className="mt-8 text-center text-xl font-bold"
           role="status"
           aria-live="polite"
         >
           {selectedAnswer === problem.answer ? (
-            <span className="text-green-600 font-bold">
+            <span className="text-green-600">
               {t.feedback.correct[0]}
             </span>
           ) : (
-            <span className="text-red-600 font-bold">
+            <span className="text-red-600">
               {t.feedback.wrong[0]}
             </span>
           )}

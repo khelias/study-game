@@ -622,7 +622,9 @@ export const en = {
     compareSizes: {
       title: 'SIZE COMPARE',
       desc: 'Compare object sizes',
-      instruction: 'Which is bigger?',
+      instruction: 'Which symbol is correct?',
+      symbolInstruction: 'Choose the correct comparison symbol',
+      selectSymbol: 'Select symbol',
       leftBigger: 'Left is bigger',
       rightBigger: 'Right is bigger',
       equal: 'They are equal',

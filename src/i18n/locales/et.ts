@@ -622,7 +622,9 @@ export const et = {
     compareSizes: {
       title: 'SUURUSTE VÕRDLEMINE',
       desc: 'Võrdle esemete suurusi',
-      instruction: 'Kumb on suurem?',
+      instruction: 'Milline sümbol on õige?',
+      symbolInstruction: 'Vali õige võrdlussümbol',
+      selectSymbol: 'Vali sümbol',
       leftBigger: 'Vasak on suurem',
       rightBigger: 'Parem on suurem',
       equal: 'Nad on võrdsed',

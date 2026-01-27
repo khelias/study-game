@@ -438,6 +438,7 @@ describe('Generators', () => {
       if (!generator) throw new Error('compare_sizes generator not found');
       const problem = generator(1, rng, 'starter');
       
+      // Level 1-2 use dice only, no numbers
       expect(problem.showNumbers).toBe(false);
     });
 
@@ -447,25 +448,31 @@ describe('Generators', () => {
       if (!generator) throw new Error('compare_sizes generator not found');
       const problem = generator(3, rng, 'starter');
       
+      // Level 3+ show numbers (with or alongside dice)
       expect(problem.showNumbers).toBe(true);
     });
 
-    it('should not show symbols at level 1-6', () => {
+    it('should always show symbols (core learning objective)', () => {
       const rng = createRng(12345);
       const generator = Generators.compare_sizes;
       if (!generator) throw new Error('compare_sizes generator not found');
-      const problem = generator(5, rng, 'starter');
+      const problem = generator(1, rng, 'starter');
       
-      expect(problem.showSymbols).toBe(false);
+      // Symbols should ALWAYS be shown now - this is the main learning objective
+      expect(problem.showSymbols).toBe(true);
     });
 
-    it('should show symbols at level 7+', () => {
-      const rng = createRng(12345);
+    it('should show symbols at all levels', () => {
+      const rng1 = createRng(12345);
+      const rng2 = createRng(12345);
       const generator = Generators.compare_sizes;
       if (!generator) throw new Error('compare_sizes generator not found');
-      const problem = generator(7, rng, 'starter');
+      const problem1 = generator(1, rng1, 'starter');
+      const problem7 = generator(7, rng2, 'starter');
       
-      expect(problem.showSymbols).toBe(true);
+      // Both levels should show symbols
+      expect(problem1.showSymbols).toBe(true);
+      expect(problem7.showSymbols).toBe(true);
     });
 
     it('should have only 2 options at lower levels', () => {
@@ -492,6 +499,16 @@ describe('Generators', () => {
       expect(problem.options).toContain('equal');
     });
 
+    it('should use dice visualization at early levels', () => {
+      const rng = createRng(12345);
+      const generator = Generators.compare_sizes;
+      if (!generator) throw new Error('compare_sizes generator not found');
+      const problem = generator(1, rng, 'starter');
+      
+      // Level 1 should use dice emoji visualization
+      expect(problem.leftItem.visual).toContain('🎲');
+    });
+
     it('should increase max value with level', () => {
       const rng1 = createRng(12345);
       const rng2 = createRng(12345);
@@ -501,12 +518,12 @@ describe('Generators', () => {
       const problem1 = generator(1, rng1, 'starter');
       const problem7 = generator(7, rng2, 'starter');
       
-      // Level 1 max is 10, level 7 max is 50
+      // Level 1 max is 6 (single die), level 7 max is 30
       const maxValue1 = Math.max(problem1.leftItem.value, problem1.rightItem.value);
       const maxValue7 = Math.max(problem7.leftItem.value, problem7.rightItem.value);
       
-      expect(maxValue1).toBeLessThanOrEqual(10);
-      expect(maxValue7).toBeGreaterThan(10);
+      expect(maxValue1).toBeLessThanOrEqual(6);
+      expect(maxValue7).toBeGreaterThan(6);
     });
 
     it('should generate harder problems for advanced profile', () => {
@@ -519,8 +536,11 @@ describe('Generators', () => {
       const advancedProblem = generator(1, rng2, 'advanced');
       
       // Advanced profile should show numbers even at level 1 (effective level 3)
+      // and always show symbols
       expect(starterProblem.showNumbers).toBe(false);
       expect(advancedProblem.showNumbers).toBe(true);
+      expect(starterProblem.showSymbols).toBe(true);
+      expect(advancedProblem.showSymbols).toBe(true);
     });
   });
 });
