@@ -1,4 +1,4 @@
-// Täiustatud animatsioonid ja visuaalsed efektid
+// Animations and visual effects
 import React, { ReactNode } from 'react';
 
 interface Position {
@@ -11,7 +11,7 @@ interface StarCollectAnimationProps {
   onComplete?: () => void;
 }
 
-// Tähe kogumise animatsioon
+// Star collection animation
 export const StarCollectAnimation: React.FC<StarCollectAnimationProps> = ({ position, onComplete }) => {
   return (
     <div
@@ -51,7 +51,7 @@ interface EffectWrapperProps {
   children: ReactNode;
 }
 
-// Pulseeriv efekt õige vastuse jaoks
+// Pulsing effect for correct answer
 export const PulseEffect: React.FC<EffectWrapperProps> = ({ active, children }) => {
   if (!active) return <>{children}</>;
   
@@ -74,7 +74,7 @@ export const PulseEffect: React.FC<EffectWrapperProps> = ({ active, children }) 
   );
 };
 
-// Shake animatsioon vale vastuse jaoks
+// Shake animation for wrong answer
 export const ShakeEffect: React.FC<EffectWrapperProps> = ({ active, children }) => {
   if (!active) return <>{children}</>;
   
@@ -100,7 +100,7 @@ interface FadeInProps {
   delay?: number;
 }
 
-// Fade in animatsioon uute ülesannete jaoks
+// Fade in animation for new tasks
 export const FadeIn: React.FC<FadeInProps> = ({ children, delay = 0 }) => {
   return (
     <div 
@@ -132,7 +132,7 @@ interface BounceOnClickProps {
   onClick?: (e: React.MouseEvent<HTMLDivElement>) => void;
 }
 
-// Bounce animatsioon nuppude jaoks
+// Bounce animation for buttons
 export const BounceOnClick: React.FC<BounceOnClickProps> = ({ children, onClick }) => {
   const [bouncing, setBouncing] = React.useState(false);
   
@@ -174,7 +174,7 @@ interface EnhancedConfettiProps {
   onComplete?: () => void;
 }
 
-// Confetti efekt täiustatud versioon
+// Confetti effect
 export const EnhancedConfetti: React.FC<EnhancedConfettiProps> = ({ active, onComplete }) => {
   const [particles, setParticles] = React.useState<Particle[]>([]);
   

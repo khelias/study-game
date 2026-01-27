@@ -1,4 +1,4 @@
-// Täiustatud statistika dashboard - parem visualiseerimine
+// Statistics dashboard
 import React from 'react';
 import { BarChart3, Trophy, Target, TrendingUp, Clock, Star } from 'lucide-react';
 import { Stats } from '../types/stats';

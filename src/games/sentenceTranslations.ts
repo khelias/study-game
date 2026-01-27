@@ -104,23 +104,44 @@ function getAnchorEnglishForm(anchor: SceneAnchor, _position: string): string {
   return baseName.toLowerCase();
 }
 
-// Scene name translations
-const SCENE_NAME_TRANSLATIONS: Record<string, { en: string }> = {
-  'Mets': { en: 'Forest' },
-  'Kosmos': { en: 'Space' },
-  'Tuba': { en: 'Room' },
-  'Kool': { en: 'School' },
-  'Park': { en: 'Park' },
-  'Rand': { en: 'Beach' },
-  'Köök': { en: 'Kitchen' },
-  'Tänav': { en: 'Street' },
+// Scene name translations - map English keys to localized names
+const SCENE_NAME_TRANSLATIONS: Record<string, { et: string }> = {
+  'Forest': { et: 'Mets' },
+  'Space': { et: 'Kosmos' },
+  'Room': { et: 'Tuba' },
+  'School': { et: 'Kool' },
+  'Park': { et: 'Park' },
+  'Beach': { et: 'Rand' },
+  'Kitchen': { et: 'Köök' },
+  'Street': { et: 'Tänav' },
 };
 
-export function getSceneName(sceneName: string, locale: 'et' | 'en' = 'et'): string {
+/**
+ * Get localized scene name
+ * 
+ * This function translates scene names from English keys to the target locale.
+ * The English keys (e.g., 'Forest', 'Kitchen') serve as both the base identifier
+ * and the English translation. For Estonian, it looks up the translation.
+ * 
+ * @param sceneKey - English scene key (e.g., 'Forest', 'Kitchen', 'Space')
+ * @param locale - Target locale: 'et' for Estonian, 'en' for English (default: 'et')
+ * @returns Localized scene name - returns the English key for 'en' locale, 
+ *          or the Estonian translation for 'et' locale
+ * 
+ * @example
+ * getSceneName('Forest', 'en') // Returns: 'Forest'
+ * getSceneName('Forest', 'et') // Returns: 'Mets'
+ * getSceneName('Kitchen', 'en') // Returns: 'Kitchen'
+ * getSceneName('Kitchen', 'et') // Returns: 'Köök'
+ */
+export function getSceneName(sceneKey: string, locale: 'et' | 'en' = 'et'): string {
   if (locale === 'en') {
-    return SCENE_NAME_TRANSLATIONS[sceneName]?.en || sceneName;
+    // For English, the key itself is the name
+    return sceneKey;
   }
-  return sceneName;
+  // For Estonian, look up the translation
+  const translation = SCENE_NAME_TRANSLATIONS[sceneKey];
+  return translation ? translation.et : sceneKey;
 }
 
 // Get subject English name

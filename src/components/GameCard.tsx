@@ -1,4 +1,4 @@
-// Täiustatud mängukaart komponent - parem UI/UX
+// Game card component
 import React, { useMemo } from 'react';
 import { FadeIn } from './EnhancedAnimations';
 import { GameConfig } from '../types/game';
@@ -64,14 +64,14 @@ export const GameCard: React.FC<GameCardProps> = ({
           ${isLocked ? 'opacity-50 cursor-not-allowed grayscale' : 'cursor-pointer'}
         `}
       >
-        {/* Badge - täiustatud */}
+        {/* Badge */}
         {badge && (
           <div className="absolute -top-3 -right-3 bg-gradient-to-r from-red-500 to-pink-500 text-white text-xs font-black px-3 py-1.5 rounded-full animate-bounce shadow-lg z-10 border-2 border-white">
             ✨ {formatText(badge)}
           </div>
         )}
         
-        {/* Icon - täiustatud gradient taustaga */}
+        {/* Icon */}
         <div className={`
           relative p-5 rounded-2xl transition-all duration-300
           group-hover:rotate-12 group-hover:scale-125
@@ -83,7 +83,7 @@ export const GameCard: React.FC<GameCardProps> = ({
           <IconComponent size={36} className="relative z-10" />
         </div>
         
-        {/* Content - täiustatud */}
+        {/* Content */}
         <div className="text-left flex-1 min-w-0">
           <h3 className={`text-xl font-black ${gameConfig.theme.text} flex items-center gap-2 mb-1 truncate`}>
             {formatText(gameTitle)}
@@ -116,7 +116,7 @@ export const GameCard: React.FC<GameCardProps> = ({
           )}
         </div>
         
-        {/* Level indicator - täiustatud */}
+        {/* Level indicator */}
         <div className="flex flex-col items-end gap-1 flex-shrink-0">
           <span className="text-xs font-bold text-slate-500 tracking-wider">{formatText(t.level)}</span>
           <div className={`

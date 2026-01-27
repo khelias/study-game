@@ -1,4 +1,4 @@
-// Õppimise progressi jälgimise komponent - hariduslik väärtus
+// Learning progress tracking component - educational value
 import React from 'react';
 import { TrendingUp, Target, BookOpen, Award } from 'lucide-react';
 import { Stats } from '../types/stats';
@@ -19,7 +19,7 @@ export const LearningProgress: React.FC<LearningProgressProps> = ({ stats, gameT
     ? Math.round((stats.correctAnswers / (stats.correctAnswers + stats.wrongAnswers)) * 100)
     : 0;
   
-  // Arvuta õppimise skoor
+  // Calculate learning score
   const learningScore: number = Math.min(100, Math.round(
     (accuracy * 0.4) + 
     (maxLevel * 5) + 

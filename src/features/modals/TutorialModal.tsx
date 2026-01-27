@@ -82,7 +82,7 @@ export const TutorialModal: React.FC<TutorialModalProps> = ({ onClose }) => {
         justifyContent: 'center'
       }}
       onClick={(e: React.MouseEvent<HTMLDivElement>) => {
-        // Sulge, kui klikitakse taustale
+        // Close when clicking on background
         if (e.target === e.currentTarget) {
           onClose();
         }

@@ -1,4 +1,4 @@
-// Mängu progressiooni komponent - näitab progressi ja soovitusi
+// Game progression component - shows progress and recommendations
 import React from 'react';
 import { TrendingUp, TrendingDown, Target, Award } from 'lucide-react';
 import { getProgressionRecommendation, calculateGameSuccessScore } from '../engine/progression';

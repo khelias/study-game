@@ -1,24 +1,24 @@
 # Internationalization (i18n) System
 
-## Ülevaade
+## Overview
 
-See projekt kasutab lihtsat, type-safe i18n süsteemi mitme keele toetamiseks. Praegu on toetatud eesti ja inglise keel.
+This project uses a simple, type-safe i18n system for multi-language support. Currently, Estonian and English are supported.
 
-## Struktuur
+## Structure
 
 ```
 i18n/
 ├── locales/
-│   ├── et.ts    # Eesti keel (default)
-│   └── en.ts    # Inglise keel
+│   ├── et.ts    # Estonian (default)
+│   └── en.ts    # English
 ├── index.ts     # Core i18n logic
 ├── useTranslation.tsx  # React hook
-└── README.md    # See fail
+└── README.md    # This file
 ```
 
-## Kasutamine
+## Usage
 
-### React Komponentides
+### In React Components
 
 ```tsx
 import { useTranslation } from '../i18n/useTranslation';
@@ -35,7 +35,7 @@ function MyComponent() {
 }
 ```
 
-### Funktsioonides (mitte React komponentides)
+### In Functions (non-React components)
 
 ```ts
 import { getTranslations } from '../i18n';
@@ -46,21 +46,21 @@ function myFunction() {
 }
 ```
 
-### Keele Muutmine
+### Changing Language
 
 ```tsx
 import { setLocale, getLocale } from '../i18n';
 
-// Muuda keelt
-setLocale('en'); // Või 'et'
+// Change language
+setLocale('en'); // Or 'et'
 
-// Vaata praegust keelt
+// Check current language
 const currentLocale = getLocale();
 ```
 
-## Uue Keele Lisamine
+## Adding a New Language
 
-1. **Loo uus tõlke fail** `locales/XX.ts`:
+1. **Create a new translation file** `locales/XX.ts`:
 
 ```ts
 export const xx = {
@@ -72,7 +72,7 @@ export const xx = {
 } as const;
 ```
 
-2. **Lisa keel** `index.ts` failis:
+2. **Add the language** in `index.ts`:
 
 ```ts
 export type SupportedLocale = 'et' | 'en' | 'xx';
@@ -80,40 +80,40 @@ export type SupportedLocale = 'et' | 'en' | 'xx';
 const translations: Record<SupportedLocale, Translations> = {
   et,
   en,
-  xx, // Lisa uus keel
+  xx, // Add new language
 };
 ```
 
-3. **Lisa keele valik** UI-s (vajadusel)
+3. **Add language selector** in the UI (if needed)
 
-## Tõlke Struktuur
+## Translation Structure
 
-Tõlked on organiseeritud loogilistesse kategooriatesse:
+Translations are organized into logical categories:
 
-- `common` - Üldised stringid (Jah, Ei, OK, jne.)
-- `errors` - Veateated
-- `feedback` - Tagasiside sõnumid
-- `categories` - Mängu kategooriad
-- `profiles` - Profiilid
-- `menu` - Menüü stringid
-- `game` - Mängu stringid
-- `stats` - Statistika stringid
-- `achievements` - Saavutuste stringid
+- `common` - Common strings (Yes, No, OK, etc.)
+- `errors` - Error messages
+- `feedback` - Feedback messages
+- `categories` - Game categories
+- `profiles` - Profiles
+- `menu` - Menu strings
+- `game` - Game strings
+- `stats` - Statistics strings
+- `achievements` - Achievement strings
 
 ## Type Safety
 
-Kõik tõlked on type-safe. TypeScript kontrollib, et:
-- Kõik võtmed on olemas
-- Tüübid on õiged
-- Ei ole tühistatud viiteid
+All translations are type-safe. TypeScript ensures that:
+- All keys exist
+- Types are correct
+- There are no undefined references
 
 ## LocalStorage
 
-Praegune keel salvestatakse LocalStorage'i võtme `app_locale` all. Kui keelt pole määratud, kasutatakse brauseri keelt või vaikimisi eesti keelt.
+The current language is stored in LocalStorage under the key `app_locale`. If no language is set, the browser language is used, or Estonian by default.
 
-## Tulevik
+## Future
 
-- [ ] Lisada rohkem keeli
-- [ ] Lisada keele valik UI-s
-- [ ] Lisada tõlke haldus süsteem
-- [ ] Lisada tõlke redigeerimise vahendid
+- [ ] Add more languages
+- [ ] Add language selector in UI
+- [ ] Add translation management system
+- [ ] Add translation editing tools
