@@ -62,7 +62,7 @@ export const StatsDashboard: React.FC<StatsDashboardProps> = ({ stats, unlockedA
     {
       icon: Star,
       label: formatText(t.stats.totalStars),
-      value: stats.collectedStars || 0,
+      value: stats.collectedStars || 0, // Note: stats.collectedStars synced with gameStore.stars for achievements
       color: 'bg-purple-100 text-purple-700',
     },
     {

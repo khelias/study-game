@@ -15,8 +15,8 @@ describe('playSessionStore', () => {
       const state = usePlaySessionStore.getState();
       expect(state.gameType).toBe('word_builder');
       expect(state.gameState).toBe('playing');
-      expect(state.hearts).toBe(3);
-      expect(state.stars).toBe(0);
+      // hearts removed - now in gameStore (persistent global resource)
+      // stars removed - now in gameStore (persistent currency)
       expect(state.currentStreak).toBe(0);
       expect(state.gameStartTime).toBeTruthy();
     });
@@ -54,36 +54,45 @@ describe('playSessionStore', () => {
     });
   });
 
-  describe('Stars and Hearts', () => {
-    it('should increment stars', () => {
-      const { incrementStars } = usePlaySessionStore.getState();
+  // Note: Hearts are now in gameStore (persistent global resource), not playSessionStore
+  // Heart tests should be in gameStore.test.ts
+
+  describe('Level Progress', () => {
+    it('should initialize level progress on game start', () => {
+      const { startGame } = usePlaySessionStore.getState();
+      startGame('word_builder');
       
-      const stars1 = incrementStars();
-      const stars2 = incrementStars();
-      
-      expect(stars1).toBe(1);
-      expect(stars2).toBe(2);
-      expect(usePlaySessionStore.getState().stars).toBe(2);
+      const state = usePlaySessionStore.getState();
+      expect(state.levelProgress).toBeTruthy();
+      expect(state.levelProgress?.correctAnswers).toBe(0);
+      expect(state.levelProgress?.totalAnswers).toBe(0);
     });
 
-    it('should reset stars', () => {
-      const { incrementStars, resetStars } = usePlaySessionStore.getState();
-      incrementStars();
-      incrementStars();
-      expect(usePlaySessionStore.getState().stars).toBe(2);
-      resetStars();
-      expect(usePlaySessionStore.getState().stars).toBe(0);
+    it('should track level answers', () => {
+      const { startGame, recordLevelAnswer } = usePlaySessionStore.getState();
+      startGame('word_builder');
+      
+      recordLevelAnswer(true);
+      recordLevelAnswer(true);
+      recordLevelAnswer(false);
+      
+      const state = usePlaySessionStore.getState();
+      expect(state.levelProgress?.correctAnswers).toBe(2);
+      expect(state.levelProgress?.totalAnswers).toBe(3);
     });
 
-    it('should decrement hearts', () => {
-      const { decrementHearts } = usePlaySessionStore.getState();
+    it('should reset level progress', () => {
+      const { startGame, recordLevelAnswer, resetLevelProgress } = usePlaySessionStore.getState();
+      startGame('word_builder');
       
-      const hearts1 = decrementHearts();
-      const hearts2 = decrementHearts();
+      recordLevelAnswer(true);
+      recordLevelAnswer(true);
+      expect(usePlaySessionStore.getState().levelProgress?.correctAnswers).toBe(2);
       
-      expect(hearts1).toBe(2);
-      expect(hearts2).toBe(1);
-      expect(usePlaySessionStore.getState().hearts).toBe(1);
+      resetLevelProgress();
+      const state = usePlaySessionStore.getState();
+      expect(state.levelProgress?.correctAnswers).toBe(0);
+      expect(state.levelProgress?.totalAnswers).toBe(0);
     });
   });
 

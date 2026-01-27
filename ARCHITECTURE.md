@@ -190,21 +190,31 @@ The project uses two main stores:
 
 #### `gameStore` (Persistent)
 - **Profile** - Selected age profile
-- **Levels** - Each game's level
+- **Levels** - Each game's level (per-game-type, per-profile)
+- **Stars** - Global currency (persistent, earned per level)
+- **Hearts** - Global lives (persistent, max 5, can be bought with stars)
 - **Statistics** - Game statistics
 - **Achievements** - Unlocked achievements
 - **Settings** - Sound, score, etc.
 
 **Persistence**: LocalStorage (Zustand persist middleware)
 
+**Progression Resources:**
+- **Stars**: Earned when completing levels (not per answer). Scale with game difficulty and level. Used as currency to buy hearts.
+- **Hearts**: Global resource (not game-specific). Wrong answers cost 1 heart. Can be purchased with stars (10 stars = 1 heart).
+- **Levels**: Automatically earned through performance (correct answers + accuracy). Not purchased with stars.
+
 #### `playSessionStore` (Session)
 - **Game state** - menu/playing/game_over
 - **Current problem** - Currently played problem
-- **Session data** - Score, hearts, stars
+- **Session data** - Score (cosmetic points)
+- **Level progress** - Tracks correct/total answers for current level
 - **Adaptive difficulty** - Session difficulty level
 - **Notifications** - In-game notifications
 
 **Persistence**: Not saved (only during session)
+
+**Note**: Stars and hearts moved to `gameStore` (global, persistent). Session only tracks level progress and score.
 
 ### State Flow
 
@@ -227,9 +237,15 @@ User Action → Component → Hook/Store Action → State Update → Component R
 - Based on accuracy and answer streaks
 
 #### `progression.ts` - Progression Logic
-- Calculates optimal difficulty level
-- Recommends progression
-- Success score calculation
+- **Level-up system**: Performance-based automatic level progression
+  - Calculates level-up requirements (scaling: 5→7→10→12→15+ correct answers)
+  - Checks if player should level up (correct answers + 80%+ accuracy)
+  - Prevents players from being stuck at easy levels
+- **Star reward system**: Currency earned per level completion
+  - Game-specific base rewards (easy: 1, medium: 2, hard: 3 stars)
+  - Level-scaling multiplier (1.0x to 2.5x based on level)
+  - Perfect level bonus (extra stars for 100% accuracy)
+  - Stars are currency (not spent on levels, used to buy hearts)
 
 #### `stats.ts` - Statistics
 - Game counting

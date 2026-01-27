@@ -24,7 +24,7 @@ export const createTestStats = (overrides = {}) => ({
   gamesByType: {},
   totalTimePlayed: 0,
   lastPlayed: null,
-  collectedStars: 0,
+  stars: 0,
   maxSnakeLength: 0,
   ...overrides,
 });

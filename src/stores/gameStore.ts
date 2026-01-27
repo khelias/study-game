@@ -26,6 +26,9 @@ const buildDefaultLevels = () => {
   return base;
 };
 
+const MAX_HEARTS = 5;
+const DEFAULT_HEARTS = 3;
+
 export interface GameStore {
   // State
   profile: string;
@@ -34,7 +37,8 @@ export interface GameStore {
   unlockedAchievements: string[];
   soundEnabled: boolean;
   score: number;
-  collectedStars: number;
+  stars: number; // Persistent currency (replaces collectedStars)
+  hearts: number; // Persistent global resource (replaces session hearts)
   hasSeenTutorial: boolean;
   
   // Actions
@@ -46,7 +50,12 @@ export interface GameStore {
   unlockAchievement: (id: string) => void;
   toggleSound: () => void;
   resetGame: () => void;
-  addCollectedStars: (count: number) => { newAchievements: AchievementData[] };
+  earnStars: (count: number, reason?: string) => { newAchievements: AchievementData[] };
+  spendStars: (count: number) => boolean;
+  spendHeart: () => boolean; // Returns true if heart was spent, false if no hearts available
+  addHeart: (count?: number) => void; // Adds hearts up to MAX_HEARTS
+  buyHeartsWithStars: (count: number) => boolean; // Buy hearts with stars, returns true if successful
+  buyStars: (count: number) => void; // Buy stars (mocked as FREE for now)
   setScore: (score: number) => void;
   addScore: (points: number) => void;
   markTutorialSeen: () => void;
@@ -64,7 +73,8 @@ export const useGameStore = create<GameStore>()(
       unlockedAchievements: [],
       soundEnabled: true,
       score: 0,
-      collectedStars: 0,
+      stars: 0, // Persistent currency
+      hearts: DEFAULT_HEARTS, // Persistent global resource
       hasSeenTutorial: false,
       
       // Actions
@@ -199,20 +209,21 @@ export const useGameStore = create<GameStore>()(
             unlockedAchievements: [],
             soundEnabled: true,
             score: 0,
-            collectedStars: 0,
+            stars: 0,
+            hearts: DEFAULT_HEARTS,
             hasSeenTutorial: false,
           });
         }
       },
       
-      addCollectedStars: (count: number) => {
+      earnStars: (count: number, _reason?: string) => {
         const state = get();
-        const newCollectedStars = state.collectedStars + count;
+        const newStars = state.stars + count;
         
-        // Update stats with collected stars
+        // Update stats with stars (for achievement tracking)
         const updatedStats = { 
           ...state.stats, 
-          collectedStars: newCollectedStars 
+          collectedStars: newStars // Keep in stats for achievement compatibility
         };
         
         // Check for new achievements
@@ -229,7 +240,7 @@ export const useGameStore = create<GameStore>()(
         });
         
         set({ 
-          collectedStars: newCollectedStars,
+          stars: newStars,
           stats: updatedStats,
           unlockedAchievements: newAchievements.length > 0 
             ? [...state.unlockedAchievements, ...newAchievements.map(a => a.id)]
@@ -237,6 +248,52 @@ export const useGameStore = create<GameStore>()(
         });
         
         return { newAchievements: achievementData };
+      },
+      
+      spendStars: (count: number) => {
+        const state = get();
+        if (state.stars >= count) {
+          set({ stars: state.stars - count });
+          return true;
+        }
+        return false;
+      },
+      
+      spendHeart: () => {
+        const state = get();
+        if (state.hearts > 0) {
+          set({ hearts: state.hearts - 1 });
+          return true;
+        }
+        return false;
+      },
+      
+      addHeart: (count: number = 1) => {
+        const state = get();
+        const newHearts = Math.min(state.hearts + count, MAX_HEARTS);
+        set({ hearts: newHearts });
+      },
+      
+      buyHeartsWithStars: (count: number) => {
+        const state = get();
+        const HEART_COST_STARS = 10; // 10 stars = 1 heart
+        const totalCost = HEART_COST_STARS * count;
+        const heartsCanAdd = Math.min(count, MAX_HEARTS - state.hearts);
+        
+        if (state.stars >= totalCost && heartsCanAdd > 0) {
+          set({ 
+            stars: state.stars - totalCost,
+            hearts: Math.min(state.hearts + heartsCanAdd, MAX_HEARTS)
+          });
+          return true;
+        }
+        return false;
+      },
+      
+      buyStars: (count: number) => {
+        // Mocked as FREE for now - will be wired up to payment system later
+        const state = get();
+        set({ stars: state.stars + count });
       },
       
       setScore: (score: number) => {
@@ -260,7 +317,8 @@ export const useGameStore = create<GameStore>()(
         unlockedAchievements: state.unlockedAchievements,
         soundEnabled: state.soundEnabled,
         score: state.score,
-        collectedStars: state.collectedStars,
+        stars: state.stars,
+        hearts: state.hearts,
         hasSeenTutorial: state.hasSeenTutorial,
       }),
       // Handle migration from old localStorage format
@@ -275,7 +333,8 @@ export const useGameStore = create<GameStore>()(
             unlockedAchievements: [],
             soundEnabled: true,
             score: 0,
-            collectedStars: 0,
+            stars: 0,
+            hearts: DEFAULT_HEARTS,
             hasSeenTutorial: false,
           };
           
@@ -292,12 +351,28 @@ export const useGameStore = create<GameStore>()(
             stateObj.levels = merged;
           }
           
-          // Sync collectedStars with stats if needed
+          // Migrate collectedStars to stars (Phase 1 consolidation)
+          if ('collectedStars' in stateObj && typeof stateObj.collectedStars === 'number') {
+            stateObj.stars = stateObj.collectedStars;
+            delete stateObj.collectedStars;
+          }
+          
+          // Sync stars with stats.collectedStars for achievement compatibility
           const statsObj = stateObj.stats as Record<string, unknown> | undefined;
-          if (statsObj && !statsObj.collectedStars && stateObj.collectedStars) {
-            statsObj.collectedStars = stateObj.collectedStars;
-          } else if (statsObj && statsObj.collectedStars) {
-            stateObj.collectedStars = statsObj.collectedStars;
+          if (statsObj && typeof stateObj.stars === 'number') {
+            statsObj.collectedStars = stateObj.stars;
+          } else if (statsObj && statsObj.collectedStars && !stateObj.stars) {
+            // Legacy: if stats has collectedStars but state doesn't have stars, migrate
+            stateObj.stars = statsObj.collectedStars as number;
+          }
+          
+          // Migrate hearts: if hearts don't exist, set to default
+          if (!('hearts' in stateObj) || typeof stateObj.hearts !== 'number') {
+            stateObj.hearts = DEFAULT_HEARTS;
+          }
+          // Ensure hearts don't exceed max
+          if (typeof stateObj.hearts === 'number' && stateObj.hearts > MAX_HEARTS) {
+            stateObj.hearts = MAX_HEARTS;
           }
           
           return { ...defaults, ...stateObj };

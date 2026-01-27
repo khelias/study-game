@@ -51,9 +51,12 @@ export const ProgressIndicator: React.FC<ProgressIndicatorProps> = ({ current, t
           style={{ width: `${percentage}%` }}
         />
       </div>
-      <div className="text-xs text-slate-500 text-center mt-1">
-        {current} / {total}
-      </div>
+      {/* Text display is now optional - can be hidden if shown elsewhere */}
+      {label && (
+        <div className="text-xs text-slate-500 text-center mt-1">
+          {current} / {total}
+        </div>
+      )}
     </div>
   );
 };

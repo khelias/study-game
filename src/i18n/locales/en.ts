@@ -280,6 +280,38 @@ export const en = {
         title: 'Maximum Snake',
         desc: 'Grow snake to maximum length (49)',
       },
+      syllable_master: {
+        title: 'Syllable Master',
+        desc: 'Reach SYLLABLE MASTER level 5',
+      },
+      sentence_detective: {
+        title: 'Sentence Detective',
+        desc: 'Reach SENTENCE DETECTIVE level 5',
+      },
+      robo_master: {
+        title: 'Robo Master',
+        desc: 'Reach ROBO PATH level 5',
+      },
+      letter_detective: {
+        title: 'Letter Detective',
+        desc: 'Reach LETTER DETECTIVE level 5',
+      },
+      unit_master: {
+        title: 'Unit Master',
+        desc: 'Reach UNITS level 5',
+      },
+      compare_master: {
+        title: 'Compare Master',
+        desc: 'Reach NUMBER COMPARE level 5',
+      },
+      scale_master: {
+        title: 'Scale Master',
+        desc: 'Reach SCALES level 5',
+      },
+      clock_master: {
+        title: 'Clock Master',
+        desc: 'Reach CLOCK GAME level 5',
+      },
     },
   },
 
@@ -309,27 +341,27 @@ export const en = {
   // Tutorial
   tutorial: {
     welcome: {
-      title: 'Welcome! 🎮',
+      title: 'Welcome!',
       content: 'This is an educational game where you can practice reading, math and logic!',
     },
     selectAge: {
-      title: 'Choose your age 🎯',
+      title: 'Choose your age',
       content: 'Select your age group (5+ or 7+) in the menu to get appropriate tasks.',
     },
     selectGame: {
-      title: 'Choose a game 🎲',
+      title: 'Choose a game',
       content: 'Choose a game you want to play. Each game has its own theme and difficulty.',
     },
     answerCorrectly: {
-      title: 'Answer correctly ⭐',
-      content: 'Each correct answer gives you a star. When you collect 5 stars, you level up!',
+      title: 'Answer correctly',
+      content: 'Answer correctly to progress! When you demonstrate mastery (correct answers + good accuracy), you automatically level up and earn stars!',
     },
     beCareful: {
-      title: 'Be careful ❤️',
-      content: 'Each wrong answer takes away one heart. When hearts run out, the game ends.',
+      title: 'Be careful',
+      content: 'Each wrong answer costs one heart. Hearts are global - they persist across games. When hearts run out, you can buy more with stars!',
     },
     collectAchievements: {
-      title: 'Collect achievements 🏅',
+      title: 'Collect achievements',
       content: 'Collect medals and track your statistics from the menu above!',
     },
     close: 'Close tutorial',
@@ -489,6 +521,27 @@ export const en = {
     highestLevels: 'Highest levels',
   },
 
+  // Shop
+  shop: {
+    title: 'Shop',
+    yourStars: 'Your Stars',
+    yourHearts: 'Your Hearts',
+    buyHearts: 'Buy Hearts',
+    buyHeartsDescription: 'Buy hearts with stars to keep playing!',
+    buy1Heart: 'Buy 1 Heart',
+    buyHeartsCount: 'Buy {count} Hearts',
+    cost: 'Cost',
+    price: 'Price',
+    free: 'FREE',
+    maxHearts: 'Maximum hearts reached',
+    notEnoughStars: 'Not enough stars',
+    buyStars: 'Buy Stars',
+    buyStarsDescription: 'Buy stars to get more hearts and unlock special features!',
+    buy50Stars: 'Buy 50 Stars',
+    noHeartsToPlay: 'You have no hearts to play!',
+    buyHeartsToContinue: 'Buy hearts to continue playing.',
+  },
+
   // Progression
   progression: {
     startGame: 'Start this game!',
@@ -620,16 +673,16 @@ export const en = {
       desc: 'Feed the snake with equations',
     },
     compare_sizes: {
-      title: 'SIZE COMPARE',
-      desc: 'Compare object sizes',
+      title: 'NUMBER COMPARE',
+      desc: 'Compare numbers',
       instruction: 'Which symbol is correct?',
       symbolInstruction: 'Choose the correct comparison symbol',
       selectSymbol: 'Select symbol',
       leftBigger: 'Left is bigger',
       rightBigger: 'Right is bigger',
       equal: 'They are equal',
-      leftItem: 'Left item',
-      rightItem: 'Right item',
+      leftItem: 'Left number',
+      rightItem: 'Right number',
     },
   },
 

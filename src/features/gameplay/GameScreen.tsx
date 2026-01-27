@@ -6,7 +6,7 @@
  */
 
 import React, { useEffect, useRef, useState } from 'react';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Trophy } from 'lucide-react';
 import { useGameStore } from '../../stores/gameStore';
 import { usePlaySessionStore } from '../../stores/playSessionStore';
 import { useGameEngine } from '../../hooks/useGameEngine';
@@ -23,7 +23,11 @@ import { EnhancedConfetti } from '../../components/EnhancedAnimations';
 import { ParticleEffect } from '../../components/ParticleEffect';
 import { GameHeader } from '../../components/GameHeader';
 import { SettingsMenu } from '../../components/SettingsMenu';
+import { StatsModal } from '../modals/StatsModal';
+import { AchievementsModal } from '../modals/AchievementsModal';
+import { ShopModal } from '../modals/ShopModal';
 import { moveMathSnake } from '../../engine/mathSnake';
+import { calculateLevelUpRequirement } from '../../engine/progression';
 import type { Direction, ProfileType } from '../../types/game';
 
 export const GameScreen: React.FC = () => {
@@ -40,9 +44,10 @@ export const GameScreen: React.FC = () => {
   // Session state
   const gameType = usePlaySessionStore(state => state.gameType);
   const problem = usePlaySessionStore(state => state.problem);
-  const stars = usePlaySessionStore(state => state.stars);
-  const hearts = usePlaySessionStore(state => state.hearts);
+  const stars = useGameStore(state => state.stars); // Persistent currency (for display in menu)
+  const hearts = useGameStore(state => state.hearts); // Persistent global resource
   const score = usePlaySessionStore(state => state.score);
+  const levelProgress = usePlaySessionStore(state => state.levelProgress);
   const bgClass = usePlaySessionStore(state => state.bgClass);
   const confetti = usePlaySessionStore(state => state.confetti);
   const enhancedConfetti = usePlaySessionStore(state => state.enhancedConfetti);
@@ -58,7 +63,7 @@ export const GameScreen: React.FC = () => {
   const setBgClass = usePlaySessionStore(state => state.setBgClass);
   const setConfetti = usePlaySessionStore(state => state.setConfetti);
   const setEnhancedConfetti = usePlaySessionStore(state => state.setEnhancedConfetti);
-  const resetStars = usePlaySessionStore(state => state.resetStars);
+  // Stars are now persistent (gameStore.stars), no reset needed
   const endGame = usePlaySessionStore(state => state.endGame);
   const addScore = usePlaySessionStore(state => state.addScore);
   const addNotification = usePlaySessionStore(state => state.addNotification);
@@ -77,7 +82,14 @@ export const GameScreen: React.FC = () => {
   const { showHint: showHintForProblem } = useGameHints(addNotification, setBgClass);
   const [isCompactLayout, setIsCompactLayout] = useState(false);
   const [showSettingsMenu, setShowSettingsMenu] = useState(false);
+  const [showStats, setShowStats] = useState(false);
+  const [showAchievements, setShowAchievements] = useState(false);
+  const [showShop, setShowShop] = useState(false);
   const settingsMenuRef = useRef<HTMLDivElement>(null);
+  
+  // Get stats and achievements for modals
+  const stats = useGameStore(state => state.stats);
+  const unlockedAchievements = useGameStore(state => state.unlockedAchievements);
 
   // Track achievement notifications - compute directly from notifications
   const achievementShown = notifications.some(n => n.type === 'achievement');
@@ -127,16 +139,30 @@ export const GameScreen: React.FC = () => {
       setProblem(newProblem);
     }
   }, [gameType, problem, levels, profile, adaptiveDifficulty, generateUniqueProblemForGame, setProblem]);
+  
+  // Reset level progress when level changes (e.g., from menu or manual level-up)
+  const resetLevelProgress = usePlaySessionStore(state => state.resetLevelProgress);
+  useEffect(() => {
+    if (gameType) {
+      // Ensure level progress is initialized when game starts or level changes
+      // Level progress is initialized in startGame, but reset if level changes externally
+      resetLevelProgress();
+    }
+  }, [gameType, levels, profile, resetLevelProgress]);
 
-  // Handle next level
+  // Handle next level (legacy - now handled automatically in Phase 3)
+  // This is kept for backward compatibility with level-up modal
   const handleNextLevel = () => {
     if (!gameType) return;
 
     clearNotifications();
     setConfetti(false);
-    resetStars();
+    // Stars are now persistent (gameStore.stars), no reset needed
+    // Level progress is reset automatically when level-up happens
 
     const newLevel = (levels[profile]?.[gameType] || 1) + 1;
+    // Note: recordLevelUp is now called automatically in useAnswerHandler when level-up occurs
+    // This is only for manual level-up (if needed)
     const { newAchievements } = recordLevelUp(gameType, newLevel);
 
     if (newAchievements.length > 0) {
@@ -239,9 +265,10 @@ export const GameScreen: React.FC = () => {
 
       <GameHeader
         score={score}
-        currentLevel={currentLevel}
-        hearts={hearts}
         stars={stars}
+        hearts={hearts}
+        levelProgress={levelProgress}
+        levelUpRequirement={calculateLevelUpRequirement(currentLevel)}
         particleActive={particleActive}
         onReturnToMenu={() => {
           playClick();
@@ -249,6 +276,10 @@ export const GameScreen: React.FC = () => {
         }}
         onSettingsClick={() => {
           setShowSettingsMenu(!showSettingsMenu);
+          playClick();
+        }}
+        onShopClick={() => {
+          setShowShop(true);
           playClick();
         }}
         showSettingsMenu={showSettingsMenu}
@@ -265,10 +296,23 @@ export const GameScreen: React.FC = () => {
             returnToMenu();
           }}
           onClose={() => setShowSettingsMenu(false)}
+          onShowAchievements={() => setShowAchievements(true)}
+          onShowStats={() => setShowStats(true)}
+          onShowShop={() => setShowShop(true)}
+          unlockedAchievements={unlockedAchievements}
+          isGameScreen={true}
         />
       </GameHeader>
 
       <div className="flex-1 flex flex-col items-center p-4 max-w-2xl mx-auto w-full relative">
+        {/* Session Score Badge - floating in top right of game area */}
+        {score > 0 && (
+          <div className="absolute top-2 right-2 sm:top-4 sm:right-4 z-30 flex items-center gap-1.5 bg-blue-50 border border-blue-200 px-2.5 py-1.5 rounded-lg shadow-md">
+            <Trophy size={14} className="text-blue-600 w-3.5 h-3.5 sm:w-4 sm:h-4 flex-shrink-0" />
+            <span className="text-xs sm:text-sm font-bold text-blue-700 whitespace-nowrap">{score}</span>
+          </div>
+        )}
+        
         {!problem ? (
           <Loader2 className="animate-spin mt-20 text-slate-400" size={48} />
         ) : (
@@ -288,6 +332,27 @@ export const GameScreen: React.FC = () => {
           </div>
         )}
       </div>
+
+      {/* Modals */}
+      {showStats && (
+        <StatsModal
+          stats={stats}
+          unlockedAchievements={unlockedAchievements}
+          onClose={() => setShowStats(false)}
+        />
+      )}
+      {showAchievements && (
+        <AchievementsModal
+          unlockedAchievements={unlockedAchievements}
+          onClose={() => setShowAchievements(false)}
+        />
+      )}
+      {showShop && (
+        <ShopModal
+          onClose={() => setShowShop(false)}
+          openedFromNoHearts={hearts <= 0}
+        />
+      )}
 
       <style>{`
         .no-scrollbar::-webkit-scrollbar { display: none; }

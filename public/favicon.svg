@@ -1,28 +1,52 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" aria-hidden="true">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
   <defs>
-    <linearGradient id="bookGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" style="stop-color:#4F46E5;stop-opacity:1" />
-      <stop offset="100%" style="stop-color:#7C3AED;stop-opacity:1" />
-    </linearGradient>
-    <linearGradient id="starGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" style="stop-color:#FBBF24;stop-opacity:1" />
-      <stop offset="100%" style="stop-color:#F59E0B;stop-opacity:1" />
+    <linearGradient id="rocketGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#ec4899;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#3b82f6;stop-opacity:1" />
     </linearGradient>
   </defs>
   
-  <!-- Background circle -->
-  <circle cx="50" cy="50" r="48" fill="url(#bookGradient)" />
+  <!-- Rounded square background -->
+  <rect x="5" y="5" width="90" height="90" rx="8" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="2"/>
   
-  <!-- Book -->
-  <rect x="30" y="25" width="40" height="50" rx="2" fill="#FFFFFF" opacity="0.95" />
-  <line x1="50" y1="25" x2="50" y2="75" stroke="#E5E7EB" stroke-width="1.5" />
+  <!-- KHE Letters (left side, centered) -->
+  <text x="18" y="58" font-family="Arial, sans-serif" font-size="26" font-weight="900" fill="#1e293b" letter-spacing="-1">K</text>
+  <text x="36" y="58" font-family="Arial, sans-serif" font-size="26" font-weight="900" fill="#334155" letter-spacing="-1">H</text>
+  <text x="54" y="58" font-family="Arial, sans-serif" font-size="26" font-weight="900" fill="#1e293b" letter-spacing="-1">E</text>
   
-  <!-- Book pages -->
-  <line x1="35" y1="40" x2="45" y2="40" stroke="#9CA3AF" stroke-width="1" />
-  <line x1="35" y1="50" x2="45" y2="50" stroke="#9CA3AF" stroke-width="1" />
-  <line x1="35" y1="60" x2="45" y2="60" stroke="#9CA3AF" stroke-width="1" />
-  
-  <!-- Star decoration -->
-  <path d="M 50 15 L 52 20 L 57 20 L 53 23 L 55 28 L 50 25 L 45 28 L 47 23 L 43 20 L 48 20 Z" 
-        fill="url(#starGradient)" />
+  <!-- Rocket icon (right side, centered vertically) -->
+  <g transform="translate(65, 50) scale(1.1)">
+    <path 
+      d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z" 
+      stroke="url(#rocketGradient)" 
+      stroke-width="1.5" 
+      stroke-linecap="round" 
+      stroke-linejoin="round"
+      fill="none"
+    />
+    <path 
+      d="m12 15-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z" 
+      stroke="url(#rocketGradient)" 
+      stroke-width="1.5" 
+      stroke-linecap="round" 
+      stroke-linejoin="round"
+      fill="none"
+    />
+    <path 
+      d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0" 
+      stroke="url(#rocketGradient)" 
+      stroke-width="1.5" 
+      stroke-linecap="round" 
+      stroke-linejoin="round"
+      fill="none"
+    />
+    <path 
+      d="M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5" 
+      stroke="url(#rocketGradient)" 
+      stroke-width="1.5" 
+      stroke-linecap="round" 
+      stroke-linejoin="round"
+      fill="none"
+    />
+  </g>
 </svg>

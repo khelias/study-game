@@ -27,8 +27,8 @@ export interface AnswerHandlerContext {
   problem: Problem;
   gameType: string;
   currentStreak: number;
-  currentStars: number;
-  currentHearts: number;
+  // currentStars removed - stars are now persistent currency, not used for level-up
+  // currentHearts removed - hearts are now persistent global resource in gameStore
   rng: RngFunction;
 }
 
@@ -36,7 +36,7 @@ export interface AnswerHandlerContext {
  * Processes an answer for math snake game type
  */
 export function processMathSnakeAnswer(context: AnswerHandlerContext): AnswerResult {
-  const { isCorrect, problem, gameType, currentHearts, rng } = context;
+  const { isCorrect, problem, gameType, rng } = context;
   const baseGameType = gameType.replace('_adv', '');
   
   if (baseGameType !== 'math_snake' || problem.type !== 'math_snake') {
@@ -66,15 +66,9 @@ export function processMathSnakeAnswer(context: AnswerHandlerContext): AnswerRes
       points,
     };
   } else {
-    // Wrong answer: decrement hearts
-    const newHearts = currentHearts - 1;
-    const shouldEndGame = newHearts <= 0;
-
-    if (shouldEndGame) {
-      // Resolve the answer to update problem state before ending
-      const resolution = resolveMathSnakeAnswer(problem, isCorrect, rng);
-      updatedProblem = resolution.problem;
-    }
+    // Wrong answer: should decrement hearts (handled by caller via gameStore.spendHeart)
+    // Note: Hearts are now in gameStore, so we just indicate that hearts should be decremented
+    // Game over will be determined by caller based on current hearts after spending
 
     return {
       shouldShowFeedback: true,
@@ -82,10 +76,10 @@ export function processMathSnakeAnswer(context: AnswerHandlerContext): AnswerRes
       shouldIncrementScore: false,
       shouldIncrementStars: false,
       shouldDecrementHearts: true,
-      shouldEndGame,
+      shouldEndGame: false, // Will be determined by caller based on current hearts
       shouldLevelUp: false,
-      updatedProblem,
-      gameOver: shouldEndGame,
+      updatedProblem: null, // Will be updated by caller if needed
+      gameOver: false, // Will be determined by caller
       points: 0,
     };
   }
@@ -93,31 +87,32 @@ export function processMathSnakeAnswer(context: AnswerHandlerContext): AnswerRes
 
 /**
  * Processes an answer for standard game types (non-math-snake)
+ * 
+ * Note: Level-up logic will be updated in Phase 3 (performance-based, not star-based)
  */
 export function processStandardAnswer(context: AnswerHandlerContext): AnswerResult {
-  const { isCorrect, currentStars, currentHearts } = context;
+  const { isCorrect } = context;
   const points = isCorrect ? 10 : 0;
 
   if (isCorrect) {
-    const nextStars = currentStars + 1;
-    const shouldLevelUp = nextStars >= 5;
-
+    // Note: Level-up will be handled in Phase 3 based on correct answers + accuracy
+    // For now, remove star-based level-up logic
     return {
       shouldShowFeedback: true,
       shouldShowParticles: true,
       shouldIncrementScore: true,
-      shouldIncrementStars: true,
+      shouldIncrementStars: false, // Stars earned per-level completion (Phase 3)
       shouldDecrementHearts: false,
       shouldEndGame: false,
-      shouldLevelUp,
+      shouldLevelUp: false, // Will be handled in Phase 3
       updatedProblem: null, // Standard games generate new problem after correct answer
       gameOver: false,
       points,
     };
   } else {
-    // Wrong answer: decrement hearts
-    const newHearts = currentHearts - 1;
-    const shouldEndGame = newHearts <= 0;
+    // Wrong answer: should decrement hearts (handled by caller via gameStore.spendHeart)
+    // Note: Hearts are now in gameStore, so we just indicate that hearts should be decremented
+    // Game over will be determined by caller based on current hearts after spending
 
     return {
       shouldShowFeedback: true,
@@ -125,10 +120,10 @@ export function processStandardAnswer(context: AnswerHandlerContext): AnswerResu
       shouldIncrementScore: false,
       shouldIncrementStars: false,
       shouldDecrementHearts: true,
-      shouldEndGame,
+      shouldEndGame: false, // Will be determined by caller based on current hearts
       shouldLevelUp: false,
       updatedProblem: null,
-      gameOver: shouldEndGame,
+      gameOver: false, // Will be determined by caller
       points: 0,
     };
   }

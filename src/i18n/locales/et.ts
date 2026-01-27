@@ -97,7 +97,7 @@ export const et = {
   // Game categories
   categories: {
     language: {
-      name: 'Keele mängud',
+      name: 'Keelemängud',
       description: 'Sõnad, tähed ja laused',
     },
     math: {
@@ -280,6 +280,38 @@ export const et = {
         title: 'Maksimaalne madu',
         desc: 'Kasvata madu maksimaalse pikkuseni (49)',
       },
+      syllable_master: {
+        title: 'Silbimeister',
+        desc: 'Jõua SILBIMEISTER tasemele 5',
+      },
+      sentence_detective: {
+        title: 'Lause detektiiv',
+        desc: 'Jõua LAUSE DETEKTIIV tasemele 5',
+      },
+      robo_master: {
+        title: 'Robomeister',
+        desc: 'Jõua ROBOTEE tasemele 5',
+      },
+      letter_detective: {
+        title: 'Tähe detektiiv',
+        desc: 'Jõua TÄHE DETEKTIIV tasemele 5',
+      },
+      unit_master: {
+        title: 'Ühikumeister',
+        desc: 'Jõua ÜHIKUD tasemele 5',
+      },
+      compare_master: {
+        title: 'Võrdlusmeister',
+        desc: 'Jõua NUMBRIVÕRDLUS tasemele 5',
+      },
+      scale_master: {
+        title: 'Kaalumeister',
+        desc: 'Jõua KAALUD tasemele 5',
+      },
+      clock_master: {
+        title: 'Kellameister',
+        desc: 'Jõua KELLAMÄNG tasemele 5',
+      },
     },
   },
 
@@ -309,27 +341,27 @@ export const et = {
   // Tutorial
   tutorial: {
     welcome: {
-      title: 'Tere tulemast! 🎮',
+      title: 'Tere tulemast!',
       content: 'See on õppemäng, kus saad harjutada lugemist, matemaatikat ja loogikat!',
     },
     selectAge: {
-      title: 'Vali oma vanus 🎯',
+      title: 'Vali oma vanus',
       content: 'Vali menüüs oma vanusegrupp (5+ või 7+), et saada sobivad ülesanded.',
     },
     selectGame: {
-      title: 'Vali mäng 🎲',
+      title: 'Vali mäng',
       content: 'Vali mäng, mida soovid mängida. Igal mängul on oma teema ja raskusaste.',
     },
     answerCorrectly: {
-      title: 'Vasta õigesti ⭐',
-      content: 'Iga õige vastus annab sulle tähe. Kui kogud 5 tähte, tõused taseme võrra!',
+      title: 'Vasta õigesti',
+      content: 'Vasta õigesti, et edasi jõuda! Kui näitad oskust (õiged vastused + hea täpsus), tõused automaatselt taseme võrra ja teenid tähti!',
     },
     beCareful: {
-      title: 'Ole ettevaatlik ❤️',
-      content: 'Iga vale vastus võtab ühe südame ära. Kui südamed otsa saavad, mäng lõppeb.',
+      title: 'Ole ettevaatlik',
+      content: 'Iga vale vastus maksab ühe südame. Südamid on globaalsed - need säilivad mängude vahel. Kui südamed otsa saavad, saad neid tähtedega osta!',
     },
     collectAchievements: {
-      title: 'Kogu saavutusi 🏅',
+      title: 'Kogu saavutusi',
       content: 'Kogu medaleid ja jälgi oma statistikat menüü ülevalt!',
     },
     close: 'Sulge juhend',
@@ -489,6 +521,27 @@ export const et = {
     highestLevels: 'Kõrgeimad tasemed',
   },
 
+  // Shop
+  shop: {
+    title: 'Pood',
+    yourStars: 'Sinu tähed',
+    yourHearts: 'Sinu südamed',
+    buyHearts: 'Osta südameid',
+    buyHeartsDescription: 'Osta südameid tähtede eest, et jätkata mängimist!',
+    buy1Heart: 'Osta 1 süda',
+    buyHeartsCount: 'Osta {count} südant',
+    cost: 'Hind',
+    price: 'Hind',
+    free: 'TASUTA',
+    maxHearts: 'Maksimaalne arv südameid',
+    notEnoughStars: 'Pole piisavalt tähti',
+    buyStars: 'Osta tähti',
+    buyStarsDescription: 'Osta tähti, et saada rohkem südameid ja avada erifunktsioone!',
+    buy50Stars: 'Osta 50 tähte',
+    noHeartsToPlay: 'Sul pole südameid mängimiseks!',
+    buyHeartsToContinue: 'Osta südameid, et jätkata mängimist.',
+  },
+
   // Progression
   progression: {
     startGame: 'Alusta seda mängu!',
@@ -620,16 +673,16 @@ export const et = {
       desc: 'Sööda madu tehetega',
     },
     compare_sizes: {
-      title: 'SUURUSTE VÕRDLEMINE',
-      desc: 'Võrdle esemete suurusi',
+      title: 'ARVUDE VÕRDLEMINE',
+      desc: 'Võrdle arve',
       instruction: 'Milline sümbol on õige?',
       symbolInstruction: 'Vali õige võrdlussümbol',
       selectSymbol: 'Vali sümbol',
       leftBigger: 'Vasak on suurem',
       rightBigger: 'Parem on suurem',
       equal: 'Nad on võrdsed',
-      leftItem: 'Vasak ese',
-      rightItem: 'Parem ese',
+      leftItem: 'Vasak arv',
+      rightItem: 'Parem arv',
     },
   },
 

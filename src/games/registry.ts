@@ -37,7 +37,7 @@ export type AnswerValidator = (problem: Problem, userAnswer: unknown) => boolean
 /**
  * Game registry entry
  * 
- * Note: Component type is `any` because each game view has its own specific props type.
+ * Note: Component type uses GameViewProps for type safety.
  * The GameRenderer handles type casting when rendering.
  */
 export interface GameRegistryEntry {
@@ -45,7 +45,8 @@ export interface GameRegistryEntry {
   id: string;
   
   /** React component that renders the game */
-  component: ComponentType<any>;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  component: ComponentType<any>; // Each game has specific problem types, so we use any here
   
   /** Function that generates problems for this game */
   generator: GeneratorFunction;

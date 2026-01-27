@@ -14,16 +14,23 @@ interface AdaptiveDifficulty {
   levelAdjustment: number;
 }
 
+export interface LevelProgress {
+  correctAnswers: number;
+  totalAnswers: number;
+  levelStartedAt: number; // Timestamp when level started
+}
+
 export interface PlaySessionStore {
   // State
   gameState: GameState;
   gameType: string | null;
   problem: Problem | null;
   score: number;
-  hearts: number;
-  stars: number;
+  // hearts removed - now using gameStore.hearts (persistent global resource)
+  // stars removed - now using gameStore.stars (persistent currency)
   currentStreak: number;
   adaptiveDifficulty: AdaptiveDifficulty;
+  levelProgress: LevelProgress | null; // Tracks progress toward next level
   
   // New unified notification system
   notifications: Notification[];
@@ -53,12 +60,11 @@ export interface PlaySessionStore {
   setParticleActive: (active: boolean) => void;
   setShowHint: (show: boolean) => void;
   updateAdaptiveDifficulty: (isCorrect: boolean, responseTime?: number) => void;
-  incrementStars: () => number;
-  resetStars: () => void;
-  decrementHearts: () => number;
   setScore: (score: number) => void;
   addScore: (points: number) => void;
   resetSessionState: () => void;
+  recordLevelAnswer: (isCorrect: boolean) => void; // Track answer for level progress
+  resetLevelProgress: () => void; // Reset when level changes
 }
 
 const initialState = {
@@ -66,10 +72,11 @@ const initialState = {
   gameType: null,
   problem: null,
   score: 0,
-  hearts: 3,
-  stars: 0,
+  // hearts removed - now using gameStore.hearts (persistent global resource)
+  // stars removed - now using gameStore.stars (persistent currency)
   currentStreak: 0,
   adaptiveDifficulty: createAdaptiveDifficulty(),
+  levelProgress: null as LevelProgress | null,
   
   // New notification system
   notifications: [] as Notification[],
@@ -94,12 +101,17 @@ export const usePlaySessionStore = create<PlaySessionStore>((set, get) => ({
       score: 0, // Reset session score
       bgClass: 'bg-slate-50',
       notifications: [],
-      stars: 0,
-      hearts: 3,
+      // hearts removed - now using gameStore.hearts (persistent global resource)
+      // stars removed - now using gameStore.stars (persistent currency)
       showHint: false,
       currentStreak: 0,
       gameStartTime: Date.now(),
       adaptiveDifficulty: createAdaptiveDifficulty(),
+      levelProgress: {
+        correctAnswers: 0,
+        totalAnswers: 0,
+        levelStartedAt: Date.now(),
+      },
       confetti: false,
       enhancedConfetti: false,
       particleActive: false,
@@ -158,22 +170,37 @@ export const usePlaySessionStore = create<PlaySessionStore>((set, get) => ({
     set({ adaptiveDifficulty: updated });
   },
   
-  incrementStars: () => {
-    const currentStars = get().stars;
-    const newStars = currentStars + 1;
-    set({ stars: newStars });
-    return newStars;
-  },
-
-  resetStars: () => {
-    set({ stars: 0 });
+  recordLevelAnswer: (isCorrect: boolean) => {
+    const state = get();
+    if (!state.levelProgress) {
+      // Initialize if not set
+      set({
+        levelProgress: {
+          correctAnswers: isCorrect ? 1 : 0,
+          totalAnswers: 1,
+          levelStartedAt: Date.now(),
+        },
+      });
+      return;
+    }
+    
+    set({
+      levelProgress: {
+        ...state.levelProgress,
+        correctAnswers: state.levelProgress.correctAnswers + (isCorrect ? 1 : 0),
+        totalAnswers: state.levelProgress.totalAnswers + 1,
+      },
+    });
   },
   
-  decrementHearts: () => {
-    const currentHearts = get().hearts;
-    const newHearts = currentHearts - 1;
-    set({ hearts: newHearts });
-    return newHearts;
+  resetLevelProgress: () => {
+    set({
+      levelProgress: {
+        correctAnswers: 0,
+        totalAnswers: 0,
+        levelStartedAt: Date.now(),
+      },
+    });
   },
   
   setScore: (score: number) => {

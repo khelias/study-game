@@ -49,8 +49,20 @@ export const ACHIEVEMENTS: Record<string, Achievement> = {
     id: 'all_games',
     icon: '🎯',
     check: (stats: Stats) => {
-      const allTypes = ['word_builder', 'memory_math', 'sentence_logic', 'balance_scale', 
-                       'letter_match', 'pattern', 'robo_path', 'syllable_builder', 'time_match', 'math_snake'];
+      const allTypes = [
+        'word_builder', 
+        'syllable_builder', 
+        'pattern', 
+        'sentence_logic', 
+        'memory_math', 
+        'robo_path', 
+        'math_snake', 
+        'letter_match', 
+        'unit_conversion', 
+        'compare_sizes', 
+        'balance_scale', 
+        'time_match'
+      ];
       return allTypes.every(type => (stats.gamesByType[type] || 0) > 0);
     }
   },
@@ -88,6 +100,46 @@ export const ACHIEVEMENTS: Record<string, Achievement> = {
     id: 'snake_growth_max',
     icon: '👑',
     check: (stats: Stats) => (stats.maxSnakeLength || 0) >= 49 // 7x7 grid = 49 max
+  },
+  syllable_master: {
+    id: 'syllable_master',
+    icon: '📚',
+    check: (stats: Stats) => (stats.maxLevels.syllable_builder || 0) >= 5
+  },
+  sentence_detective: {
+    id: 'sentence_detective',
+    icon: '🔍',
+    check: (stats: Stats) => (stats.maxLevels.sentence_logic || 0) >= 5
+  },
+  robo_master: {
+    id: 'robo_master',
+    icon: '🤖',
+    check: (stats: Stats) => (stats.maxLevels.robo_path || 0) >= 5
+  },
+  letter_detective: {
+    id: 'letter_detective',
+    icon: '🔎',
+    check: (stats: Stats) => (stats.maxLevels.letter_match || 0) >= 5
+  },
+  unit_master: {
+    id: 'unit_master',
+    icon: '📏',
+    check: (stats: Stats) => (stats.maxLevels.unit_conversion || 0) >= 5
+  },
+  compare_master: {
+    id: 'compare_master',
+    icon: '🔢',
+    check: (stats: Stats) => (stats.maxLevels.compare_sizes || 0) >= 5
+  },
+  scale_master: {
+    id: 'scale_master',
+    icon: '⚖️',
+    check: (stats: Stats) => (stats.maxLevels.balance_scale || 0) >= 5
+  },
+  clock_master: {
+    id: 'clock_master',
+    icon: '🕐',
+    check: (stats: Stats) => (stats.maxLevels.time_match || 0) >= 5
   }
 };
 

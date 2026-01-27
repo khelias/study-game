@@ -19,7 +19,7 @@ describe('gameStore', () => {
         gamesByType: {},
         totalTimePlayed: 0,
         lastPlayed: null,
-        collectedStars: 0,
+        stars: 0,
         maxSnakeLength: 0
       },
       unlockedAchievements: [],
@@ -113,23 +113,118 @@ describe('gameStore', () => {
     });
   });
 
-  describe('Collected Stars', () => {
-    it('should add collected stars', () => {
-      const { addCollectedStars } = useGameStore.getState();
-      addCollectedStars(5);
-      
-      const state = useGameStore.getState();
-      expect(state.collectedStars).toBe(5);
-      expect(state.stats.collectedStars).toBe(5);
+  describe('Stars (Persistent Currency)', () => {
+    beforeEach(() => {
+      // Reset stars to 0 for each test
+      const { spendStars } = useGameStore.getState();
+      const currentStars = useGameStore.getState().stars;
+      if (currentStars > 0) {
+        spendStars(currentStars); // Reset to 0
+      }
     });
 
-    it('should accumulate collected stars', () => {
-      const { addCollectedStars } = useGameStore.getState();
-      addCollectedStars(3);
-      addCollectedStars(2);
+    it('should earn stars', () => {
+      const { earnStars } = useGameStore.getState();
+      earnStars(5);
       
       const state = useGameStore.getState();
-      expect(state.collectedStars).toBe(5);
+      expect(state.stars).toBe(5);
+      expect(state.stats.collectedStars).toBe(5); // Synced for achievement compatibility
+    });
+
+    it('should accumulate stars', () => {
+      const { earnStars } = useGameStore.getState();
+      earnStars(3);
+      earnStars(2);
+      
+      const state = useGameStore.getState();
+      expect(state.stars).toBe(5);
+    });
+
+    it('should spend stars', () => {
+      const { earnStars, spendStars } = useGameStore.getState();
+      earnStars(10);
+      
+      const success = spendStars(3);
+      expect(success).toBe(true);
+      
+      const state = useGameStore.getState();
+      expect(state.stars).toBe(7);
+    });
+
+    it('should not spend stars if insufficient', () => {
+      const { earnStars, spendStars } = useGameStore.getState();
+      earnStars(5);
+      
+      const success = spendStars(10); // Try to spend more than available
+      expect(success).toBe(false);
+      
+      const state = useGameStore.getState();
+      expect(state.stars).toBe(5); // Unchanged
+    });
+  });
+
+  describe('Hearts (Global Resource)', () => {
+    beforeEach(() => {
+      // Reset hearts to default for each test
+      const { addHeart, spendHeart } = useGameStore.getState();
+      const currentHearts = useGameStore.getState().hearts;
+      if (currentHearts > 3) {
+        // Spend excess hearts
+        for (let i = currentHearts; i > 3; i--) {
+          spendHeart();
+        }
+      } else if (currentHearts < 3) {
+        // Add missing hearts
+        addHeart(3 - currentHearts);
+      }
+    });
+
+    it('should start with default hearts', () => {
+      const state = useGameStore.getState();
+      expect(state.hearts).toBe(3);
+    });
+
+    it('should spend hearts', () => {
+      const { spendHeart } = useGameStore.getState();
+      
+      const success1 = spendHeart();
+      expect(success1).toBe(true);
+      expect(useGameStore.getState().hearts).toBe(2);
+      
+      const success2 = spendHeart();
+      expect(success2).toBe(true);
+      expect(useGameStore.getState().hearts).toBe(1);
+    });
+
+    it('should not spend hearts if none available', () => {
+      const { spendHeart } = useGameStore.getState();
+      
+      // Spend all hearts
+      spendHeart();
+      spendHeart();
+      spendHeart();
+      
+      const success = spendHeart();
+      expect(success).toBe(false);
+      expect(useGameStore.getState().hearts).toBe(0);
+    });
+
+    it('should add hearts up to max', () => {
+      const { addHeart, spendHeart } = useGameStore.getState();
+      
+      // Spend some hearts first
+      spendHeart();
+      spendHeart();
+      expect(useGameStore.getState().hearts).toBe(1);
+      
+      // Add hearts
+      addHeart(2);
+      expect(useGameStore.getState().hearts).toBe(3);
+      
+      // Try to add more than max (should cap at 5)
+      addHeart(5);
+      expect(useGameStore.getState().hearts).toBe(5);
     });
   });
 

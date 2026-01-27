@@ -46,27 +46,27 @@ export const CATEGORIES: Record<string, Category> = {
 
 export const GAME_CONFIG: Record<string, GameConfig> = {
   // 5+ games - simpler, visual (7 games - added letter_match)
-  word_builder:    { id: 'word_builder', title: 'WORD MASTER', theme: THEME.orange!, icon: 'Type', desc: 'Build a word from letters', allowedProfiles: ['starter', 'advanced'], difficulty: 'easy', category: 'language' },
-  syllable_builder:{ id: 'syllable_builder', title: 'SYLLABLE MASTER', theme: THEME.orange!, icon: 'Type', desc: 'Put syllables together into a word', allowedProfiles: ['starter'], difficulty: 'easy', category: 'language' },
+  word_builder:    { id: 'word_builder', title: 'WORD MASTER', theme: THEME.orange!, icon: 'FileText', desc: 'Build a word from letters', allowedProfiles: ['starter', 'advanced'], difficulty: 'easy', category: 'language' },
+  syllable_builder:{ id: 'syllable_builder', title: 'SYLLABLE MASTER', theme: THEME.orange!, icon: 'Layers', desc: 'Put syllables together into a word', allowedProfiles: ['starter'], difficulty: 'easy', category: 'language' },
   pattern:         { id: 'pattern', title: 'PATTERN TRAIN', theme: THEME.teal!, icon: 'TrainFront', desc: 'Continue the pattern', allowedProfiles: ['starter'], difficulty: 'easy', category: 'logic' },
   sentence_logic:  { id: 'sentence_logic', title: 'SENTENCE DETECTIVE', theme: THEME.green!, icon: 'BookOpen', desc: 'Where is the object?', allowedProfiles: ['starter'], difficulty: 'medium', category: 'language' },
-  memory_math:     { id: 'memory_math', title: 'MATH MEMORY', theme: THEME.purple!, icon: 'Brain', desc: 'Find the equation and answer', allowedProfiles: ['starter'], difficulty: 'medium', category: 'math' },
+  memory_math:     { id: 'memory_math', title: 'MATH MEMORY', theme: THEME.green!, icon: 'Brain', desc: 'Find the equation and answer', allowedProfiles: ['starter'], difficulty: 'medium', category: 'math' },
   robo_path:       { id: 'robo_path', title: 'ROBO PATH', theme: THEME.indigo!, icon: 'Bot', desc: 'Program the robot', allowedProfiles: ['starter'], difficulty: 'medium', category: 'logic' },
-  math_snake:      { id: 'math_snake', title: 'NUMBER SNAKE', theme: THEME.green!, icon: 'Gamepad2', desc: 'Move and collect apples', allowedProfiles: ['starter'], difficulty: 'medium', category: 'math' },
-  letter_match:    { id: 'letter_match', title: 'LETTER DETECTIVE', theme: THEME.pink!, icon: 'Type', desc: 'Find the correct letter', allowedProfiles: ['starter'], difficulty: 'easy', category: 'language' },
-  unit_conversion: { id: 'unit_conversion', title: 'UNITS', theme: THEME.teal!, icon: 'Ruler', desc: 'Convert units', allowedProfiles: ['starter'], difficulty: 'medium', category: 'math' },
-  compare_sizes:   { id: 'compare_sizes', title: 'SIZE COMPARE', theme: THEME.blue!, icon: 'Scale', desc: 'Compare object sizes', allowedProfiles: ['starter', 'advanced'], difficulty: 'easy', category: 'math' },
+  math_snake:      { id: 'math_snake', title: 'NUMBER SNAKE', theme: THEME.purple!, icon: 'Gamepad2', desc: 'Move and collect apples', allowedProfiles: ['starter'], difficulty: 'medium', category: 'math' },
+  letter_match:    { id: 'letter_match', title: 'LETTER DETECTIVE', theme: THEME.pink!, icon: 'Search', desc: 'Find the correct letter', allowedProfiles: ['starter'], difficulty: 'easy', category: 'language' },
+  unit_conversion: { id: 'unit_conversion', title: 'UNITS', theme: THEME.blue!, icon: 'Ruler', desc: 'Convert units', allowedProfiles: ['starter'], difficulty: 'medium', category: 'math' },
+  compare_sizes:   { id: 'compare_sizes', title: 'NUMBER COMPARE', theme: THEME.indigo!, icon: 'Hash', desc: 'Compare numbers', allowedProfiles: ['starter', 'advanced'], difficulty: 'easy', category: 'math' },
   
   // 8+ games - harder, logical (7 games - added letter_match_adv)
   balance_scale:   { id: 'balance_scale', title: 'SCALES', theme: THEME.blue!, icon: 'Scale', desc: 'Balance the scales', allowedProfiles: ['advanced'], difficulty: 'hard', category: 'math' },
   time_match:      { id: 'time_match', title: 'CLOCK GAME', theme: THEME.blue!, icon: 'Clock3', desc: 'Set the time', allowedProfiles: ['advanced'], difficulty: 'hard', category: 'math' },
-  memory_math_adv: { id: 'memory_math', title: 'MATH MEMORY', theme: THEME.purple!, icon: 'Brain', desc: 'Find the equation and answer', allowedProfiles: ['advanced'], difficulty: 'hard', category: 'math' },
+  memory_math_adv: { id: 'memory_math', title: 'MATH MEMORY', theme: THEME.green!, icon: 'Brain', desc: 'Find the equation and answer', allowedProfiles: ['advanced'], difficulty: 'hard', category: 'math' },
   robo_path_adv:   { id: 'robo_path', title: 'ROBO PATH', theme: THEME.indigo!, icon: 'Bot', desc: 'Program the robot', allowedProfiles: ['advanced'], difficulty: 'hard', category: 'logic' },
-  math_snake_adv:  { id: 'math_snake', title: 'NUMBER SNAKE', theme: THEME.green!, icon: 'Gamepad2', desc: 'Move and collect apples', allowedProfiles: ['advanced'], difficulty: 'hard', category: 'math' },
+  math_snake_adv:  { id: 'math_snake', title: 'NUMBER SNAKE', theme: THEME.purple!, icon: 'Gamepad2', desc: 'Move and collect apples', allowedProfiles: ['advanced'], difficulty: 'hard', category: 'math' },
   sentence_logic_adv: { id: 'sentence_logic', title: 'SENTENCE DETECTIVE', theme: THEME.green!, icon: 'BookOpen', desc: 'Where is the object?', allowedProfiles: ['advanced'], difficulty: 'hard', category: 'language' },
   pattern_adv:      { id: 'pattern', title: 'PATTERN TRAIN', theme: THEME.teal!, icon: 'TrainFront', desc: 'Continue the pattern', allowedProfiles: ['advanced'], difficulty: 'hard', category: 'logic' },
-  letter_match_adv: { id: 'letter_match', title: 'LETTER DETECTIVE', theme: THEME.pink!, icon: 'Type', desc: 'Find the correct letter', allowedProfiles: ['advanced'], difficulty: 'medium', category: 'language' },
-  unit_conversion_adv: { id: 'unit_conversion', title: 'UNITS', theme: THEME.teal!, icon: 'Ruler', desc: 'Convert units', allowedProfiles: ['advanced'], difficulty: 'hard', category: 'math' },
+  letter_match_adv: { id: 'letter_match', title: 'LETTER DETECTIVE', theme: THEME.pink!, icon: 'Search', desc: 'Find the correct letter', allowedProfiles: ['advanced'], difficulty: 'hard', category: 'language' },
+  unit_conversion_adv: { id: 'unit_conversion', title: 'UNITS', theme: THEME.blue!, icon: 'Ruler', desc: 'Convert units', allowedProfiles: ['advanced'], difficulty: 'hard', category: 'math' },
 };
 
 // Profiles are extensible with difficulty offset
@@ -85,7 +85,11 @@ export const ICONS: Record<string, string> = {
   Bot: 'Bot',
   Clock3: 'Clock3',
   Ruler: 'Ruler',
-  Gamepad2: 'Gamepad2'
+  Gamepad2: 'Gamepad2',
+  Hash: 'Hash',
+  FileText: 'FileText',
+  Layers: 'Layers',
+  Search: 'Search'
 };
 
 export const ALPHABET: string[] = 'ABCDEFGHIJKLMNOPRSŠZŽTUVÕÄÖÜ'.split('');

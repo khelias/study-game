@@ -179,10 +179,10 @@ export const MathSnakeView: React.FC<MathSnakeViewProps> = ({ problem, onAnswer,
                 className="flex items-center justify-center drop-shadow-lg animate-bounce-subtle"
                 style={{ 
                   fontSize: 'clamp(1rem, 4vw, 1.5rem)',
-                  filter: 'drop-shadow(0 0 8px rgba(251, 191, 36, 0.6)) drop-shadow(0 0 12px rgba(251, 191, 36, 0.4))',
+                  filter: 'drop-shadow(0 0 8px rgba(59, 130, 246, 0.6)) drop-shadow(0 0 12px rgba(59, 130, 246, 0.4))',
                 }}
               >
-                ⭐
+                🧮
               </div>
             ) : (
               <div 

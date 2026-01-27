@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { 
-  Trophy, Trash2, Volume2, VolumeX, BarChart3,
-  Type, Brain, Scale, BookOpen, GraduationCap, TrainFront, Bot, Clock3, Ruler, Gamepad2, ChevronDown, ChevronUp, Languages, Menu, X
+  Trash2, Volume2, VolumeX, BarChart3,
+  Type, Brain, Scale, BookOpen, GraduationCap, TrainFront, Bot, Clock3, Ruler, Gamepad2, ChevronDown, ChevronUp, Languages, Menu, X, Hash, FileText, Layers, Search
 } from 'lucide-react';
 import { useGameStore } from '../../stores/gameStore';
 import { usePlaySessionStore } from '../../stores/playSessionStore';
@@ -10,23 +10,29 @@ import { GameCard } from '../../components/GameCard';
 import { StatsModal } from '../modals/StatsModal';
 import { AchievementsModal } from '../modals/AchievementsModal';
 import { TutorialModal } from '../modals/TutorialModal';
+import { ShopModal } from '../modals/ShopModal';
 import { GAME_CONFIG, PROFILES, CATEGORIES } from '../../games/data';
 import { ACHIEVEMENTS } from '../../engine/achievements';
+
+const TOTAL_ACHIEVEMENTS = Object.keys(ACHIEVEMENTS).length;
 import { useTranslation } from '../../i18n/useTranslation';
 import { useProfileText } from '../../hooks/useProfileText';
-import { getLocale, setLocale, type SupportedLocale } from '../../i18n';
+import { type SupportedLocale } from '../../i18n';
 import { getAchievementCopy } from '../../utils/achievementCopy';
+import { ResourceBadge } from '../../components/shared/ResourceBadge';
+import { SmartGamesLogo } from '../../components/shared/SmartGamesLogo';
+import { SettingsMenu } from '../../components/SettingsMenu';
 import type { ProfileType } from '../../types/game';
 import type { AchievementUnlock } from '../../types/achievement';
 
-const ICON_MAP = { Type, Brain, Scale, BookOpen, GraduationCap, TrainFront, Bot, Clock3, Ruler, Gamepad2 };
+const ICON_MAP = { Type, Brain, Scale, BookOpen, GraduationCap, TrainFront, Bot, Clock3, Ruler, Gamepad2, Hash, FileText, Layers, Search };
 
 export const MenuScreen: React.FC = () => {
   const t = useTranslation();
   const { formatText } = useProfileText();
   const profile = useGameStore(state => state.profile);
-  const score = useGameStore(state => state.score);
-  const collectedStars = useGameStore(state => state.collectedStars);
+  const stars = useGameStore(state => state.stars); // Persistent currency
+  const hearts = useGameStore(state => state.hearts); // Persistent global resource
   const unlockedAchievements = useGameStore(state => state.unlockedAchievements);
   const soundEnabled = useGameStore(state => state.soundEnabled);
   const stats = useGameStore(state => state.stats);
@@ -45,38 +51,40 @@ export const MenuScreen: React.FC = () => {
   
   const [showStats, setShowStats] = useState(false);
   const [showAchievements, setShowAchievements] = useState(false);
+  const [showShop, setShowShop] = useState(false);
   const [showTutorial, setShowTutorial] = useState(!hasSeenTutorial);
   const [expandedCategories, setExpandedCategories] = useState<Record<string, boolean>>({});
   const [showFeatured, setShowFeatured] = useState(true);
-  const [showLanguageMenu, setShowLanguageMenu] = useState(false);
   const [showSettingsMenu, setShowSettingsMenu] = useState(false);
-  const currentLocale = getLocale();
-  const languageMenuRef = useRef<HTMLDivElement>(null);
   const settingsMenuRef = useRef<HTMLDivElement>(null);
   const settingsLabel = formatText(t.menu.settings);
 
-  // Close language menu when clicking outside
+  // Close settings menu when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (languageMenuRef.current && !languageMenuRef.current.contains(event.target as Node)) {
-        setShowLanguageMenu(false);
-      }
       if (settingsMenuRef.current && !settingsMenuRef.current.contains(event.target as Node)) {
         setShowSettingsMenu(false);
       }
     };
 
-    if (showLanguageMenu || showSettingsMenu) {
+    if (showSettingsMenu) {
       document.addEventListener('mousedown', handleClickOutside);
     }
 
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
-  }, [showLanguageMenu, showSettingsMenu]);
+  }, [showSettingsMenu]);
 
   const handleStartGame = (gameType: string) => {
     playClick();
+    
+    // Check if player has hearts before starting
+    if (hearts <= 0) {
+      // Open shop to buy hearts (with flag to show no hearts message)
+      setShowShop(true);
+      return;
+    }
     
     // Record game start and check for achievements
     recordGameStart(gameType);
@@ -97,135 +105,129 @@ export const MenuScreen: React.FC = () => {
     markTutorialSeen();
   };
 
-  const handleLanguageChange = (locale: SupportedLocale) => {
-    setLocale(locale);
-    setShowLanguageMenu(false);
-    playClick();
-  };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 font-sans p-4 flex flex-col items-center animate-in fade-in">
-      {/* Header */}
-      <div className="w-full max-w-md sm:max-w-lg lg:max-w-xl mb-3 sm:mb-5 bg-gradient-to-r from-white to-slate-50 p-2 sm:p-4 rounded-2xl sm:rounded-3xl shadow-lg border-2 border-purple-200 backdrop-blur-sm relative z-40">
-        <div className="flex items-center justify-between gap-2">
-          {/* Left side - Score and Stars */}
-          <div className="flex items-center gap-2 sm:gap-4 min-w-0">
-            <div className="flex items-center gap-1 sm:gap-2">
-              <div className="bg-yellow-100 p-1.5 sm:p-2 rounded-lg text-yellow-600 flex-shrink-0"><Trophy size={18} className="sm:w-6 sm:h-6" /></div>
-              <span className="font-black text-lg sm:text-2xl text-slate-700 whitespace-nowrap">{score}</span>
-            </div>
-            <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0">
-              <span className="text-xl sm:text-2xl">⭐</span>
-              <span className="font-black text-base sm:text-xl text-slate-700 whitespace-nowrap">{collectedStars}</span>
-              <span className="text-[10px] sm:text-xs text-slate-500 hidden sm:inline">{formatText(t.menuSpecific.starsLabel)}</span>
-            </div>
-          </div>
-          {/* Right side - Action buttons */}
-          <div className="flex items-center justify-end gap-1 sm:gap-2">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 font-sans flex flex-col items-center animate-in fade-in">
+      {/* Header - Matches GameHeader exactly, starts from top */}
+      <div className="w-full bg-white/90 backdrop-blur-md border-b-2 sm:border-b-4 border-slate-200 sticky top-0 z-40 shadow-sm">
+        <div className="w-full max-w-2xl mx-auto flex items-center justify-between gap-2 sm:gap-3 px-2 sm:px-4 p-2 sm:p-2.5 min-h-[56px] sm:min-h-[64px]">
+          {/* Left: App Icon + Stars */}
+          <div className="flex items-center gap-2 flex-shrink-0">
             <button
-              onClick={() => setShowAchievements(true)}
-              className="flex items-center gap-0.5 sm:gap-1 px-1.5 sm:px-2 py-1 bg-purple-50 hover:bg-purple-100 rounded-lg transition-colors cursor-pointer flex-shrink-0"
-              title={`${unlockedAchievements.length} ${t.menuSpecific.achievementsCount}`}
+              onClick={() => {
+                playClick();
+                // Reset menu to default state
+                setExpandedCategories({});
+                setShowFeatured(true);
+                setShowStats(false);
+                setShowAchievements(false);
+                setShowShop(false);
+                setShowSettingsMenu(false);
+                // Scroll to top
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              }}
+              className="bg-slate-100 hover:bg-slate-200 p-2 rounded-lg transition-colors active:scale-90 flex items-center justify-center"
+              aria-label="Smart Games"
+              title="Smart Games"
+            >
+              <SmartGamesLogo />
+            </button>
+            <ResourceBadge 
+              type="stars" 
+              value={stars} 
+              compact={true} 
+              onClick={() => {
+                setShowShop(true);
+                playClick();
+              }}
+            />
+          </div>
+
+          {/* Center: Achievements - Styled like progress bar */}
+          <div className="flex-1 flex flex-col items-center gap-1 min-w-0 mx-2 sm:mx-4">
+            <button
+              onClick={() => {
+                setShowAchievements(true);
+                playClick();
+              }}
+              className="w-full max-w-[120px] sm:max-w-[180px] flex flex-col items-center gap-1"
+              title={formatText(t.menuSpecific.showAchievements)}
               aria-label={t.menuSpecific.showAchievements}
             >
-              <span className="text-base sm:text-lg">🏅</span>
-              <span className="text-xs sm:text-sm font-bold text-purple-700">{unlockedAchievements.length}</span>
+              <div className="text-xs sm:text-sm font-bold text-slate-700 text-center">
+                🏅 {unlockedAchievements.length}
+              </div>
+              <div className="w-full h-2 sm:h-2.5 bg-slate-200 rounded-full overflow-hidden shadow-inner">
+                <div
+                  className="h-full bg-gradient-to-r from-purple-400 via-purple-500 to-pink-500 transition-all duration-500 ease-out rounded-full"
+                  style={{ width: `${Math.min(100, (unlockedAchievements.length / Math.max(1, TOTAL_ACHIEVEMENTS)) * 100)}%` }}
+                />
+              </div>
             </button>
-            {/* Settings menu */}
-            <div className="relative flex-shrink-0" ref={settingsMenuRef}>
+          </div>
+
+          {/* Right: Hearts + Menu */}
+          <div className="flex items-center gap-2 flex-shrink-0">
+            <ResourceBadge 
+              type="hearts" 
+              value={hearts} 
+              maxValue={5} 
+              compact={true}
+              onClick={() => {
+                setShowShop(true);
+                playClick();
+              }}
+            />
+            <div className="relative" ref={settingsMenuRef}>
               <button 
                 onClick={() => {
                   setShowSettingsMenu(!showSettingsMenu);
                   playClick();
                 }} 
                 aria-label={settingsLabel}
-                className="p-1.5 sm:p-3 bg-slate-50 text-slate-600 rounded-lg sm:rounded-xl hover:bg-slate-100 transition-colors"
+                className="bg-slate-100 hover:bg-slate-200 p-2 rounded-lg transition-colors active:scale-90 flex items-center justify-center"
                 title={settingsLabel}
               >
-                {showSettingsMenu ? <X size={14} className="sm:w-5 sm:h-5"/> : <Menu size={14} className="sm:w-5 sm:h-5"/>}
+                {showSettingsMenu ? <X size={18} className="w-4 h-4 sm:w-5 sm:h-5 text-slate-600"/> : <Menu size={18} className="w-4 h-4 sm:w-5 sm:h-5 text-slate-600"/>}
               </button>
               {showSettingsMenu && (
-                <div className="absolute right-0 top-full mt-2 bg-white rounded-xl shadow-lg border-2 border-slate-200 overflow-hidden z-50 min-w-[180px]">
-                  <button
-                    onClick={() => {
-                      setShowStats(true);
-                      setShowSettingsMenu(false);
-                    }}
-                    className="w-full px-4 py-2 text-left hover:bg-slate-50 transition-colors flex items-center gap-2 text-slate-700"
-                  >
-                    <BarChart3 size={16} className="text-blue-600"/>
-                    <span>{formatText(t.menu.stats)}</span>
-                  </button>
-                  <div className="border-t border-slate-200">
-                    <button
-                      onClick={() => {
-                        setShowLanguageMenu(!showLanguageMenu);
-                      }}
-                      className="w-full px-4 py-2 text-left hover:bg-slate-50 transition-colors flex items-center justify-between text-slate-700"
-                    >
-                      <div className="flex items-center gap-2">
-                        <Languages size={16} className="text-slate-600"/>
-                        <span>{formatText(t.menuSpecific.language)}</span>
-                      </div>
-                      <span className="text-sm">{currentLocale === 'et' ? '🇪🇪' : '🇬🇧'}</span>
-                    </button>
-                    {showLanguageMenu && (
-                      <div className="border-t border-slate-200 bg-slate-50">
-                        <button
-                          onClick={() => {
-                            handleLanguageChange('et');
-                            setShowLanguageMenu(false);
-                          }}
-                          className={`w-full px-4 py-2 text-left hover:bg-slate-100 transition-colors ${
-                            currentLocale === 'et' ? 'bg-purple-50 text-purple-700 font-bold' : 'text-slate-700'
-                          }`}
-                        >
-                          🇪🇪 Eesti
-                        </button>
-                        <button
-                          onClick={() => {
-                            handleLanguageChange('en');
-                            setShowLanguageMenu(false);
-                          }}
-                          className={`w-full px-4 py-2 text-left hover:bg-slate-100 transition-colors ${
-                            currentLocale === 'en' ? 'bg-purple-50 text-purple-700 font-bold' : 'text-slate-700'
-                          }`}
-                        >
-                          🇬🇧 English
-                        </button>
-                      </div>
-                    )}
-                  </div>
-                  <div className="border-t border-slate-200">
-                    <button
-                      onClick={() => {
-                        toggleSound();
-                        playClick();
-                      }}
-                      className="w-full px-4 py-2 text-left hover:bg-slate-50 transition-colors flex items-center gap-2 text-slate-700"
-                    >
-                      {soundEnabled ? <Volume2 size={16} className="text-slate-600"/> : <VolumeX size={16} className="text-red-500"/>}
-                      <span>{formatText(soundEnabled ? t.menuSpecific.toggleSoundOff : t.menuSpecific.toggleSoundOn)}</span>
-                    </button>
-                  </div>
-                  <div className="border-t border-slate-200">
-                    <button
-                      onClick={() => {
-                        resetGame();
-                        setShowSettingsMenu(false);
-                      }}
-                      className="w-full px-4 py-2 text-left hover:bg-red-50 transition-colors flex items-center gap-2 text-red-600"
-                    >
-                      <Trash2 size={16}/>
-                      <span>{formatText(t.menuSpecific.deleteProgress)}</span>
-                    </button>
-                  </div>
-                </div>
+                <SettingsMenu
+                  soundEnabled={soundEnabled}
+                  onToggleSound={() => {
+                    toggleSound();
+                    playClick();
+                  }}
+                  onReturnToMenu={() => {
+                    // Not used in MenuScreen
+                  }}
+                  onClose={() => setShowSettingsMenu(false)}
+                  onShowAchievements={() => {
+                    setShowAchievements(true);
+                    setShowSettingsMenu(false);
+                  }}
+                  onShowStats={() => {
+                    setShowStats(true);
+                    setShowSettingsMenu(false);
+                  }}
+                  onShowShop={() => {
+                    setShowShop(true);
+                    setShowSettingsMenu(false);
+                  }}
+                  unlockedAchievements={unlockedAchievements}
+                  isGameScreen={false}
+                  onDeleteProgress={() => {
+                    resetGame();
+                    setShowSettingsMenu(false);
+                  }}
+                />
               )}
             </div>
           </div>
         </div>
       </div>
+      
+      {/* Content area with padding */}
+      <div className="w-full max-w-2xl mx-auto px-4 pt-4 pb-6 sm:pb-10 flex flex-col items-center">
       
       {/* Modals */}
       {showStats && (
@@ -255,6 +257,14 @@ export const MenuScreen: React.FC = () => {
         />
       )}
       
+      {showShop && (
+        <ShopModal
+          key="shop-modal"
+          onClose={() => setShowShop(false)}
+          openedFromNoHearts={hearts <= 0}
+        />
+      )}
+      
       {showTutorial && (
         <TutorialModal 
           key="tutorial-modal"
@@ -262,89 +272,86 @@ export const MenuScreen: React.FC = () => {
         />
       )}
       
-      {/* Title */}
-      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between w-full max-w-md sm:max-w-lg lg:max-w-xl mb-3 sm:mb-5 gap-2 sm:gap-4">
-        <div className="flex-1">
-          <div className="flex items-center gap-2 sm:gap-3 mb-1 sm:mb-2">
-            <div className="text-3xl sm:text-5xl animate-bounce">🚀</div>
-            <h1 className={`text-2xl sm:text-4xl font-black bg-gradient-to-r from-purple-600 via-pink-600 to-orange-600 bg-clip-text text-transparent ${profile === 'starter' ? 'tracking-tight' : 'tracking-normal'}`}>
+      {/* Title Section - Cleaner design */}
+      <div className="w-full mb-4 sm:mb-5">
+        <div className="flex items-center justify-between mb-3 sm:mb-4">
+          <div className="flex-1">
+            <h1 className={`text-2xl sm:text-3xl font-black bg-gradient-to-r from-purple-600 via-pink-600 to-orange-600 bg-clip-text text-transparent ${profile === 'starter' ? 'tracking-tight' : 'tracking-normal'}`}>
               {formatText(t.menu.title)}
             </h1>
+            <p className={`text-xs sm:text-sm text-slate-600 mt-1 ${profile === 'starter' ? 'uppercase font-semibold' : 'font-medium'}`}>
+              {formatText(profile === 'starter' 
+                ? t.menuSpecific.starterDescription
+                : t.menuSpecific.advancedDescription)}
+            </p>
           </div>
-          <p className={`text-sm sm:text-base font-bold text-slate-700 mt-1 sm:mt-2 leading-relaxed ${profile === 'starter' ? 'uppercase' : ''}`}>
-            {formatText(profile === 'starter' 
-              ? t.menuSpecific.starterDescription
-              : t.menuSpecific.advancedDescription)}
-          </p>
+          <button
+            onClick={() => setShowTutorial(true)}
+            className="flex-shrink-0 bg-blue-50 hover:bg-blue-100 border border-blue-200 px-3 sm:px-4 py-1.5 sm:py-2 text-blue-700 rounded-lg font-semibold text-xs sm:text-sm transition-colors"
+            aria-label={formatText(t.menuSpecific.showTutorial)}
+          >
+            ❓ {formatText(t.menuSpecific.tutorial)}
+          </button>
         </div>
-        <button
-          onClick={() => setShowTutorial(true)}
-          className="w-full sm:w-auto px-2 sm:px-4 py-1.5 sm:py-2 bg-blue-100 hover:bg-blue-200 text-blue-700 rounded-lg sm:rounded-xl font-bold text-xs sm:text-sm transition-colors"
-          aria-label={formatText(t.menuSpecific.showTutorial)}
-        >
-          ❓ {formatText(t.menuSpecific.tutorial)}
-        </button>
       </div>
       
-      {/* Profile selector */}
-      <div className="flex gap-2 sm:gap-3 mb-4 sm:mb-6 w-full max-w-md sm:max-w-lg lg:max-w-xl">
-        {Object.values(PROFILES).map(p => (
-          <button
-            key={p.id}
-            onClick={() => {
-              playClick();
-              setProfile(p.id);
-            }}
-            className={`
-              flex-1 py-2.5 sm:py-4 rounded-xl sm:rounded-2xl border-3 sm:border-4 font-black text-xs sm:text-sm tracking-wide 
-              transition-all duration-300
-              ${profile === p.id 
-                ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white border-purple-400 shadow-xl scale-[1.02] sm:scale-[1.03] transform -translate-y-0.5 sm:-translate-y-1' 
-                : 'bg-white text-slate-700 border-slate-300 hover:border-purple-300 hover:shadow-lg hover:scale-[1.01]'}
-            `}
-          >
-            <div className="flex items-center justify-center gap-1 sm:gap-2">
-              <span className="text-xl sm:text-2xl">{p.emoji || '👤'}</span>
-              <div className="text-left">
-                <div className="text-sm sm:text-base">{p.label}</div>
-                <div className={`text-[10px] sm:text-xs ${profile === p.id ? 'text-purple-100' : 'text-slate-500'}`}>
-                  {formatText(t.profiles[p.id as keyof typeof t.profiles]?.desc || p.desc)}
+      {/* Profile selector - Refined */}
+      <div className="w-full mb-4 sm:mb-5">
+        <div className="flex gap-2 sm:gap-3">
+          {Object.values(PROFILES).map(p => (
+            <button
+              key={p.id}
+              onClick={() => {
+                playClick();
+                setProfile(p.id);
+              }}
+              className={`
+                flex-1 py-2.5 sm:py-3 rounded-xl border-2 font-semibold text-xs sm:text-sm 
+                transition-all duration-200
+                ${profile === p.id 
+                  ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white border-purple-400 shadow-md' 
+                  : 'bg-white text-slate-700 border-slate-200 hover:border-purple-300 hover:shadow-sm'}
+              `}
+            >
+              <div className="flex items-center justify-center gap-1.5 sm:gap-2">
+                <span className="text-lg sm:text-xl">{p.emoji || '👤'}</span>
+                <div className="text-left">
+                  <div className="font-bold">{p.label}</div>
+                  <div className={`text-[10px] sm:text-xs ${profile === p.id ? 'text-purple-50' : 'text-slate-500'}`}>
+                    {formatText(t.profiles[p.id as keyof typeof t.profiles]?.desc || p.desc)}
+                  </div>
                 </div>
               </div>
-            </div>
-          </button>
-        ))}
+            </button>
+          ))}
+        </div>
       </div>
       
-      {/* Featured Games Section */}
-      <div className="w-full max-w-md sm:max-w-lg lg:max-w-xl mb-4 sm:mb-6">
-        <div className="mb-3 sm:mb-4">
-          <button
-            onClick={() => {
-              playClick();
-              setShowFeatured(!showFeatured);
-            }}
-            className="w-full flex items-center justify-between bg-gradient-to-r from-emerald-100 to-green-100 backdrop-blur-sm px-4 sm:px-5 py-3 sm:py-4 rounded-2xl border-2 border-emerald-300 shadow-md hover:shadow-lg hover:border-emerald-400 transition-all active:scale-[0.98] cursor-pointer"
-          >
-            <div className="flex items-center gap-2 sm:gap-3">
-              <span className="text-2xl sm:text-3xl">⭐</span>
-              <span className="font-black text-base sm:text-lg text-emerald-800">
-                {formatText(t.menu.featured)}
-              </span>
-            </div>
-            <div className="flex items-center gap-2 sm:gap-3">
-              {showFeatured ? (
-                <ChevronUp className="w-5 h-5 sm:w-6 sm:h-6 text-emerald-700" />
-              ) : (
-                <ChevronDown className="w-5 h-5 sm:w-6 sm:h-6 text-emerald-700" />
-              )}
-            </div>
-          </button>
-        </div>
+      {/* Featured Games Section - Refined */}
+      <div className="w-full mb-4 sm:mb-5">
+        <button
+          onClick={() => {
+            playClick();
+            setShowFeatured(!showFeatured);
+          }}
+          className="w-full flex items-center justify-between bg-white border-2 border-slate-200 hover:border-emerald-300 px-4 py-3 rounded-xl shadow-sm hover:shadow-md transition-all"
+        >
+          <div className="flex items-center gap-2 sm:gap-3">
+            <span className="text-xl sm:text-2xl">⭐</span>
+            <span className="font-bold text-sm sm:text-base text-slate-700">
+              {formatText(t.menu.featured)}
+            </span>
+          </div>
+          {showFeatured ? (
+            <ChevronUp className="w-4 h-4 sm:w-5 sm:h-5 text-slate-600" />
+          ) : (
+            <ChevronDown className="w-4 h-4 sm:w-5 sm:h-5 text-slate-600" />
+          )}
+        </button>
         
         {/* Featured games grid */}
         {showFeatured && (
-          <div className="grid grid-cols-1 gap-3 sm:gap-5 animate-fadeIn">
+          <div className="grid grid-cols-1 gap-3 sm:gap-4 mt-3 animate-fadeIn">
             {(() => {
               const featuredGameKeys = profile === 'starter' ? ['math_snake'] : ['math_snake_adv'];
               return featuredGameKeys.map((key) => {
@@ -370,8 +377,8 @@ export const MenuScreen: React.FC = () => {
         )}
       </div>
       
-      {/* Games by category */}
-      <div className="w-full max-w-md sm:max-w-lg lg:max-w-xl pb-6 sm:pb-10">
+      {/* Games by category - Refined */}
+      <div className="w-full pb-6 sm:pb-10">
         {Object.values(CATEGORIES).map(category => {
           // Featured games are shown separately, exclude them from categories
           const featuredGameIds = ['math_snake', 'math_snake_adv'];
@@ -387,35 +394,33 @@ export const MenuScreen: React.FC = () => {
           const isExpanded = expandedCategories[category.id];
           
           return (
-            <div key={category.id} className="mb-4 sm:mb-6">
+            <div key={category.id} className="mb-3 sm:mb-4">
               {/* Category header */}
-              <div className="mb-3 sm:mb-4">
-                <button
-                  onClick={() => toggleCategory(category.id)}
-                  className="w-full flex items-center justify-between bg-white/90 backdrop-blur-sm px-4 sm:px-5 py-3 sm:py-4 rounded-2xl border-2 border-purple-200 shadow-sm hover:shadow-md hover:border-purple-300 transition-all active:scale-[0.98] cursor-pointer"
-                >
-                  <div className="flex items-center gap-2 sm:gap-3">
-                    <span className="text-2xl sm:text-3xl">{category.emoji}</span>
-                    <span className="font-black text-base sm:text-lg text-slate-700">
-                      {formatText(t.categories[category.id as keyof typeof t.categories]?.name || category.name)}
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-2 sm:gap-3">
-                    <span className="text-sm sm:text-base text-slate-500 font-bold bg-slate-100 px-2 sm:px-3 py-1 rounded-full">
-                      {categoryGames.length}
-                    </span>
-                    {isExpanded ? (
-                      <ChevronUp className="w-5 h-5 sm:w-6 sm:h-6 text-slate-600" />
-                    ) : (
-                      <ChevronDown className="w-5 h-5 sm:w-6 sm:h-6 text-slate-600" />
-                    )}
-                  </div>
-                </button>
-              </div>
+              <button
+                onClick={() => toggleCategory(category.id)}
+                className="w-full flex items-center justify-between bg-white border-2 border-slate-200 hover:border-purple-300 px-4 py-3 rounded-xl shadow-sm hover:shadow-md transition-all"
+              >
+                <div className="flex items-center gap-2 sm:gap-3">
+                  <span className="text-xl sm:text-2xl">{category.emoji}</span>
+                  <span className="font-bold text-sm sm:text-base text-slate-700">
+                    {formatText(t.categories[category.id as keyof typeof t.categories]?.name || category.name)}
+                  </span>
+                </div>
+                <div className="flex items-center gap-2 sm:gap-3">
+                  <span className="text-xs sm:text-sm text-slate-500 font-semibold bg-slate-100 px-2 py-1 rounded-full">
+                    {categoryGames.length}
+                  </span>
+                  {isExpanded ? (
+                    <ChevronUp className="w-4 h-4 sm:w-5 sm:h-5 text-slate-600" />
+                  ) : (
+                    <ChevronDown className="w-4 h-4 sm:w-5 sm:h-5 text-slate-600" />
+                  )}
+                </div>
+              </button>
               
               {/* Games grid */}
               {isExpanded && (
-                <div className="grid grid-cols-1 gap-3 sm:gap-5 animate-fadeIn">
+                <div className="grid grid-cols-1 gap-3 sm:gap-4 mt-3 animate-fadeIn">
                   {categoryGames.map(([key, conf], idx) => {
                     const Icon = ICON_MAP[conf.icon as keyof typeof ICON_MAP] || Type;
                     const gameStats = stats.gamesByType?.[key] || 0;
@@ -437,6 +442,7 @@ export const MenuScreen: React.FC = () => {
             </div>
           );
         })}
+      </div>
       </div>
     </div>
   );

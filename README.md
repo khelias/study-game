@@ -48,8 +48,12 @@ The game uses adaptive difficulty that automatically adjusts task complexity bas
 ### 🌟 Key Enhancements
 
 - **Adaptive difficulty** - The game tracks player performance and automatically adjusts difficulty
-- **Progression system** - Each correct answer gives a star, 5 stars level up
-- **Achievement system** - Medals and achievements encourage continued play
+- **Progression system** - Automatic level progression based on performance. Earn stars when you level up, use stars to buy hearts
+- **Level system** - Levels automatically increase as you demonstrate mastery (performance-based, not purchased)
+- **Star currency** - Earn stars when completing levels. Stars scale with game difficulty and level. Use stars to buy hearts
+- **Hearts system** - Global hearts that persist across games. Wrong answers cost hearts. Buy more hearts with stars
+- **Achievement system** - Medals and achievements encourage continued play (bragging rights)
+- **Points system** - Cosmetic points for fun and achievements
 - **Statistics** - Detailed tracking of games played, accuracy, and progress
 - **Educational tips** - Instructions and hints for playing games
 - **Enhanced feedback** - Diverse encouragement and positive feedback
@@ -232,13 +236,48 @@ The game uses:
 
 ## 📊 Statistics and Progression
 
+### Progression System
+
+**Levels:**
+- Automatically earned through gameplay (performance-based)
+- Level up when you demonstrate mastery (correct answers + 80%+ accuracy)
+- Requirements scale with level (5→7→10→12→15+ correct answers)
+- Controls game difficulty/complexity
+
+**Stars (Currency):**
+- Earned when completing levels (not per answer)
+- Rewards scale with game difficulty (easy: 1, medium: 2, hard: 3 base stars)
+- Rewards scale with level (1.0x to 2.5x multiplier)
+- Perfect level completion gives bonus stars
+- Use stars to buy hearts in the shop
+
+**Hearts (Lives):**
+- Global resource that persists across games
+- Wrong answers cost 1 heart
+- Game ends when hearts reach 0
+- Buy more hearts with stars (10 stars = 1 heart)
+- Maximum 5 hearts
+
+**Points:**
+- Cosmetic points earned per correct answer
+- Used for achievements and bragging rights
+- No gameplay impact
+
+**Achievements:**
+- Unlocked through various accomplishments
+- Bragging rights and progress tracking
+
+### Statistics Tracking
+
 The game tracks:
 - Number of games played
 - Correct/wrong answers
 - Best streak
-- Highest levels
+- Highest levels per game
 - Play time
-- Collected stars
+- Total stars earned
+- Hearts available
+- Points (cosmetic)
 - Unlocked achievements
 
 All data is saved to LocalStorage and persists across browser sessions.
