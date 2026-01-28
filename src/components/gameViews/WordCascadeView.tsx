@@ -46,6 +46,10 @@ export const WordCascadeView: React.FC<WordCascadeViewProps> = ({ problem, onAns
   const nextIdx = progress.length;
   const gameTitle = t.games['word_cascade' as keyof typeof t.games]?.title ?? 'Word Cascade';
   const MAX_STRIKES = 3;
+  
+  // Track the current problem to detect changes (for production builds)
+  const problemKeyRef = useRef<string>(`${problem.uid}-${problem.target}`);
+  const previousProblemKeyRef = useRef<string>(`${problem.uid}-${problem.target}`);
 
   const laneCount = clamp(problem.columns ?? 4, 3, 6);
   // Difficulty tuning: start forgiving, speed up with progress, slow down when close to failing.
@@ -94,6 +98,18 @@ export const WordCascadeView: React.FC<WordCascadeViewProps> = ({ problem, onAns
   // Reset on new problem - use both uid and target to ensure it triggers in production
   // React's cleanup functions run before effects, so intervals will be cleared first
   useEffect(() => {
+    const currentKey = `${problem.uid}-${problem.target}`;
+    
+    // Only reset if the problem actually changed (prevents unnecessary resets)
+    // Compare with previous key, not current (which might have been updated by another effect)
+    if (previousProblemKeyRef.current === currentKey) {
+      return;
+    }
+    
+    // Update both refs - previous for next comparison, current for interval checks
+    previousProblemKeyRef.current = currentKey;
+    problemKeyRef.current = currentKey;
+    
     // Clear all intervals and timers first (defensive - cleanup should handle this, but ensure it)
     if (tickRef.current) {
       window.clearInterval(tickRef.current);
@@ -137,11 +153,20 @@ export const WordCascadeView: React.FC<WordCascadeViewProps> = ({ problem, onAns
   // Spawn letters, biased toward the next needed character
   useEffect(() => {
     if (spawnRef.current) window.clearInterval(spawnRef.current);
+    
+    // Capture current problem values for this effect's closure
+    const currentProblemKey = problemKeyRef.current;
+    const currentTarget = problem.target;
+    const currentUid = problem.uid;
+    
     spawnRef.current = window.setInterval(() => {
-      if (endedRef.current) return;
+      // Check if we're still on the same problem (endedRef might be stale in closure)
+      if (endedRef.current || problemKeyRef.current !== currentProblemKey) return;
+      
       setLetters(prev => {
         const pickupsOnScreen = prev.filter(p => p.kind !== 'letter').length;
-        const need = problem.target[nextIdx] ?? '';
+        // Use captured target from closure
+        const need = currentTarget[nextIdx] ?? '';
         // Case-insensitive check for needed letter on screen
         const hasNeededOnScreen = !!need && prev.some(l => l.kind === 'letter' && l.char.toLowerCase() === need.toLowerCase());
 
@@ -167,10 +192,10 @@ export const WordCascadeView: React.FC<WordCascadeViewProps> = ({ problem, onAns
           !!need &&
           (hasNeededOnScreen ? Math.random() < 0.55 : Math.random() < 0.85);
 
-        const fallbackChar = problem.target[Math.floor(Math.random() * problem.target.length)] ?? need;
+        const fallbackChar = currentTarget[Math.floor(Math.random() * currentTarget.length)] ?? need;
         const char = spawnNeeded ? need : fallbackChar;
         const lane = Math.floor(Math.random() * laneCount);
-        const id = `wc-${problem.uid}-${uidRef.current++}`;
+        const id = `wc-${currentUid}-${uidRef.current++}`;
 
         return [{ id, kind: 'letter', char, lane, y: -24 }, ...prev].slice(0, 18);
       });
@@ -184,8 +209,14 @@ export const WordCascadeView: React.FC<WordCascadeViewProps> = ({ problem, onAns
   // Animate falling letters
   useEffect(() => {
     if (tickRef.current) window.clearInterval(tickRef.current);
+    
+    // Capture current problem key for this effect's closure
+    const currentProblemKey = problemKeyRef.current;
+    
     tickRef.current = window.setInterval(() => {
-      if (endedRef.current) return;
+      // Check if we're still on the same problem (endedRef might be stale in closure)
+      if (endedRef.current || problemKeyRef.current !== currentProblemKey) return;
+      
       setLetters(prev => {
         const next = prev
           .map(l => ({ ...l, y: l.y + 6 * speed }))
@@ -197,7 +228,7 @@ export const WordCascadeView: React.FC<WordCascadeViewProps> = ({ problem, onAns
       if (tickRef.current) window.clearInterval(tickRef.current);
       tickRef.current = null;
     };
-  }, [speed]);
+  }, [speed, problem.uid, problem.target]);
 
   // If letters pile up too much near bottom, treat as a mistake (heart loss via onAnswer(false))
   useEffect(() => {
