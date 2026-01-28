@@ -93,29 +93,6 @@ export const WordCascadeView: React.FC<WordCascadeViewProps> = ({ problem, onAns
 
   // Reset on new problem
   useEffect(() => {
-    // Clear all intervals and timers first
-    if (tickRef.current) {
-      window.clearInterval(tickRef.current);
-      tickRef.current = null;
-    }
-    if (spawnRef.current) {
-      window.clearInterval(spawnRef.current);
-      spawnRef.current = null;
-    }
-    if (shakeTimerRef.current) {
-      window.clearTimeout(shakeTimerRef.current);
-      shakeTimerRef.current = null;
-    }
-    if (wrongFlashTimerRef.current) {
-      window.clearTimeout(wrongFlashTimerRef.current);
-      wrongFlashTimerRef.current = null;
-    }
-    if (bottomPenaltyTimerRef.current) {
-      window.clearTimeout(bottomPenaltyTimerRef.current);
-      bottomPenaltyTimerRef.current = null;
-    }
-    
-    // Reset all state
     /* eslint-disable react-hooks/set-state-in-effect */
     setProgress('');
     setStatus('idle');
@@ -130,6 +107,18 @@ export const WordCascadeView: React.FC<WordCascadeViewProps> = ({ problem, onAns
     setShakeBarrier(false);
     setShowPickupHint(false);
     hasShownPickupHintRef.current = false;
+    if (shakeTimerRef.current) {
+      window.clearTimeout(shakeTimerRef.current);
+      shakeTimerRef.current = null;
+    }
+    if (wrongFlashTimerRef.current) {
+      window.clearTimeout(wrongFlashTimerRef.current);
+      wrongFlashTimerRef.current = null;
+    }
+    if (bottomPenaltyTimerRef.current) {
+      window.clearTimeout(bottomPenaltyTimerRef.current);
+      bottomPenaltyTimerRef.current = null;
+    }
   }, [problem.uid]);
 
   // Spawn letters, biased toward the next needed character
@@ -320,7 +309,6 @@ export const WordCascadeView: React.FC<WordCascadeViewProps> = ({ problem, onAns
       // Case-insensitive comparison for word completion
       if (nextProgress.toLowerCase() === problem.target.toLowerCase()) {
         setStatus('correct');
-        endedRef.current = true; // Stop spawning and animation when word is completed
         playSound('correct', soundEnabled);
         window.setTimeout(() => onAnswer(true), 150);
       }
