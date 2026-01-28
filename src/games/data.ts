@@ -147,7 +147,7 @@ const BASE_WORDS: WordObject[] = [
   { w: 'KORK', e: '🍾' }, // cork/bottle cap
   { w: 'KÄRU', e: '🛒' }, // cart
   { w: 'KÜÜNAL', e: '🕯️' }, // candle
-  { w: 'KÄBI', e: '🌰' }, // pine cone
+  { w: 'TÕRU', e: '🌰' }, // pine cone
 
 
   // transport
