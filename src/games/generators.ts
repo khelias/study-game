@@ -631,19 +631,41 @@ export const Generators: Record<string, GeneratorFunction> = {
   robo_path: (level: number, rng: RngFunction = Math.random, profile: ProfileType = 'starter'): RoboPathProblem => {
     const meta = profileMeta(profile);
     const harder = meta.difficultyOffset > 0;
-    // Smoother grid size progression
-    const baseGrid = harder ? 4 : 3;
-    const gridGrowth = level >= 4 ? 1 : 0; // Level 4+ = +1 grid size
-    const gridSize = Math.min(baseGrid + gridGrowth, 5);
     
-    // Improved obstacle count progression - advanced profile always has at least 1 obstacle
-    const baseObstacles = level === 1 ? 0 : Math.floor((level - 1) / 2); // Iga 2 level = +1 takistus
-    const minObstacles = harder ? Math.max(1, Math.floor(level / 2)) : 0; // Advanced: at least 1, level 2+ = at least 2, etc.
-    const obstacleCount = Math.min(Math.max(baseObstacles, minObstacles) + (harder ? 1 : 0), 5);
+    // Improved grid size progression - scales better with levels
+    // Starter: 3x3 (1-2), 4x4 (3-5), 5x5 (6-10), 6x6 (11-15), 7x7 (16+)
+    // Advanced: 4x4 (1-2), 5x5 (3-5), 6x6 (6-10), 7x7 (11-15), 8x8 (16+)
+    const baseGrid = harder ? 4 : 3;
+    let gridGrowth = 0;
+    if (level >= 16) gridGrowth = harder ? 4 : 4; // 8x8 advanced, 7x7 starter
+    else if (level >= 11) gridGrowth = harder ? 3 : 3; // 7x7 both
+    else if (level >= 6) gridGrowth = harder ? 2 : 2; // 6x6 both
+    else if (level >= 3) gridGrowth = harder ? 1 : 1; // 5x5 both
+    const gridSize = Math.min(baseGrid + gridGrowth, harder ? 8 : 7);
+    
+    // Improved obstacle count progression - more obstacles, better scaling
+    // Level 1: 0-1, Level 2-3: 1-2, Level 4-5: 2-3, Level 6-8: 3-4, Level 9-12: 4-5, Level 13+: 5-7
+    const baseObstacles = level === 1 
+      ? (harder ? 1 : 0)
+      : level <= 3
+      ? 1 + Math.floor(level / 2)
+      : level <= 5
+      ? 2 + Math.floor((level - 3) / 2)
+      : level <= 8
+      ? 3 + Math.floor((level - 5) / 2)
+      : level <= 12
+      ? 4 + Math.floor((level - 8) / 2)
+      : 5 + Math.floor((level - 12) / 3);
+    
+    const obstacleVariance = level <= 3 ? 1 : level <= 8 ? 1 : 2;
+    const obstacleCount = Math.min(
+      baseObstacles + (harder ? 1 : 0) + Math.floor(rng() * obstacleVariance),
+      Math.max(5, Math.floor(gridSize * gridSize * 0.25)) // Max 25% of grid cells
+    );
     
     const start = { x: 0, y: 0, dir: 'N' }; 
     const maxCells = gridSize * gridSize;
-    const maxObstacles = Math.max(0, maxCells - 3);
+    const maxObstacles = Math.max(0, maxCells - 4); // Reserve space for start, goal, and path
     const cappedObstacleCount = Math.min(obstacleCount, maxObstacles);
 
     const directions: Array<[number, number]> = [[0, -1], [0, 1], [-1, 0], [1, 0]]; // UP, DOWN, LEFT, RIGHT
@@ -708,37 +730,112 @@ export const Generators: Record<string, GeneratorFunction> = {
       });
     };
 
+    // Calculate minimum distance based on grid size (at least 50% of diagonal)
+    const minDistance = Math.max(2, Math.ceil(Math.sqrt(gridSize * gridSize * 2) * 0.5));
+    const maxDistance = Math.floor(Math.sqrt(gridSize * gridSize * 2) * 0.9); // Max 90% of diagonal
+
     let end = { x: 0, y: 0 }; 
     let obstacles: Array<{x: number; y: number}> = [];
     let optimalMoves = 0;
     let path: Array<[number, number]> = [];
     let safety = 0;
 
-    while (safety < 80) {
+    while (safety < 100) {
       safety++;
+      
+      // Place goal with minimum distance requirement
       let attempts = 0;
       do { 
         end = { x: Math.floor(rng() * gridSize), y: Math.floor(rng() * gridSize) }; 
         attempts++; 
-      } while ((Math.abs(end.x - start.x) + Math.abs(end.y - start.y) < 2) && attempts < 40);
+      } while (
+        attempts < 60 && (
+          Math.abs(end.x - start.x) + Math.abs(end.y - start.y) < minDistance ||
+          Math.abs(end.x - start.x) + Math.abs(end.y - start.y) > maxDistance
+        )
+      );
       
+      // Strategic obstacle placement
       obstacles = [];
-      let obstacleSafety = 0; 
-      while (obstacles.length < cappedObstacleCount && obstacleSafety < 120) { 
+      const obstacleSet = new Set<string>();
+      
+      // First, place obstacles strategically along potential paths
+      // 1. Place some obstacles near the goal (makes it harder to reach)
+      const goalObstacleCount = Math.floor(cappedObstacleCount * 0.4); // 40% near goal
+      let goalObstacleAttempts = 0;
+      while (obstacles.length < goalObstacleCount && goalObstacleAttempts < 50) {
+        goalObstacleAttempts++;
+        const angle = rng() * Math.PI * 2;
+        const distance = 1 + rng() * 2; // 1-3 cells from goal
+        const obsX = Math.round(end.x + Math.cos(angle) * distance);
+        const obsY = Math.round(end.y + Math.sin(angle) * distance);
+        
+        if (
+          obsX >= 0 && obsX < gridSize &&
+          obsY >= 0 && obsY < gridSize &&
+          obsX !== start.x && obsY !== start.y &&
+          obsX !== end.x && obsY !== end.y &&
+          !obstacleSet.has(`${obsX},${obsY}`)
+        ) {
+          obstacles.push({ x: obsX, y: obsY });
+          obstacleSet.add(`${obsX},${obsY}`);
+        }
+      }
+      
+      // 2. Place obstacles to create interesting detours (not blocking completely, but forcing longer paths)
+      const detourObstacleCount = Math.floor(cappedObstacleCount * 0.4); // 40% for detours
+      let detourAttempts = 0;
+      while (obstacles.length < goalObstacleCount + detourObstacleCount && detourAttempts < 80) {
+        detourAttempts++;
+        // Place obstacles in the "middle zone" between start and goal
+        const midX = Math.floor((start.x + end.x) / 2);
+        const midY = Math.floor((start.y + end.y) / 2);
+        const offsetX = Math.floor((rng() - 0.5) * (gridSize * 0.6));
+        const offsetY = Math.floor((rng() - 0.5) * (gridSize * 0.6));
+        const obsX = Math.max(0, Math.min(gridSize - 1, midX + offsetX));
+        const obsY = Math.max(0, Math.min(gridSize - 1, midY + offsetY));
+        
+        if (
+          obsX !== start.x && obsY !== start.y &&
+          obsX !== end.x && obsY !== end.y &&
+          !obstacleSet.has(`${obsX},${obsY}`)
+        ) {
+          obstacles.push({ x: obsX, y: obsY });
+          obstacleSet.add(`${obsX},${obsY}`);
+        }
+      }
+      
+      // 3. Fill remaining obstacles randomly (but not too close to start)
+      let randomAttempts = 0;
+      while (obstacles.length < cappedObstacleCount && randomAttempts < 100) {
+        randomAttempts++;
         const obs = { x: Math.floor(rng() * gridSize), y: Math.floor(rng() * gridSize) }; 
+        const distFromStart = Math.abs(obs.x - start.x) + Math.abs(obs.y - start.y);
         const isStart = obs.x === start.x && obs.y === start.y;
         const isEnd = obs.x === end.x && obs.y === end.y;
-        const exists = obstacles.some(o => o.x === obs.x && o.y === obs.y);
-        if (!isStart && !isEnd && !exists) obstacles.push(obs); 
-        obstacleSafety++; 
+        const exists = obstacleSet.has(`${obs.x},${obs.y}`);
+        
+        // Don't place obstacles too close to start (at least 2 cells away)
+        if (!isStart && !isEnd && !exists && distFromStart >= 2) {
+          obstacles.push(obs);
+          obstacleSet.add(`${obs.x},${obs.y}`);
+        }
       }
 
-      const obstacleSet = new Set(obstacles.map(o => `${o.x},${o.y}`));
+      // Verify path exists and has reasonable complexity
       const pathResult = findShortestPath([start.x, start.y], [end.x, end.y], obstacleSet);
       if (!pathResult) {
         continue;
       }
       if (!hasFreeStartNeighbor(obstacleSet)) {
+        continue;
+      }
+      
+      // Ensure path has minimum complexity (at least 30% longer than direct distance)
+      const directDistance = Math.abs(end.x - start.x) + Math.abs(end.y - start.y);
+      const pathComplexity = pathResult.length / Math.max(1, directDistance);
+      if (pathComplexity < 1.3 && level > 2) {
+        // Path is too simple, try again
         continue;
       }
 
@@ -747,6 +844,7 @@ export const Generators: Record<string, GeneratorFunction> = {
       break;
     }
 
+    // Fallback if we couldn't generate a good puzzle
     if (path.length === 0) {
       obstacles = [];
       const fallbackPath = findShortestPath([start.x, start.y], [end.x, end.y], new Set());
@@ -777,6 +875,10 @@ export const Generators: Record<string, GeneratorFunction> = {
     const correctPath: string[] = [];
     const optionCommands = ['UP', 'DOWN', 'LEFT', 'RIGHT', 'FORWARD', 'TURN_LEFT', 'TURN_RIGHT'];
     
+    // Calculate max commands based on optimal path + buffer for mistakes
+    const commandBuffer = level <= 3 ? 2 : level <= 8 ? 3 : 4;
+    const maxCommands = Math.max(optimalMoves + commandBuffer, Math.floor(gridSize * 1.2));
+    
     return { 
       type: 'robo_path',
       grid,
@@ -786,7 +888,7 @@ export const Generators: Record<string, GeneratorFunction> = {
       obstacles: obstacles.map(o => [o.x, o.y] as [number, number]),
       correctPath,
       options: optionCommands,
-      maxCommands: Math.max(6, Math.floor(gridSize * 1.5) + obstacles.length),
+      maxCommands,
       optimalMoves,
       coal: coalPos ? [coalPos[0], coalPos[1]] : undefined,
       uid: uid(rng) 
