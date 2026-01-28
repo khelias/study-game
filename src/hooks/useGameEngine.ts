@@ -53,11 +53,14 @@ export function useGameEngine() {
   });
   
   const lastKeysRef = useRef<Record<string, string[]>>({});
+  // Track last words separately for word-based games to avoid consecutive duplicates
+  const lastWordsRef = useRef<Record<string, string[]>>({});
 
   const getRng = useCallback(() => rng, [rng]);
 
   const generateUniqueProblem = useCallback((type: string, level: number, profile: string): Problem | null => {
     const buffer = lastKeysRef.current[type] || [];
+    const wordBuffer = lastWordsRef.current[type] || [];
     let attempt = 0;
     let prob: Problem;
     let key: string;
@@ -71,15 +74,36 @@ export function useGameEngine() {
     
     const generator = gameEntry.generator;
     
-    // Try up to 15 times to generate a unique problem
+    // Try up to 30 times to generate a unique problem (increased from 15)
     do {
       prob = generator(level, rng, profile as ProfileType);
       key = makeKey(prob);
       attempt++;
-    } while (attempt < 15 && buffer.includes(key));
+      
+      // For word-based games, also check if the word itself was recently used
+      const isWordGame = prob.type === 'word_builder' || prob.type === 'word_cascade' || prob.type === 'syllable_builder';
+      if (isWordGame) {
+        const word = 'target' in prob ? prob.target : '';
+        if (word && wordBuffer.includes(word)) {
+          continue; // Skip this problem if word was recently used
+        }
+      }
+    } while (attempt < 30 && buffer.includes(key));
     
-    const nextBuffer = [key, ...buffer].slice(0, 20); // Keep last 20 problems
+    // Keep last 50 problems (increased from 20)
+    const nextBuffer = [key, ...buffer].slice(0, 50);
     lastKeysRef.current = { ...lastKeysRef.current, [type]: nextBuffer };
+    
+    // For word-based games, also track the word itself
+    const isWordGame = prob.type === 'word_builder' || prob.type === 'word_cascade' || prob.type === 'syllable_builder';
+    if (isWordGame) {
+      const word = 'target' in prob ? prob.target : '';
+      if (word) {
+        // Keep last 15 words to avoid consecutive duplicates
+        const nextWordBuffer = [word, ...wordBuffer].slice(0, 15);
+        lastWordsRef.current = { ...lastWordsRef.current, [type]: nextWordBuffer };
+      }
+    }
     
     return prob;
   }, [rng]);

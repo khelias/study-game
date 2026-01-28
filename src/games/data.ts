@@ -108,6 +108,7 @@ const BASE_WORDS: WordObject[] = [
 
   // animals
   { w: 'KOER', e: '🐶' }, { w: 'KASS', e: '🐱' }, { w: 'HIIR', e: '🐭' }, { w: 'JÄNES', e: '🐰' },
+  { w: 'KUKK', e: '🐓' }, // rooster
   { w: 'REBANE', e: '🦊' }, { w: 'KARU', e: '🐻' }, { w: 'SEBRA', e: '🦓' }, { w: 'LÕVI', e: '🦁' },
   { w: 'TIIGER', e: '🐯' }, { w: 'PANDA', e: '🐼' }, { w: 'ELEVANT', e: '🐘' }, { w: 'KAELKIRJAK', e: '🦒' },
   { w: 'HOBUNE', e: '🐎' }, { w: 'LAMMAS', e: '🐑' }, { w: 'KITS', e: '🐐' }, { w: 'LEHM', e: '🐄' },
@@ -117,6 +118,7 @@ const BASE_WORDS: WordObject[] = [
 
   // food and drinks
   { w: 'SAI', e: '🍞' }, { w: 'LEIB', e: '🥖' }, { w: 'JUUST', e: '🧀' }, { w: 'PIIM', e: '🥛' },
+  { w: 'ÕIS', e: '🌸' }, // flower - 3 letters
   { w: 'PITSA', e: '🍕' }, { w: 'BURGER', e: '🍔' }, { w: 'LIHA', e: '🥩' }, { w: 'MUNA', e: '🥚' },
   { w: 'KARTUL', e: '🥔' }, { w: 'PORGAND', e: '🥕' }, { w: 'TOMAT', e: '🍅' }, { w: 'KURK', e: '🥒' },
   { w: 'KIRSS', e: '🍒' }, { w: 'ÕUN', e: '🍎' }, { w: 'PLOOM', e: '🍑' }, { w: 'MAASIKAS', e: '🍓' },
