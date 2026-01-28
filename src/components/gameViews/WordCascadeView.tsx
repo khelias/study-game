@@ -91,10 +91,9 @@ export const WordCascadeView: React.FC<WordCascadeViewProps> = ({ problem, onAns
     return () => media.removeListener(update);
   }, []);
 
-  // Reset on new problem - use both uid and target to ensure it triggers in production
-  // React's cleanup functions run before effects, so intervals will be cleared first
+  // Reset on new problem
   useEffect(() => {
-    // Clear all intervals and timers first (defensive - cleanup should handle this, but ensure it)
+    // Clear all intervals and timers first
     if (tickRef.current) {
       window.clearInterval(tickRef.current);
       tickRef.current = null;
@@ -116,7 +115,7 @@ export const WordCascadeView: React.FC<WordCascadeViewProps> = ({ problem, onAns
       bottomPenaltyTimerRef.current = null;
     }
     
-    // Reset all state synchronously - React guarantees cleanup runs before this effect
+    // Reset all state
     /* eslint-disable react-hooks/set-state-in-effect */
     setProgress('');
     setStatus('idle');
@@ -132,7 +131,7 @@ export const WordCascadeView: React.FC<WordCascadeViewProps> = ({ problem, onAns
     setShowPickupHint(false);
     hasShownPickupHintRef.current = false;
     uidRef.current = 0; // Reset ID counter for new problem
-  }, [problem.uid, problem.target]);
+  }, [problem.uid]);
 
   // Spawn letters, biased toward the next needed character
   useEffect(() => {
