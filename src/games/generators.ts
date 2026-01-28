@@ -339,22 +339,7 @@ export const Generators: Record<string, GeneratorFunction> = {
     const db = locale === 'en' ? WORD_DB_EN : WORD_DB;
 
     // Levels map to word lengths (start short, grow gradually)
-    // Allow longer words at earlier levels to increase variety
-    // Level 1-2: allow 3-4 letter words (was: only 3)
-    // Level 3-4: allow 4-5 letter words (was: only 4)
-    // Level 5+: normal progression
-    let desiredLen: number;
-    if (level <= 2) {
-      // Level 1-2: prefer 3, but allow 4
-      desiredLen = rng() < 0.7 ? 3 : 4;
-    } else if (level <= 4) {
-      // Level 3-4: prefer 4, but allow 5
-      desiredLen = rng() < 0.7 ? 4 : 5;
-    } else {
-      // Level 5+: normal progression
-      desiredLen = Math.max(3, Math.min(7, 3 + Math.floor(level / 2)));
-    }
-    
+    const desiredLen = Math.max(3, Math.min(7, 3 + Math.floor(level / 2)));
     const bucket = db[desiredLen] ?? db[desiredLen - 1] ?? db[desiredLen + 1] ?? db[3] ?? [];
     const chosen = bucket.length > 0 ? getRandom(bucket, rng) : { w: 'KASS', e: '🐱' };
 
