@@ -20,6 +20,7 @@ const makeKey = (prob: Problem | null): string => {
   if (!prob) return '';
   switch(prob.type) {
     case 'word_builder': return `word:${prob.target}`;
+    case 'word_cascade': return `cascade:${prob.target.toLowerCase()}`; // Case-insensitive for word comparison
     case 'syllable_builder': return `syll:${prob.target}`;
     case 'letter_match': return `letter:${prob.word}`;
     case 'sentence_logic': return `sent:${prob.sentence}`;
@@ -84,9 +85,17 @@ export function useGameEngine() {
       const isWordGame = prob.type === 'word_builder' || prob.type === 'word_cascade' || prob.type === 'syllable_builder';
       if (isWordGame) {
         const word = 'target' in prob ? prob.target : '';
-        // Skip if word was recently used OR if the exact problem (key) was used
-        if ((word && wordBuffer.includes(word)) || buffer.includes(key)) {
-          continue; // Skip this problem
+        // For word_cascade, compare case-insensitively to avoid treating "KASS" and "kass" as different
+        // For other word games, compare case-sensitively
+        if (word) {
+          const wordToCompare = prob.type === 'word_cascade' ? word.toLowerCase() : word;
+          const wordBufferToCompare = prob.type === 'word_cascade' 
+            ? wordBuffer.map(w => w.toLowerCase())
+            : wordBuffer;
+          // Skip if word was recently used OR if the exact problem (key) was used
+          if (wordBufferToCompare.includes(wordToCompare) || buffer.includes(key)) {
+            continue; // Skip this problem
+          }
         }
         // Found a unique word and unique problem
         break;
@@ -102,13 +111,15 @@ export function useGameEngine() {
     const nextBuffer = [key, ...buffer].slice(0, 50);
     lastKeysRef.current = { ...lastKeysRef.current, [type]: nextBuffer };
     
-    // For word-based games, also track the word itself
+    // For word-based games, also track the word itself (case-insensitive for word_cascade)
     const isWordGame = prob.type === 'word_builder' || prob.type === 'word_cascade' || prob.type === 'syllable_builder';
     if (isWordGame) {
       const word = 'target' in prob ? prob.target : '';
       if (word) {
+        // For word_cascade, store lowercase to normalize casing variations
+        const wordToStore = prob.type === 'word_cascade' ? word.toLowerCase() : word;
         // Keep last 25 words to avoid consecutive duplicates (increased from 15)
-        const nextWordBuffer = [word, ...wordBuffer].slice(0, 25);
+        const nextWordBuffer = [wordToStore, ...wordBuffer].slice(0, 25);
         lastWordsRef.current = { ...lastWordsRef.current, [type]: nextWordBuffer };
       }
     }
