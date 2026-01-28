@@ -99,12 +99,11 @@ export const ALPHABET: string[] = 'ABCDEFGHIJKLMNOPRSŠZŽTUVÕÄÖÜ'.split('')
 // Based on emojis; Estonian words for language learning games, mostly <=7 letters
 const BASE_WORDS: WordObject[] = [
   // nature and weather
-  { w: 'PUU', e: '🌳' }, { w: 'LILL', e: '🌸' }, { w: 'LEHT', e: '🍃' },
-  { w: 'METS', e: '🌲' }, { w: 'MÄGI', e: '⛰️' }, { w: 'JÕGI', e: '🏞️' }, { w: 'LOODUS', e: '🏞️' },
-  { w: 'MERI', e: '🌊' }, { w: 'RAND', e: '🏖️' }, { w: 'KIVI', e: '🪨' }, { w: 'PILV', e: '☁️' },
+  { w: 'PUU', e: '🌳' }, { w: 'PÕÕSAS', e: '🌿' }, { w: 'LILL', e: '🌸' }, { w: 'LEHT', e: '🍃' },
+  { w: 'METS', e: '🌲' }, { w: 'MÄGI', e: '⛰️' }, { w: 'JÕGI', e: '🏞️' }, { w: 'JÄRV', e: '🏝️' },
+  { w: 'MERI', e: '🌊' }, { w: 'LIIV', e: '🏖️' }, { w: 'KIVI', e: '🪨' }, { w: 'PILV', e: '☁️' },
   { w: 'PÄIKE', e: '☀️' }, { w: 'KUU', e: '🌙' }, { w: 'TÄHT', e: '⭐' }, { w: 'ÄIKE', e: '🌩️' },
   { w: 'LUMI', e: '❄️' }, { w: 'JÄÄ', e: '🧊' }, { w: 'TUUL', e: '🌬️' }, { w: 'VIKERKAAR', e: '🌈' },
-  { w: 'VESI', e: '💧' },
 
   // animals
   { w: 'KOER', e: '🐶' }, { w: 'KASS', e: '🐱' }, { w: 'HIIR', e: '🐭' }, { w: 'JÄNES', e: '🐰' },
@@ -120,14 +119,14 @@ const BASE_WORDS: WordObject[] = [
   { w: 'PITSA', e: '🍕' }, { w: 'BURGER', e: '🍔' }, { w: 'LIHA', e: '🥩' }, { w: 'MUNA', e: '🥚' },
   { w: 'KARTUL', e: '🥔' }, { w: 'PORGAND', e: '🥕' }, { w: 'TOMAT', e: '🍅' }, { w: 'KURK', e: '🥒' },
   { w: 'KIRSS', e: '🍒' }, { w: 'ÕUN', e: '🍎' }, { w: 'PLOOM', e: '🍑' }, { w: 'MAASIKAS', e: '🍓' },
-  { w: 'ARBUUS', e: '🍉' }, { w: 'SIDRUN', e: '🍋' }, { w: 'VIINAMARI', e: '🍇' }, { w: 'PÄHKEL', e: '🌰' },
+  { w: 'ARBUUS', e: '🍉' }, { w: 'SIDRUN', e: '🍋' }, { w: 'MARJAD', e: '🍇' }, { w: 'PÄHKEL', e: '🌰' },
   { w: 'KOMPVEK', e: '🍬' }, { w: 'JÄÄTIS', e: '🍦' }, { w: 'KÜPSIS', e: '🍪' }, { w: 'KOOK', e: '🍰' },
   { w: 'MESI', e: '🍯' }, { w: 'KOHV', e: '☕' }, { w: 'TEE', e: '🫖' },
 
   // home and items
-  { w: 'KODU', e: '🏡' }, { w: 'VOODI', e: '🛌' }, { w: 'TALDRIK', e: '🍽️' },
-  { w: 'TOOL', e: '🪑' }, { w: 'LAMP', e: '💡' }, { w: 'UKS', e: '🚪' },
-  { w: 'KAPP', e: '🗄️' }, { w: 'RAAMAT', e: '📖' }, { w: 'PLIIATS', e: '✏️' }, { w: 'VÄRV', e: '🎨' },
+  { w: 'KODU', e: '🏡' }, { w: 'VOODI', e: '🛌' }, { w: 'LAUD', e: '🪑' },
+  { w: 'TOOL', e: '🪑' }, { w: 'LAMP', e: '💡' }, { w: 'KARDIN', e: '🪟' }, { w: 'UKS', e: '🚪' },
+  { w: 'KAPP', e: '📦' }, { w: 'RAAMAT', e: '📖' }, { w: 'PLIIATS', e: '✏️' }, { w: 'VÄRV', e: '🎨' },
   { w: 'KÄÄRID', e: '✂️' }, { w: 'ARVUTI', e: '💻' }, { w: 'TELEFON', e: '📱' }, { w: 'EKRAAN', e: '🖥️' },
   { w: 'KOHVER', e: '🧳' }, { w: 'PRILLID', e: '👓' }, { w: 'KINDAD', e: '🧤' }, { w: 'MÜTS', e: '🧢' },
   { w: 'KELL', e: '⌚' }, { w: 'STOPP', e: '⏱️' }, { w: 'ÕHUPALL', e: '🎈' }, { w: 'PUSLE', e: '🧩' },
@@ -139,9 +138,9 @@ const BASE_WORDS: WordObject[] = [
   { w: 'RATAS', e: '🚲' }, { w: 'RULA', e: '🛹' },
 
   // people and emotions
-  { w: 'EMA', e: '👩' }, { w: 'ISA', e: '👨' }, { w: 'LAPS', e: '🧒' }, { w: 'SÕBER', e: '👫' },
+  { w: 'EMA', e: '👩' }, { w: 'ISA', e: '👨' }, { w: 'LAPS', e: '🧒' }, { w: 'SÕBER', e: '🤝' },
   { w: 'ÕPETAJA', e: '🧑‍🏫' }, { w: 'ARST', e: '🧑‍⚕️' }, { w: 'POLITSEI', e: '👮' }, { w: 'PÄÄSTJA', e: '🧑‍🚒' },
-  { w: 'KOKK', e: '👨‍🍳' }, { w: 'MUUSIK', e: '🎤' }, { w: 'TANTS', e: '💃' }, { w: 'RÕÕM', e: '😄' },
+  { w: 'KOKK', e: '👨‍🍳' }, { w: 'MUUSIK', e: '🎵' }, { w: 'TANTS', e: '💃' }, { w: 'RÕÕM', e: '😄' },
   { w: 'KURBUS', e: '😢' }, { w: 'ÜLLATUS', e: '😮' }, { w: 'UNI', e: '😴' },
 
   // sports and games
@@ -163,26 +162,27 @@ const BASE_WORDS: WordObject[] = [
   { w: 'KILPKONN', e: '🐢' }, { w: 'HAMSTER', e: '🐹' }, { w: 'KAAMEL', e: '🐫' },
   
   // food (added)
-  { w: 'BANAAN', e: '🍌' }, { w: 'APELSIN', e: '🍊' }, { w: 'ANANASS', e: '🍍' },
+  { w: 'BANAAN', e: '🍌' }, { w: 'APELSIN', e: '🍊' }, { w: 'VIINAMARI', e: '🍇' }, { w: 'ANANASS', e: '🍍' },
   { w: 'MANGO', e: '🥭' }, { w: 'KOOKOS', e: '🥥' }, { w: 'PIRN', e: '🍐' }, { w: 'VÕI', e: '🧈' },
-  { w: 'SUPP', e: '🍲' }, { w: 'SALAT', e: '🥗' },
+  { w: 'SUPP', e: '🍲' }, { w: 'SALAT', e: '🥗' }, { w: 'PRAAD', e: '🍖' },
   { w: 'KREVETT', e: '🦐' }, { w: 'KRABI', e: '🦀' },
   
   // home (added)
-  { w: 'AKEN', e: '🪟' }, { w: 'PALK', e: '🪵' }, { w: 'PIRN', e: '💡' }, { w: 'SEIN', e: '🧱' },
-  { w: 'PANN', e: '🍳' }, { w: 'VANN', e: '🛁' },
-  { w: 'RIIUL', e: '📚' }, { w: 'TELEVIISOR', e: '📺' },
+  { w: 'AKEN', e: '🪟' }, { w: 'PÕRAND', e: '🪵' }, { w: 'LAGI', e: '🏠' }, { w: 'SEIN', e: '🧱' },
+  { w: 'KÖÖK', e: '🍳' }, { w: 'VANNITUBA', e: '🛁' }, { w: 'MAGAMISTUBA', e: '🛏️' },
+  { w: 'RIIUL', e: '📚' }, { w: 'KIRJUTUSLAUD', e: '🪑' }, { w: 'TELEVISIOON', e: '📺' },
+  { w: 'PADI', e: '🛏️' }, { w: 'TEKK', e: '🛌' },
   
   // transportation (added)
   { w: 'MOPEED', e: '🛵' }, { w: 'MOTORRATAS', e: '🏍️' }, { w: 'VEOK', e: '🚚' },
   { w: 'TROLLIBUSS', e: '🚎' },
   
   // people (added)
-  { w: 'TÜDRUK', e: '👧' }, { w: 'POISS', e: '👦' }, { w: 'VANAEMA', e: '👵' }, { w: 'VANAISA', e: '👴' },
-  { w: 'RAAMATUD', e: '📚' }, { w: 'ÕPILANE', e: '👨‍🎓' },
+  { w: 'ÕDE', e: '👧' }, { w: 'VEND', e: '👦' }, { w: 'VANAEMA', e: '👵' }, { w: 'VANAISA', e: '👴' },
+  { w: 'ÕPETUS', e: '📚' }, { w: 'ÕPILANE', e: '👨‍🎓' },
   
-  // sports (added) - keeping specific terms for variety
-  { w: 'VÕRKPALL', e: '🏐' },
+  // sports (added)
+  { w: 'JALGPALL', e: '⚽' }, { w: 'KORVPALL', e: '🏀' }, { w: 'VÕRKPALL', e: '🏐' },
   { w: 'JÕUSAAL', e: '🏋️' }, { w: 'JOOKSMINE', e: '🏃' }, { w: 'UJUMINE', e: '🏊' },
   
   // colors and shapes
@@ -190,17 +190,12 @@ const BASE_WORDS: WordObject[] = [
   { w: 'VALGE', e: '⚪' }, { w: 'MUST', e: '⚫' }, { w: 'LILLA', e: '🟣' }, { w: 'ORANŽ', e: '🟠' },
   
   // body parts
-  { w: 'AJU', e: '🧠' }, { w: 'KÄSI', e: '✋' }, { w: 'JALG', e: '🦵' }, { w: 'SILM', e: '👁️' },
+  { w: 'PEA', e: '👤' }, { w: 'KÄSI', e: '✋' }, { w: 'JALG', e: '🦵' }, { w: 'SILM', e: '👁️' },
   { w: 'KÕRV', e: '👂' }, { w: 'NINA', e: '👃' }, { w: 'SUU', e: '👄' },
   
   // natural phenomena
-  { w: 'VIHM', e: '🌧️' }, { w: 'LUMESADU', e: '🌨️' },
-  
-  // games and toys
-  { w: 'MÄNG', e: '🎮' }, { w: 'NUKK', e: '🪆' },
-  
-  // animals from scenes (add to main list)
-  { w: 'ORAV', e: '🐿️' }, { w: 'HUNT', e: '🐺' }, { w: 'ROBOT', e: '🤖' }
+  { w: 'VIHM', e: '🌧️' }, { w: 'LUMESADU', e: '❄️' }, { w: 'TUISK', e: '🌨️' },
+  { w: 'PÄIKE', e: '☀️' }, { w: 'PILV', e: '☁️' }
 ];
 
 export const WORD_DB: Record<number, WordObject[]> = BASE_WORDS.reduce<Record<number, WordObject[]>>((acc, item) => {
@@ -215,7 +210,7 @@ const BASE_WORDS_EN: WordObject[] = [
   // 3-letter words - animals, nature, food
   { w: 'CAT', e: '🐱' }, { w: 'DOG', e: '🐶' }, { w: 'BAT', e: '🦇' }, { w: 'BEE', e: '🐝' },
   { w: 'FOX', e: '🦊' }, { w: 'PIG', e: '🐷' }, { w: 'COW', e: '🐄' }, { w: 'OWL', e: '🦉' },
-  { w: 'ANT', e: '🐜' }, { w: 'SUN', e: '☀️' }, { w: 'SEA', e: '🌊' },
+  { w: 'ANT', e: '🐜' }, { w: 'SUN', e: '☀️' }, { w: 'SKY', e: '🌤️' }, { w: 'SEA', e: '🌊' },
   { w: 'ICE', e: '🧊' }, { w: 'EGG', e: '🥚' }, { w: 'PIE', e: '🥧' }, { w: 'TEA', e: '☕' },
   
   // 4-letter words - animals, nature, food, objects
@@ -231,7 +226,7 @@ const BASE_WORDS_EN: WordObject[] = [
   { w: 'GRAPE', e: '🍇' }, { w: 'PEACH', e: '🍑' }, { w: 'WATER', e: '💧' }, { w: 'HONEY', e: '🍯' },
   { w: 'HORSE', e: '🐴' }, { w: 'MOUSE', e: '🐭' }, { w: 'WHALE', e: '🐋' }, { w: 'SHARK', e: '🦈' },
   { w: 'SNAKE', e: '🐍' }, { w: 'SHEEP', e: '🐑' }, { w: 'TIGER', e: '🐯' }, { w: 'ZEBRA', e: '🦓' },
-  { w: 'CLOUD', e: '☁️' }, { w: 'RIVER', e: '🏞️' }, { w: 'PLANT', e: '🌱' },
+  { w: 'CLOUD', e: '☁️' }, { w: 'OCEAN', e: '🌊' }, { w: 'RIVER', e: '🏞️' }, { w: 'PLANT', e: '🌱' },
   { w: 'CHAIR', e: '🪑' }, { w: 'HOUSE', e: '🏡' }, { w: 'CLOCK', e: '🕐' },
   
   // 6-letter words
@@ -239,8 +234,7 @@ const BASE_WORDS_EN: WordObject[] = [
   { w: 'BURGER', e: '🍔' }, { w: 'COOKIE', e: '🍪' }, { w: 'CHEESE', e: '🧀' }, { w: 'BUTTER', e: '🧈' },
   { w: 'RABBIT', e: '🐰' }, { w: 'TURTLE', e: '🐢' }, { w: 'MONKEY', e: '🐵' }, { w: 'PIGEON', e: '🕊️' },
   { w: 'SPIDER', e: '🕷️' }, { w: 'DRAGON', e: '🐉' }, { w: 'FLOWER', e: '🌸' }, { w: 'GARDEN', e: '🌻' },
-  { w: 'SNOW', e: '❄️' }, { w: 'SPRING', e: '🌱' }, { w: 'PENCIL', e: '✏️' },
-  { w: 'WATER', e: '💧' },
+  { w: 'WINTER', e: '❄️' }, { w: 'SUMMER', e: '☀️' }, { w: 'SPRING', e: '🌱' }, { w: 'PENCIL', e: '✏️' },
   
   // 7-letter words
   { w: 'CHICKEN', e: '🐔' }, { w: 'DOLPHIN', e: '🐬' }, { w: 'GIRAFFE', e: '🦒' }, { w: 'PENGUIN', e: '🐧' },
@@ -267,7 +261,7 @@ export const SCENE_DB: Record<string, Scene> = {
     anchors: [
       {n:'PUU', adess:'PUUL', iness:'PUUS', genitive:'PUU', e:'🌳'}, 
       {n:'KIVI', adess:'KIVIL', iness:'KIVIS', genitive:'KIVI', e:'🪨'}, 
-      {n:'LEHT', adess:'LEHEL', iness:'LEHES', genitive:'LEHE', e:'🍃'}, 
+      {n:'PÕÕSAS', adess:'PÕÕSAL', iness:'PÕÕSAS', genitive:'PÕÕSA', e:'🌿'}, 
       {n:'SEEN', adess:'SEENEL', iness:'SEENES', genitive:'SEENE', e:'🍄'}, 
       {n:'KÄND', adess:'KÄNNUL', iness:'KÄNNUS', genitive:'KÄNNU', e:'🪵'}, 
       {n:'JÕGI', adess:'JÕEL', iness:'JÕES', genitive:'JÕE', e:'🏞️'}
@@ -312,7 +306,7 @@ export const SCENE_DB: Record<string, Scene> = {
     name: 'School',
     subjects: [
       {n:'ÕPILANE', e:'👨‍🎓'}, {n:'ÕPETAJA', e:'🧑‍🏫'}, {n:'RAAMAT', e:'📖'}, {n:'PLIIATS', e:'✏️'},
-      {n:'NUMBRID', e:'🔢'}, {n:'LUUD', e:'🧹'}, {n:'ÕPIK', e:'📘'}
+      {n:'KALKULAATOR', e:'🔢'}, {n:'KUSTUTI', e:'🧹'}, {n:'ÕPIK', e:'📘'}
     ],
     anchors: [
       {n:'AKEN', adess:'AKNAL', iness:'AKNAS', genitive:'AKNA', e:'🪟'}, 
@@ -335,7 +329,7 @@ export const SCENE_DB: Record<string, Scene> = {
       {n:'TOOL', adess:'TOOLIL', iness:'TOOLIS', genitive:'TOOLI', e:'🪑'}, 
       {n:'PUU', adess:'PUUL', iness:'PUUS', genitive:'PUU', e:'🌳'}, 
       {n:'LILL', adess:'LILLEL', iness:'LILLES', genitive:'LILLE', e:'🌸'}, 
-      {n:'VOODI', adess:'VOODIL', iness:'VOODIS', genitive:'VOODI', e:'🛌'},
+      {n:'TEKK', adess:'TEKIL', iness:'TEKIS', genitive:'TEKI', e:'🛌'},
       {n:'KIVI', adess:'KIVIL', iness:'KIVIS', genitive:'KIVI', e:'🪨'}, 
       {n:'KÄND', adess:'KÄNNUL', iness:'KÄNNUS', genitive:'KÄNNU', e:'🪵'}
     ],
@@ -345,11 +339,11 @@ export const SCENE_DB: Record<string, Scene> = {
     bg: 'bg-gradient-to-b from-cyan-200 to-blue-300',
     name: 'Beach',
     subjects: [
-      {n:'LAPS', e:'🧒'}, {n:'PALL', e:'⚽'}, {n:'KARP', e:'🐚'}, {n:'ÕHUPALL', e:'🎈'},
+      {n:'LAPS', e:'🧒'}, {n:'PALL', e:'⚽'}, {n:'KALLA', e:'🐚'}, {n:'ÕHUPALL', e:'🎈'},
       {n:'KREVETT', e:'🦐'}, {n:'KRABI', e:'🦀'}
     ],
     anchors: [
-      {n:'RAND', adess:'RANNAL', iness:'RANNAS', genitive:'RANNA', e:'🏖️'}, 
+      {n:'LIIV', adess:'LIIIVAL', iness:'LIIIVAS', genitive:'LIIVA', e:'🏖️'}, 
       {n:'MERI', adess:'MEREL', iness:'MERES', genitive:'MERE', e:'🌊'}, 
       {n:'KIVI', adess:'KIVIL', iness:'KIVIS', genitive:'KIVI', e:'🪨'},
       {n:'PÄIKESEVARI', adess:'PÄIKESEVARJU', iness:'PÄIKESEVARJU', genitive:'PÄIKESEVARJU', e:'⛱️'}
