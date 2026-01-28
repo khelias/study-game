@@ -129,7 +129,8 @@ export const WordCascadeView: React.FC<WordCascadeViewProps> = ({ problem, onAns
       setLetters(prev => {
         const pickupsOnScreen = prev.filter(p => p.kind !== 'letter').length;
         const need = problem.target[nextIdx] ?? '';
-        const hasNeededOnScreen = !!need && prev.some(l => l.kind === 'letter' && l.char === need);
+        // Case-insensitive check for needed letter on screen
+        const hasNeededOnScreen = !!need && prev.some(l => l.kind === 'letter' && l.char.toLowerCase() === need.toLowerCase());
 
         // Optional pickups (only after the first correct letter, capped on screen)
         const canSpawnPickup = nextIdx > 0 && pickupsOnScreen < 2;
@@ -286,7 +287,8 @@ export const WordCascadeView: React.FC<WordCascadeViewProps> = ({ problem, onAns
 
     playSound('click', soundEnabled);
 
-    if (l.char === need) {
+    // Case-insensitive comparison for letter matching
+    if (l.char.toLowerCase() === need.toLowerCase()) {
       // When first letter is tapped: record which letters are "forgiven" (already below that Y)
       if (nextIdx === 0) {
         firstSelectedYRef.current = l.y;
@@ -297,7 +299,8 @@ export const WordCascadeView: React.FC<WordCascadeViewProps> = ({ problem, onAns
       const nextProgress = progress + l.char;
       setProgress(nextProgress);
 
-      if (nextProgress === problem.target) {
+      // Case-insensitive comparison for word completion
+      if (nextProgress.toLowerCase() === problem.target.toLowerCase()) {
         setStatus('correct');
         playSound('correct', soundEnabled);
         window.setTimeout(() => onAnswer(true), 150);
