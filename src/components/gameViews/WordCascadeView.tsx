@@ -130,6 +130,7 @@ export const WordCascadeView: React.FC<WordCascadeViewProps> = ({ problem, onAns
     setShakeBarrier(false);
     setShowPickupHint(false);
     hasShownPickupHintRef.current = false;
+    uidRef.current = 0; // Reset ID counter for new problem
   }, [problem.uid]);
 
   // Spawn letters, biased toward the next needed character
@@ -328,11 +329,16 @@ export const WordCascadeView: React.FC<WordCascadeViewProps> = ({ problem, onAns
     }
 
     // Wrong letter: charge the penalty, but don't "lock" the round.
-    // IMPORTANT: Wrong taps should NOT cost a heart (too punishing).
-    // We only penalize hearts when letters reach the bottom.
+    // Wrong taps deduct a strike but don't cost a heart (too punishing).
+    // We only penalize hearts when letters reach the bottom or strikes reach max.
     // Brief red flash + short cooldown to prevent spam-clicking.
     if (penaltyCooldownRef.current) return;
     penaltyCooldownRef.current = true;
+
+    // Deduct a strike for wrong letter tap
+    const nextStrikes = Math.min(MAX_STRIKES, strikesRef.current + 1);
+    strikesRef.current = nextStrikes;
+    setStrikes(nextStrikes);
 
     setStatus('wrong');
     playSound('wrong', soundEnabled);
@@ -344,7 +350,13 @@ export const WordCascadeView: React.FC<WordCascadeViewProps> = ({ problem, onAns
       penaltyCooldownRef.current = false;
     }, 180);
 
-    // No onAnswer(false) here — wrong taps do not spend hearts.
+    // If we hit the strike limit, end the game
+    if (nextStrikes >= MAX_STRIKES) {
+      endedRef.current = true;
+      window.setTimeout(() => onAnswer(false), 220);
+    }
+
+    // No onAnswer(false) here for normal wrong taps — only when strikes reach max.
   };
 
   const slots = Array.from({ length: problem.target.length }, (_, i) => ({
