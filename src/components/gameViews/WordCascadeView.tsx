@@ -91,8 +91,7 @@ export const WordCascadeView: React.FC<WordCascadeViewProps> = ({ problem, onAns
     return () => media.removeListener(update);
   }, []);
 
-  // Reset on new problem - use both UID and target directly in dependencies
-  // CRITICAL: Don't use computed keys - React might optimize them away in production
+  // Reset on new problem
   useEffect(() => {
     /* eslint-disable react-hooks/set-state-in-effect */
     setProgress('');

@@ -226,7 +226,6 @@ export function useAnswerHandler(): UseAnswerHandlerResult {
         setTimeout(() => {
           setBgClass('bg-slate-50');
           const newProblem = generateUniqueProblemForGame(gameType, levelForNextProblem, profile, adaptiveDifficulty);
-          // Pass problem directly - setProblem in store will handle cloning for React optimization
           setProblem(newProblem);
         }, 600);
       } else if (!shouldLevelUp) {

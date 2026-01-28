@@ -21,9 +21,8 @@ export const WordGameView: React.FC<WordGameViewProps> = ({ problem, onAnswer, s
   const t = useTranslation();
   const [userWord, setUserWord] = useState<Array<{ char: string; id: string } | null>>([]);
   const [pool, setPool] = useState<Array<{ char: string; id: string }>>(problem.shuffled || []);
-  // Use both UID and target to detect problem changes (defensive against UID collisions)
-  // CRITICAL: Use problem.uid and problem.target directly in dependencies, not callbacks
-  // This ensures React detects changes in production builds where callbacks might be memoized
+  
+  // Reset state when problem changes
   useEffect(() => { 
     // Build initial word state
     const next: Array<{ char: string; id: string } | null> = [];
@@ -84,16 +83,12 @@ export const WordGameView: React.FC<WordGameViewProps> = ({ problem, onAnswer, s
         } else {
           setTimeout(() => { 
             onAnswer(false);
-            // Reset to initial state - rebuild word and pool from problem
+            // Reset to initial state
             const resetWord: Array<{ char: string; id: string } | null> = [];
             for (let i = 0; i < problem.target.length; i++) {
               if (problem.preFilledPositions?.includes(i)) {
                 const char = problem.target[i];
-                if (char) {
-                  resetWord[i] = { char, id: `prefilled-${i}` };
-                } else {
-                  resetWord[i] = null;
-                }
+                resetWord[i] = char ? { char, id: `prefilled-${i}` } : null;
               } else {
                 resetWord[i] = null;
               }

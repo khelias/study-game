@@ -119,14 +119,11 @@ export const usePlaySessionStore = create<PlaySessionStore>((set, get) => ({
   },
   
   setProblem: (problem: Problem | null) => {
-    // CRITICAL FIX: Deep clone problem object to ensure all nested arrays/objects are new references
-    // In production, React's shallow comparison might see the same nested references and skip updates
+    // Clone nested arrays to ensure React detects changes
     if (problem) {
-      // Clone the problem and all nested arrays/objects to ensure new references
-      // This is critical for production builds where React optimizations might skip updates
       const clonedProblem: Problem = { ...problem };
       
-      // Deep clone nested arrays that React might compare by reference
+      // Clone arrays that React might compare by reference
       if (problem.type === 'word_builder' && 'shuffled' in problem) {
         (clonedProblem as typeof problem).shuffled = [...(problem.shuffled || [])];
       }

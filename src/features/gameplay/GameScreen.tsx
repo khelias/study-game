@@ -385,9 +385,7 @@ export const GameScreen: React.FC = () => {
         ) : (
           <div key={problem.uid} className="w-full flex justify-center pb-8">
             <GameRenderer
-              key={problem ? (problem.type === 'word_builder' || problem.type === 'word_cascade' || problem.type === 'syllable_builder' 
-                ? `${problem.type}-${problem.uid}-${'target' in problem ? problem.target : problem.uid}`
-                : `${problem.type}-${problem.uid}`) : 'no-problem'}
+              key={problem ? `${problem.type}-${problem.uid}-${'target' in problem ? problem.target : ''}` : 'no-problem'}
               gameType={gameType}
               problem={problem}
               onAnswer={handleAnswer}

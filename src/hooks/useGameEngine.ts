@@ -41,9 +41,8 @@ const makeKey = (prob: Problem | null): string => {
   }
 };
 
-// CRITICAL FIX: Move buffers to module level so they're shared across ALL hook instances
-// Previously, each useGameEngine() call created separate buffers, causing duplicate words
-// when useAnswerHandler and GameScreen both called useGameEngine()
+// Shared buffers across all hook instances to prevent duplicate problems
+// Module-level to ensure useAnswerHandler and GameScreen share the same state
 const sharedLastKeys: Record<string, string[]> = {};
 const sharedLastWords: Record<string, string[]> = {};
 
@@ -61,10 +60,8 @@ export function useGameEngine() {
   const getRng = useCallback(() => rng, [rng]);
 
   const generateUniqueProblem = useCallback((type: string, level: number, profile: string): Problem | null => {
-    // CRITICAL: Use shared module-level buffers so all hook instances share the same state
     const buffer = sharedLastKeys[type] || [];
-    // CRITICAL: Always normalize wordBuffer to lowercase when reading
-    // The buffer should store lowercase, but handle legacy mixed-case data
+    // Normalize wordBuffer to lowercase for case-insensitive comparison
     const wordBuffer = (sharedLastWords[type] || []).map(w => w.toLowerCase());
     let attempt = 0;
     let prob: Problem;
@@ -89,22 +86,13 @@ export function useGameEngine() {
       const isWordGame = prob.type === 'word_builder' || prob.type === 'word_cascade' || prob.type === 'syllable_builder';
       if (isWordGame) {
         const word = 'target' in prob ? prob.target : '';
-        // CRITICAL: Compare words case-insensitively since applyLetterCase changes case by level
-        // The same word might appear as "KASS", "Kass", or "kass" depending on level
+        // Compare words case-insensitively since applyLetterCase changes case by level
         const wordLower = word ? word.toLowerCase() : '';
-        // CRITICAL: wordBuffer is already normalized to lowercase at function start
         const isDuplicateWord = wordLower && wordBuffer.includes(wordLower);
         const isDuplicateKey = buffer.includes(key);
         
-        // Debug logging in development to understand what's happening
-        if (process.env.NODE_ENV === 'development' && attempt === 1) {
-          console.log(`[generateUniqueProblem] Type: ${type}, Word: ${word} (${wordLower}), Buffer: [${wordBuffer.join(', ')}], IsDuplicate: ${isDuplicateWord}`);
-        }
-        
-        // Skip if word (case-insensitive) was recently used OR if the exact problem (key) was used
         if (isDuplicateWord || isDuplicateKey) {
-          // This word/problem was recently used, try again
-          continue;
+          continue; // Try again with a different problem
         }
         // Found a unique word and unique problem - exit loop
         break;
@@ -116,26 +104,20 @@ export function useGameEngine() {
       }
     } while (attempt < 50);
     
-    // Safety check: If we hit max attempts, log a warning (but still return the problem)
     if (attempt >= 50) {
-      console.warn(`generateUniqueProblem: Hit max attempts (50) for type ${type}, level ${level}. May have duplicate.`);
+      console.warn(`generateUniqueProblem: Hit max attempts (50) for type ${type}, level ${level}`);
     }
     
-    // Keep last 50 problems (increased from 20)
-    // CRITICAL: Update shared module-level buffer so all hook instances see the same state
+    // Update shared buffers
     const nextBuffer = [key, ...buffer].slice(0, 50);
     sharedLastKeys[type] = nextBuffer;
     
-    // For word-based games, also track the word itself (case-insensitive)
+    // For word-based games, track words case-insensitively
     const isWordGame = prob.type === 'word_builder' || prob.type === 'word_cascade' || prob.type === 'syllable_builder';
     if (isWordGame) {
       const word = 'target' in prob ? prob.target : '';
       if (word) {
-        // Store word in lowercase to ensure case-insensitive comparison
-        // This prevents "KASS", "Kass", "kass" from being treated as different words
         const wordLower = word.toLowerCase();
-        // Always update buffer - remove existing instance (if any) and add to front
-        // This ensures FIFO behavior and prevents duplicates
         const filtered = wordBuffer.filter(w => w !== wordLower);
         const nextWordBuffer = [wordLower, ...filtered].slice(0, 25);
         sharedLastWords[type] = nextWordBuffer;
