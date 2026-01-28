@@ -119,12 +119,44 @@ export const usePlaySessionStore = create<PlaySessionStore>((set, get) => ({
   },
   
   setProblem: (problem: Problem | null) => {
-    // In production builds, ensure we always create a new object reference
-    // to force React to detect the change, even if the content is similar
+    // CRITICAL FIX: Deep clone problem object to ensure all nested arrays/objects are new references
+    // In production, React's shallow comparison might see the same nested references and skip updates
     if (problem) {
-      // Create a new object reference to ensure React detects the change
+      // Clone the problem and all nested arrays/objects to ensure new references
       // This is critical for production builds where React optimizations might skip updates
-      set({ problem: { ...problem } });
+      const clonedProblem: Problem = { ...problem };
+      
+      // Deep clone nested arrays that React might compare by reference
+      if (problem.type === 'word_builder' && 'shuffled' in problem) {
+        (clonedProblem as typeof problem).shuffled = [...(problem.shuffled || [])];
+      }
+      if (problem.type === 'syllable_builder' && 'shuffled' in problem) {
+        (clonedProblem as typeof problem).shuffled = [...(problem.shuffled || [])];
+      }
+      if (problem.type === 'memory_math' && 'cards' in problem) {
+        (clonedProblem as typeof problem).cards = [...(problem.cards || [])];
+      }
+      if (problem.type === 'pattern' && 'sequence' in problem) {
+        (clonedProblem as typeof problem).sequence = [...(problem.sequence || [])];
+        (clonedProblem as typeof problem).options = [...(problem.options || [])];
+      }
+      if (problem.type === 'balance_scale' && 'display' in problem) {
+        (clonedProblem as typeof problem).display = {
+          ...problem.display,
+          left: [...(problem.display.left || [])],
+          right: [...(problem.display.right || [])],
+        };
+        (clonedProblem as typeof problem).options = [...(problem.options || [])];
+      }
+      if (problem.type === 'robo_path' && 'grid' in problem) {
+        (clonedProblem as typeof problem).grid = problem.grid.map(row => [...row]);
+        (clonedProblem as typeof problem).obstacles = problem.obstacles.map(obs => [...obs] as [number, number]);
+      }
+      if (problem.type === 'math_snake' && 'snake' in problem) {
+        (clonedProblem as typeof problem).snake = problem.snake.map(pos => [...pos] as [number, number]);
+      }
+      
+      set({ problem: clonedProblem });
     } else {
       set({ problem: null });
     }

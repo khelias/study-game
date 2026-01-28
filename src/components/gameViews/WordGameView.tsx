@@ -22,8 +22,10 @@ export const WordGameView: React.FC<WordGameViewProps> = ({ problem, onAnswer, s
   const [userWord, setUserWord] = useState<Array<{ char: string; id: string } | null>>([]);
   const [pool, setPool] = useState<Array<{ char: string; id: string }>>(problem.shuffled || []);
   // Use both UID and target to detect problem changes (defensive against UID collisions)
-  const problemKey = `${problem.uid}-${problem.target}`;
-  const buildInitialWord = useCallback((): Array<{ char: string; id: string } | null> => {
+  // CRITICAL: Use problem.uid and problem.target directly in dependencies, not callbacks
+  // This ensures React detects changes in production builds where callbacks might be memoized
+  useEffect(() => { 
+    // Build initial word state
     const next: Array<{ char: string; id: string } | null> = [];
     for (let i = 0; i < problem.target.length; i++) {
       if (problem.preFilledPositions?.includes(i)) {
@@ -37,10 +39,8 @@ export const WordGameView: React.FC<WordGameViewProps> = ({ problem, onAnswer, s
         next[i] = null;
       }
     }
-    return next;
-  }, [problem.target, problem.preFilledPositions]);
-
-  const buildInitialPool = useCallback((): Array<{ char: string; id: string }> => {
+    
+    // Build initial pool (remaining letters after pre-filled)
     const remainingPool = [...(problem.shuffled || [])];
     problem.preFilledPositions?.forEach(idx => {
       const char = problem.target[idx];
@@ -53,16 +53,11 @@ export const WordGameView: React.FC<WordGameViewProps> = ({ problem, onAnswer, s
         }
       }
     });
-    return remainingPool;
-  }, [problem.shuffled, problem.target, problem.preFilledPositions]);
-  
-  // Initialize userWord with pre-filled positions
-  useEffect(() => { 
+    
     // eslint-disable-next-line react-hooks/set-state-in-effect
-    setUserWord(buildInitialWord());
-     
-    setPool(buildInitialPool());
-  }, [problemKey, buildInitialWord, buildInitialPool]);
+    setUserWord(next);
+    setPool(remainingPool);
+  }, [problem.uid, problem.target, problem.shuffled, problem.preFilledPositions]);
   
   const isPreFilled = (index: number): boolean => {
     return problem.preFilledPositions?.includes(index) || false;
