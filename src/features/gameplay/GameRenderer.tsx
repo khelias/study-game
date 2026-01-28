@@ -40,15 +40,9 @@ export const GameRenderer: React.FC<GameRendererProps> = ({
   }
   
   // Render the game component
-  // Use key prop to force remount when problem changes (critical for word_cascade)
   const Component = gameEntry.component;
-  const problemKey = problem.type === 'word_cascade' 
-    ? `${problem.uid}-${problem.target}` 
-    : problem.uid;
-  
   return (
     <Component
-      key={problemKey}
       problem={problem}
       onAnswer={onAnswer}
       onMove={onMove}
