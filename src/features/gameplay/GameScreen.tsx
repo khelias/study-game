@@ -337,7 +337,7 @@ export const GameScreen: React.FC = () => {
         />
       </GameHeader>
 
-      <div className="flex-1 flex flex-col items-center p-4 max-w-2xl mx-auto w-full relative">
+      <div className="flex-1 flex flex-col items-center p-4 max-w-2xl mx-auto w-full relative pt-14 sm:pt-16">
         {/* Level Badge - floating in top left of game area, clickable */}
         <div
           onClick={() => setShowLevelSelector(true)}

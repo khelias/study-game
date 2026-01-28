@@ -14,7 +14,7 @@ interface MathSnakeViewProps {
   gameType?: string;
 }
 
-export const MathSnakeView: React.FC<MathSnakeViewProps> = ({ problem, onAnswer, onMove, soundEnabled, level = 1, gameType }) => {
+export const MathSnakeView: React.FC<MathSnakeViewProps> = ({ problem, onAnswer, onMove, soundEnabled, level = 1 }) => {
   const t = useTranslation();
   const { formatText } = useProfileText();
   const [status, setStatus] = useState<'idle' | 'correct' | 'wrong'>('idle');
@@ -398,20 +398,8 @@ export const MathSnakeView: React.FC<MathSnakeViewProps> = ({ problem, onAnswer,
   
   const levelTheme = getLevelTheme(level);
   
-  // Get game title
-  const gameTitle = gameType ? (t.games[gameType.replace('_adv', '') as keyof typeof t.games]?.title || gameType) : '';
-
   return (
     <div className="w-full flex flex-col items-center px-4 sm:px-6 max-w-2xl mx-auto pt-4 sm:pt-6 animate-in fade-in duration-300">
-      {/* Game Title Badge */}
-      {gameTitle && (
-        <div className="w-full mb-2 flex justify-center" style={{ maxWidth: 'min(90vw, 28rem, 100%)' }}>
-          <div className="bg-gradient-to-r from-emerald-100 to-green-100 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full text-xs sm:text-sm font-bold shadow-sm text-emerald-800 border border-emerald-300">
-            {formatText(gameTitle)}
-          </div>
-        </div>
-      )}
-
       {/* Game Board - Scales with viewport */}
       <div className="w-full" style={{ maxWidth: 'min(90vw, 28rem, 100%)' }}>
         <div
