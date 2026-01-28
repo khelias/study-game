@@ -82,8 +82,7 @@ export const WordGameView: React.FC<WordGameViewProps> = ({ problem, onAnswer, s
     // Check if all positions are filled
     if (newWord.every(l => l !== null)) {
       const userString = newWord.map(l => (l as LetterObject).char).join('');
-      // Case-insensitive comparison for word games
-      if (userString.toLowerCase() === problem.target.toLowerCase()) {
+      if (userString === problem.target) {
         onAnswer(true);
       } else {
         setTimeout(() => { 

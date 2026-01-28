@@ -10,32 +10,26 @@ import type { AnswerValidator } from './registry';
 
 /**
  * Validator for word builder games
- * Case-insensitive comparison to handle mixed case letters
  */
 export const validateWordBuilder: AnswerValidator = (problem: Problem, userAnswer: unknown): boolean => {
   if (problem.type !== 'word_builder') return false;
-  if (typeof userAnswer !== 'string' || typeof problem.target !== 'string') return false;
-  return userAnswer.toLowerCase() === problem.target.toLowerCase();
+  return userAnswer === problem.target;
 };
 
 /**
  * Validator for word cascade games
- * Case-insensitive comparison to handle mixed case letters
  */
 export const validateWordCascade: AnswerValidator = (problem: Problem, userAnswer: unknown): boolean => {
   if (problem.type !== 'word_cascade') return false;
-  if (typeof userAnswer !== 'string' || typeof problem.target !== 'string') return false;
-  return userAnswer.toLowerCase() === problem.target.toLowerCase();
+  return userAnswer === problem.target;
 };
 
 /**
  * Validator for syllable builder games
- * Case-insensitive comparison to handle mixed case letters
  */
 export const validateSyllableBuilder: AnswerValidator = (problem: Problem, userAnswer: unknown): boolean => {
   if (problem.type !== 'syllable_builder') return false;
-  if (typeof userAnswer !== 'string' || typeof problem.target !== 'string') return false;
-  return userAnswer.toLowerCase() === problem.target.toLowerCase();
+  return userAnswer === problem.target;
 };
 
 /**
