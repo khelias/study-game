@@ -91,7 +91,8 @@ export const WordCascadeView: React.FC<WordCascadeViewProps> = ({ problem, onAns
     return () => media.removeListener(update);
   }, []);
 
-  // Reset on new problem
+  // Reset on new problem - use both UID and target to detect changes (defensive against UID collisions)
+  const problemKey = `${problem.uid}-${problem.target}`;
   useEffect(() => {
     /* eslint-disable react-hooks/set-state-in-effect */
     setProgress('');
@@ -119,7 +120,7 @@ export const WordCascadeView: React.FC<WordCascadeViewProps> = ({ problem, onAns
       window.clearTimeout(bottomPenaltyTimerRef.current);
       bottomPenaltyTimerRef.current = null;
     }
-  }, [problem.uid]);
+  }, [problemKey]);
 
   // Spawn letters, biased toward the next needed character
   useEffect(() => {
@@ -143,7 +144,7 @@ export const WordCascadeView: React.FC<WordCascadeViewProps> = ({ problem, onAns
             kind === 'heart' ? '❤' :
             '🛡️';
           const lane = Math.floor(Math.random() * laneCount);
-          const id = `wc-${problem.uid}-pickup-${uidRef.current++}`;
+          const id = `wc-${problemKey}-pickup-${uidRef.current++}`;
           return [{ id, kind, char, lane, y: -24 }, ...prev].slice(0, 18);
         }
 
@@ -157,7 +158,7 @@ export const WordCascadeView: React.FC<WordCascadeViewProps> = ({ problem, onAns
         const fallbackChar = problem.target[Math.floor(Math.random() * problem.target.length)] ?? need;
         const char = spawnNeeded ? need : fallbackChar;
         const lane = Math.floor(Math.random() * laneCount);
-        const id = `wc-${problem.uid}-${uidRef.current++}`;
+        const id = `wc-${problemKey}-${uidRef.current++}`;
 
         return [{ id, kind: 'letter', char, lane, y: -24 }, ...prev].slice(0, 18);
       });
@@ -166,7 +167,7 @@ export const WordCascadeView: React.FC<WordCascadeViewProps> = ({ problem, onAns
       if (spawnRef.current) window.clearInterval(spawnRef.current);
       spawnRef.current = null;
     };
-  }, [problem.uid, problem.target, nextIdx, laneCount, spawnEveryMs]);
+  }, [problemKey, problem.target, nextIdx, laneCount, spawnEveryMs]);
 
   // Animate falling letters
   useEffect(() => {

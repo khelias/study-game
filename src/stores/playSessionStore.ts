@@ -119,7 +119,15 @@ export const usePlaySessionStore = create<PlaySessionStore>((set, get) => ({
   },
   
   setProblem: (problem: Problem | null) => {
-    set({ problem });
+    // In production builds, ensure we always create a new object reference
+    // to force React to detect the change, even if the content is similar
+    if (problem) {
+      // Create a new object reference to ensure React detects the change
+      // This is critical for production builds where React optimizations might skip updates
+      set({ problem: { ...problem } });
+    } else {
+      set({ problem: null });
+    }
   },
 
   

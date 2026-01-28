@@ -21,7 +21,8 @@ export const WordGameView: React.FC<WordGameViewProps> = ({ problem, onAnswer, s
   const t = useTranslation();
   const [userWord, setUserWord] = useState<Array<{ char: string; id: string } | null>>([]);
   const [pool, setPool] = useState<Array<{ char: string; id: string }>>(problem.shuffled || []);
-  const problemUid: string = problem.uid;
+  // Use both UID and target to detect problem changes (defensive against UID collisions)
+  const problemKey = `${problem.uid}-${problem.target}`;
   const buildInitialWord = useCallback((): Array<{ char: string; id: string } | null> => {
     const next: Array<{ char: string; id: string } | null> = [];
     for (let i = 0; i < problem.target.length; i++) {
@@ -61,7 +62,7 @@ export const WordGameView: React.FC<WordGameViewProps> = ({ problem, onAnswer, s
     setUserWord(buildInitialWord());
      
     setPool(buildInitialPool());
-  }, [problemUid, buildInitialWord, buildInitialPool]);
+  }, [problemKey, buildInitialWord, buildInitialPool]);
   
   const isPreFilled = (index: number): boolean => {
     return problem.preFilledPositions?.includes(index) || false;
