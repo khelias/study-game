@@ -74,29 +74,21 @@ export function useGameEngine() {
     
     const generator = gameEntry.generator;
     
-    // Try up to 50 times to generate a unique problem (increased from 30)
+    // Try up to 30 times to generate a unique problem (increased from 15)
     do {
       prob = generator(level, rng, profile as ProfileType);
       key = makeKey(prob);
       attempt++;
       
-      // For word-based games, check both the word and the key
+      // For word-based games, also check if the word itself was recently used
       const isWordGame = prob.type === 'word_builder' || prob.type === 'word_cascade' || prob.type === 'syllable_builder';
       if (isWordGame) {
         const word = 'target' in prob ? prob.target : '';
-        // Skip if word was recently used OR if the exact problem (key) was used
-        if ((word && wordBuffer.includes(word)) || buffer.includes(key)) {
-          continue; // Skip this problem
+        if (word && wordBuffer.includes(word)) {
+          continue; // Skip this problem if word was recently used
         }
-        // Found a unique word and unique problem
-        break;
       }
-      
-      // For non-word games, just check the key
-      if (!buffer.includes(key)) {
-        break;
-      }
-    } while (attempt < 50);
+    } while (attempt < 30 && buffer.includes(key));
     
     // Keep last 50 problems (increased from 20)
     const nextBuffer = [key, ...buffer].slice(0, 50);
@@ -107,8 +99,8 @@ export function useGameEngine() {
     if (isWordGame) {
       const word = 'target' in prob ? prob.target : '';
       if (word) {
-        // Keep last 25 words to avoid consecutive duplicates (increased from 15)
-        const nextWordBuffer = [word, ...wordBuffer].slice(0, 25);
+        // Keep last 15 words to avoid consecutive duplicates
+        const nextWordBuffer = [word, ...wordBuffer].slice(0, 15);
         lastWordsRef.current = { ...lastWordsRef.current, [type]: nextWordBuffer };
       }
     }
