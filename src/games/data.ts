@@ -115,10 +115,6 @@ const BASE_WORDS: WordObject[] = [
   { w: 'PÕRSAS', e: '🐖' }, { w: 'PART', e: '🦆' }, { w: 'HANI', e: '🪿' }, { w: 'PINGVIIN', e: '🐧' },
   { w: 'KONN', e: '🐸' }, { w: 'KALA', e: '🐟' }, { w: 'HAI', e: '🦈' }, { w: 'DRAAKON', e: '🐉' },
   { w: 'ÄMBLIK', e: '🕷️' }, { w: 'SIIL', e: '🦔' }, { w: 'TIGU', e: '🐌' },
-  { w: 'LIND', e: '🐦' }, // bird
-  { w: 'ÖÖKULL', e: '🦉' }, // owl
-  { w: 'MADU', e: '🐍' }, // snake
-  { w: 'PAPAGOI', e: '🦜' }, // parrot
 
   // food and drinks
   { w: 'SAI', e: '🍞' }, { w: 'LEIB', e: '🥖' }, { w: 'JUUST', e: '🧀' }, { w: 'PIIM', e: '🥛' },
@@ -127,14 +123,8 @@ const BASE_WORDS: WordObject[] = [
   { w: 'KARTUL', e: '🥔' }, { w: 'PORGAND', e: '🥕' }, { w: 'TOMAT', e: '🍅' }, { w: 'KURK', e: '🥒' },
   { w: 'KIRSS', e: '🍒' }, { w: 'ÕUN', e: '🍎' }, { w: 'PLOOM', e: '🍑' }, { w: 'MAASIKAS', e: '🍓' },
   { w: 'ARBUUS', e: '🍉' }, { w: 'SIDRUN', e: '🍋' }, { w: 'VIINAMARI', e: '🍇' }, { w: 'PÄHKEL', e: '🌰' },
-  { w: 'KOMM', e: '🍬' }, { w: 'JÄÄTIS', e: '🍦' }, { w: 'KÜPSIS', e: '🍪' }, { w: 'KOOK', e: '🍰' },
+  { w: 'KOMPVEK', e: '🍬' }, { w: 'JÄÄTIS', e: '🍦' }, { w: 'KÜPSIS', e: '🍪' }, { w: 'KOOK', e: '🍰' },
   { w: 'MESI', e: '🍯' }, { w: 'KOHV', e: '☕' }, { w: 'TEE', e: '🫖' },
-  { w: 'KAPSAS', e: '🥬' }, // cabbage
-  { w: 'KAKAO', e: '☕' }, // cocoa
-  { w: 'ŠOKOLAAD', e: '🍫' }, // chocolate
-  { w: 'PIPAR', e: '🌶️' }, // pepper
-  { w: 'SOOL', e: '🧂' }, // salt
-  { w: 'SUHKUR', e: '🍬' }, // sugar
 
   // home and items
   { w: 'KODU', e: '🏡' }, { w: 'VOODI', e: '🛌' }, { w: 'TALDRIK', e: '🍽️' },
@@ -144,11 +134,6 @@ const BASE_WORDS: WordObject[] = [
   { w: 'KOHVER', e: '🧳' }, { w: 'PRILLID', e: '👓' }, { w: 'KINDAD', e: '🧤' }, { w: 'MÜTS', e: '🧢' },
   { w: 'KELL', e: '⌚' }, { w: 'STOPP', e: '⏱️' }, { w: 'ÕHUPALL', e: '🎈' }, { w: 'PUSLE', e: '🧩' },
   { w: 'KLOTSID', e: '🧱' }, { w: 'LUSIKAS', e: '🥄' }, { w: 'NUGA', e: '🔪' },
-  { w: 'KORK', e: '🍾' }, // cork/bottle cap
-  { w: 'KÄRU', e: '🛒' }, // cart
-  { w: 'KÜÜNAL', e: '🕯️' }, // candle
-  { w: 'KÄBI', e: '🌰' }, // pine cone
-
 
   // transport
   { w: 'AUTO', e: '🚗' }, { w: 'BUSS', e: '🚌' }, { w: 'TRAMM', e: '🚊' }, { w: 'RONG', e: '🚆' },
