@@ -48,21 +48,34 @@ export const WordCascadeView: React.FC<WordCascadeViewProps> = ({ problem, onAns
   const MAX_STRIKES = 3;
 
   const laneCount = clamp(problem.columns ?? 4, 3, 6);
-  // Difficulty tuning: start forgiving, speed up with progress, slow down when close to failing.
+  
+  // Slower, more forgiving speed - allows more letters on screen without feeling rushed
   const speed = useMemo(() => {
-    const wordFactor = problem.target.length * 0.045;
-    const progressBoost = nextIdx * 0.02;
-    const strikeRelief = strikes * -0.16; // more strikes => slightly slower, more forgiving
-    const earlySafety = nextIdx === 0 ? -0.18 : 0; // slower before first correct letter
-    return clamp(0.9 + wordFactor + progressBoost + strikeRelief + earlySafety, 0.7, 2.1);
+    const wordFactor = problem.target.length * 0.03; // Reduced from 0.045
+    const progressBoost = nextIdx * 0.015; // Reduced from 0.02
+    const strikeRelief = strikes * -0.2; // More relief when struggling
+    const earlySafety = nextIdx === 0 ? -0.25 : 0; // Even slower at start
+    return clamp(0.7 + wordFactor + progressBoost + strikeRelief + earlySafety, 0.5, 1.8); // Lower max speed
   }, [problem.target.length, nextIdx, strikes]);
 
+  // Spawn more frequently but spawn multiple letters per spawn
   const spawnEveryMs = useMemo(() => {
-    const base = 880 - (problem.target.length * 28);
-    const progressFaster = Math.max(0, nextIdx - 1) * -12; // speeds up slightly as you build the word
-    const strikePause = strikes * 70; // more strikes => slower spawns to help recovery
-    return clamp(base + progressFaster + strikePause, 440, 920);
+    const base = 1000 - (problem.target.length * 30); // Slightly slower base
+    const progressFaster = Math.max(0, nextIdx - 1) * -10; // Less aggressive speedup
+    const strikePause = strikes * 80; // More pause when struggling
+    return clamp(base + progressFaster + strikePause, 500, 1100); // Slower range
   }, [problem.target.length, nextIdx, strikes]);
+  
+  // Spawn multiple letters per interval for better flow
+  const lettersPerSpawn = useMemo(() => {
+    // Spawn 2-3 letters at once for better availability
+    const base = 2;
+    // More letters when you're doing well (progressing)
+    const progressBonus = nextIdx > 0 ? 1 : 0;
+    // Fewer letters when struggling
+    const strikePenalty = strikes > 1 ? -1 : 0;
+    return Math.max(1, base + progressBonus + strikePenalty);
+  }, [nextIdx, strikes]);
 
   const uidRef = useRef(0);
   const tickRef = useRef<number | null>(null);
@@ -129,7 +142,6 @@ export const WordCascadeView: React.FC<WordCascadeViewProps> = ({ problem, onAns
       setLetters(prev => {
         const pickupsOnScreen = prev.filter(p => p.kind !== 'letter').length;
         const need = problem.target[nextIdx] ?? '';
-        // Case-insensitive check for needed letter on screen
         const hasNeededOnScreen = !!need && prev.some(l => l.kind === 'letter' && l.char.toLowerCase() === need.toLowerCase());
 
         // Optional pickups (only after the first correct letter, capped on screen)
@@ -144,29 +156,34 @@ export const WordCascadeView: React.FC<WordCascadeViewProps> = ({ problem, onAns
             '🛡️';
           const lane = Math.floor(Math.random() * laneCount);
           const id = `wc-${problem.uid}-${problem.target}-pickup-${uidRef.current++}`;
-          return [{ id, kind, char, lane, y: -24 }, ...prev].slice(0, 18);
+          return [{ id, kind, char, lane, y: -24 }, ...prev].slice(0, 30);
         }
 
-        // Fairness rule (balanced) for letters:
-        // - If the needed letter is NOT on screen, spawn it with ~85% probability (ensures it appears soon)
-        // - If it IS on screen, spawn it with ~55% probability (good variety, still helpful)
-        const spawnNeeded =
-          !!need &&
-          (hasNeededOnScreen ? Math.random() < 0.55 : Math.random() < 0.85);
+        // Spawn multiple letters at once for better flow
+        const newLetters: FallingItem[] = [];
+        for (let i = 0; i < lettersPerSpawn; i++) {
+          // Fairness rule: prioritize needed letter if not on screen
+          const spawnNeeded =
+            !!need &&
+            (hasNeededOnScreen ? Math.random() < 0.5 : Math.random() < 0.8);
 
-        const fallbackChar = problem.target[Math.floor(Math.random() * problem.target.length)] ?? need;
-        const char = spawnNeeded ? need : fallbackChar;
-        const lane = Math.floor(Math.random() * laneCount);
-        const id = `wc-${problem.uid}-${problem.target}-${uidRef.current++}`;
+          const fallbackChar = problem.target[Math.floor(Math.random() * problem.target.length)] ?? need;
+          const char = spawnNeeded ? need : fallbackChar;
+          
+          // Distribute letters across different lanes
+          const lane = Math.floor(Math.random() * laneCount);
+          const id = `wc-${problem.uid}-${problem.target}-${uidRef.current++}`;
+          newLetters.push({ id, kind: 'letter', char, lane, y: -24 - (i * 8) }); // Stagger vertically slightly
+        }
 
-        return [{ id, kind: 'letter', char, lane, y: -24 }, ...prev].slice(0, 18);
+        return [...newLetters, ...prev].slice(0, 30); // Increased from 18 to 30
       });
     }, spawnEveryMs);
     return () => {
       if (spawnRef.current) window.clearInterval(spawnRef.current);
       spawnRef.current = null;
     };
-  }, [problem.uid, problem.target, nextIdx, laneCount, spawnEveryMs]);
+  }, [problem.uid, problem.target, nextIdx, laneCount, spawnEveryMs, lettersPerSpawn]);
 
   // Animate falling letters
   useEffect(() => {
