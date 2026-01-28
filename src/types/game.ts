@@ -238,11 +238,20 @@ export interface CompareSizesProblem extends BaseProblem {
   showSymbols: boolean;
 }
 
+// Word cascade problem (arcade word builder)
+export interface WordCascadeProblem extends BaseProblem {
+  type: 'word_cascade';
+  target: string; // curated dictionary word (Estonian by default)
+  emoji: string;
+  columns: number; // number of lanes letters can fall in
+}
+
 // Answer metadata for game-specific actions
 // Union type for all problems
 export type Problem =
   | BalanceScaleProblem
   | WordBuilderProblem
+  | WordCascadeProblem
   | PatternProblem
   | SentenceLogicProblem
   | MemoryMathProblem

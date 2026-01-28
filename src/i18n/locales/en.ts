@@ -315,6 +315,14 @@ export const en = {
         title: 'Clock Master',
         desc: 'Reach CLOCK GAME level 5',
       },
+      cascade_master: {
+        title: 'Cascade Master',
+        desc: 'Reach WORD CASCADE level 5',
+      },
+      cascade_perfect_10: {
+        title: 'Cascade Champion',
+        desc: 'Complete 10 Word Cascade games',
+      },
     },
   },
 
@@ -403,6 +411,16 @@ export const en = {
       preFilled: 'Hint: some letters are already in place!',
       useAllLetters: 'Use all correct letters',
       watchCase: 'Watch upper and lower case!',
+    },
+    wordCascade: {
+      tapLetters: 'Tap letters to build the word',
+      tryAgain: 'Try again!',
+      greatJob: 'Great job!',
+      tutorial: 'Tap the falling letters to build the word. Letters that hit the red barrier add strikes!',
+      starPickup: 'Star pickup',
+      heartPickup: 'Heart pickup',
+      shieldPickup: 'Shield pickup',
+      pickupHint: 'Tap stars, hearts and shields to get bonuses!',
     },
     pattern: {
       tagline: 'Pattern Train',
@@ -644,6 +662,10 @@ export const en = {
     word_builder: {
       title: 'WORD MASTER',
       desc: 'Build a word from letters',
+    },
+    word_cascade: {
+      title: 'WORD CASCADE',
+      desc: 'Catch letters and build words fast',
     },
     syllable_builder: {
       title: 'SYLLABLE MASTER',

@@ -7,6 +7,7 @@
 export { BalanceScaleView } from './BalanceScaleView';
 export { StandardGameView } from './StandardGameView';
 export { WordGameView } from './WordGameView';
+export { WordCascadeView } from './WordCascadeView';
 export { PatternTrainView } from './PatternTrainView';
 export { MemoryGameView } from './MemoryGameView';
 export { RoboPathView } from './RoboPathView';

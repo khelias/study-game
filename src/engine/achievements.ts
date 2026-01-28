@@ -51,6 +51,7 @@ export const ACHIEVEMENTS: Record<string, Achievement> = {
     check: (stats: Stats) => {
       const allTypes = [
         'word_builder', 
+        'word_cascade',
         'syllable_builder', 
         'pattern', 
         'sentence_logic', 
@@ -140,6 +141,16 @@ export const ACHIEVEMENTS: Record<string, Achievement> = {
     id: 'clock_master',
     icon: '🕐',
     check: (stats: Stats) => (stats.maxLevels.time_match || 0) >= 5
+  },
+  cascade_master: {
+    id: 'cascade_master',
+    icon: '🌊',
+    check: (stats: Stats) => (stats.maxLevels.word_cascade || 0) >= 5
+  },
+  cascade_perfect_10: {
+    id: 'cascade_perfect_10',
+    icon: '✨',
+    check: (stats: Stats) => (stats.gamesByType.word_cascade || 0) >= 10
   }
 };
 

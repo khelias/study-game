@@ -129,6 +129,7 @@ describe('checkAchievements', () => {
     const stats = createTestStats({
       gamesByType: {
         word_builder: 1,
+        word_cascade: 1,
         memory_math: 1,
         sentence_logic: 1,
         balance_scale: 1,

@@ -9,6 +9,7 @@ import type {
   ProfileType, 
   BalanceScaleProblem,
   WordBuilderProblem,
+  WordCascadeProblem,
   PatternProblem,
   SentenceLogicProblem,
   MemoryMathProblem,
@@ -330,6 +331,27 @@ export const Generators: Record<string, GeneratorFunction> = {
       shuffled,
       preFilledPositions,
       uid: uid(rng) 
+    };
+  },
+
+  word_cascade: (level: number, rng: RngFunction = Math.random, _profile: ProfileType = 'starter'): WordCascadeProblem => {
+    const locale = getLocale();
+    const db = locale === 'en' ? WORD_DB_EN : WORD_DB;
+
+    // Levels map to word lengths (start short, grow gradually)
+    const desiredLen = Math.max(3, Math.min(7, 3 + Math.floor(level / 2)));
+    const bucket = db[desiredLen] ?? db[desiredLen - 1] ?? db[desiredLen + 1] ?? db[3] ?? [];
+    const chosen = bucket.length > 0 ? getRandom(bucket, rng) : { w: 'KASS', e: '🐱' };
+
+    // Keep casing aligned with the existing word builder logic
+    const target = applyLetterCase(chosen.w, level, rng);
+
+    return {
+      type: 'word_cascade',
+      uid: uid(rng),
+      target,
+      emoji: chosen.e,
+      columns: level < 6 ? 4 : 5,
     };
   },
 

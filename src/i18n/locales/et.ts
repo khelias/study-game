@@ -315,6 +315,14 @@ export const et = {
         title: 'Kellameister',
         desc: 'Jõua KELLAMÄNG tasemele 5',
       },
+      cascade_master: {
+        title: 'Koske meister',
+        desc: 'Jõua SÕNAKOSK tasemele 5',
+      },
+      cascade_perfect_10: {
+        title: 'Koske kangelane',
+        desc: 'Lõpeta 10 Sõnakoske mängu',
+      },
     },
   },
 
@@ -403,6 +411,16 @@ export const et = {
       preFilled: 'Vihje: mõned tähed on juba õiges kohas!',
       useAllLetters: 'Kasuta kõiki õigeid tähti',
       watchCase: 'Pane tähele suuri ja väikeseid tähti!',
+    },
+    wordCascade: {
+      tapLetters: 'Puuduta tähti, et sõna kokku panna',
+      tryAgain: 'Proovi uuesti!',
+      greatJob: 'Tubli töö!',
+      tutorial: 'Puuduta langevaid tähti, et sõna kokku panna. Punasele barjäärile jõudnud tähed annavad veamärke!',
+      starPickup: 'Tähtede boonus',
+      heartPickup: 'Südame boonus',
+      shieldPickup: 'Veamärgi kaitse',
+      pickupHint: 'Puuduta tähti, südameid ja kilpe, et saada boonuseid!',
     },
     pattern: {
       tagline: 'Mustri-rong',
@@ -644,6 +662,10 @@ export const et = {
     word_builder: {
       title: 'SÕNAMEISTER',
       desc: 'Lao tähtedest sõna kokku',
+    },
+    word_cascade: {
+      title: 'SÕNAKOSK',
+      desc: 'Püüa tähti ja lao sõnu kiiresti',
     },
     syllable_builder: {
       title: 'SILBIMEISTER',

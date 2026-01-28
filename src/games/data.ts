@@ -47,6 +47,7 @@ export const CATEGORIES: Record<string, Category> = {
 export const GAME_CONFIG: Record<string, GameConfig> = {
   // 5+ games - simpler, visual (7 games - added letter_match)
   word_builder:    { id: 'word_builder', title: 'WORD MASTER', theme: THEME.orange!, icon: 'FileText', desc: 'Build a word from letters', allowedProfiles: ['starter', 'advanced'], difficulty: 'easy', category: 'language' },
+  word_cascade:    { id: 'word_cascade', title: 'WORD CASCADE', theme: THEME.pink!, icon: 'Layers', desc: 'Catch letters and build words fast', allowedProfiles: ['starter'], difficulty: 'medium', category: 'language' },
   syllable_builder:{ id: 'syllable_builder', title: 'SYLLABLE MASTER', theme: THEME.orange!, icon: 'Layers', desc: 'Put syllables together into a word', allowedProfiles: ['starter'], difficulty: 'easy', category: 'language' },
   pattern:         { id: 'pattern', title: 'PATTERN TRAIN', theme: THEME.teal!, icon: 'TrainFront', desc: 'Continue the pattern', allowedProfiles: ['starter'], difficulty: 'easy', category: 'logic' },
   sentence_logic:  { id: 'sentence_logic', title: 'SENTENCE DETECTIVE', theme: THEME.green!, icon: 'BookOpen', desc: 'Where is the object?', allowedProfiles: ['starter'], difficulty: 'medium', category: 'language' },
@@ -67,6 +68,7 @@ export const GAME_CONFIG: Record<string, GameConfig> = {
   pattern_adv:      { id: 'pattern', title: 'PATTERN TRAIN', theme: THEME.teal!, icon: 'TrainFront', desc: 'Continue the pattern', allowedProfiles: ['advanced'], difficulty: 'hard', category: 'logic' },
   letter_match_adv: { id: 'letter_match', title: 'LETTER DETECTIVE', theme: THEME.pink!, icon: 'Search', desc: 'Find the correct letter', allowedProfiles: ['advanced'], difficulty: 'hard', category: 'language' },
   unit_conversion_adv: { id: 'unit_conversion', title: 'UNITS', theme: THEME.blue!, icon: 'Ruler', desc: 'Convert units', allowedProfiles: ['advanced'], difficulty: 'hard', category: 'math' },
+  word_cascade_adv: { id: 'word_cascade', title: 'WORD CASCADE', theme: THEME.pink!, icon: 'Layers', desc: 'Catch letters and build words fast', allowedProfiles: ['advanced'], difficulty: 'hard', category: 'language' },
 };
 
 // Profiles are extensible with difficulty offset

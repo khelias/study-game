@@ -18,6 +18,7 @@ import {
   BalanceScaleView,
   StandardGameView,
   WordGameView,
+  WordCascadeView,
   PatternTrainView,
   MemoryGameView,
   RoboPathView,
@@ -29,6 +30,7 @@ import { MathSnakeView } from '../components/MathSnakeView';
 import { CompareSizesView } from '../components/CompareSizesView';
 import {
   validateWordBuilder,
+  validateWordCascade,
   validateSyllableBuilder,
   validateLetterMatch,
   validateSentenceLogic,
@@ -63,6 +65,20 @@ function registerAllGames(): void {
     validator: validateWordBuilder,
     allowedProfiles: wordBuilderConfig.allowedProfiles,
   });
+
+  // Word Cascade
+  const wordCascadeConfig = GAME_CONFIG.word_cascade;
+  const wordCascadeGenerator = Generators.word_cascade;
+  if (wordCascadeConfig && wordCascadeGenerator) {
+    gameRegistry.register({
+      id: 'word_cascade',
+      component: WordCascadeView,
+      generator: wordCascadeGenerator,
+      config: wordCascadeConfig,
+      validator: validateWordCascade,
+      allowedProfiles: wordCascadeConfig.allowedProfiles,
+    });
+  }
 
   // Syllable Builder
   const syllableBuilderConfig = GAME_CONFIG.syllable_builder;

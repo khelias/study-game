@@ -131,6 +131,52 @@ export function processStandardAnswer(context: AnswerHandlerContext): AnswerResu
 }
 
 /**
+ * Processes an answer for word cascade (arcade) game type
+ * Points scale with word length (stronger high-score chase).
+ */
+export function processWordCascadeAnswer(context: AnswerHandlerContext): AnswerResult {
+  const { isCorrect, problem, gameType } = context;
+  const baseGameType = gameType.replace('_adv', '');
+
+  if (baseGameType !== 'word_cascade' || problem.type !== 'word_cascade') {
+    throw new Error('processWordCascadeAnswer called for non-word-cascade game');
+  }
+
+  const len = problem.target.length;
+  const points = isCorrect ? Math.max(10, len * 15) : 0;
+
+  if (isCorrect) {
+    return {
+      shouldShowFeedback: true,
+      shouldShowParticles: true,
+      shouldIncrementScore: true,
+      shouldIncrementStars: false,
+      shouldDecrementHearts: false,
+      shouldEndGame: false,
+      shouldLevelUp: false,
+      updatedProblem: null,
+      gameOver: false,
+      points,
+    };
+  }
+
+  return {
+    shouldShowFeedback: true,
+    shouldShowParticles: false,
+    shouldIncrementScore: false,
+    shouldIncrementStars: false,
+    shouldDecrementHearts: true,
+    // For word cascade, a wrong answer means the run failed (after internal strikes),
+    // so we end the game and spend exactly one heart.
+    shouldEndGame: true,
+    shouldLevelUp: false,
+    updatedProblem: null,
+    gameOver: false,
+    points: 0,
+  };
+}
+
+/**
  * Main answer processing function
  * Determines game type and routes to appropriate handler
  */
@@ -140,6 +186,10 @@ export function processAnswer(context: AnswerHandlerContext): AnswerResult {
 
   if (baseGameType === 'math_snake' && problem.type === 'math_snake') {
     return processMathSnakeAnswer(context);
+  }
+
+  if (baseGameType === 'word_cascade' && problem.type === 'word_cascade') {
+    return processWordCascadeAnswer(context);
   }
 
   return processStandardAnswer(context);

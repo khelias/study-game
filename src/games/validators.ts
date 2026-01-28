@@ -17,6 +17,14 @@ export const validateWordBuilder: AnswerValidator = (problem: Problem, userAnswe
 };
 
 /**
+ * Validator for word cascade games
+ */
+export const validateWordCascade: AnswerValidator = (problem: Problem, userAnswer: unknown): boolean => {
+  if (problem.type !== 'word_cascade') return false;
+  return userAnswer === problem.target;
+};
+
+/**
  * Validator for syllable builder games
  */
 export const validateSyllableBuilder: AnswerValidator = (problem: Problem, userAnswer: unknown): boolean => {
