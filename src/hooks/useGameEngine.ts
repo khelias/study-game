@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef } from 'react';
+import { useState, useCallback } from 'react';
 import { gameRegistry } from '../games/registry';
 import { getEffectiveLevel } from '../engine/adaptiveDifficulty';
 import { createRng } from '../engine/rng';
@@ -41,6 +41,12 @@ const makeKey = (prob: Problem | null): string => {
   }
 };
 
+// CRITICAL FIX: Move buffers to module level so they're shared across ALL hook instances
+// Previously, each useGameEngine() call created separate buffers, causing duplicate words
+// when useAnswerHandler and GameScreen both called useGameEngine()
+const sharedLastKeys: Record<string, string[]> = {};
+const sharedLastWords: Record<string, string[]> = {};
+
 export function useGameEngine() {
   const [rng] = useState(() => {
     if (typeof window === 'undefined') {
@@ -51,18 +57,15 @@ export function useGameEngine() {
     const parsed = seedParam ? parseInt(seedParam, 10) : null;
     return createRng(Number.isFinite(parsed) && parsed !== null ? parsed : Date.now());
   });
-  
-  const lastKeysRef = useRef<Record<string, string[]>>({});
-  // Track last words separately for word-based games to avoid consecutive duplicates
-  const lastWordsRef = useRef<Record<string, string[]>>({});
 
   const getRng = useCallback(() => rng, [rng]);
 
   const generateUniqueProblem = useCallback((type: string, level: number, profile: string): Problem | null => {
-    const buffer = lastKeysRef.current[type] || [];
+    // CRITICAL: Use shared module-level buffers so all hook instances share the same state
+    const buffer = sharedLastKeys[type] || [];
     // CRITICAL: Always normalize wordBuffer to lowercase when reading
     // The buffer should store lowercase, but handle legacy mixed-case data
-    const wordBuffer = (lastWordsRef.current[type] || []).map(w => w.toLowerCase());
+    const wordBuffer = (sharedLastWords[type] || []).map(w => w.toLowerCase());
     let attempt = 0;
     let prob: Problem;
     let key: string;
@@ -119,8 +122,9 @@ export function useGameEngine() {
     }
     
     // Keep last 50 problems (increased from 20)
+    // CRITICAL: Update shared module-level buffer so all hook instances see the same state
     const nextBuffer = [key, ...buffer].slice(0, 50);
-    lastKeysRef.current = { ...lastKeysRef.current, [type]: nextBuffer };
+    sharedLastKeys[type] = nextBuffer;
     
     // For word-based games, also track the word itself (case-insensitive)
     const isWordGame = prob.type === 'word_builder' || prob.type === 'word_cascade' || prob.type === 'syllable_builder';
@@ -134,7 +138,7 @@ export function useGameEngine() {
         // This ensures FIFO behavior and prevents duplicates
         const filtered = wordBuffer.filter(w => w !== wordLower);
         const nextWordBuffer = [wordLower, ...filtered].slice(0, 25);
-        lastWordsRef.current = { ...lastWordsRef.current, [type]: nextWordBuffer };
+        sharedLastWords[type] = nextWordBuffer;
       }
     }
     
