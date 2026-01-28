@@ -39,6 +39,7 @@ export function useAnswerHandler(): UseAnswerHandlerResult {
   const updateStats = useGameStore(state => state.updateStats);
   const spendHeart = useGameStore(state => state.spendHeart);
   const recordLevelUp = useGameStore(state => state.recordLevelUp);
+  const updateHighScore = useGameStore(state => state.updateHighScore);
 
   // Session state
   const gameType = usePlaySessionStore(state => state.gameType);
@@ -62,6 +63,7 @@ export function useAnswerHandler(): UseAnswerHandlerResult {
   const updateAdaptiveDifficulty = usePlaySessionStore(state => state.updateAdaptiveDifficulty);
   const submitAnswer = usePlaySessionStore(state => state.submitAnswer);
   const addNotification = usePlaySessionStore(state => state.addNotification);
+  const score = usePlaySessionStore(state => state.score);
 
   const handleAnswer = useCallback((isCorrect: boolean, shouldShowAchievement: () => boolean = () => true) => {
     if (!gameType || !problem) return;
@@ -200,6 +202,12 @@ export function useAnswerHandler(): UseAnswerHandlerResult {
       if (result.shouldIncrementScore) {
         addScore(result.points);
         addGlobalScore(result.points);
+        
+        // Update high score after adding points (check new score)
+        if (gameType) {
+          const newScore = score + result.points;
+          updateHighScore(gameType, newScore);
+        }
       }
 
       setShowHint(false);
@@ -342,6 +350,8 @@ export function useAnswerHandler(): UseAnswerHandlerResult {
     t,
     formatText,
     levelProgress,
+    score,
+    updateHighScore,
     // checkLevelUp and calculateStarReward are pure functions from engine, no need in deps
   ]);
 

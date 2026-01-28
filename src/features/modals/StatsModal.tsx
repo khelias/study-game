@@ -1,9 +1,11 @@
 import React from 'react';
-import { X } from 'lucide-react';
+import { X, Trophy } from 'lucide-react';
 import { GAME_CONFIG } from '../../games/data';
 import { StatsDashboard, GameTypeStats } from '../../components/StatsDashboard';
 import { FocusTrap } from '../../components/AccessibilityHelpers';
 import { useTranslation } from '../../i18n/useTranslation';
+import { useGameStore } from '../../stores/gameStore';
+import { useProfileText } from '../../hooks/useProfileText';
 import { Stats } from '../../types/stats';
 import { AchievementUnlock } from '../../types/achievement';
 
@@ -15,6 +17,8 @@ interface StatsModalProps {
 
 export const StatsModal: React.FC<StatsModalProps> = ({ stats, unlockedAchievements, onClose }) => {
   const t = useTranslation();
+  const { formatText } = useProfileText();
+  const highScores = useGameStore(state => state.highScores);
 
   return (
     <div 
@@ -74,6 +78,31 @@ export const StatsModal: React.FC<StatsModalProps> = ({ stats, unlockedAchieveme
                       </div>
                     );
                   })}
+                </div>
+              </div>
+            )}
+
+            {/* High Scores */}
+            {highScores && Object.keys(highScores).length > 0 && (
+              <div className="bg-slate-50 p-6 rounded-2xl border-2 border-slate-200">
+                <h3 className="text-lg font-black text-slate-800 mb-4 flex items-center gap-2">
+                  <Trophy size={20} className="text-yellow-500" />
+                  {formatText(t.game.highScore || 'High Scores')}
+                </h3>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {Object.entries(highScores)
+                    .sort((a, b) => b[1] - a[1]) // Sort by score descending
+                    .map(([gameType, score]) => {
+                      const config = GAME_CONFIG[gameType];
+                      if (!config) return null;
+                      const gameTitle = t.games[config.id as keyof typeof t.games]?.title || config.title;
+                      return (
+                        <div key={gameType} className="flex justify-between items-center bg-white p-3 rounded-xl">
+                          <span className="text-sm font-semibold text-slate-600">{formatText(gameTitle)}</span>
+                          <span className="text-lg font-black text-yellow-600">{score}</span>
+                        </div>
+                      );
+                    })}
                 </div>
               </div>
             )}

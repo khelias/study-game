@@ -161,6 +161,8 @@ export const et = {
     retry: 'Proovi uuesti',
     levelUp: 'Tase tõusis!',
     newAchievement: 'Uus saavutus!',
+    highScore: 'Parim tulemus',
+    newRecord: 'Uus rekord!',
   },
 
   // Stats

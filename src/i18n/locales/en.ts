@@ -161,6 +161,8 @@ export const en = {
     retry: 'Try Again',
     levelUp: 'Level up!',
     newAchievement: 'New achievement!',
+    highScore: 'High Score',
+    newRecord: 'New Record!',
   },
 
   // Stats

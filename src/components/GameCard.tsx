@@ -23,6 +23,7 @@ interface GameCardProps {
   progress?: Progress | null;
   badge?: string | null;
   delay?: number;
+  highScore?: number; // Optional high score to display
 }
 
 export const GameCard: React.FC<GameCardProps> = ({ 
@@ -32,7 +33,8 @@ export const GameCard: React.FC<GameCardProps> = ({
   isLocked = false,
   progress = null,
   badge = null,
-  delay = 0
+  delay = 0,
+  highScore
 }) => {
   const t = useTranslation();
   const { formatText } = useProfileText();
@@ -91,9 +93,9 @@ export const GameCard: React.FC<GameCardProps> = ({
           </h3>
           <p className="text-sm font-semibold text-slate-600 mb-2 truncate">{formatText(gameDesc)}</p>
           
-          {/* Difficulty badge */}
-          {gameConfig.difficulty && difficultyText && (
-            <div className="mt-1 flex items-center gap-1">
+          {/* Difficulty badge and High Score */}
+          <div className="mt-1 flex items-center gap-2 flex-wrap">
+            {gameConfig.difficulty && difficultyText && (
               <span className={`
                 text-xs font-bold px-2 py-0.5 rounded-full
                 ${gameConfig.difficulty === 'easy' ? 'bg-green-100 text-green-700' :
@@ -102,8 +104,13 @@ export const GameCard: React.FC<GameCardProps> = ({
               `}>
                 {formatText(difficultyText)}
               </span>
-            </div>
-          )}
+            )}
+            {highScore !== undefined && (
+              <span className="text-xs font-semibold text-slate-500 flex items-center gap-1">
+                🏆 {formatText(t.game.highScore || 'High Score')}: {highScore > 0 ? highScore : '-'}
+              </span>
+            )}
+          </div>
           
           {/* Progress bar */}
           {progress && (

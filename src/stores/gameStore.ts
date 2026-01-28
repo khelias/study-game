@@ -40,6 +40,7 @@ export interface GameStore {
   stars: number; // Persistent currency (replaces collectedStars)
   hearts: number; // Persistent global resource (replaces session hearts)
   hasSeenTutorial: boolean;
+  highScores: Record<string, number>; // High score per game type
   
   // Actions
   setProfile: (profile: string) => void;
@@ -60,6 +61,8 @@ export interface GameStore {
   addScore: (points: number) => void;
   markTutorialSeen: () => void;
   setLevel: (gameType: string, level: number) => void; // Manually set level for a game
+  updateHighScore: (gameType: string, score: number) => boolean; // Update high score, returns true if new record
+  getHighScore: (gameType: string) => number; // Get high score for a game type
 }
 
 const DEFAULT_PROFILE: ProfileType = 'advanced';
@@ -77,6 +80,7 @@ export const useGameStore = create<GameStore>()(
       stars: 0, // Persistent currency
       hearts: DEFAULT_HEARTS, // Persistent global resource
       hasSeenTutorial: false,
+      highScores: {}, // High scores per game type
       
       // Actions
       setProfile: (profile: string) => {
@@ -213,6 +217,7 @@ export const useGameStore = create<GameStore>()(
             stars: 0,
             hearts: DEFAULT_HEARTS,
             hasSeenTutorial: false,
+            highScores: {},
           });
         }
       },
@@ -325,6 +330,29 @@ export const useGameStore = create<GameStore>()(
         
         set({ levels: updatedLevels });
       },
+      
+      updateHighScore: (gameType: string, score: number) => {
+        const state = get();
+        const baseType = gameType.replace('_adv', '');
+        const currentHighScore = state.highScores[baseType] || 0;
+        
+        if (score > currentHighScore) {
+          set({
+            highScores: {
+              ...state.highScores,
+              [baseType]: score
+            }
+          });
+          return true; // New record
+        }
+        return false; // No new record
+      },
+      
+      getHighScore: (gameType: string) => {
+        const state = get();
+        const baseType = gameType.replace('_adv', '');
+        return state.highScores[baseType] || 0;
+      },
     }),
     {
       name: APP_KEY,
@@ -338,6 +366,7 @@ export const useGameStore = create<GameStore>()(
         stars: state.stars,
         hearts: state.hearts,
         hasSeenTutorial: state.hasSeenTutorial,
+        highScores: state.highScores,
       }),
       // Handle migration from old localStorage format
       migrate: (persistedState: unknown) => {

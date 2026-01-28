@@ -46,6 +46,7 @@ export const GameScreen: React.FC = () => {
   const setLevel = useGameStore(state => state.setLevel);
   const addGlobalScore = useGameStore(state => state.addScore);
   const updateStats = useGameStore(state => state.updateStats);
+  const updateHighScore = useGameStore(state => state.updateHighScore);
 
   // Session state
   const gameType = usePlaySessionStore(state => state.gameType);
@@ -86,6 +87,7 @@ export const GameScreen: React.FC = () => {
     handleAnswerBase(isCorrect, () => !achievementShown);
   };
   const { showHint: showHintForProblem } = useGameHints(addNotification, setBgClass);
+  
   const [isCompactLayout, setIsCompactLayout] = useState(false);
   const [showSettingsMenu, setShowSettingsMenu] = useState(false);
   const [showStats, setShowStats] = useState(false);
@@ -98,7 +100,7 @@ export const GameScreen: React.FC = () => {
   const stats = useGameStore(state => state.stats);
   const unlockedAchievementIds = useGameStore(state => state.unlockedAchievements);
   const t = useTranslation();
-  
+
   // Convert achievement IDs to AchievementUnlock objects
   const unlockedAchievements: AchievementUnlock[] = unlockedAchievementIds
     .map(id => {
@@ -228,6 +230,8 @@ export const GameScreen: React.FC = () => {
         ...stats,
         maxSnakeLength: Math.max(stats.maxSnakeLength || 0, finalSnakeLength),
       }));
+      
+      // High score is already updated on each score increase, no need to update here
       endGame();
       if (gameStartTime) {
         const playTime = Math.floor((Date.now() - gameStartTime) / 1000);
@@ -249,6 +253,10 @@ export const GameScreen: React.FC = () => {
       const applePoints = 5;
       addScore(applePoints);
       addGlobalScore(applePoints);
+      
+      // Update high score after adding apple points
+      const newScore = score + applePoints;
+      updateHighScore(gameType, newScore);
     }
 
     setProblem(result.problem);
@@ -295,6 +303,7 @@ export const GameScreen: React.FC = () => {
         particleActive={particleActive}
         onReturnToMenu={() => {
           playClick();
+          // High score is already updated on each score increase
           returnToMenu();
         }}
         onSettingsClick={() => {
@@ -316,6 +325,7 @@ export const GameScreen: React.FC = () => {
           }}
           onReturnToMenu={() => {
             playClick();
+            // High score is already updated on each score increase
             returnToMenu();
           }}
           onClose={() => setShowSettingsMenu(false)}

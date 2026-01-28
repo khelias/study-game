@@ -13,10 +13,14 @@ export const GameOverScreen: React.FC = () => {
   const gameType = usePlaySessionStore(state => state.gameType);
   const returnToMenu = usePlaySessionStore(state => state.returnToMenu);
   const startGame = usePlaySessionStore(state => state.startGame);
+  const getHighScore = useGameStore(state => state.getHighScore);
   const { playClick } = useGameAudio(soundEnabled);
   const scoreMessage = formatText(
     t.game.scoreMessage.replace('{score}', String(score))
   );
+  
+  const highScore = gameType ? getHighScore(gameType) : 0;
+  const isNewRecord = gameType && score > 0 && score >= highScore;
   const handleRetry = () => {
     playClick();
     if (gameType) {
@@ -30,7 +34,27 @@ export const GameOverScreen: React.FC = () => {
     <div className="min-h-screen flex flex-col items-center justify-center bg-red-50 p-4 animate-in fade-in">
       <div className="text-8xl mb-4 animate-bounce">😢</div>
       <h2 className="text-4xl font-black text-red-600 mb-2">{formatText(t.game.gameOver)}</h2>
-      <p className="text-slate-600 mb-8">{scoreMessage}</p>
+      <p className="text-slate-600 mb-4">{scoreMessage}</p>
+      
+      {/* High Score Display - Always show to prevent layout shift */}
+      <div className={`mb-6 px-4 py-2 rounded-xl ${isNewRecord ? 'bg-yellow-100 border-2 border-yellow-400' : 'bg-slate-100 border-2 border-slate-300'}`}>
+        {isNewRecord ? (
+          <div className="text-center">
+            <div className="text-sm font-bold text-yellow-700 mb-1">🎉 {formatText(t.game.newRecord || 'New Record!')}</div>
+            <div className="text-lg font-black text-yellow-800">{formatText(t.game.highScore || 'High Score')}: {highScore}</div>
+          </div>
+        ) : highScore > 0 ? (
+          <div className="text-center">
+            <div className="text-sm font-semibold text-slate-600 mb-1">{formatText(t.game.highScore || 'High Score')}</div>
+            <div className="text-lg font-black text-slate-800">{highScore}</div>
+          </div>
+        ) : (
+          <div className="text-center">
+            <div className="text-sm font-semibold text-slate-500 mb-1">{formatText(t.game.highScore || 'High Score')}</div>
+            <div className="text-lg font-black text-slate-400">-</div>
+          </div>
+        )}
+      </div>
       <div className="flex gap-4 flex-wrap justify-center">
         <button 
           onClick={handleRetry} 
@@ -41,6 +65,7 @@ export const GameOverScreen: React.FC = () => {
         <button 
           onClick={() => {
             playClick();
+            // High score is already updated on each score increase
             returnToMenu();
           }} 
           className="bg-green-500 hover:bg-green-600 text-white px-8 py-4 rounded-xl font-bold text-xl shadow-lg transition-transform active:scale-95"

@@ -38,6 +38,7 @@ export const MenuScreen: React.FC = () => {
   const stats = useGameStore(state => state.stats);
   const hasSeenTutorial = useGameStore(state => state.hasSeenTutorial);
   const levels = useGameStore(state => state.levels);
+  const getHighScore = useGameStore(state => state.getHighScore);
   
   const setProfile = useGameStore(state => state.setProfile);
   const toggleSound = useGameStore(state => state.toggleSound);
@@ -369,6 +370,7 @@ export const MenuScreen: React.FC = () => {
                     onClick={() => handleStartGame(key)}
                     badge={isNew ? formatText(t.menuSpecific.newGame) : null}
                     delay={0}
+                    highScore={getHighScore(key)}
                   />
                 );
               }).filter(Boolean);
@@ -434,6 +436,7 @@ export const MenuScreen: React.FC = () => {
                         onClick={() => handleStartGame(key)}
                         badge={isNew ? formatText(t.menuSpecific.newGame) : null}
                         delay={idx * 50}
+                        highScore={getHighScore(key)}
                       />
                     );
                   })}
