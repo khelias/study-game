@@ -48,8 +48,9 @@ export const WordCascadeView: React.FC<WordCascadeViewProps> = ({ problem, onAns
   const MAX_STRIKES = 3;
   
   // Track the current problem to detect changes (for production builds)
+  // Initialize with current problem to ensure fresh state on mount
   const problemKeyRef = useRef<string>(`${problem.uid}-${problem.target}`);
-  const previousProblemKeyRef = useRef<string>(`${problem.uid}-${problem.target}`);
+  const previousProblemKeyRef = useRef<string>('');
 
   const laneCount = clamp(problem.columns ?? 4, 3, 6);
   // Difficulty tuning: start forgiving, speed up with progress, slow down when close to failing.
@@ -80,6 +81,12 @@ export const WordCascadeView: React.FC<WordCascadeViewProps> = ({ problem, onAns
   const forgivenIdsRef = useRef<Set<string>>(new Set());
   const shakeTimerRef = useRef<number | null>(null);
   const hasShownPickupHintRef = useRef(false);
+  const progressRef = useRef('');
+  
+  // Keep progressRef in sync with progress state
+  useEffect(() => {
+    progressRef.current = progress;
+  }, [progress]);
 
   // Respect user's reduced motion preference
   useEffect(() => {
@@ -100,9 +107,11 @@ export const WordCascadeView: React.FC<WordCascadeViewProps> = ({ problem, onAns
   useEffect(() => {
     const currentKey = `${problem.uid}-${problem.target}`;
     
-    // Only reset if the problem actually changed (prevents unnecessary resets)
-    // Compare with previous key, not current (which might have been updated by another effect)
-    if (previousProblemKeyRef.current === currentKey) {
+    // Always reset on mount (when previousProblemKeyRef is empty string)
+    // Or reset if the problem actually changed
+    const shouldReset = previousProblemKeyRef.current === '' || previousProblemKeyRef.current !== currentKey;
+    
+    if (!shouldReset) {
       return;
     }
     
@@ -138,6 +147,7 @@ export const WordCascadeView: React.FC<WordCascadeViewProps> = ({ problem, onAns
     setStatus('idle');
     setLetters([]);
     /* eslint-enable react-hooks/set-state-in-effect */
+    progressRef.current = ''; // Also reset the ref
     penaltyCooldownRef.current = false;
     setStrikes(0);
     strikesRef.current = 0;
@@ -163,15 +173,18 @@ export const WordCascadeView: React.FC<WordCascadeViewProps> = ({ problem, onAns
       // Check if we're still on the same problem (endedRef might be stale in closure)
       if (endedRef.current || problemKeyRef.current !== currentProblemKey) return;
       
+      // Get current nextIdx from progressRef (always up-to-date)
+      const currentNextIdx = progressRef.current.length;
+      
       setLetters(prev => {
         const pickupsOnScreen = prev.filter(p => p.kind !== 'letter').length;
-        // Use captured target from closure
-        const need = currentTarget[nextIdx] ?? '';
+        // Use captured target from closure with current nextIdx
+        const need = currentTarget[currentNextIdx] ?? '';
         // Case-insensitive check for needed letter on screen
         const hasNeededOnScreen = !!need && prev.some(l => l.kind === 'letter' && l.char.toLowerCase() === need.toLowerCase());
 
         // Optional pickups (only after the first correct letter, capped on screen)
-        const canSpawnPickup = nextIdx > 0 && pickupsOnScreen < 2;
+        const canSpawnPickup = currentNextIdx > 0 && pickupsOnScreen < 2;
         if (canSpawnPickup && Math.random() < 0.08) {
           const kinds: FallingItemKind[] = ['star', 'heart'];
           if (strikesRef.current > 0) kinds.push('strike');
@@ -181,7 +194,7 @@ export const WordCascadeView: React.FC<WordCascadeViewProps> = ({ problem, onAns
             kind === 'heart' ? '❤' :
             '🛡️';
           const lane = Math.floor(Math.random() * laneCount);
-          const id = `wc-${problem.uid}-pickup-${uidRef.current++}`;
+          const id = `wc-${currentUid}-pickup-${uidRef.current++}`;
           return [{ id, kind, char, lane, y: -24 }, ...prev].slice(0, 18);
         }
 
