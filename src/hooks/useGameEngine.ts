@@ -60,7 +60,9 @@ export function useGameEngine() {
 
   const generateUniqueProblem = useCallback((type: string, level: number, profile: string): Problem | null => {
     const buffer = lastKeysRef.current[type] || [];
-    const wordBuffer = lastWordsRef.current[type] || [];
+    // CRITICAL: Always normalize wordBuffer to lowercase when reading
+    // The buffer should store lowercase, but handle legacy mixed-case data
+    const wordBuffer = (lastWordsRef.current[type] || []).map(w => w.toLowerCase());
     let attempt = 0;
     let prob: Problem;
     let key: string;
@@ -84,11 +86,24 @@ export function useGameEngine() {
       const isWordGame = prob.type === 'word_builder' || prob.type === 'word_cascade' || prob.type === 'syllable_builder';
       if (isWordGame) {
         const word = 'target' in prob ? prob.target : '';
-        // Skip if word was recently used OR if the exact problem (key) was used
-        if ((word && wordBuffer.includes(word)) || buffer.includes(key)) {
-          continue; // Skip this problem
+        // CRITICAL: Compare words case-insensitively since applyLetterCase changes case by level
+        // The same word might appear as "KASS", "Kass", or "kass" depending on level
+        const wordLower = word ? word.toLowerCase() : '';
+        // CRITICAL: wordBuffer is already normalized to lowercase at function start
+        const isDuplicateWord = wordLower && wordBuffer.includes(wordLower);
+        const isDuplicateKey = buffer.includes(key);
+        
+        // Debug logging in development to understand what's happening
+        if (process.env.NODE_ENV === 'development' && attempt === 1) {
+          console.log(`[generateUniqueProblem] Type: ${type}, Word: ${word} (${wordLower}), Buffer: [${wordBuffer.join(', ')}], IsDuplicate: ${isDuplicateWord}`);
         }
-        // Found a unique word and unique problem
+        
+        // Skip if word (case-insensitive) was recently used OR if the exact problem (key) was used
+        if (isDuplicateWord || isDuplicateKey) {
+          // This word/problem was recently used, try again
+          continue;
+        }
+        // Found a unique word and unique problem - exit loop
         break;
       }
       
@@ -98,17 +113,27 @@ export function useGameEngine() {
       }
     } while (attempt < 50);
     
+    // Safety check: If we hit max attempts, log a warning (but still return the problem)
+    if (attempt >= 50) {
+      console.warn(`generateUniqueProblem: Hit max attempts (50) for type ${type}, level ${level}. May have duplicate.`);
+    }
+    
     // Keep last 50 problems (increased from 20)
     const nextBuffer = [key, ...buffer].slice(0, 50);
     lastKeysRef.current = { ...lastKeysRef.current, [type]: nextBuffer };
     
-    // For word-based games, also track the word itself
+    // For word-based games, also track the word itself (case-insensitive)
     const isWordGame = prob.type === 'word_builder' || prob.type === 'word_cascade' || prob.type === 'syllable_builder';
     if (isWordGame) {
       const word = 'target' in prob ? prob.target : '';
       if (word) {
-        // Keep last 25 words to avoid consecutive duplicates (increased from 15)
-        const nextWordBuffer = [word, ...wordBuffer].slice(0, 25);
+        // Store word in lowercase to ensure case-insensitive comparison
+        // This prevents "KASS", "Kass", "kass" from being treated as different words
+        const wordLower = word.toLowerCase();
+        // Always update buffer - remove existing instance (if any) and add to front
+        // This ensures FIFO behavior and prevents duplicates
+        const filtered = wordBuffer.filter(w => w !== wordLower);
+        const nextWordBuffer = [wordLower, ...filtered].slice(0, 25);
         lastWordsRef.current = { ...lastWordsRef.current, [type]: nextWordBuffer };
       }
     }
