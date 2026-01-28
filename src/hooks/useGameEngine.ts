@@ -20,7 +20,6 @@ const makeKey = (prob: Problem | null): string => {
   if (!prob) return '';
   switch(prob.type) {
     case 'word_builder': return `word:${prob.target}`;
-    case 'word_cascade': return `word:${prob.target}`;
     case 'syllable_builder': return `syll:${prob.target}`;
     case 'letter_match': return `letter:${prob.word}`;
     case 'sentence_logic': return `sent:${prob.sentence}`;
@@ -82,16 +81,11 @@ export function useGameEngine() {
       attempt++;
       
       // For word-based games, also check if the word itself was recently used
-      // Use case-insensitive comparison since applyLetterCase can change casing
       const isWordGame = prob.type === 'word_builder' || prob.type === 'word_cascade' || prob.type === 'syllable_builder';
       if (isWordGame) {
         const word = 'target' in prob ? prob.target : '';
-        if (word) {
-          const wordLower = word.toLowerCase();
-          // Check if any word in buffer matches (case-insensitive)
-          if (wordBuffer.some(w => w.toLowerCase() === wordLower)) {
-            continue; // Skip this problem if word was recently used
-          }
+        if (word && wordBuffer.includes(word)) {
+          continue; // Skip this problem if word was recently used
         }
       }
     } while (attempt < 30 && buffer.includes(key));
@@ -100,17 +94,13 @@ export function useGameEngine() {
     const nextBuffer = [key, ...buffer].slice(0, 50);
     lastKeysRef.current = { ...lastKeysRef.current, [type]: nextBuffer };
     
-    // For word-based games, also track the word itself (normalized to lowercase for consistency)
+    // For word-based games, also track the word itself
     const isWordGame = prob.type === 'word_builder' || prob.type === 'word_cascade' || prob.type === 'syllable_builder';
     if (isWordGame) {
       const word = 'target' in prob ? prob.target : '';
       if (word) {
-        // Store lowercase version to ensure case-insensitive duplicate detection
-        const wordLower = word.toLowerCase();
         // Keep last 15 words to avoid consecutive duplicates
-        // Remove any existing case variant of this word first
-        const filteredBuffer = wordBuffer.filter(w => w.toLowerCase() !== wordLower);
-        const nextWordBuffer = [wordLower, ...filteredBuffer].slice(0, 15);
+        const nextWordBuffer = [word, ...wordBuffer].slice(0, 15);
         lastWordsRef.current = { ...lastWordsRef.current, [type]: nextWordBuffer };
       }
     }
