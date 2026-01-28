@@ -84,8 +84,34 @@ export const WordGameView: React.FC<WordGameViewProps> = ({ problem, onAnswer, s
         } else {
           setTimeout(() => { 
             onAnswer(false);
-            setUserWord(buildInitialWord());
-            setPool(buildInitialPool());
+            // Reset to initial state - rebuild word and pool from problem
+            const resetWord: Array<{ char: string; id: string } | null> = [];
+            for (let i = 0; i < problem.target.length; i++) {
+              if (problem.preFilledPositions?.includes(i)) {
+                const char = problem.target[i];
+                if (char) {
+                  resetWord[i] = { char, id: `prefilled-${i}` };
+                } else {
+                  resetWord[i] = null;
+                }
+              } else {
+                resetWord[i] = null;
+              }
+            }
+            const resetPool = [...(problem.shuffled || [])];
+            problem.preFilledPositions?.forEach(idx => {
+              const char = problem.target[idx];
+              if (char) {
+                const indexInPool = resetPool.findIndex(
+                  l => l.char.toUpperCase() === char.toUpperCase()
+                );
+                if (indexInPool !== -1) {
+                  resetPool.splice(indexInPool, 1);
+                }
+              }
+            });
+            setUserWord(resetWord);
+            setPool(resetPool);
           }, 500);
         }
       }

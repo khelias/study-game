@@ -226,13 +226,8 @@ export function useAnswerHandler(): UseAnswerHandlerResult {
         setTimeout(() => {
           setBgClass('bg-slate-50');
           const newProblem = generateUniqueProblemForGame(gameType, levelForNextProblem, profile, adaptiveDifficulty);
-          // Ensure we always set a new problem object (defensive against production optimizations)
-          // Create a new object reference to force React to detect the change
-          if (newProblem) {
-            setProblem({ ...newProblem });
-          } else {
-            setProblem(null);
-          }
+          // Pass problem directly - setProblem in store will handle cloning for React optimization
+          setProblem(newProblem);
         }, 600);
       } else if (!shouldLevelUp) {
         // Just reset background if not leveling up
