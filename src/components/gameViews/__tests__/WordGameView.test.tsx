@@ -45,7 +45,7 @@ describe('WordGameView', () => {
     expect(screen.getByText('T')).toBeDefined();
   });
 
-  it('uses functional state updates for rapid taps', () => {
+  it('uses functional state updates for rapid taps', async () => {
     const onAnswer = vi.fn();
     const { container } = render(
       <WordGameView problem={mockProblem} onAnswer={onAnswer} soundEnabled={false} />
@@ -80,7 +80,8 @@ describe('WordGameView', () => {
     const poolContainer = container.querySelector('.flex.flex-wrap.gap-2');
     const poolButtons = poolContainer?.querySelectorAll('button') || [];
     poolButtons.forEach(button => {
-      expect((button as HTMLElement).style.touchAction).toBe('manipulation');
+      const htmlButton = button as HTMLButtonElement;
+      expect(htmlButton.style.touchAction).toBe('manipulation');
     });
   });
 
