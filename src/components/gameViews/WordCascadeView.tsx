@@ -299,13 +299,6 @@ export const WordCascadeView: React.FC<WordCascadeViewProps> = ({ problem, onAns
       const nextProgress = progress + l.char;
       setProgress(nextProgress);
 
-      // Reset penalty cooldown on correct tap to allow next letter selection immediately
-      penaltyCooldownRef.current = false;
-      if (wrongFlashTimerRef.current) {
-        window.clearTimeout(wrongFlashTimerRef.current);
-        wrongFlashTimerRef.current = null;
-      }
-
       // Case-insensitive comparison for word completion
       if (nextProgress.toLowerCase() === problem.target.toLowerCase()) {
         setStatus('correct');
@@ -416,11 +409,7 @@ export const WordCascadeView: React.FC<WordCascadeViewProps> = ({ problem, onAns
           return (
             <button
               key={l.id}
-              onPointerDown={(e) => {
-                e.preventDefault();
-                handleTap(l);
-              }}
-              type="button"
+              onClick={() => handleTap(l)}
               className={[
                 'absolute w-12 h-12 rounded-2xl border-2 shadow-md text-xl font-black active:scale-95 transition-transform duration-100 flex items-center justify-center',
                 baseClasses,
@@ -428,7 +417,6 @@ export const WordCascadeView: React.FC<WordCascadeViewProps> = ({ problem, onAns
               style={{
                 left: `calc(${(100 / laneCount) * l.lane}% + ${(100 / laneCount) / 2}% - 1.5rem)`,
                 top: l.y,
-                touchAction: 'manipulation',
               }}
               aria-label={ariaLabel}
             >

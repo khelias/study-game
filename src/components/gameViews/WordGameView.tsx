@@ -70,34 +70,29 @@ export const WordGameView: React.FC<WordGameViewProps> = ({ problem, onAnswer, s
   const handleSelect = (letter: LetterObject): void => {
     playSound('click', soundEnabled);
     
-    // Use functional updates to avoid stale state
-    setUserWord(prevWord => {
-      // Find first empty (non-prefilled) slot
-      const emptyIndex = prevWord.findIndex((l, idx) => !isPreFilled(idx) && l === null);
-      if (emptyIndex === -1) return prevWord; // All non-prefilled slots are full
-      
-      const newWord = [...prevWord];
-      newWord[emptyIndex] = letter;
-      
-      // Check if all positions are filled
-      if (newWord.every(l => l !== null)) {
-        const userString = newWord.map(l => (l as LetterObject).char).join('');
-        // Case-insensitive comparison for word games
-        if (userString.toLowerCase() === problem.target.toLowerCase()) {
-          onAnswer(true);
-        } else {
-          setTimeout(() => { 
-            onAnswer(false);
-            setUserWord(buildInitialWord());
-            setPool(buildInitialPool());
-          }, 500);
-        }
-      }
-      
-      return newWord;
-    });
+    // Find first empty (non-prefilled) slot
+    const emptyIndex = userWord.findIndex((l, idx) => !isPreFilled(idx) && l === null);
+    if (emptyIndex === -1) return; // All non-prefilled slots are full
     
-    setPool(prev => prev.filter(l => l.id !== letter.id));
+    const newWord = [...userWord];
+    newWord[emptyIndex] = letter;
+    setUserWord(newWord);
+    setPool(pool.filter(l => l.id !== letter.id));
+    
+    // Check if all positions are filled
+    if (newWord.every(l => l !== null)) {
+      const userString = newWord.map(l => (l as LetterObject).char).join('');
+      // Case-insensitive comparison for word games
+      if (userString.toLowerCase() === problem.target.toLowerCase()) {
+        onAnswer(true);
+      } else {
+        setTimeout(() => { 
+          onAnswer(false);
+          setUserWord(buildInitialWord());
+          setPool(buildInitialPool());
+        }, 500);
+      }
+    }
   };
 
   const handleRemove = (letter: LetterObject, idx: number): void => {
@@ -105,14 +100,9 @@ export const WordGameView: React.FC<WordGameViewProps> = ({ problem, onAnswer, s
     if (isPreFilled(idx)) return;
     
     playSound('click', soundEnabled);
-    
-    // Use functional updates to avoid stale state
-    setUserWord(prev => {
-      const newUserWord = [...prev]; 
-      newUserWord[idx] = null;
-      return newUserWord;
-    }); 
-    
+    const newUserWord = [...userWord]; 
+    newUserWord[idx] = null;
+    setUserWord(newUserWord); 
     setPool(prev => [...prev, letter]);
   };
 
@@ -138,13 +128,7 @@ export const WordGameView: React.FC<WordGameViewProps> = ({ problem, onAnswer, s
           return (
             <button 
               key={i} 
-              onPointerDown={(e) => {
-                if (letter && !isPrefilled) {
-                  e.preventDefault();
-                  handleRemove(letter, i);
-                }
-              }}
-              type="button"
+              onClick={() => letter && !isPrefilled && handleRemove(letter, i)} 
               disabled={isPrefilled}
               className={`w-12 h-14 sm:w-14 sm:h-16 rounded-xl sm:rounded-2xl border-b-3 sm:border-b-4 flex items-center justify-center text-2xl sm:text-3xl font-black transition-all ${
                 isPrefilled 
@@ -153,7 +137,6 @@ export const WordGameView: React.FC<WordGameViewProps> = ({ problem, onAnswer, s
                     ? 'bg-orange-100 border-orange-400 text-orange-600 scale-100 cursor-pointer hover:bg-orange-200' 
                     : 'bg-slate-100 border-slate-200 border-dashed scale-95'
               }`}
-              style={{ touchAction: 'manipulation' }}
             >
               {letter ? letter.char : ''}
             </button>
@@ -166,13 +149,8 @@ export const WordGameView: React.FC<WordGameViewProps> = ({ problem, onAnswer, s
         {pool.map(l => (
           <button 
             key={l.id} 
-            onPointerDown={(e) => {
-              e.preventDefault();
-              handleSelect(l);
-            }}
-            type="button"
+            onClick={() => handleSelect(l)} 
             className="w-14 h-14 sm:w-16 sm:h-16 bg-white rounded-xl sm:rounded-2xl border-b-[4px] sm:border-b-[6px] border-slate-200 text-2xl sm:text-3xl font-black text-slate-700 shadow-sm active:translate-y-2 active:border-b-0 hover:bg-orange-50 transition-colors"
-            style={{ touchAction: 'manipulation' }}
           >
             {l.char}
           </button>
