@@ -63,26 +63,55 @@ export const ShapeShiftView: React.FC<ShapeShiftViewProps> = ({
     currentY: number;
   }>({ pieceId: null, startX: 0, startY: 0, currentX: 0, currentY: 0 });
   const boardRef = useRef<HTMLDivElement>(null);
+  const dragJustEndedRef = useRef(false);
+  const submittedForProblemRef = useRef<string | null>(null);
+  const dragStateRef = useRef(dragState);
+  dragStateRef.current = dragState;
 
   // Reset state on new problem
   useEffect(() => {
+    submittedForProblemRef.current = null;
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setPieces(problem.pieces.map(p => ({ ...p })));
     setSelectedPiece(null);
     setStatus('idle');
   }, [problem.uid, problem.pieces]);
 
-  // Handle piece click/tap for rotation
+  // Run completion check when pieces change (avoids stale closure from setTimeout after drag)
+  useEffect(() => {
+    if (status !== 'idle') return;
+    if (submittedForProblemRef.current === problem.uid) return;
+    const nonDecoyPieces = pieces.filter(p => !p.isDecoy);
+    const allPlaced = nonDecoyPieces.every(p => p.currentPosition !== null);
+    if (!allPlaced) return;
+
+    submittedForProblemRef.current = problem.uid;
+    const isCorrect = validateShapeShift(problem, pieces);
+    setStatus(isCorrect ? 'correct' : 'wrong');
+    playSound(isCorrect ? 'correct' : 'wrong', soundEnabled);
+
+    const timeout = setTimeout(() => {
+      onAnswer(isCorrect);
+      setStatus('idle');
+    }, isCorrect ? 1000 : 500);
+    return () => clearTimeout(timeout);
+  }, [pieces, status, problem, soundEnabled, onAnswer]);
+
+  // Handle piece click/tap for rotation (ignore if we just finished a drag to avoid double-handling)
   const handlePieceClick = (pieceId: string) => {
     if (status !== 'idle') return;
-    
+    if (dragJustEndedRef.current) {
+      dragJustEndedRef.current = false;
+      return;
+    }
+
     const piece = pieces.find(p => p.id === pieceId);
     if (!piece) return;
 
     if (selectedPiece === pieceId) {
       // Rotate the piece
-      setPieces(prev => prev.map(p => 
-        p.id === pieceId 
+      setPieces(prev => prev.map(p =>
+        p.id === pieceId
           ? { ...p, currentRotation: (p.currentRotation + 90) % 360 }
           : p
       ));
@@ -90,23 +119,6 @@ export const ShapeShiftView: React.FC<ShapeShiftViewProps> = ({
     } else {
       setSelectedPiece(pieceId);
       playSound('tap', soundEnabled);
-    }
-  };
-
-  // Check if puzzle is complete
-  const checkCompletion = () => {
-    const nonDecoyPieces = pieces.filter(p => !p.isDecoy);
-    const allPlaced = nonDecoyPieces.every(p => p.currentPosition !== null);
-    
-    if (allPlaced) {
-      const isCorrect = validateShapeShift(problem, pieces);
-      setStatus(isCorrect ? 'correct' : 'wrong');
-      playSound(isCorrect ? 'correct' : 'wrong', soundEnabled);
-      
-      setTimeout(() => {
-        onAnswer(isCorrect);
-        setStatus('idle');
-      }, isCorrect ? 1000 : 500);
     }
   };
 
@@ -141,40 +153,52 @@ export const ShapeShiftView: React.FC<ShapeShiftViewProps> = ({
   };
 
   const handleDragEnd = () => {
-    if (!dragState.pieceId || !boardRef.current) {
+    const state = dragStateRef.current;
+    if (!state.pieceId) {
       setDragState({ pieceId: null, startX: 0, startY: 0, currentX: 0, currentY: 0 });
       return;
     }
+    dragJustEndedRef.current = true;
 
-    const boardRect = boardRef.current.getBoundingClientRect();
-    const relativeX = dragState.currentX - boardRect.left;
-    const relativeY = dragState.currentY - boardRect.top;
-    
-    // Check if dropped on board
-    const onBoard = relativeX >= 0 && relativeX <= boardRect.width && 
-                    relativeY >= 0 && relativeY <= boardRect.height;
-    
-    if (onBoard) {
-      // Convert pixel position to grid position
-      const gridX = Math.floor((relativeX / boardRect.width) * problem.puzzle.gridSize);
-      const gridY = Math.floor((relativeY / boardRect.height) * problem.puzzle.gridSize);
-      
-      setPieces(prev => prev.map(p =>
-        p.id === dragState.pieceId ? { ...p, currentPosition: { x: gridX, y: gridY } } : p
-      ));
-      playSound('tap', soundEnabled);
-    } else {
-      // Dropped outside board, return to tray
-      setPieces(prev => prev.map(p =>
-        p.id === dragState.pieceId ? { ...p, currentPosition: null } : p
-      ));
+    if (boardRef.current) {
+      const boardRect = boardRef.current.getBoundingClientRect();
+      const relativeX = state.currentX - boardRect.left;
+      const relativeY = state.currentY - boardRect.top;
+
+      const onBoard = relativeX >= 0 && relativeX <= boardRect.width &&
+                      relativeY >= 0 && relativeY <= boardRect.height;
+
+      if (onBoard) {
+        const gridX = Math.floor((relativeX / boardRect.width) * problem.puzzle.gridSize);
+        const gridY = Math.floor((relativeY / boardRect.height) * problem.puzzle.gridSize);
+        const clampedX = Math.max(0, Math.min(gridX, problem.puzzle.gridSize - 1));
+        const clampedY = Math.max(0, Math.min(gridY, problem.puzzle.gridSize - 1));
+
+        setPieces(prev => prev.map(p =>
+          p.id === state.pieceId ? { ...p, currentPosition: { x: clampedX, y: clampedY } } : p
+        ));
+        playSound('tap', soundEnabled);
+      } else {
+        setPieces(prev => prev.map(p =>
+          p.id === state.pieceId ? { ...p, currentPosition: null } : p
+        ));
+      }
     }
-    
+
     setDragState({ pieceId: null, startX: 0, startY: 0, currentX: 0, currentY: 0 });
-    
-    // Check for completion after a brief delay
-    setTimeout(checkCompletion, 100);
   };
+
+  // Global drag end so release outside board still ends the drag (uses ref for latest coordinates)
+  useEffect(() => {
+    if (!dragState.pieceId) return;
+    const onEnd = () => handleDragEnd();
+    window.addEventListener('mouseup', onEnd);
+    window.addEventListener('touchend', onEnd);
+    return () => {
+      window.removeEventListener('mouseup', onEnd);
+      window.removeEventListener('touchend', onEnd);
+    };
+  }, [dragState.pieceId]);
 
   const unplacedPieces = pieces.filter(p => p.currentPosition === null);
   const placedPieces = pieces.filter(p => p.currentPosition !== null);
@@ -194,12 +218,12 @@ export const ShapeShiftView: React.FC<ShapeShiftViewProps> = ({
         </p>
       </div>
 
-      {/* Target Board */}
+      {/* Target Board - large enough so pieces fit comfortably */}
       <div
         ref={boardRef}
-        className="relative bg-slate-100 rounded-2xl border-2 border-dashed border-slate-300 overflow-hidden"
+        className="relative bg-slate-100 rounded-2xl border-2 border-dashed border-slate-300 overflow-hidden flex-shrink-0"
         style={{
-          width: 'min(90vw, 20rem)',
+          width: 'min(92vw, 26rem)',
           aspectRatio: '1',
         }}
         onMouseMove={handleDragMove}
