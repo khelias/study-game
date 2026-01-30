@@ -328,11 +328,26 @@ export const CONSTELLATIONS: Constellation[] = [
   },
 ];
 
+const DIFFICULTY_ORDER: Record<'easy' | 'medium' | 'hard', number> = {
+  easy: 1,
+  medium: 2,
+  hard: 3,
+};
+
 /**
- * Get constellations by difficulty
+ * Get constellations by exact difficulty (for tests / identify options).
  */
 export function getConstellationsByDifficulty(difficulty: 'easy' | 'medium' | 'hard'): Constellation[] {
   return CONSTELLATIONS.filter(c => c.difficulty === difficulty);
+}
+
+/**
+ * Get constellations available for a difficulty level (includes easier ones).
+ * Reduces repetition: easy=7, medium=12, hard=13 constellations.
+ */
+export function getConstellationsForLevel(difficulty: 'easy' | 'medium' | 'hard'): Constellation[] {
+  const level = DIFFICULTY_ORDER[difficulty];
+  return CONSTELLATIONS.filter(c => DIFFICULTY_ORDER[c.difficulty] <= level);
 }
 
 /**

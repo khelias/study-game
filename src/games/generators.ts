@@ -1,6 +1,6 @@
 import { ALPHABET, WORD_DB, WORD_DB_EN, SCENE_DB, PROFILES } from './data';
 import { SYLLABLE_WORDS } from './syllableWords';
-import { CONSTELLATIONS, getConstellationsByDifficulty } from './constellations';
+import { CONSTELLATIONS, getConstellationsForLevel } from './constellations';
 import { getRandom, uid } from '../engine/rng';
 import { getLocale } from '../i18n/index';
 import { generateSentence, getSceneName } from './sentenceTranslations';
@@ -1286,11 +1286,9 @@ export const Generators: Record<string, GeneratorFunction> = {
       : effectiveLevel <= 10 ? 'identify' 
       : 'expert';
 
-    // Get constellations of appropriate difficulty
-    const constellationsOfDifficulty = getConstellationsByDifficulty(difficulty);
-    
-    // Pick a random constellation
-    const constellation = getRandom(constellationsOfDifficulty, rng);
+    // Get constellation pool (includes easier difficulties to avoid repetition, e.g. hard = all 13)
+    const pool = getConstellationsForLevel(difficulty);
+    const constellation = getRandom(pool, rng);
 
     // Generate distractor stars for expert mode
     const distractorStars: Star[] = mode === 'expert' 

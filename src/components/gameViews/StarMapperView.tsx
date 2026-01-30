@@ -153,16 +153,16 @@ export const StarMapperView: React.FC<StarMapperViewProps> = ({
 
   return (
     <div className="w-full flex flex-col items-center px-4 sm:px-6 max-w-2xl mx-auto pt-4 sm:pt-6 animate-in fade-in duration-300">
-      {/* Header - Constellation name */}
+      {/* Header - Constellation name (dark text for contrast on light backgrounds) */}
       <div className="mb-4 text-center">
-        <h2 className="text-2xl sm:text-3xl font-bold text-white drop-shadow-glow">
+        <h2 className="text-2xl sm:text-3xl font-bold text-slate-800">
           {problem.constellation.nameEt}
         </h2>
-        <p className="text-sm text-blue-200 opacity-80">
+        <p className="text-sm text-slate-600">
           {problem.constellation.nameEn}
         </p>
         {problem.constellation.folkNameEt && (
-          <p className="text-xs text-blue-300 opacity-70 italic">
+          <p className="text-xs text-slate-500 italic">
             ({problem.constellation.folkNameEt})
           </p>
         )}
@@ -170,17 +170,17 @@ export const StarMapperView: React.FC<StarMapperViewProps> = ({
 
       {/* Instructions */}
       <div className="mb-3 text-center">
-        <p className="text-sm sm:text-base text-blue-100">
+        <p className="text-sm sm:text-base text-slate-700">
           {getInstructions()}
         </p>
         {(problem.mode === 'trace' || problem.mode === 'build' || problem.mode === 'expert') && (
-          <p className="text-xs sm:text-sm text-blue-200 mt-1">
+          <p className="text-xs sm:text-sm text-slate-600 mt-1">
             {t.starMapper.linesRemaining.replace('{count}', String(linesRemaining))}
           </p>
         )}
       </div>
 
-      {/* Star Field */}
+      {/* Star Field - overflow-hidden clips selection marker inside bounds */}
       <div
         className="relative w-full rounded-2xl overflow-hidden shadow-2xl"
         style={{
@@ -206,9 +206,17 @@ export const StarMapperView: React.FC<StarMapperViewProps> = ({
           ))}
         </div>
 
-        {/* SVG for lines and stars */}
-        <svg className="absolute inset-0 w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="none">
+        {/* SVG for lines and stars - overflow hidden keeps selection ring inside playable area */}
+        <svg
+          className="absolute inset-0 w-full h-full"
+          viewBox="0 0 100 100"
+          preserveAspectRatio="xMidYMid meet"
+          style={{ overflow: 'hidden' }}
+        >
           <defs>
+            <clipPath id="starFieldClip">
+              <rect x="0" y="0" width="100" height="100" />
+            </clipPath>
             <filter id="glow">
               <feGaussianBlur stdDeviation="2" result="coloredBlur" />
               <feMerge>
@@ -217,6 +225,7 @@ export const StarMapperView: React.FC<StarMapperViewProps> = ({
               </feMerge>
             </filter>
           </defs>
+          <g clipPath="url(#starFieldClip)">
 
           {/* Guide lines (trace mode) */}
           {problem.showGuide &&
@@ -297,11 +306,10 @@ export const StarMapperView: React.FC<StarMapperViewProps> = ({
                   <circle
                     cx={star.x}
                     cy={star.y}
-                    r={size * 0.8}
+                    r={size * 0.6}
                     fill="none"
                     stroke="#88ddff"
-                    strokeWidth="0.5"
-                    className="animate-ping"
+                    strokeWidth="0.6"
                     pointerEvents="none"
                   />
                 )}
@@ -325,6 +333,7 @@ export const StarMapperView: React.FC<StarMapperViewProps> = ({
               />
             );
           })}
+          </g>
         </svg>
 
         {/* Success animation overlay */}
