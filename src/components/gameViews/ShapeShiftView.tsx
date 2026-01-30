@@ -49,7 +49,6 @@ export const ShapeShiftView: React.FC<ShapeShiftViewProps> = ({
   problem,
   onAnswer,
   soundEnabled,
-  level = 1,
 }) => {
   const t = useTranslation();
   const locale = getLocale();
@@ -67,10 +66,11 @@ export const ShapeShiftView: React.FC<ShapeShiftViewProps> = ({
 
   // Reset state on new problem
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setPieces(problem.pieces.map(p => ({ ...p })));
     setSelectedPiece(null);
     setStatus('idle');
-  }, [problem.uid]);
+  }, [problem.uid, problem.pieces]);
 
   // Handle piece click/tap for rotation
   const handlePieceClick = (pieceId: string) => {

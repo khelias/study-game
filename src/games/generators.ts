@@ -1275,7 +1275,7 @@ export const Generators: Record<string, GeneratorFunction> = {
    * Shape Shift Generator
    * Generates geometric puzzle problems with different modes based on level
    */
-  shape_shift: (level: number, rng: RngFunction, profile: ProfileType): ShapeShiftProblem => {
+  shape_shift: (level: number, rng: RngFunction, _profile: ProfileType): ShapeShiftProblem => {
     // Select mode based on level
     const mode = level <= 3 ? 'match'
       : level <= 6 ? 'rotate'
