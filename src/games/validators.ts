@@ -191,7 +191,7 @@ export const validateShapeShift: AnswerValidator = (problem: Problem, userAnswer
       rotationOk = true;  // Any rotation is fine
     } else if (required.type === 'square') {
       rotationOk = placedRot % 90 === correctRot % 90;  // 90° symmetry
-    } else if (required.type === 'rectangle') {
+    } else if (required.type === 'rectangle' || required.type === 'half_square') {
       rotationOk = placedRot % 180 === correctRot % 180;  // 180° symmetry
     } else {
       rotationOk = placedRot === correctRot;

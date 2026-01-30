@@ -730,6 +730,8 @@ export const et = {
       },
       tapToRotate: 'Puuduta pööramiseks',
       dragToPlace: 'Lohista paigutamiseks',
+      rotateButton: 'Pööra 90°',
+      orUse: 'või kasuta',
       piecesRemaining: 'Tükke jäänud',
       complete: 'Suurepärane! 🎉',
       categories: {

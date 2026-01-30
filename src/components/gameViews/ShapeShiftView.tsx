@@ -68,6 +68,9 @@ export const ShapeShiftView: React.FC<ShapeShiftViewProps> = ({
   const dragStateRef = useRef(dragState);
   dragStateRef.current = dragState;
 
+  /** Treat as tap (rotate/select) if move was under this many px */
+  const TAP_MOVE_THRESHOLD_PX = 12;
+
   // Reset state on new problem
   useEffect(() => {
     submittedForProblemRef.current = null;
@@ -122,6 +125,17 @@ export const ShapeShiftView: React.FC<ShapeShiftViewProps> = ({
     }
   };
 
+  // Dedicated rotate button (works on mobile where tap-to-rotate is hard)
+  const handleRotateButton = () => {
+    if (status !== 'idle' || !selectedPiece) return;
+    setPieces(prev => prev.map(p =>
+      p.id === selectedPiece
+        ? { ...p, currentRotation: (p.currentRotation + 90) % 360 }
+        : p
+    ));
+    playSound('tap', soundEnabled);
+  };
+
   // Drag handlers
   const handleDragStart = (pieceId: string, e: React.MouseEvent | React.TouchEvent) => {
     if (status !== 'idle') return;
@@ -152,32 +166,48 @@ export const ShapeShiftView: React.FC<ShapeShiftViewProps> = ({
     }));
   };
 
-  const handleDragEnd = () => {
+  const handleDragEnd = (e?: React.TouchEvent | TouchEvent) => {
     const state = dragStateRef.current;
     if (!state.pieceId) {
       setDragState({ pieceId: null, startX: 0, startY: 0, currentX: 0, currentY: 0 });
       return;
     }
-    dragJustEndedRef.current = true;
+
+    // Use release position from touch end when available (more accurate on mobile)
+    let endX = state.currentX;
+    let endY = state.currentY;
+    const touchEnd = e && 'changedTouches' in e ? e.changedTouches?.[0] : null;
+    if (touchEnd) {
+      endX = touchEnd.clientX;
+      endY = touchEnd.clientY;
+    }
+    const moved = Math.hypot(endX - state.startX, endY - state.startY);
+    let onBoard = false;
+    let placed = false;
 
     if (boardRef.current) {
       const boardRect = boardRef.current.getBoundingClientRect();
-      const relativeX = state.currentX - boardRect.left;
-      const relativeY = state.currentY - boardRect.top;
+      const relativeX = endX - boardRect.left;
+      const relativeY = endY - boardRect.top;
 
-      const onBoard = relativeX >= 0 && relativeX <= boardRect.width &&
-                      relativeY >= 0 && relativeY <= boardRect.height;
+      onBoard = relativeX >= 0 && relativeX <= boardRect.width &&
+                relativeY >= 0 && relativeY <= boardRect.height;
 
       if (onBoard) {
-        const gridX = Math.floor((relativeX / boardRect.width) * problem.puzzle.gridSize);
-        const gridY = Math.floor((relativeY / boardRect.height) * problem.puzzle.gridSize);
-        const clampedX = Math.max(0, Math.min(gridX, problem.puzzle.gridSize - 1));
-        const clampedY = Math.max(0, Math.min(gridY, problem.puzzle.gridSize - 1));
+        // Snap to cell center so drop lands in the intended cell
+        const gs = problem.puzzle.gridSize;
+        const cellW = boardRect.width / gs;
+        const cellH = boardRect.height / gs;
+        const gridX = Math.floor((relativeX + cellW / 2) / cellW);
+        const gridY = Math.floor((relativeY + cellH / 2) / cellH);
+        const clampedX = Math.max(0, Math.min(gridX, gs - 1));
+        const clampedY = Math.max(0, Math.min(gridY, gs - 1));
 
         setPieces(prev => prev.map(p =>
           p.id === state.pieceId ? { ...p, currentPosition: { x: clampedX, y: clampedY } } : p
         ));
         playSound('tap', soundEnabled);
+        placed = true;
       } else {
         setPieces(prev => prev.map(p =>
           p.id === state.pieceId ? { ...p, currentPosition: null } : p
@@ -186,15 +216,35 @@ export const ShapeShiftView: React.FC<ShapeShiftViewProps> = ({
     }
 
     setDragState({ pieceId: null, startX: 0, startY: 0, currentX: 0, currentY: 0 });
+
+    // On mobile: if user didn't move much and didn't place on board, treat as tap (rotate/select)
+    if (!placed && moved < TAP_MOVE_THRESHOLD_PX) {
+      dragJustEndedRef.current = false;
+      setTimeout(() => handlePieceClick(state.pieceId), 10);
+    } else {
+      dragJustEndedRef.current = true;
+    }
   };
 
-  // Global drag end so release outside board still ends the drag (uses ref for latest coordinates)
+  // Global drag move/end so we get correct drop position on mobile (touch moves anywhere)
   useEffect(() => {
     if (!dragState.pieceId) return;
-    const onEnd = () => handleDragEnd();
+    const onMove = (e: MouseEvent | TouchEvent) => {
+      const clientX = 'touches' in e ? e.touches[0]?.clientX ?? 0 : e.clientX;
+      const clientY = 'touches' in e ? e.touches[0]?.clientY ?? 0 : e.clientY;
+      setDragState(prev => ({ ...prev, currentX: clientX, currentY: clientY }));
+      dragStateRef.current = { ...dragStateRef.current, currentX: clientX, currentY: clientY };
+    };
+    const onEnd = (e: MouseEvent | TouchEvent) => {
+      handleDragEnd('changedTouches' in e ? (e as TouchEvent) : undefined);
+    };
+    window.addEventListener('mousemove', onMove);
+    window.addEventListener('touchmove', onMove, { passive: true });
     window.addEventListener('mouseup', onEnd);
     window.addEventListener('touchend', onEnd);
     return () => {
+      window.removeEventListener('mousemove', onMove);
+      window.removeEventListener('touchmove', onMove);
       window.removeEventListener('mouseup', onEnd);
       window.removeEventListener('touchend', onEnd);
     };
@@ -218,12 +268,12 @@ export const ShapeShiftView: React.FC<ShapeShiftViewProps> = ({
         </p>
       </div>
 
-      {/* Target Board - large enough so pieces fit comfortably */}
+      {/* Target Board - large so pieces fit and drop target is clear */}
       <div
         ref={boardRef}
         className="relative bg-slate-100 rounded-2xl border-2 border-dashed border-slate-300 overflow-hidden flex-shrink-0"
         style={{
-          width: 'min(92vw, 26rem)',
+          width: 'min(94vw, 28rem)',
           aspectRatio: '1',
         }}
         onMouseMove={handleDragMove}
@@ -281,20 +331,34 @@ export const ShapeShiftView: React.FC<ShapeShiftViewProps> = ({
         )}
       </div>
 
-      {/* Piece Tray */}
-      <div className="mt-6 flex flex-wrap justify-center gap-3 min-h-[80px]">
+      {/* Rotate button - always visible so mobile can rotate without double-tap */}
+      {unplacedPieces.length > 0 && (
+        <div className="mt-3 flex justify-center">
+          <button
+            type="button"
+            onClick={handleRotateButton}
+            disabled={!selectedPiece || status !== 'idle'}
+            className="px-4 py-2 text-sm font-medium rounded-xl border-2 border-teal-300 bg-teal-50 text-teal-800 disabled:opacity-50 disabled:pointer-events-none active:bg-teal-100"
+          >
+            {t.games.shape_shift.rotateButton}
+          </button>
+        </div>
+      )}
+
+      {/* Piece Tray - smaller pieces so board feels bigger */}
+      <div className="mt-4 flex flex-wrap justify-center gap-2 min-h-[64px]">
         {unplacedPieces.map(piece => {
           const isDragging = dragState.pieceId === piece.id;
           
           return (
             <div
               key={piece.id}
-              className={`relative cursor-move bg-white rounded-xl border-2 border-slate-200 p-2 transition-transform ${
-                selectedPiece === piece.id ? 'scale-105 drop-shadow-lg border-teal-400' : ''
+              className={`relative cursor-move bg-white rounded-lg border-2 border-slate-200 p-1.5 transition-transform ${
+                selectedPiece === piece.id ? 'scale-105 drop-shadow-lg border-teal-400 ring-2 ring-teal-200' : ''
               } ${isDragging ? 'opacity-50' : ''} hover:scale-105`}
               style={{
-                width: '4rem',
-                height: '4rem',
+                width: '3rem',
+                height: '3rem',
                 touchAction: 'none',
               }}
               onMouseDown={(e) => handleDragStart(piece.id, e)}
@@ -321,8 +385,8 @@ export const ShapeShiftView: React.FC<ShapeShiftViewProps> = ({
       </div>
 
       {/* Instructions */}
-      <p className="mt-4 text-xs text-slate-400 text-center">
-        {t.games.shape_shift.tapToRotate} • {t.games.shape_shift.dragToPlace}
+      <p className="mt-3 text-xs text-slate-500 text-center">
+        {t.games.shape_shift.dragToPlace}. {t.games.shape_shift.tapToRotate} {t.games.shape_shift.orUse} {t.games.shape_shift.rotateButton}.
       </p>
     </div>
   );

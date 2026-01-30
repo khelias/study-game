@@ -730,6 +730,8 @@ export const en = {
       },
       tapToRotate: 'Tap to rotate',
       dragToPlace: 'Drag to place',
+      rotateButton: 'Rotate 90°',
+      orUse: 'or use',
       piecesRemaining: 'Pieces left',
       complete: 'Excellent! 🎉',
       categories: {
