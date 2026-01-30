@@ -25,6 +25,7 @@ import {
   SyllableGameView,
   TimeGameView,
   UnitConversionView,
+  StarMapperView,
 } from '../components/gameViews';
 import { MathSnakeView } from '../components/MathSnakeView';
 import { CompareSizesView } from '../components/CompareSizesView';
@@ -42,6 +43,7 @@ import {
   validateMathSnake,
   validateMemoryMath,
   validateRoboPath,
+  validateStarMapper,
 } from './validators';
 
 /**
@@ -231,6 +233,20 @@ function registerAllGames(): void {
       config: timeMatchConfig,
       validator: validateTimeMatch,
       allowedProfiles: timeMatchConfig.allowedProfiles,
+    });
+  }
+
+  // Star Mapper
+  const starMapperConfig = GAME_CONFIG.star_mapper;
+  const starMapperGenerator = Generators.star_mapper;
+  if (starMapperConfig && starMapperGenerator) {
+    gameRegistry.register({
+      id: 'star_mapper',
+      component: StarMapperView,
+      generator: starMapperGenerator,
+      config: starMapperConfig,
+      validator: validateStarMapper,
+      allowedProfiles: starMapperConfig.allowedProfiles,
     });
   }
 }
