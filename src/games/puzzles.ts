@@ -1,7 +1,8 @@
 /**
  * Shape Shift Puzzle Database
- * 
+ *
  * Curated puzzles for the Shape Shift game, organized by difficulty.
+ * Grid and positions use a high-resolution grid (4× legacy) for precise placement.
  */
 
 import type { Puzzle } from '../types/game';
@@ -14,10 +15,10 @@ export const PUZZLES: Puzzle[] = [
     nameEn: 'Square',
     category: 'shapes',
     difficulty: 'easy',
-    gridSize: 4,
+    gridSize: 16,
     pieces: [
-      { id: 'p1', type: 'half_square', color: 'red', correctPosition: { x: 0, y: 0 }, correctRotation: 0, size: 2 },
-      { id: 'p2', type: 'half_square', color: 'blue', correctPosition: { x: 0, y: 0 }, correctRotation: 180, size: 2 },
+      { id: 'p1', type: 'half_square', color: 'red', correctPosition: { x: 0, y: 0 }, correctRotation: 0, size: 8 },
+      { id: 'p2', type: 'half_square', color: 'blue', correctPosition: { x: 0, y: 0 }, correctRotation: 180, size: 8 },
     ],
   },
   {
@@ -26,10 +27,10 @@ export const PUZZLES: Puzzle[] = [
     nameEn: 'House',
     category: 'objects',
     difficulty: 'easy',
-    gridSize: 5,
+    gridSize: 20,
     pieces: [
-      { id: 'p1', type: 'square', color: 'red', correctPosition: { x: 1, y: 2 }, correctRotation: 0, size: 3 },
-      { id: 'p2', type: 'triangle', color: 'blue', correctPosition: { x: 1, y: 0 }, correctRotation: 0, size: 3 },
+      { id: 'p1', type: 'square', color: 'red', correctPosition: { x: 4, y: 8 }, correctRotation: 0, size: 12 },
+      { id: 'p2', type: 'triangle', color: 'blue', correctPosition: { x: 4, y: 0 }, correctRotation: 0, size: 12 },
     ],
   },
   {
@@ -38,10 +39,10 @@ export const PUZZLES: Puzzle[] = [
     nameEn: 'Tree',
     category: 'objects',
     difficulty: 'easy',
-    gridSize: 5,
+    gridSize: 20,
     pieces: [
-      { id: 'p1', type: 'triangle', color: 'green', correctPosition: { x: 1, y: 0 }, correctRotation: 0, size: 3 },
-      { id: 'p2', type: 'rectangle', color: 'orange', correctPosition: { x: 2, y: 3 }, correctRotation: 90, size: 1 },
+      { id: 'p1', type: 'triangle', color: 'green', correctPosition: { x: 4, y: 0 }, correctRotation: 0, size: 12 },
+      { id: 'p2', type: 'rectangle', color: 'orange', correctPosition: { x: 8, y: 12 }, correctRotation: 90, size: 4 },
     ],
   },
   {
@@ -50,10 +51,10 @@ export const PUZZLES: Puzzle[] = [
     nameEn: 'Diamond',
     category: 'shapes',
     difficulty: 'easy',
-    gridSize: 4,
+    gridSize: 16,
     pieces: [
-      { id: 'p1', type: 'triangle', color: 'purple', correctPosition: { x: 0, y: 0 }, correctRotation: 0, size: 2 },
-      { id: 'p2', type: 'triangle', color: 'pink', correctPosition: { x: 0, y: 2 }, correctRotation: 180, size: 2 },
+      { id: 'p1', type: 'triangle', color: 'purple', correctPosition: { x: 0, y: 0 }, correctRotation: 0, size: 8 },
+      { id: 'p2', type: 'triangle', color: 'pink', correctPosition: { x: 0, y: 8 }, correctRotation: 180, size: 8 },
     ],
   },
   {
@@ -62,10 +63,10 @@ export const PUZZLES: Puzzle[] = [
     nameEn: 'Ice Cream',
     category: 'objects',
     difficulty: 'easy',
-    gridSize: 5,
+    gridSize: 20,
     pieces: [
-      { id: 'p1', type: 'circle', color: 'pink', correctPosition: { x: 1, y: 0 }, correctRotation: 0, size: 3 },
-      { id: 'p2', type: 'triangle', color: 'orange', correctPosition: { x: 1, y: 2 }, correctRotation: 180, size: 3 },
+      { id: 'p1', type: 'circle', color: 'pink', correctPosition: { x: 4, y: 0 }, correctRotation: 0, size: 12 },
+      { id: 'p2', type: 'triangle', color: 'orange', correctPosition: { x: 4, y: 8 }, correctRotation: 180, size: 12 },
     ],
   },
 
@@ -76,11 +77,11 @@ export const PUZZLES: Puzzle[] = [
     nameEn: 'Cat',
     category: 'animals',
     difficulty: 'medium',
-    gridSize: 6,
+    gridSize: 24,
     pieces: [
-      { id: 'p1', type: 'circle', color: 'orange', correctPosition: { x: 1, y: 2 }, correctRotation: 0, size: 4 },
-      { id: 'p2', type: 'triangle', color: 'orange', correctPosition: { x: 0, y: 0 }, correctRotation: 0, size: 2 },
-      { id: 'p3', type: 'triangle', color: 'orange', correctPosition: { x: 4, y: 0 }, correctRotation: 0, size: 2 },
+      { id: 'p1', type: 'circle', color: 'orange', correctPosition: { x: 4, y: 8 }, correctRotation: 0, size: 16 },
+      { id: 'p2', type: 'triangle', color: 'orange', correctPosition: { x: 0, y: 0 }, correctRotation: 0, size: 8 },
+      { id: 'p3', type: 'triangle', color: 'orange', correctPosition: { x: 16, y: 0 }, correctRotation: 0, size: 8 },
     ],
   },
   {
@@ -89,11 +90,11 @@ export const PUZZLES: Puzzle[] = [
     nameEn: 'Fish',
     category: 'animals',
     difficulty: 'medium',
-    gridSize: 6,
+    gridSize: 24,
     pieces: [
-      { id: 'p1', type: 'diamond', color: 'blue', correctPosition: { x: 1, y: 1 }, correctRotation: 0, size: 3 },
-      { id: 'p2', type: 'triangle', color: 'cyan', correctPosition: { x: 4, y: 1 }, correctRotation: 90, size: 2 },
-      { id: 'p3', type: 'circle', color: 'white', correctPosition: { x: 1, y: 2 }, correctRotation: 0, size: 1 },
+      { id: 'p1', type: 'diamond', color: 'blue', correctPosition: { x: 4, y: 4 }, correctRotation: 0, size: 12 },
+      { id: 'p2', type: 'triangle', color: 'cyan', correctPosition: { x: 16, y: 4 }, correctRotation: 90, size: 8 },
+      { id: 'p3', type: 'circle', color: 'white', correctPosition: { x: 4, y: 8 }, correctRotation: 0, size: 4 },
     ],
   },
   {
@@ -102,11 +103,11 @@ export const PUZZLES: Puzzle[] = [
     nameEn: 'Boat',
     category: 'objects',
     difficulty: 'medium',
-    gridSize: 6,
+    gridSize: 24,
     pieces: [
-      { id: 'p1', type: 'half_square', color: 'brown', correctPosition: { x: 0, y: 3 }, correctRotation: 0, size: 6 },
-      { id: 'p2', type: 'triangle', color: 'white', correctPosition: { x: 2, y: 0 }, correctRotation: 0, size: 3 },
-      { id: 'p3', type: 'rectangle', color: 'brown', correctPosition: { x: 3, y: 0 }, correctRotation: 90, size: 1 },
+      { id: 'p1', type: 'half_square', color: 'brown', correctPosition: { x: 0, y: 12 }, correctRotation: 0, size: 24 },
+      { id: 'p2', type: 'triangle', color: 'white', correctPosition: { x: 8, y: 0 }, correctRotation: 0, size: 12 },
+      { id: 'p3', type: 'rectangle', color: 'brown', correctPosition: { x: 12, y: 0 }, correctRotation: 90, size: 4 },
     ],
   },
   {
@@ -115,10 +116,10 @@ export const PUZZLES: Puzzle[] = [
     nameEn: 'Arrow',
     category: 'abstract',
     difficulty: 'medium',
-    gridSize: 6,
+    gridSize: 24,
     pieces: [
-      { id: 'p1', type: 'rectangle', color: 'red', correctPosition: { x: 0, y: 2 }, correctRotation: 0, size: 3 },
-      { id: 'p2', type: 'triangle', color: 'red', correctPosition: { x: 3, y: 1 }, correctRotation: 90, size: 3 },
+      { id: 'p1', type: 'rectangle', color: 'red', correctPosition: { x: 0, y: 8 }, correctRotation: 0, size: 12 },
+      { id: 'p2', type: 'triangle', color: 'red', correctPosition: { x: 12, y: 4 }, correctRotation: 90, size: 12 },
     ],
   },
   {
@@ -127,12 +128,12 @@ export const PUZZLES: Puzzle[] = [
     nameEn: 'Mushroom',
     category: 'objects',
     difficulty: 'medium',
-    gridSize: 6,
+    gridSize: 24,
     pieces: [
-      { id: 'p1', type: 'circle', color: 'red', correctPosition: { x: 0, y: 0 }, correctRotation: 0, size: 4 },
-      { id: 'p2', type: 'rectangle', color: 'white', correctPosition: { x: 2, y: 3 }, correctRotation: 90, size: 2 },
-      { id: 'p3', type: 'circle', color: 'white', correctPosition: { x: 1, y: 1 }, correctRotation: 0, size: 1 },
-      { id: 'p4', type: 'circle', color: 'white', correctPosition: { x: 3, y: 2 }, correctRotation: 0, size: 1 },
+      { id: 'p1', type: 'circle', color: 'red', correctPosition: { x: 0, y: 0 }, correctRotation: 0, size: 16 },
+      { id: 'p2', type: 'rectangle', color: 'white', correctPosition: { x: 8, y: 12 }, correctRotation: 90, size: 8 },
+      { id: 'p3', type: 'circle', color: 'white', correctPosition: { x: 4, y: 4 }, correctRotation: 0, size: 4 },
+      { id: 'p4', type: 'circle', color: 'white', correctPosition: { x: 12, y: 8 }, correctRotation: 0, size: 4 },
     ],
   },
   {
@@ -141,13 +142,13 @@ export const PUZZLES: Puzzle[] = [
     nameEn: 'Butterfly',
     category: 'animals',
     difficulty: 'medium',
-    gridSize: 6,
+    gridSize: 24,
     pieces: [
-      { id: 'p1', type: 'circle', color: 'purple', correctPosition: { x: 0, y: 0 }, correctRotation: 0, size: 2 },
-      { id: 'p2', type: 'circle', color: 'purple', correctPosition: { x: 4, y: 0 }, correctRotation: 0, size: 2 },
-      { id: 'p3', type: 'circle', color: 'pink', correctPosition: { x: 0, y: 3 }, correctRotation: 0, size: 2 },
-      { id: 'p4', type: 'circle', color: 'pink', correctPosition: { x: 4, y: 3 }, correctRotation: 0, size: 2 },
-      { id: 'p5', type: 'rectangle', color: 'brown', correctPosition: { x: 2, y: 0 }, correctRotation: 90, size: 3 },
+      { id: 'p1', type: 'circle', color: 'purple', correctPosition: { x: 0, y: 0 }, correctRotation: 0, size: 8 },
+      { id: 'p2', type: 'circle', color: 'purple', correctPosition: { x: 16, y: 0 }, correctRotation: 0, size: 8 },
+      { id: 'p3', type: 'circle', color: 'pink', correctPosition: { x: 0, y: 12 }, correctRotation: 0, size: 8 },
+      { id: 'p4', type: 'circle', color: 'pink', correctPosition: { x: 16, y: 12 }, correctRotation: 0, size: 8 },
+      { id: 'p5', type: 'rectangle', color: 'brown', correctPosition: { x: 8, y: 0 }, correctRotation: 90, size: 12 },
     ],
   },
 
@@ -158,13 +159,13 @@ export const PUZZLES: Puzzle[] = [
     nameEn: 'Rocket',
     category: 'objects',
     difficulty: 'hard',
-    gridSize: 8,
+    gridSize: 32,
     pieces: [
-      { id: 'p1', type: 'triangle', color: 'red', correctPosition: { x: 2, y: 0 }, correctRotation: 0, size: 3 },
-      { id: 'p2', type: 'rectangle', color: 'white', correctPosition: { x: 2, y: 2 }, correctRotation: 90, size: 3 },
-      { id: 'p3', type: 'triangle', color: 'blue', correctPosition: { x: 0, y: 5 }, correctRotation: 270, size: 2 },
-      { id: 'p4', type: 'triangle', color: 'blue', correctPosition: { x: 5, y: 5 }, correctRotation: 90, size: 2 },
-      { id: 'p5', type: 'triangle', color: 'orange', correctPosition: { x: 2, y: 6 }, correctRotation: 180, size: 2 },
+      { id: 'p1', type: 'triangle', color: 'red', correctPosition: { x: 8, y: 0 }, correctRotation: 0, size: 12 },
+      { id: 'p2', type: 'rectangle', color: 'white', correctPosition: { x: 8, y: 8 }, correctRotation: 90, size: 12 },
+      { id: 'p3', type: 'triangle', color: 'blue', correctPosition: { x: 0, y: 20 }, correctRotation: 270, size: 8 },
+      { id: 'p4', type: 'triangle', color: 'blue', correctPosition: { x: 20, y: 20 }, correctRotation: 90, size: 8 },
+      { id: 'p5', type: 'triangle', color: 'orange', correctPosition: { x: 8, y: 24 }, correctRotation: 180, size: 8 },
     ],
   },
   {
@@ -173,12 +174,12 @@ export const PUZZLES: Puzzle[] = [
     nameEn: 'Bird',
     category: 'animals',
     difficulty: 'hard',
-    gridSize: 8,
+    gridSize: 32,
     pieces: [
-      { id: 'p1', type: 'diamond', color: 'yellow', correctPosition: { x: 3, y: 2 }, correctRotation: 0, size: 2 },
-      { id: 'p2', type: 'triangle', color: 'yellow', correctPosition: { x: 0, y: 2 }, correctRotation: 270, size: 3 },
-      { id: 'p3', type: 'triangle', color: 'yellow', correctPosition: { x: 5, y: 2 }, correctRotation: 90, size: 3 },
-      { id: 'p4', type: 'triangle', color: 'orange', correctPosition: { x: 5, y: 3 }, correctRotation: 90, size: 1 },
+      { id: 'p1', type: 'diamond', color: 'yellow', correctPosition: { x: 12, y: 8 }, correctRotation: 0, size: 8 },
+      { id: 'p2', type: 'triangle', color: 'yellow', correctPosition: { x: 0, y: 8 }, correctRotation: 270, size: 12 },
+      { id: 'p3', type: 'triangle', color: 'yellow', correctPosition: { x: 20, y: 8 }, correctRotation: 90, size: 12 },
+      { id: 'p4', type: 'triangle', color: 'orange', correctPosition: { x: 20, y: 12 }, correctRotation: 90, size: 4 },
     ],
   },
   {
@@ -187,11 +188,11 @@ export const PUZZLES: Puzzle[] = [
     nameEn: 'Heart',
     category: 'abstract',
     difficulty: 'hard',
-    gridSize: 6,
+    gridSize: 24,
     pieces: [
-      { id: 'p1', type: 'circle', color: 'red', correctPosition: { x: 0, y: 0 }, correctRotation: 0, size: 2 },
-      { id: 'p2', type: 'circle', color: 'red', correctPosition: { x: 3, y: 0 }, correctRotation: 0, size: 2 },
-      { id: 'p3', type: 'triangle', color: 'red', correctPosition: { x: 0, y: 2 }, correctRotation: 180, size: 5 },
+      { id: 'p1', type: 'circle', color: 'red', correctPosition: { x: 0, y: 0 }, correctRotation: 0, size: 8 },
+      { id: 'p2', type: 'circle', color: 'red', correctPosition: { x: 12, y: 0 }, correctRotation: 0, size: 8 },
+      { id: 'p3', type: 'triangle', color: 'red', correctPosition: { x: 0, y: 4 }, correctRotation: 180, size: 20 },
     ],
   },
   {
@@ -200,13 +201,13 @@ export const PUZZLES: Puzzle[] = [
     nameEn: 'Star',
     category: 'abstract',
     difficulty: 'hard',
-    gridSize: 8,
+    gridSize: 32,
     pieces: [
-      { id: 'p1', type: 'triangle', color: 'yellow', correctPosition: { x: 2, y: 0 }, correctRotation: 0, size: 3 },
-      { id: 'p2', type: 'triangle', color: 'yellow', correctPosition: { x: 2, y: 5 }, correctRotation: 180, size: 3 },
-      { id: 'p3', type: 'triangle', color: 'gold', correctPosition: { x: 0, y: 2 }, correctRotation: 270, size: 3 },
-      { id: 'p4', type: 'triangle', color: 'gold', correctPosition: { x: 5, y: 2 }, correctRotation: 90, size: 3 },
-      { id: 'p5', type: 'square', color: 'orange', correctPosition: { x: 2, y: 2 }, correctRotation: 0, size: 3 },
+      { id: 'p1', type: 'triangle', color: 'yellow', correctPosition: { x: 8, y: 0 }, correctRotation: 0, size: 12 },
+      { id: 'p2', type: 'triangle', color: 'yellow', correctPosition: { x: 8, y: 20 }, correctRotation: 180, size: 12 },
+      { id: 'p3', type: 'triangle', color: 'gold', correctPosition: { x: 0, y: 8 }, correctRotation: 270, size: 12 },
+      { id: 'p4', type: 'triangle', color: 'gold', correctPosition: { x: 20, y: 8 }, correctRotation: 90, size: 12 },
+      { id: 'p5', type: 'square', color: 'orange', correctPosition: { x: 8, y: 8 }, correctRotation: 0, size: 12 },
     ],
   },
   {
@@ -215,14 +216,14 @@ export const PUZZLES: Puzzle[] = [
     nameEn: 'Castle',
     category: 'objects',
     difficulty: 'hard',
-    gridSize: 8,
+    gridSize: 32,
     pieces: [
-      { id: 'p1', type: 'rectangle', color: 'gray', correctPosition: { x: 1, y: 3 }, correctRotation: 90, size: 4 },
-      { id: 'p2', type: 'square', color: 'gray', correctPosition: { x: 0, y: 0 }, correctRotation: 0, size: 2 },
-      { id: 'p3', type: 'square', color: 'gray', correctPosition: { x: 6, y: 0 }, correctRotation: 0, size: 2 },
-      { id: 'p4', type: 'triangle', color: 'red', correctPosition: { x: 0, y: 0 }, correctRotation: 0, size: 2 },
-      { id: 'p5', type: 'triangle', color: 'red', correctPosition: { x: 6, y: 0 }, correctRotation: 0, size: 2 },
-      { id: 'p6', type: 'square', color: 'brown', correctPosition: { x: 3, y: 5 }, correctRotation: 0, size: 2 },
+      { id: 'p1', type: 'rectangle', color: 'gray', correctPosition: { x: 4, y: 12 }, correctRotation: 90, size: 16 },
+      { id: 'p2', type: 'square', color: 'gray', correctPosition: { x: 0, y: 0 }, correctRotation: 0, size: 8 },
+      { id: 'p3', type: 'square', color: 'gray', correctPosition: { x: 24, y: 0 }, correctRotation: 0, size: 8 },
+      { id: 'p4', type: 'triangle', color: 'red', correctPosition: { x: 0, y: 0 }, correctRotation: 0, size: 8 },
+      { id: 'p5', type: 'triangle', color: 'red', correctPosition: { x: 24, y: 0 }, correctRotation: 0, size: 8 },
+      { id: 'p6', type: 'square', color: 'brown', correctPosition: { x: 12, y: 20 }, correctRotation: 0, size: 8 },
     ],
   },
 ];

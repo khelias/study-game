@@ -1,10 +1,17 @@
 /**
- * ShapeShiftView Component
- * 
- * Game view for geometric puzzle games where players drag and rotate shapes to fill a silhouette.
+ * ShapeShiftView – Geometric puzzle: drag shapes onto the board to match the target.
+ *
+ * Grid layout (single source of truth):
+ * - Board is a square (aspect-ratio 1), gs×gs cells. cellPct = 100/gs.
+ * - Piece at grid (x,y) with size s: left = x*cellPct%, top = y*cellPct%, width/height = s*cellPct%.
+ * - Drop: snap by piece center to logical grid via boardPxToGridTopLeft (high-res gs = 16–32).
+ * - Piece scale: 1 so shapes fill their cell; edges meet at cell boundaries (no gaps).
+ * - Draw order: center pieces first, then outer (by distance from center) so overlapping
+ *   regions show the outer piece on top (e.g. star triangles on top of center square).
+ * Feedback: success/wrong use global notifications (same as other games).
  */
 
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { playSound } from '../../engine/audio';
 import { useTranslation } from '../../i18n/useTranslation';
 import { getLocale } from '../../i18n';
@@ -18,7 +25,6 @@ interface ShapeShiftViewProps {
   level?: number;
 }
 
-// SVG paths for different shape types
 const SHAPE_PATHS: Record<ShapeType, string> = {
   triangle: 'M25,0 L50,50 L0,50 Z',
   half_square: 'M0,0 L50,50 L0,50 Z',
@@ -29,7 +35,6 @@ const SHAPE_PATHS: Record<ShapeType, string> = {
   circle: 'M25,25 m-25,0 a25,25 0 1,0 50,0 a25,25 0 1,0 -50,0',
 };
 
-// Tailwind color classes for pieces
 const COLOR_CLASSES: Record<string, string> = {
   red: '#ef4444',
   blue: '#3b82f6',
@@ -45,11 +50,50 @@ const COLOR_CLASSES: Record<string, string> = {
   gray: '#64748b',
 };
 
-/** Short haptic pulse when placing a piece (supported on mobile). */
+const TAP_THRESHOLD_PX = 12;
+const TAP_ON_BOARD_THRESHOLD_PX = 24; // larger so tap-to-rotate on board is reliable
+const BOARD_MAX_WIDTH = '32rem'; // larger play area for finer placement
+const PIECE_SCALE = 0.5; // shapes fill 50% of cell (centered)
+const GHOST_FALLBACK_PX = 48; // used before board is measured
+/** Tray content height (tray fixed height minus vertical padding); cap piece size so they stay inside */
+const TRAY_CONTENT_MAX_PX = 72;
+
+type DragState = {
+  pieceId: string;
+  startX: number;
+  startY: number;
+  currentX: number;
+  currentY: number;
+  /** Offset from pointer to piece center at drag start; drop uses piece center for snap */
+  pointerOffsetX: number;
+  pointerOffsetY: number;
+};
+
 function hapticDrop(): void {
-  if (typeof navigator !== 'undefined' && navigator.vibrate) {
-    navigator.vibrate(10);
-  }
+  if (typeof navigator !== 'undefined' && navigator.vibrate) navigator.vibrate(10);
+}
+
+/**
+ * Grid model: board is a square (gs×gs cells). Piece at (x,y) size s
+ * occupies (x/gs, y/gs) to ((x+s)/gs, (y+s)/gs) in normalized [0,1].
+ * Snap: pixel position → cell containing piece center → top-left of piece.
+ */
+function boardPxToGridTopLeft(
+  rx: number,
+  ry: number,
+  boardWidthPx: number,
+  gs: number,
+  size: number
+): { x: number; y: number } {
+  const cellSizePx = boardWidthPx / gs;
+  const centerCellX = Math.floor(rx / cellSizePx);
+  const centerCellY = Math.floor(ry / cellSizePx);
+  const gx = centerCellX - Math.floor((size - 1) / 2);
+  const gy = centerCellY - Math.floor((size - 1) / 2);
+  return {
+    x: Math.max(0, Math.min(gx, gs - size)),
+    y: Math.max(0, Math.min(gy, gs - size)),
+  };
 }
 
 export const ShapeShiftView: React.FC<ShapeShiftViewProps> = ({
@@ -59,155 +103,197 @@ export const ShapeShiftView: React.FC<ShapeShiftViewProps> = ({
 }) => {
   const t = useTranslation();
   const locale = getLocale();
-  const [pieces, setPieces] = useState<PieceState[]>([]);
-  const [selectedPiece, setSelectedPiece] = useState<string | null>(null);
-  const [status, setStatus] = useState<'idle' | 'correct' | 'wrong'>('idle');
-  const [dragState, setDragState] = useState<{
-    pieceId: string | null;
-    startX: number;
-    startY: number;
-    currentX: number;
-    currentY: number;
-  }>({ pieceId: null, startX: 0, startY: 0, currentX: 0, currentY: 0 });
   const boardRef = useRef<HTMLDivElement>(null);
+  const trayRef = useRef<HTMLDivElement>(null);
+
+  const [pieces, setPieces] = useState<PieceState[]>(() =>
+    problem.pieces.map(p => ({ ...p }))
+  );
+  const [status, setStatus] = useState<'idle' | 'correct' | 'wrong'>('idle');
+  const [drag, setDrag] = useState<DragState | null>(null);
+  const [showHint, setShowHint] = useState(true);
+  const [boardWidthPx, setBoardWidthPx] = useState(0);
+  const boardRectRef = useRef<DOMRect | null>(null);
+
+  const submittedUidRef = useRef<string | null>(null);
+  const completionTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const dragJustEndedRef = useRef(false);
-  const submittedForProblemRef = useRef<string | null>(null);
-  const dragStateRef = useRef(dragState);
-  dragStateRef.current = dragState;
-  const [showDragHint, setShowDragHint] = useState(true);
+  const tapHandledInPerformDropRef = useRef(false);
+  const dragRef = useRef<DragState | null>(null);
+  const piecesRef = useRef(pieces);
+  const statusRef = useRef(status);
+  dragRef.current = drag;
+  piecesRef.current = pieces;
+  statusRef.current = status;
 
-  /** Treat as tap (rotate/select) if move was under this many px */
-  const TAP_MOVE_THRESHOLD_PX = 12;
-
-  /** Size of the drag ghost in px (visible, touch-friendly) */
-  const DRAG_GHOST_SIZE_PX = 64;
-
-  // Reset state on new problem
+  // Reset on new problem and clear any pending completion timeout
   useEffect(() => {
-    submittedForProblemRef.current = null;
-    // eslint-disable-next-line react-hooks/set-state-in-effect
+    submittedUidRef.current = null;
+    if (completionTimeoutRef.current) {
+      clearTimeout(completionTimeoutRef.current);
+      completionTimeoutRef.current = null;
+    }
     setPieces(problem.pieces.map(p => ({ ...p })));
-    setSelectedPiece(null);
     setStatus('idle');
-    setShowDragHint(true);
+    setShowHint(true);
   }, [problem.uid, problem.pieces]);
 
-  // Dismiss drag hint after delay or on first successful drop (handled in handlePointerUp)
+  // Dismiss hint after delay
   useEffect(() => {
-    if (!showDragHint) return;
-    const id = setTimeout(() => setShowDragHint(false), 4000);
+    if (!showHint) return;
+    const id = setTimeout(() => setShowHint(false), 4000);
     return () => clearTimeout(id);
-  }, [showDragHint]);
+  }, [showHint]);
 
-  // Run completion check when pieces change (avoids stale closure from setTimeout after drag)
+  // Completion: when all non-decoy pieces are placed, validate once and call onAnswer.
+  // Timeout is stored in a ref so we don't clear it when status changes (effect re-runs and would cancel the timeout).
   useEffect(() => {
     if (status !== 'idle') return;
-    if (submittedForProblemRef.current === problem.uid) return;
-    const nonDecoyPieces = pieces.filter(p => !p.isDecoy);
-    const allPlaced = nonDecoyPieces.every(p => p.currentPosition !== null);
+    if (submittedUidRef.current === problem.uid) return;
+    const required = pieces.filter(p => !p.isDecoy);
+    const allPlaced = required.every(p => p.currentPosition !== null);
     if (!allPlaced) return;
 
-    submittedForProblemRef.current = problem.uid;
+    submittedUidRef.current = problem.uid;
     const isCorrect = validateShapeShift(problem, pieces);
     setStatus(isCorrect ? 'correct' : 'wrong');
     playSound(isCorrect ? 'correct' : 'wrong', soundEnabled);
 
-    const timeout = setTimeout(() => {
+    const delay = isCorrect ? 1200 : 600;
+    const problemSnapshot = problem;
+    completionTimeoutRef.current = setTimeout(() => {
+      completionTimeoutRef.current = null;
       onAnswer(isCorrect);
       setStatus('idle');
-    }, isCorrect ? 1000 : 500);
-    return () => clearTimeout(timeout);
+      if (!isCorrect) {
+        setPieces(problemSnapshot.pieces.map(p => ({ ...p })));
+      }
+    }, delay);
+    // Do NOT clear the timeout here when effect re-runs (e.g. when status changes).
+    // Clearing it would cancel onAnswer and leave the game stuck in correct/wrong.
   }, [pieces, status, problem, soundEnabled, onAnswer]);
 
-  // Handle piece click/tap for rotation (ignore if we just finished a drag to avoid double-handling)
-  const handlePieceClick = (pieceId: string) => {
-    if (status !== 'idle') return;
+  // Clear completion timeout only when problem changes or on unmount
+  useEffect(() => {
+    return () => {
+      if (completionTimeoutRef.current) {
+        clearTimeout(completionTimeoutRef.current);
+        completionTimeoutRef.current = null;
+      }
+    };
+  }, [problem.uid]);
+
+  // Measure board rect so ghost size and drop preview position are correct
+  useEffect(() => {
+    const el = boardRef.current;
+    if (!el) return;
+    const update = () => {
+      const rect = el.getBoundingClientRect();
+      boardRectRef.current = rect;
+      setBoardWidthPx(rect.width);
+    };
+    update();
+    const ro = new ResizeObserver(update);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+
+  const startDrag = useCallback(
+    (pieceId: string, clientX: number, clientY: number, pointerOffsetX: number, pointerOffsetY: number) => {
+      if (statusRef.current !== 'idle') return;
+      setShowHint(false);
+      setDrag({
+        pieceId,
+        startX: clientX,
+        startY: clientY,
+        currentX: clientX,
+        currentY: clientY,
+        pointerOffsetX,
+        pointerOffsetY,
+      });
+    },
+    []
+  );
+
+  const handleTapPiece = useCallback((pieceId: string) => {
+    if (statusRef.current !== 'idle') return;
     if (dragJustEndedRef.current) {
       dragJustEndedRef.current = false;
       return;
     }
-
-    const piece = pieces.find(p => p.id === pieceId);
-    if (!piece) return;
-
-    if (selectedPiece === pieceId) {
-      // Rotate the piece
-      setPieces(prev => prev.map(p =>
+    setPieces(prev =>
+      prev.map(p =>
         p.id === pieceId
           ? { ...p, currentRotation: (p.currentRotation + 90) % 360 }
           : p
-      ));
-      playSound('tap', soundEnabled);
-    } else {
-      setSelectedPiece(pieceId);
-      playSound('tap', soundEnabled);
-    }
-  };
-
-  // Dedicated rotate button (works on mobile where tap-to-rotate is hard)
-  const handleRotateButton = () => {
-    if (status !== 'idle' || !selectedPiece) return;
-    setPieces(prev => prev.map(p =>
-      p.id === selectedPiece
-        ? { ...p, currentRotation: (p.currentRotation + 90) % 360 }
-        : p
-    ));
+      )
+    );
     playSound('tap', soundEnabled);
-  };
+  }, [soundEnabled]);
 
-  // Unified pointer drag handlers (mouse + touch, with capture so drag works everywhere)
-  const handlePointerDown = (pieceId: string, e: React.PointerEvent) => {
-    if (status !== 'idle') return;
-    e.preventDefault();
-    setShowDragHint(false); // dismiss hint as soon as user starts dragging
-    (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
-    setDragState({
-      pieceId,
-      startX: e.clientX,
-      startY: e.clientY,
-      currentX: e.clientX,
-      currentY: e.clientY,
-    });
-    setSelectedPiece(pieceId);
-  };
+  const onPieceClick = useCallback(
+    (pieceId: string) => {
+      if (tapHandledInPerformDropRef.current) {
+        tapHandledInPerformDropRef.current = false;
+        return;
+      }
+      handleTapPiece(pieceId);
+    },
+    [handleTapPiece]
+  );
 
-  const handlePointerMove = (e: React.PointerEvent) => {
-    if (!dragStateRef.current.pieceId) return;
-    if (e.pointerType === 'touch') e.preventDefault();
-    setDragState(prev => ({ ...prev, currentX: e.clientX, currentY: e.clientY }));
-    dragStateRef.current = { ...dragStateRef.current, currentX: e.clientX, currentY: e.clientY };
-  };
-
-  const handlePointerUp = (e: React.PointerEvent) => {
-    const state = dragStateRef.current;
-    if (!state.pieceId) {
-      setDragState({ pieceId: null, startX: 0, startY: 0, currentX: 0, currentY: 0 });
-      return;
-    }
-    const endX = e.clientX;
-    const endY = e.clientY;
-    const moved = Math.hypot(endX - state.startX, endY - state.startY);
+  const performDrop = useCallback((clientX: number, clientY: number) => {
+    const d = dragRef.current;
+    if (!d) return;
+    setDrag(null);
+    const moved = Math.hypot(clientX - d.startX, clientY - d.startY);
+    const piece = piecesRef.current.find(p => p.id === d.pieceId);
+    const dropX = clientX - d.pointerOffsetX;
+    const dropY = clientY - d.pointerOffsetY;
     let placed = false;
+    let scheduledTap = false;
 
-    if (boardRef.current) {
-      const boardRect = boardRef.current.getBoundingClientRect();
-      const relativeX = endX - boardRect.left;
-      const relativeY = endY - boardRect.top;
+    // Tap-to-rotate: small movement → rotate (ignore release point)
+    if (piece?.currentPosition != null && moved < TAP_ON_BOARD_THRESHOLD_PX) {
+      tapHandledInPerformDropRef.current = true;
+      scheduledTap = true;
+      setTimeout(() => handleTapPiece(d.pieceId), 10);
+      placed = true;
+    } else if (piece?.currentPosition == null && moved < TAP_THRESHOLD_PX) {
+      tapHandledInPerformDropRef.current = true;
+      scheduledTap = true;
+      setTimeout(() => handleTapPiece(d.pieceId), 10);
+      placed = true;
+    } else if (trayRef.current) {
+      const trayRect = trayRef.current.getBoundingClientRect();
+      const inTray =
+        dropX >= trayRect.left && dropX <= trayRect.right &&
+        dropY >= trayRect.top && dropY <= trayRect.bottom;
+      if (inTray) {
+        setPieces(prev =>
+          prev.map(p => (p.id === d.pieceId ? { ...p, currentPosition: null } : p))
+        );
+        placed = true;
+      }
+    }
+
+    if (!placed && boardRef.current) {
+      const rect = boardRef.current.getBoundingClientRect();
+      const rx = dropX - rect.left;
+      const ry = dropY - rect.top;
+      const gs = problem.puzzle.gridSize;
+      const cellSizePx = rect.width / gs;
+      const margin = cellSizePx * 0.5; // half a logical cell
       const onBoard =
-        relativeX >= 0 && relativeX <= boardRect.width &&
-        relativeY >= 0 && relativeY <= boardRect.height;
+        rx >= -margin && rx <= rect.width + margin &&
+        ry >= -margin && ry <= rect.height + margin;
 
       if (onBoard) {
-        const gs = problem.puzzle.gridSize;
-        const cellW = boardRect.width / gs;
-        const cellH = boardRect.height / gs;
-        const gridX = Math.floor((relativeX + cellW / 2) / cellW);
-        const gridY = Math.floor((relativeY + cellH / 2) / cellH);
-        const clampedX = Math.max(0, Math.min(gridX, gs - 1));
-        const clampedY = Math.max(0, Math.min(gridY, gs - 1));
+        const size = piece?.size ?? 1;
+        const { x: cx, y: cy } = boardPxToGridTopLeft(rx, ry, rect.width, gs, size);
         setPieces(prev =>
           prev.map(p =>
-            p.id === state.pieceId ? { ...p, currentPosition: { x: clampedX, y: clampedY } } : p
+            p.id === d.pieceId ? { ...p, currentPosition: { x: cx, y: cy } } : p
           )
         );
         playSound('tap', soundEnabled);
@@ -215,191 +301,260 @@ export const ShapeShiftView: React.FC<ShapeShiftViewProps> = ({
         placed = true;
       } else {
         setPieces(prev =>
-          prev.map(p => (p.id === state.pieceId ? { ...p, currentPosition: null } : p))
+          prev.map(p => (p.id === d.pieceId ? { ...p, currentPosition: null } : p))
         );
+        placed = true;
       }
     }
 
-    setDragState({ pieceId: null, startX: 0, startY: 0, currentX: 0, currentY: 0 });
-
-    if (!placed && moved < TAP_MOVE_THRESHOLD_PX) {
-      dragJustEndedRef.current = false;
-      setTimeout(() => handlePieceClick(state.pieceId), 10);
-    } else {
+    if (!placed && moved < TAP_THRESHOLD_PX) {
+      tapHandledInPerformDropRef.current = true;
+      scheduledTap = true;
+      setTimeout(() => handleTapPiece(d.pieceId), 10);
+    }
+    if (!scheduledTap) {
       dragJustEndedRef.current = true;
     }
-  };
+  }, [problem.puzzle.gridSize, soundEnabled, handleTapPiece]);
 
-  const unplacedPieces = pieces.filter(p => p.currentPosition === null);
-  const placedPieces = pieces.filter(p => p.currentPosition !== null);
-  const draggingPiece = dragState.pieceId ? pieces.find(p => p.id === dragState.pieceId) : null;
+  // Native document capture: start drag on any piece (tray or board)
+  useEffect(() => {
+    const onStart = (e: MouseEvent | PointerEvent | TouchEvent) => {
+      if (statusRef.current !== 'idle') return;
+      const el = (e.target as HTMLElement).closest?.('[data-shape-piece]');
+      if (!el) return;
+      const pieceId = (el as HTMLElement).getAttribute('data-piece-id');
+      if (!pieceId) return;
+      e.preventDefault();
+      e.stopPropagation();
+      let x: number, y: number;
+      if ('touches' in e && e.touches.length > 0) {
+        x = e.touches[0].clientX;
+        y = e.touches[0].clientY;
+      } else if ('clientX' in e) {
+        x = e.clientX;
+        y = e.clientY;
+      } else return;
+      const rect = el.getBoundingClientRect();
+      const centerX = rect.left + rect.width / 2;
+      const centerY = rect.top + rect.height / 2;
+      const pointerOffsetX = x - centerX;
+      const pointerOffsetY = y - centerY;
+      startDrag(pieceId, x, y, pointerOffsetX, pointerOffsetY);
+    };
+    document.addEventListener('mousedown', onStart, true);
+    document.addEventListener('pointerdown', onStart, true);
+    document.addEventListener('touchstart', onStart, { capture: true, passive: false });
+    return () => {
+      document.removeEventListener('mousedown', onStart, true);
+      document.removeEventListener('pointerdown', onStart, true);
+      document.removeEventListener('touchstart', onStart, true);
+    };
+  }, [startDrag]);
 
-  // Get puzzle name based on locale
+  // Window: move and end drag
+  useEffect(() => {
+    if (!drag) return;
+    const onMove = (e: PointerEvent | MouseEvent | TouchEvent) => {
+      if (!dragRef.current) return;
+      let x: number, y: number;
+      if ('touches' in e && e.touches.length > 0) {
+        x = e.touches[0].clientX;
+        y = e.touches[0].clientY;
+        e.preventDefault();
+      } else if ('clientX' in e) {
+        x = e.clientX;
+        y = e.clientY;
+        if (e instanceof PointerEvent && e.pointerType === 'touch') e.preventDefault();
+      } else return;
+      setDrag(prev => prev ? { ...prev, currentX: x, currentY: y } : null);
+    };
+    const onEnd = (e: PointerEvent | MouseEvent | TouchEvent) => {
+      let x: number, y: number;
+      if ('changedTouches' in e && e.changedTouches.length > 0) {
+        x = e.changedTouches[0].clientX;
+        y = e.changedTouches[0].clientY;
+      } else if ('clientX' in e) {
+        x = e.clientX;
+        y = e.clientY;
+      } else return;
+      performDrop(x, y);
+    };
+    window.addEventListener('pointermove', onMove, { passive: false });
+    window.addEventListener('pointerup', onEnd);
+    window.addEventListener('pointercancel', onEnd);
+    window.addEventListener('mousemove', onMove);
+    window.addEventListener('mouseup', onEnd);
+    window.addEventListener('touchmove', onMove, { passive: false });
+    window.addEventListener('touchend', onEnd);
+    return () => {
+      window.removeEventListener('pointermove', onMove);
+      window.removeEventListener('pointerup', onEnd);
+      window.removeEventListener('pointercancel', onEnd);
+      window.removeEventListener('mousemove', onMove);
+      window.removeEventListener('mouseup', onEnd);
+      window.removeEventListener('touchmove', onMove);
+      window.removeEventListener('touchend', onEnd);
+    };
+  }, [drag?.pieceId, performDrop]);
+
+  const unplaced = pieces.filter(p => p.currentPosition === null);
+  const placed = pieces.filter(p => p.currentPosition !== null);
+  const draggingPiece = drag ? pieces.find(p => p.id === drag.pieceId) : null;
   const puzzleName = locale === 'et' ? problem.puzzle.nameEt : problem.puzzle.nameEn;
+  const gs = problem.puzzle.gridSize;
+  const cellPct = 100 / gs;
+
+  // Draw order: center pieces first so outer pieces (e.g. star triangles) render on top at shared edges
+  const boardCenter = (gs - 1) / 2;
+  const placedSorted = [...placed].sort((a, b) => {
+    const acx = a.currentPosition!.x + (a.size - 1) / 2;
+    const acy = a.currentPosition!.y + (a.size - 1) / 2;
+    const bcx = b.currentPosition!.x + (b.size - 1) / 2;
+    const bcy = b.currentPosition!.y + (b.size - 1) / 2;
+    const da = (acx - boardCenter) ** 2 + (acy - boardCenter) ** 2;
+    const db = (bcx - boardCenter) ** 2 + (bcy - boardCenter) ** 2;
+    return da - db;
+  });
+
+  // Ghost size = same as placed piece on board (cell size × piece size × scale)
+  const ghostSizePx =
+    draggingPiece && boardWidthPx > 0
+      ? (boardWidthPx / gs) * draggingPiece.size * PIECE_SCALE
+      : GHOST_FALLBACK_PX;
 
   return (
-    <div className="w-full flex flex-col items-center px-4 sm:px-6 max-w-2xl mx-auto pt-4 sm:pt-6 animate-in fade-in duration-300">
-      {/* Drag ghost: follows pointer so user sees the piece while dragging (mouse + touch) */}
-      {draggingPiece && (
+    <div className="w-full flex flex-col items-center px-2 sm:px-4 max-w-2xl mx-auto pt-2 sm:pt-4 animate-in fade-in duration-300">
+      {/* Drag ghost – follows piece center so drop lands where you see it (no offset) */}
+      {draggingPiece && drag && (
         <div
-          className="fixed pointer-events-none z-[100] will-change-transform"
+          className="fixed pointer-events-none z-[100]"
           style={{
-            left: dragState.currentX,
-            top: dragState.currentY,
-            width: DRAG_GHOST_SIZE_PX,
-            height: DRAG_GHOST_SIZE_PX,
+            left: drag.currentX - drag.pointerOffsetX,
+            top: drag.currentY - drag.pointerOffsetY,
+            width: ghostSizePx,
+            height: ghostSizePx,
             transform: 'translate(-50%, -50%)',
           }}
         >
-          <div
-            className="w-full h-full drop-shadow-xl"
-            style={{ transform: `rotate(${draggingPiece.currentRotation}deg)` }}
-          >
-            <svg
-              viewBox={draggingPiece.type === 'rectangle' ? '0 0 100 50' : '0 0 50 50'}
-              className="w-full h-full"
-            >
+          <div className="w-full h-full drop-shadow-lg" style={{ transform: `rotate(${draggingPiece.currentRotation}deg)` }}>
+            <svg viewBox={draggingPiece.type === 'rectangle' ? '0 0 100 50' : '0 0 50 50'} className="w-full h-full" preserveAspectRatio={draggingPiece.type === 'rectangle' ? 'xMidYMid meet' : 'none'}>
               <path
                 d={SHAPE_PATHS[draggingPiece.type]}
-                fill={COLOR_CLASSES[draggingPiece.color] || COLOR_CLASSES.gray}
+                fill={COLOR_CLASSES[draggingPiece.color] ?? COLOR_CLASSES.gray}
                 stroke={draggingPiece.color === 'white' ? '#cbd5e1' : 'none'}
-                strokeWidth={draggingPiece.color === 'white' ? '2' : '0'}
+                strokeWidth={draggingPiece.color === 'white' ? 2 : 0}
               />
             </svg>
           </div>
         </div>
       )}
 
-      {/* Header */}
-      <div className="mb-4 text-center">
-        <h2 className="text-xl sm:text-2xl font-bold text-slate-700">
-          {puzzleName}
-        </h2>
-        <p className="text-sm text-slate-500">
-          {t.games.shape_shift.instructions[problem.mode]}
-        </p>
-      </div>
+      <header className="mb-2 text-center">
+        <h2 className="text-lg sm:text-xl font-bold text-slate-700">{puzzleName}</h2>
+      </header>
 
-      {/* Target Board - large so pieces fit and drop target is clear */}
+      {/* Board – larger play area */}
       <div
         ref={boardRef}
-        className="relative bg-slate-100 rounded-2xl border-2 border-dashed border-slate-300 overflow-hidden flex-shrink-0 select-none touch-none"
+        className="relative bg-slate-100 rounded-2xl border-2 border-dashed border-slate-300 overflow-hidden flex-shrink-0 select-none"
         style={{
-          width: 'min(94vw, 28rem)',
+          width: `min(96vw, ${BOARD_MAX_WIDTH})`,
           aspectRatio: '1',
           touchAction: 'none',
         }}
       >
-        {/* Placed pieces */}
-        {placedPieces.map(piece => {
-          const isDragging = dragState.pieceId === piece.id;
-          const position = piece.currentPosition;
-          if (!position) return null;
-
-          const cellSize = 100 / problem.puzzle.gridSize;
-          const left = position.x * cellSize;
-          const top = position.y * cellSize;
-
+        {placedSorted.map(piece => {
+          const pos = piece.currentPosition!;
+          const isDragging = drag?.pieceId === piece.id;
+          const leftPct = (pos.x / gs) * 100;
+          const topPct = (pos.y / gs) * 100;
+          const sizePct = (piece.size / gs) * 100;
           return (
             <div
               key={piece.id}
+              data-shape-piece
+              data-piece-id={piece.id}
               role="button"
               tabIndex={0}
-              className={`absolute cursor-grab active:cursor-grabbing select-none touch-none transition-all duration-200 ease-out ${
-                selectedPiece === piece.id ? 'scale-105 drop-shadow-lg' : ''
-              } ${isDragging ? 'opacity-40 pointer-events-none' : ''}`}
+              className={`absolute flex items-center justify-center cursor-grab active:cursor-grabbing touch-none transition-transform duration-200 ${
+                isDragging ? 'opacity-40 pointer-events-none' : ''
+              }`}
               style={{
-                left: `${left}%`,
-                top: `${top}%`,
-                width: `${cellSize * piece.size}%`,
-                height: `${cellSize * piece.size}%`,
+                left: `${leftPct}%`,
+                top: `${topPct}%`,
+                width: `${sizePct}%`,
+                height: `${sizePct}%`,
                 transform: `rotate(${piece.currentRotation}deg)`,
-                touchAction: 'none',
               }}
-              onPointerDown={(e) => handlePointerDown(piece.id, e)}
-              onPointerMove={handlePointerMove}
-              onPointerUp={handlePointerUp}
-              onPointerCancel={handlePointerUp}
-              onClick={() => handlePieceClick(piece.id)}
+              onClick={() => onPieceClick(piece.id)}
             >
-              <svg
-                viewBox={piece.type === 'rectangle' ? '0 0 100 50' : '0 0 50 50'}
-                className="w-full h-full"
-              >
-                <path
-                  d={SHAPE_PATHS[piece.type]}
-                  fill={COLOR_CLASSES[piece.color] || COLOR_CLASSES.gray}
-                  stroke={piece.color === 'white' ? '#cbd5e1' : 'none'}
-                  strokeWidth={piece.color === 'white' ? '2' : '0'}
-                />
-              </svg>
+              <div className="pointer-events-none w-full h-full flex items-center justify-center">
+                <div style={{ width: `${PIECE_SCALE * 100}%`, height: `${PIECE_SCALE * 100}%` }} className="flex-shrink-0">
+                  <svg viewBox={piece.type === 'rectangle' ? '0 0 100 50' : '0 0 50 50'} className="w-full h-full" preserveAspectRatio={piece.type === 'rectangle' ? 'xMidYMid meet' : 'none'}>
+                    <path
+                      d={SHAPE_PATHS[piece.type]}
+                      fill={COLOR_CLASSES[piece.color] ?? COLOR_CLASSES.gray}
+                      stroke={piece.color === 'white' ? '#cbd5e1' : 'none'}
+                      strokeWidth={piece.color === 'white' ? 2 : 0}
+                    />
+                  </svg>
+                </div>
+              </div>
             </div>
           );
         })}
 
-        {/* Success overlay */}
-        {status === 'correct' && (
-          <div className="absolute inset-0 bg-green-500/20 flex items-center justify-center animate-in fade-in duration-300">
-            <span className="text-4xl">🎉</span>
-          </div>
-        )}
       </div>
 
-      {/* Rotate button - always visible so mobile can rotate without double-tap */}
-      {unplacedPieces.length > 0 && (
-        <div className="mt-3 flex justify-center">
-          <button
-            type="button"
-            onClick={handleRotateButton}
-            disabled={!selectedPiece || status !== 'idle'}
-            className="px-4 py-2 text-sm font-medium rounded-xl border-2 border-teal-300 bg-teal-50 text-teal-800 disabled:opacity-50 disabled:pointer-events-none active:bg-teal-100"
-          >
-            {t.games.shape_shift.rotateButton}
-          </button>
-        </div>
-      )}
+      <p className="mt-3 mb-2 text-xs sm:text-sm text-slate-500 text-center" role="status">
+        {t.games.shape_shift.instructions[problem.mode]}
+      </p>
 
-      {/* Drag hint - first load only, dismisses on first drag or after 4s */}
-      {showDragHint && unplacedPieces.length > 0 && (
-        <p
-          className="mt-2 text-sm text-teal-600 font-medium animate-in fade-in duration-500 slide-in-from-bottom-2"
-          role="status"
-        >
+      {showHint && unplaced.length > 0 && (
+        <p className="mb-2 text-xs sm:text-sm text-teal-600 font-medium text-center" role="status">
           {t.games.shape_shift.dragHint}
         </p>
       )}
 
-      {/* Piece Tray - smaller pieces so board feels bigger */}
-      <div className="mt-4 flex flex-wrap justify-center gap-2 min-h-[64px]">
-        {unplacedPieces.map(piece => {
-          const isDragging = dragState.pieceId === piece.id;
+      {/* Tray – fixed-size drop zone; pieces capped so they stay inside */}
+      <div
+        ref={trayRef}
+        className="flex flex-wrap justify-center items-center gap-2 w-[min(96vw,32rem)] h-24 py-2 px-3 rounded-xl border-2 border-dashed border-slate-200 bg-slate-50/80 flex-shrink-0 overflow-hidden"
+      >
+        {unplaced.map(piece => {
+          const isDragging = drag?.pieceId === piece.id;
+          const rawSize =
+            boardWidthPx > 0 ? (boardWidthPx / gs) * piece.size * PIECE_SCALE : GHOST_FALLBACK_PX;
+          const trayPieceSizePx = Math.min(rawSize, TRAY_CONTENT_MAX_PX);
           return (
             <div
               key={piece.id}
+              data-shape-piece
+              data-piece-id={piece.id}
               role="button"
               tabIndex={0}
-              className={`relative cursor-grab active:cursor-grabbing bg-white rounded-lg border-2 border-slate-200 p-1.5 transition-transform select-none touch-none min-w-[3.5rem] min-h-[3.5rem] w-14 h-14 sm:w-12 sm:h-12 flex items-center justify-center ${
-                selectedPiece === piece.id ? 'scale-105 drop-shadow-lg border-teal-400 ring-2 ring-teal-200' : ''
-              } ${isDragging ? 'opacity-40 pointer-events-none' : ''} hover:scale-105 active:scale-100`}
-              style={{ touchAction: 'none' }}
-              onPointerDown={(e) => handlePointerDown(piece.id, e)}
-              onPointerMove={handlePointerMove}
-              onPointerUp={handlePointerUp}
-              onPointerCancel={handlePointerUp}
-              onClick={() => handlePieceClick(piece.id)}
+              className={`relative cursor-grab active:cursor-grabbing rounded-lg border-2 border-slate-200 bg-white p-1 touch-none flex items-center justify-center flex-shrink-0 ${
+                isDragging ? 'opacity-40 pointer-events-none' : ''
+              }`}
+              style={{
+                touchAction: 'none',
+                width: trayPieceSizePx,
+                height: trayPieceSizePx,
+              }}
+              onClick={() => onPieceClick(piece.id)}
             >
               <svg
                 viewBox={piece.type === 'rectangle' ? '0 0 100 50' : '0 0 50 50'}
-                className="w-full h-full"
-                style={{
-                  transform: `rotate(${piece.currentRotation}deg)`,
-                }}
+                className="w-full h-full pointer-events-none"
+                preserveAspectRatio={piece.type === 'rectangle' ? 'xMidYMid meet' : 'none'}
+                style={{ transform: `rotate(${piece.currentRotation}deg)` }}
               >
                 <path
                   d={SHAPE_PATHS[piece.type]}
-                  fill={COLOR_CLASSES[piece.color] || COLOR_CLASSES.gray}
+                  fill={COLOR_CLASSES[piece.color] ?? COLOR_CLASSES.gray}
                   stroke={piece.color === 'white' ? '#cbd5e1' : 'none'}
-                  strokeWidth={piece.color === 'white' ? '2' : '0'}
+                  strokeWidth={piece.color === 'white' ? 2 : 0}
                 />
               </svg>
             </div>
@@ -407,9 +562,8 @@ export const ShapeShiftView: React.FC<ShapeShiftViewProps> = ({
         })}
       </div>
 
-      {/* Instructions */}
-      <p className="mt-3 text-xs text-slate-500 text-center">
-        {t.games.shape_shift.dragToPlace}. {t.games.shape_shift.tapToRotate} {t.games.shape_shift.orUse} {t.games.shape_shift.rotateButton}.
+      <p className="mt-2 text-xs text-slate-500 text-center">
+        {t.games.shape_shift.dragToPlace}. {t.games.shape_shift.tapToRotate}.
       </p>
     </div>
   );

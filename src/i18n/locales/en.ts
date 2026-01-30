@@ -735,6 +735,7 @@ export const en = {
       orUse: 'or use',
       piecesRemaining: 'Pieces left',
       complete: 'Excellent! 🎉',
+      tryAgain: 'Not quite – try again',
       categories: {
         shapes: 'Shapes',
         animals: 'Animals',

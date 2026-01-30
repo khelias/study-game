@@ -193,7 +193,7 @@ export function useAnswerHandler(): UseAnswerHandlerResult {
       }
 
       setBgClass('bg-green-50');
-      
+
       if (result.shouldShowParticles) {
         setParticleActive(true);
         setTimeout(() => setParticleActive(false), result.shouldShowParticles ? 1200 : 1500);

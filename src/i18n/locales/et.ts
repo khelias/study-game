@@ -735,6 +735,7 @@ export const et = {
       orUse: 'või kasuta',
       piecesRemaining: 'Tükke jäänud',
       complete: 'Suurepärane! 🎉',
+      tryAgain: 'Proovi uuesti',
       categories: {
         shapes: 'Kujundid',
         animals: 'Loomad',

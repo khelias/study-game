@@ -177,10 +177,10 @@ export const validateShapeShift: AnswerValidator = (problem: Problem, userAnswer
     const placed = placedPieces.find(p => p.id === required.id);
     if (!placed || !placed.currentPosition) return false;
 
-    // Check position (with tolerance)
+    // Check position (tolerance 1 so small misdrops still count as correct)
     const positionOk =
-      Math.abs(placed.currentPosition.x - required.correctPosition.x) < 0.5 &&
-      Math.abs(placed.currentPosition.y - required.correctPosition.y) < 0.5;
+      Math.abs(placed.currentPosition.x - required.correctPosition.x) <= 1 &&
+      Math.abs(placed.currentPosition.y - required.correctPosition.y) <= 1;
 
     // Check rotation (handle symmetric shapes)
     let rotationOk = false;
