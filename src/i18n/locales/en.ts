@@ -783,6 +783,7 @@ export const en = {
     },
     hint: 'Hint',
     formLabel: 'Form',
+    undo: 'Undo',
     linesRemaining: 'Lines remaining: {count}',
     complete: 'Excellent! 🌟',
     constellations: {

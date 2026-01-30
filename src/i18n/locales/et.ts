@@ -783,6 +783,7 @@ export const et = {
     },
     hint: 'Vihje',
     formLabel: 'Kuju',
+    undo: 'Võta tagasi',
     linesRemaining: 'Jooni jäänud: {count}',
     complete: 'Suurepärane! 🌟',
     constellations: {

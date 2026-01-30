@@ -5,11 +5,14 @@
  * Supports multiple game modes: trace, build, identify, expert.
  */
 
-import React, { useEffect, useState, useMemo } from 'react';
+import React, { useEffect, useState, useMemo, useRef, useCallback } from 'react';
 import { playSound } from '../../engine/audio';
 import { useTranslation } from '../../i18n/useTranslation';
 import { getConstellationById } from '../../games/constellations';
 import type { StarMapperProblem, Star, ConstellationLine } from '../../types/game';
+
+/** Minimum touch target radius in viewBox units (0–100) for comfortable tapping */
+const TOUCH_TARGET_R = 6;
 
 type AnswerHandler = (answer: boolean) => void;
 
@@ -26,10 +29,12 @@ export const StarMapperView: React.FC<StarMapperViewProps> = ({
   soundEnabled,
 }) => {
   const t = useTranslation();
+  const svgRef = useRef<SVGSVGElement>(null);
   const [selectedStar, setSelectedStar] = useState<string | null>(null);
   const [drawnLines, setDrawnLines] = useState<ConstellationLine[]>([]);
   const [status, setStatus] = useState<'idle' | 'correct' | 'wrong'>('idle');
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
+  const [dragStartStarId, setDragStartStarId] = useState<string | null>(null);
 
   // Reset on new problem
   useEffect(() => {
@@ -37,6 +42,7 @@ export const StarMapperView: React.FC<StarMapperViewProps> = ({
     setDrawnLines([]);
     setStatus('idle');
     setSelectedOption(null);
+    setDragStartStarId(null);
   }, [problem.uid]);
 
   // Star tap handler for trace/build/expert modes
@@ -64,8 +70,16 @@ export const StarMapperView: React.FC<StarMapperViewProps> = ({
     }
   };
 
-  // Check if constellation is complete
-  const checkCompletion = (lines: ConstellationLine[]) => {
+  // Undo last drawn line (trace/build/expert only)
+  const handleUndo = useCallback(() => {
+    if (status !== 'idle' || drawnLines.length === 0) return;
+    setDrawnLines(prev => prev.slice(0, -1));
+    setSelectedStar(null);
+    playSound('tap', soundEnabled);
+  }, [status, drawnLines.length, soundEnabled]);
+
+  // Check if constellation is complete (used by tap and drag-to-connect)
+  const checkCompletion = useCallback((lines: ConstellationLine[]) => {
     const requiredLines = problem.constellation.lines;
     const allComplete = requiredLines.every(required =>
       lines.some(player =>
@@ -81,7 +95,53 @@ export const StarMapperView: React.FC<StarMapperViewProps> = ({
         onAnswer(true);
       }, 2200);
     }
-  };
+  }, [problem.constellation.lines, soundEnabled, onAnswer]);
+
+  // Find star at viewBox position (for drag-to-connect release)
+  const getStarAtPosition = useCallback((x: number, y: number): Star | null => {
+    for (const star of problem.constellation.stars) {
+      const dx = star.x - x;
+      const dy = star.y - y;
+      if (dx * dx + dy * dy <= TOUCH_TARGET_R * TOUCH_TARGET_R) return star;
+    }
+    return null;
+  }, [problem.constellation.stars]);
+
+  // Convert client coords to viewBox (0–100)
+  const clientToViewBox = useCallback((clientX: number, clientY: number): { x: number; y: number } | null => {
+    const svg = svgRef.current;
+    if (!svg) return null;
+    const pt = svg.createSVGPoint();
+    pt.x = clientX;
+    pt.y = clientY;
+    const ctm = svg.getScreenCTM();
+    if (!ctm) return null;
+    const svgPt = pt.matrixTransform(ctm.inverse());
+    return { x: svgPt.x, y: svgPt.y };
+  }, []);
+
+  // Pointer up on star field: complete drag-to-connect if we started on a star and released on another
+  const handleStarFieldPointerUp = useCallback((e: React.PointerEvent) => {
+    if (!dragStartStarId || status !== 'idle') {
+      setDragStartStarId(null);
+      return;
+    }
+    const pt = clientToViewBox(e.clientX, e.clientY);
+    if (!pt) {
+      setDragStartStarId(null);
+      return;
+    }
+    const starAt = getStarAtPosition(pt.x, pt.y);
+    if (starAt && starAt.id !== dragStartStarId) {
+      const newLine = { from: dragStartStarId, to: starAt.id };
+      const newLines = [...drawnLines, newLine];
+      setDrawnLines(newLines);
+      setSelectedStar(null);
+      playSound('connect', soundEnabled);
+      checkCompletion(newLines);
+    }
+    setDragStartStarId(null);
+  }, [dragStartStarId, status, clientToViewBox, getStarAtPosition, drawnLines, soundEnabled, checkCompletion]);
 
   // Handle identify mode option selection
   const handleIdentify = (constellationId: string) => {
@@ -181,6 +241,15 @@ export const StarMapperView: React.FC<StarMapperViewProps> = ({
             <p className="text-xs sm:text-sm text-slate-600 mt-0.5">
               {t.starMapper.linesRemaining.replace('{count}', String(linesRemaining))}
             </p>
+            {drawnLines.length > 0 && status === 'idle' && (
+              <button
+                type="button"
+                onClick={handleUndo}
+                className="mt-2 px-3 py-1.5 text-sm font-medium rounded-lg border border-slate-300 bg-white text-slate-700 hover:bg-slate-50 active:bg-slate-100"
+              >
+                {t.starMapper.undo}
+              </button>
+            )}
           </>
         )}
       </div>
@@ -213,10 +282,12 @@ export const StarMapperView: React.FC<StarMapperViewProps> = ({
 
         {/* SVG for lines and stars - overflow hidden keeps selection ring inside playable area */}
         <svg
-          className="absolute inset-0 w-full h-full"
+          ref={svgRef}
+          className="absolute inset-0 w-full h-full touch-none"
           viewBox="0 0 100 100"
           preserveAspectRatio="xMidYMid meet"
           style={{ overflow: 'hidden' }}
+          onPointerUp={problem.mode !== 'identify' ? handleStarFieldPointerUp : undefined}
         >
           <defs>
             <clipPath id="starFieldClip">
@@ -293,7 +364,7 @@ export const StarMapperView: React.FC<StarMapperViewProps> = ({
             );
           })}
 
-          {/* Constellation stars */}
+          {/* Constellation stars: large touch target (r=TOUCH_TARGET_R) + visible star */}
           {problem.constellation.stars.map(star => {
             const isSelected = selectedStar === star.id;
             const isConnected = drawnLines.some(l => l.from === star.id || l.to === star.id);
@@ -302,16 +373,18 @@ export const StarMapperView: React.FC<StarMapperViewProps> = ({
 
             return (
               <g key={star.id}>
+                {/* Large invisible hit area for touch (tap and drag-to-connect) */}
                 <circle
                   cx={star.x}
                   cy={star.y}
-                  r={size * 0.5}
-                  fill={color}
-                  filter={isSelected || (status === 'correct' && isConnected) ? 'url(#glow)' : undefined}
-                  className={`cursor-pointer transition-all ${
-                    isSelected ? 'animate-pulse' : ''
-                  } ${status === 'correct' ? 'animate-twinkle' : ''}`}
+                  r={TOUCH_TARGET_R}
+                  fill="transparent"
+                  className="cursor-pointer"
                   onClick={() => handleStarTap(star.id)}
+                  onPointerDown={(e) => {
+                    e.stopPropagation();
+                    setDragStartStarId(star.id);
+                  }}
                   onKeyDown={(e) => {
                     if (e.key === 'Enter' || e.key === ' ') {
                       e.preventDefault();
@@ -321,6 +394,16 @@ export const StarMapperView: React.FC<StarMapperViewProps> = ({
                   tabIndex={0}
                   role="button"
                   aria-label={`Star ${star.name || star.id}${isSelected ? ' (selected)' : ''}`}
+                />
+                {/* Visible star (no pointer events so hit area gets taps) */}
+                <circle
+                  cx={star.x}
+                  cy={star.y}
+                  r={size * 0.5}
+                  fill={color}
+                  pointerEvents="none"
+                  filter={isSelected || (status === 'correct' && isConnected) ? 'url(#glow)' : undefined}
+                  className={`transition-all ${isSelected ? 'animate-pulse' : ''} ${status === 'correct' ? 'animate-twinkle' : ''}`}
                   style={{
                     transform: isSelected ? 'scale(1.5)' : 'scale(1)',
                     transformOrigin: 'center',
