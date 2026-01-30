@@ -730,6 +730,7 @@ export const et = {
       },
       tapToRotate: 'Puuduta pööramiseks',
       dragToPlace: 'Lohista paigutamiseks',
+      dragHint: 'Lohista kujund laudale alustamiseks',
       rotateButton: 'Pööra 90°',
       orUse: 'või kasuta',
       piecesRemaining: 'Tükke jäänud',
@@ -803,6 +804,9 @@ export const et = {
       cepheus: { name: 'Kefeusus', desc: 'Kuningas põhjataevas' },
       taurus: { name: 'Sõnn', desc: 'Talvine härg Aldebaraniga' },
       gemini: { name: 'Kaksikud', desc: 'Castor ja Pollux' },
+      auriga: { name: 'Vankri', desc: 'Vankur Capella tähega' },
+      andromeda: { name: 'Andromeda', desc: 'Tähekea, mis viib galaktikani' },
+      corona_borealis: { name: 'Põhjakroon', desc: 'Põhja krooni poolring' },
     },
     seasons: {
       circumpolar: 'Aastaringne',

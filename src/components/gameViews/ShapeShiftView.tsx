@@ -45,6 +45,13 @@ const COLOR_CLASSES: Record<string, string> = {
   gray: '#64748b',
 };
 
+/** Short haptic pulse when placing a piece (supported on mobile). */
+function hapticDrop(): void {
+  if (typeof navigator !== 'undefined' && navigator.vibrate) {
+    navigator.vibrate(10);
+  }
+}
+
 export const ShapeShiftView: React.FC<ShapeShiftViewProps> = ({
   problem,
   onAnswer,
@@ -67,9 +74,13 @@ export const ShapeShiftView: React.FC<ShapeShiftViewProps> = ({
   const submittedForProblemRef = useRef<string | null>(null);
   const dragStateRef = useRef(dragState);
   dragStateRef.current = dragState;
+  const [showDragHint, setShowDragHint] = useState(true);
 
   /** Treat as tap (rotate/select) if move was under this many px */
   const TAP_MOVE_THRESHOLD_PX = 12;
+
+  /** Size of the drag ghost in px (visible, touch-friendly) */
+  const DRAG_GHOST_SIZE_PX = 64;
 
   // Reset state on new problem
   useEffect(() => {
@@ -78,7 +89,15 @@ export const ShapeShiftView: React.FC<ShapeShiftViewProps> = ({
     setPieces(problem.pieces.map(p => ({ ...p })));
     setSelectedPiece(null);
     setStatus('idle');
+    setShowDragHint(true);
   }, [problem.uid, problem.pieces]);
+
+  // Dismiss drag hint after delay or on first successful drop (handled in handlePointerUp)
+  useEffect(() => {
+    if (!showDragHint) return;
+    const id = setTimeout(() => setShowDragHint(false), 4000);
+    return () => clearTimeout(id);
+  }, [showDragHint]);
 
   // Run completion check when pieces change (avoids stale closure from setTimeout after drag)
   useEffect(() => {
@@ -136,65 +155,49 @@ export const ShapeShiftView: React.FC<ShapeShiftViewProps> = ({
     playSound('tap', soundEnabled);
   };
 
-  // Drag handlers
-  const handleDragStart = (pieceId: string, e: React.MouseEvent | React.TouchEvent) => {
+  // Unified pointer drag handlers (mouse + touch, with capture so drag works everywhere)
+  const handlePointerDown = (pieceId: string, e: React.PointerEvent) => {
     if (status !== 'idle') return;
-    
-    const clientX = 'touches' in e ? e.touches[0]?.clientX ?? 0 : e.clientX;
-    const clientY = 'touches' in e ? e.touches[0]?.clientY ?? 0 : e.clientY;
-    
+    e.preventDefault();
+    setShowDragHint(false); // dismiss hint as soon as user starts dragging
+    (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
     setDragState({
       pieceId,
-      startX: clientX,
-      startY: clientY,
-      currentX: clientX,
-      currentY: clientY,
+      startX: e.clientX,
+      startY: e.clientY,
+      currentX: e.clientX,
+      currentY: e.clientY,
     });
     setSelectedPiece(pieceId);
   };
 
-  const handleDragMove = (e: React.MouseEvent | React.TouchEvent) => {
-    if (!dragState.pieceId) return;
-    
-    const clientX = 'touches' in e ? e.touches[0]?.clientX ?? 0 : e.clientX;
-    const clientY = 'touches' in e ? e.touches[0]?.clientY ?? 0 : e.clientY;
-    
-    setDragState(prev => ({
-      ...prev,
-      currentX: clientX,
-      currentY: clientY,
-    }));
+  const handlePointerMove = (e: React.PointerEvent) => {
+    if (!dragStateRef.current.pieceId) return;
+    if (e.pointerType === 'touch') e.preventDefault();
+    setDragState(prev => ({ ...prev, currentX: e.clientX, currentY: e.clientY }));
+    dragStateRef.current = { ...dragStateRef.current, currentX: e.clientX, currentY: e.clientY };
   };
 
-  const handleDragEnd = (e?: React.TouchEvent | TouchEvent) => {
+  const handlePointerUp = (e: React.PointerEvent) => {
     const state = dragStateRef.current;
     if (!state.pieceId) {
       setDragState({ pieceId: null, startX: 0, startY: 0, currentX: 0, currentY: 0 });
       return;
     }
-
-    // Use release position from touch end when available (more accurate on mobile)
-    let endX = state.currentX;
-    let endY = state.currentY;
-    const touchEnd = e && 'changedTouches' in e ? e.changedTouches?.[0] : null;
-    if (touchEnd) {
-      endX = touchEnd.clientX;
-      endY = touchEnd.clientY;
-    }
+    const endX = e.clientX;
+    const endY = e.clientY;
     const moved = Math.hypot(endX - state.startX, endY - state.startY);
-    let onBoard = false;
     let placed = false;
 
     if (boardRef.current) {
       const boardRect = boardRef.current.getBoundingClientRect();
       const relativeX = endX - boardRect.left;
       const relativeY = endY - boardRect.top;
-
-      onBoard = relativeX >= 0 && relativeX <= boardRect.width &&
-                relativeY >= 0 && relativeY <= boardRect.height;
+      const onBoard =
+        relativeX >= 0 && relativeX <= boardRect.width &&
+        relativeY >= 0 && relativeY <= boardRect.height;
 
       if (onBoard) {
-        // Snap to cell center so drop lands in the intended cell
         const gs = problem.puzzle.gridSize;
         const cellW = boardRect.width / gs;
         const cellH = boardRect.height / gs;
@@ -202,22 +205,23 @@ export const ShapeShiftView: React.FC<ShapeShiftViewProps> = ({
         const gridY = Math.floor((relativeY + cellH / 2) / cellH);
         const clampedX = Math.max(0, Math.min(gridX, gs - 1));
         const clampedY = Math.max(0, Math.min(gridY, gs - 1));
-
-        setPieces(prev => prev.map(p =>
-          p.id === state.pieceId ? { ...p, currentPosition: { x: clampedX, y: clampedY } } : p
-        ));
+        setPieces(prev =>
+          prev.map(p =>
+            p.id === state.pieceId ? { ...p, currentPosition: { x: clampedX, y: clampedY } } : p
+          )
+        );
         playSound('tap', soundEnabled);
+        hapticDrop();
         placed = true;
       } else {
-        setPieces(prev => prev.map(p =>
-          p.id === state.pieceId ? { ...p, currentPosition: null } : p
-        ));
+        setPieces(prev =>
+          prev.map(p => (p.id === state.pieceId ? { ...p, currentPosition: null } : p))
+        );
       }
     }
 
     setDragState({ pieceId: null, startX: 0, startY: 0, currentX: 0, currentY: 0 });
 
-    // On mobile: if user didn't move much and didn't place on board, treat as tap (rotate/select)
     if (!placed && moved < TAP_MOVE_THRESHOLD_PX) {
       dragJustEndedRef.current = false;
       setTimeout(() => handlePieceClick(state.pieceId), 10);
@@ -226,38 +230,46 @@ export const ShapeShiftView: React.FC<ShapeShiftViewProps> = ({
     }
   };
 
-  // Global drag move/end so we get correct drop position on mobile (touch moves anywhere)
-  useEffect(() => {
-    if (!dragState.pieceId) return;
-    const onMove = (e: MouseEvent | TouchEvent) => {
-      const clientX = 'touches' in e ? e.touches[0]?.clientX ?? 0 : e.clientX;
-      const clientY = 'touches' in e ? e.touches[0]?.clientY ?? 0 : e.clientY;
-      setDragState(prev => ({ ...prev, currentX: clientX, currentY: clientY }));
-      dragStateRef.current = { ...dragStateRef.current, currentX: clientX, currentY: clientY };
-    };
-    const onEnd = (e: MouseEvent | TouchEvent) => {
-      handleDragEnd('changedTouches' in e ? (e as TouchEvent) : undefined);
-    };
-    window.addEventListener('mousemove', onMove);
-    window.addEventListener('touchmove', onMove, { passive: true });
-    window.addEventListener('mouseup', onEnd);
-    window.addEventListener('touchend', onEnd);
-    return () => {
-      window.removeEventListener('mousemove', onMove);
-      window.removeEventListener('touchmove', onMove);
-      window.removeEventListener('mouseup', onEnd);
-      window.removeEventListener('touchend', onEnd);
-    };
-  }, [dragState.pieceId]);
-
   const unplacedPieces = pieces.filter(p => p.currentPosition === null);
   const placedPieces = pieces.filter(p => p.currentPosition !== null);
+  const draggingPiece = dragState.pieceId ? pieces.find(p => p.id === dragState.pieceId) : null;
 
   // Get puzzle name based on locale
   const puzzleName = locale === 'et' ? problem.puzzle.nameEt : problem.puzzle.nameEn;
 
   return (
     <div className="w-full flex flex-col items-center px-4 sm:px-6 max-w-2xl mx-auto pt-4 sm:pt-6 animate-in fade-in duration-300">
+      {/* Drag ghost: follows pointer so user sees the piece while dragging (mouse + touch) */}
+      {draggingPiece && (
+        <div
+          className="fixed pointer-events-none z-[100] will-change-transform"
+          style={{
+            left: dragState.currentX,
+            top: dragState.currentY,
+            width: DRAG_GHOST_SIZE_PX,
+            height: DRAG_GHOST_SIZE_PX,
+            transform: 'translate(-50%, -50%)',
+          }}
+        >
+          <div
+            className="w-full h-full drop-shadow-xl"
+            style={{ transform: `rotate(${draggingPiece.currentRotation}deg)` }}
+          >
+            <svg
+              viewBox={draggingPiece.type === 'rectangle' ? '0 0 100 50' : '0 0 50 50'}
+              className="w-full h-full"
+            >
+              <path
+                d={SHAPE_PATHS[draggingPiece.type]}
+                fill={COLOR_CLASSES[draggingPiece.color] || COLOR_CLASSES.gray}
+                stroke={draggingPiece.color === 'white' ? '#cbd5e1' : 'none'}
+                strokeWidth={draggingPiece.color === 'white' ? '2' : '0'}
+              />
+            </svg>
+          </div>
+        </div>
+      )}
+
       {/* Header */}
       <div className="mb-4 text-center">
         <h2 className="text-xl sm:text-2xl font-bold text-slate-700">
@@ -271,15 +283,12 @@ export const ShapeShiftView: React.FC<ShapeShiftViewProps> = ({
       {/* Target Board - large so pieces fit and drop target is clear */}
       <div
         ref={boardRef}
-        className="relative bg-slate-100 rounded-2xl border-2 border-dashed border-slate-300 overflow-hidden flex-shrink-0"
+        className="relative bg-slate-100 rounded-2xl border-2 border-dashed border-slate-300 overflow-hidden flex-shrink-0 select-none touch-none"
         style={{
           width: 'min(94vw, 28rem)',
           aspectRatio: '1',
+          touchAction: 'none',
         }}
-        onMouseMove={handleDragMove}
-        onTouchMove={handleDragMove}
-        onMouseUp={handleDragEnd}
-        onTouchEnd={handleDragEnd}
       >
         {/* Placed pieces */}
         {placedPieces.map(piece => {
@@ -294,18 +303,23 @@ export const ShapeShiftView: React.FC<ShapeShiftViewProps> = ({
           return (
             <div
               key={piece.id}
-              className={`absolute cursor-move transition-transform ${
+              role="button"
+              tabIndex={0}
+              className={`absolute cursor-grab active:cursor-grabbing select-none touch-none transition-all duration-200 ease-out ${
                 selectedPiece === piece.id ? 'scale-105 drop-shadow-lg' : ''
-              } ${isDragging ? 'opacity-50' : ''}`}
+              } ${isDragging ? 'opacity-40 pointer-events-none' : ''}`}
               style={{
                 left: `${left}%`,
                 top: `${top}%`,
                 width: `${cellSize * piece.size}%`,
                 height: `${cellSize * piece.size}%`,
                 transform: `rotate(${piece.currentRotation}deg)`,
+                touchAction: 'none',
               }}
-              onMouseDown={(e) => handleDragStart(piece.id, e)}
-              onTouchStart={(e) => handleDragStart(piece.id, e)}
+              onPointerDown={(e) => handlePointerDown(piece.id, e)}
+              onPointerMove={handlePointerMove}
+              onPointerUp={handlePointerUp}
+              onPointerCancel={handlePointerUp}
               onClick={() => handlePieceClick(piece.id)}
             >
               <svg
@@ -345,24 +359,33 @@ export const ShapeShiftView: React.FC<ShapeShiftViewProps> = ({
         </div>
       )}
 
+      {/* Drag hint - first load only, dismisses on first drag or after 4s */}
+      {showDragHint && unplacedPieces.length > 0 && (
+        <p
+          className="mt-2 text-sm text-teal-600 font-medium animate-in fade-in duration-500 slide-in-from-bottom-2"
+          role="status"
+        >
+          {t.games.shape_shift.dragHint}
+        </p>
+      )}
+
       {/* Piece Tray - smaller pieces so board feels bigger */}
       <div className="mt-4 flex flex-wrap justify-center gap-2 min-h-[64px]">
         {unplacedPieces.map(piece => {
           const isDragging = dragState.pieceId === piece.id;
-          
           return (
             <div
               key={piece.id}
-              className={`relative cursor-move bg-white rounded-lg border-2 border-slate-200 p-1.5 transition-transform ${
+              role="button"
+              tabIndex={0}
+              className={`relative cursor-grab active:cursor-grabbing bg-white rounded-lg border-2 border-slate-200 p-1.5 transition-transform select-none touch-none min-w-[3.5rem] min-h-[3.5rem] w-14 h-14 sm:w-12 sm:h-12 flex items-center justify-center ${
                 selectedPiece === piece.id ? 'scale-105 drop-shadow-lg border-teal-400 ring-2 ring-teal-200' : ''
-              } ${isDragging ? 'opacity-50' : ''} hover:scale-105`}
-              style={{
-                width: '3rem',
-                height: '3rem',
-                touchAction: 'none',
-              }}
-              onMouseDown={(e) => handleDragStart(piece.id, e)}
-              onTouchStart={(e) => handleDragStart(piece.id, e)}
+              } ${isDragging ? 'opacity-40 pointer-events-none' : ''} hover:scale-105 active:scale-100`}
+              style={{ touchAction: 'none' }}
+              onPointerDown={(e) => handlePointerDown(piece.id, e)}
+              onPointerMove={handlePointerMove}
+              onPointerUp={handlePointerUp}
+              onPointerCancel={handlePointerUp}
               onClick={() => handlePieceClick(piece.id)}
             >
               <svg

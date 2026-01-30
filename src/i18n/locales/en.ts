@@ -730,6 +730,7 @@ export const en = {
       },
       tapToRotate: 'Tap to rotate',
       dragToPlace: 'Drag to place',
+      dragHint: 'Drag a shape to the board to start',
       rotateButton: 'Rotate 90°',
       orUse: 'or use',
       piecesRemaining: 'Pieces left',
@@ -803,6 +804,9 @@ export const en = {
       cepheus: { name: 'Cepheus', desc: 'The king of the north' },
       taurus: { name: 'Taurus', desc: 'Winter bull with Aldebaran' },
       gemini: { name: 'Gemini', desc: 'Castor and Pollux twins' },
+      auriga: { name: 'Auriga', desc: 'Charioteer with bright Capella' },
+      andromeda: { name: 'Andromeda', desc: 'Chain of stars pointing to the galaxy' },
+      corona_borealis: { name: 'Corona Borealis', desc: 'Northern Crown semicircle' },
     },
     seasons: {
       circumpolar: 'Year-round',
