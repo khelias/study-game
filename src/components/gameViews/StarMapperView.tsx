@@ -119,8 +119,7 @@ export const StarMapperView: React.FC<StarMapperViewProps> = ({
 
   // Render mode instructions
   const getInstructions = (): string => {
-    const key = `starMapper.instructions.${problem.mode}` as const;
-    return t(key);
+    return t.starMapper.instructions[problem.mode as keyof typeof t.starMapper.instructions];
   };
 
   // Calculate remaining lines for trace/build modes
@@ -176,7 +175,7 @@ export const StarMapperView: React.FC<StarMapperViewProps> = ({
         </p>
         {(problem.mode === 'trace' || problem.mode === 'build' || problem.mode === 'expert') && (
           <p className="text-xs sm:text-sm text-blue-200 mt-1">
-            {t('starMapper.linesRemaining').replace('{count}', String(linesRemaining))}
+            {t.starMapper.linesRemaining.replace('{count}', String(linesRemaining))}
           </p>
         )}
       </div>
@@ -376,7 +375,7 @@ export const StarMapperView: React.FC<StarMapperViewProps> = ({
       {status === 'correct' && (problem.mode === 'trace' || problem.mode === 'build' || problem.mode === 'expert') && (
         <div className="mt-4 text-center animate-bounce">
           <p className="text-xl sm:text-2xl font-bold text-green-400">
-            {t('starMapper.complete')}
+            {t.starMapper.complete}
           </p>
         </div>
       )}
