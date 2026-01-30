@@ -126,6 +126,13 @@ export const StarMapperView: React.FC<StarMapperViewProps> = ({
   // Calculate remaining lines for trace/build modes
   const linesRemaining = problem.constellation.lines.length - drawnLines.length;
 
+  // Create star lookup map for O(1) access (performance optimization)
+  const starMap = useMemo(() => {
+    const map = new Map<string, Star>();
+    problem.constellation.stars.forEach(star => map.set(star.id, star));
+    return map;
+  }, [problem.constellation.stars]);
+
   // Generate ambient stars positions once (stable across re-renders)
   const ambientStars = useMemo(() => {
     // Use problem UID to create stable random seed
@@ -141,7 +148,7 @@ export const StarMapperView: React.FC<StarMapperViewProps> = ({
       top: seededRandom(i * 5 + 1) * 100,
       width: 1 + seededRandom(i * 5 + 2) * 2,
       height: 1 + seededRandom(i * 5 + 3) * 2,
-      animationDelay: seededRandom(i * 5 + 4) * 3,
+      animationDelay: Math.min(3, seededRandom(i * 5 + 4) * 3), // Clamp max delay to 3s
     }));
   }, [problem.uid]);
 
@@ -215,8 +222,8 @@ export const StarMapperView: React.FC<StarMapperViewProps> = ({
           {/* Guide lines (trace mode) */}
           {problem.showGuide &&
             problem.constellation.lines.map((line, idx) => {
-              const fromStar = problem.constellation.stars.find(s => s.id === line.from);
-              const toStar = problem.constellation.stars.find(s => s.id === line.to);
+              const fromStar = starMap.get(line.from);
+              const toStar = starMap.get(line.to);
               if (!fromStar || !toStar) return null;
 
               return (
@@ -235,8 +242,8 @@ export const StarMapperView: React.FC<StarMapperViewProps> = ({
 
           {/* Player drawn lines */}
           {drawnLines.map((line, idx) => {
-            const fromStar = problem.constellation.stars.find(s => s.id === line.from);
-            const toStar = problem.constellation.stars.find(s => s.id === line.to);
+            const fromStar = starMap.get(line.from);
+            const toStar = starMap.get(line.to);
             if (!fromStar || !toStar) return null;
 
             return (
@@ -273,6 +280,15 @@ export const StarMapperView: React.FC<StarMapperViewProps> = ({
                     isSelected ? 'animate-pulse' : ''
                   } ${status === 'correct' ? 'animate-twinkle' : ''}`}
                   onClick={() => handleStarTap(star.id)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      handleStarTap(star.id);
+                    }
+                  }}
+                  tabIndex={0}
+                  role="button"
+                  aria-label={`Star ${star.name || star.id}${isSelected ? ' (selected)' : ''}`}
                   style={{
                     transform: isSelected ? 'scale(1.5)' : 'scale(1)',
                     transformOrigin: 'center',
@@ -287,6 +303,7 @@ export const StarMapperView: React.FC<StarMapperViewProps> = ({
                     stroke="#88ddff"
                     strokeWidth="0.5"
                     className="animate-ping"
+                    pointerEvents="none"
                   />
                 )}
               </g>
