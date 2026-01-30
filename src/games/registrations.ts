@@ -25,6 +25,7 @@ import {
   SyllableGameView,
   TimeGameView,
   UnitConversionView,
+  ShapeShiftView,
 } from '../components/gameViews';
 import { MathSnakeView } from '../components/MathSnakeView';
 import { CompareSizesView } from '../components/CompareSizesView';
@@ -42,6 +43,7 @@ import {
   validateMathSnake,
   validateMemoryMath,
   validateRoboPath,
+  validateShapeShift,
 } from './validators';
 
 /**
@@ -231,6 +233,20 @@ function registerAllGames(): void {
       config: timeMatchConfig,
       validator: validateTimeMatch,
       allowedProfiles: timeMatchConfig.allowedProfiles,
+    });
+  }
+
+  // Shape Shift
+  const shapeShiftConfig = GAME_CONFIG.shape_shift;
+  const shapeShiftGenerator = Generators.shape_shift;
+  if (shapeShiftConfig && shapeShiftGenerator) {
+    gameRegistry.register({
+      id: 'shape_shift',
+      component: ShapeShiftView,
+      generator: shapeShiftGenerator,
+      config: shapeShiftConfig,
+      validator: validateShapeShift,
+      allowedProfiles: shapeShiftConfig.allowedProfiles,
     });
   }
 }
