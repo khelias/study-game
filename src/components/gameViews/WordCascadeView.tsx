@@ -8,6 +8,7 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { playSound } from '../../engine/audio';
 import { useTranslation } from '../../i18n/useTranslation';
 import { useGameStore } from '../../stores/gameStore';
+import { ALPHABET } from '../../games/data';
 import type { WordCascadeProblem } from '../../types/game';
 
 type FallingItemKind = 'letter' | 'star' | 'heart' | 'strike';
@@ -24,6 +25,7 @@ interface WordCascadeViewProps {
   problem: WordCascadeProblem;
   onAnswer: (isCorrect: boolean) => void;
   soundEnabled: boolean;
+  level?: number;
 }
 
 const BOARD_H = 320;
@@ -32,7 +34,96 @@ function clamp(n: number, min: number, max: number): number {
   return Math.max(min, Math.min(max, n));
 }
 
-export const WordCascadeView: React.FC<WordCascadeViewProps> = ({ problem, onAnswer, soundEnabled }) => {
+// Estonian visually/phonetically similar letters (for smart distractors)
+const SIMILAR_LETTERS: Record<string, string[]> = {
+  'A': ['Ä', 'E', 'O'],
+  'Ä': ['A', 'E', 'Ö'],
+  'E': ['A', 'Ä', 'I'],
+  'I': ['E', 'L', 'J'],
+  'O': ['Ö', 'A', 'Q'],
+  'Ö': ['O', 'Ü', 'Õ'],
+  'U': ['Ü', 'V', 'Y'],
+  'Ü': ['U', 'Ö', 'Y'],
+  'Õ': ['O', 'Ö', 'A'],
+  'K': ['G', 'H', 'R'],
+  'G': ['K', 'Q', 'C'],
+  'P': ['B', 'R', 'D'],
+  'B': ['P', 'D', 'R'],
+  'T': ['D', 'L', 'F'],
+  'D': ['T', 'B', 'P'],
+  'S': ['Z', 'Š', 'C'],
+  'Š': ['S', 'Z', 'Ž'],
+  'Z': ['S', 'Ž', 'Š'],
+  'Ž': ['Z', 'Š', 'S'],
+  'L': ['I', 'T', 'J'],
+  'R': ['K', 'P', 'N'],
+  'M': ['N', 'W', 'H'],
+  'N': ['M', 'R', 'H']
+};
+
+// Progressive distractor probability by level
+function getDistractorProbability(level: number): number {
+  if (level <= 3) return 0; // No distractors early
+  if (level <= 6) return 0.25; // 25% chance (light)
+  if (level <= 10) return 0.45; // 45% chance (moderate)
+  return 0.55; // 55% chance (expert)
+}
+
+// Get a smart distractor letter (prefers visually similar, excludes target word letters)
+// Preserves case style of target word
+function getDistractorLetter(targetWord: string, neededLetter: string | null): string {
+  // Detect case style of target word
+  const targetChars = targetWord.split('');
+  const hasUpper = targetChars.some(c => c !== c.toLowerCase());
+  const hasLower = targetChars.some(c => c !== c.toUpperCase());
+  const isTitleCase = targetChars.length > 0 && 
+    targetChars[0] === targetChars[0].toUpperCase() &&
+    targetChars.slice(1).every(c => c === c.toLowerCase());
+  
+  const caseStyle: 'upper' | 'lower' | 'title' | 'mixed' = 
+    !hasLower ? 'upper' :
+    !hasUpper ? 'lower' :
+    isTitleCase ? 'title' : 'mixed';
+
+  const targetCharsUpper = targetWord.toUpperCase().split('');
+  const availableLetters = ALPHABET.filter(letter => !targetCharsUpper.includes(letter));
+  
+  if (availableLetters.length === 0) {
+    // Fallback: use any letter if all are in target (unlikely but safe)
+    const fallback = ALPHABET[Math.floor(Math.random() * ALPHABET.length)] ?? 'A';
+    return caseStyle === 'upper' ? fallback : fallback.toLowerCase();
+  }
+
+  // Try to find a visually similar letter to the needed letter or a random target letter
+  const referenceLetter = neededLetter?.toUpperCase() ?? targetCharsUpper[Math.floor(Math.random() * targetCharsUpper.length)] ?? 'A';
+  const similar = SIMILAR_LETTERS[referenceLetter];
+  
+  let distractor: string;
+  if (similar && similar.length > 0) {
+    // Filter to only similar letters that aren't in target word
+    const validSimilar = similar.filter(letter => availableLetters.includes(letter));
+    if (validSimilar.length > 0) {
+      distractor = validSimilar[Math.floor(Math.random() * validSimilar.length)] ?? availableLetters[0] ?? 'A';
+    } else {
+      distractor = availableLetters[Math.floor(Math.random() * availableLetters.length)] ?? 'A';
+    }
+  } else {
+    // Fallback: random letter from available (not in target word)
+    distractor = availableLetters[Math.floor(Math.random() * availableLetters.length)] ?? 'A';
+  }
+  
+  // Apply case style
+  if (caseStyle === 'upper') {
+    return distractor;
+  } else if (caseStyle === 'lower' || caseStyle === 'title') {
+    return distractor.toLowerCase();
+  } else {
+    // Mixed case: random upper/lower
+    return Math.random() > 0.5 ? distractor : distractor.toLowerCase();
+  }
+}
+
+export const WordCascadeView: React.FC<WordCascadeViewProps> = ({ problem, onAnswer, soundEnabled, level = 1 }) => {
   const t = useTranslation();
   const [progress, setProgress] = useState('');
   const [status, setStatus] = useState<'idle' | 'correct' | 'wrong'>('idle');
@@ -160,24 +251,37 @@ export const WordCascadeView: React.FC<WordCascadeViewProps> = ({ problem, onAns
           return [{ id, kind, char, lane, y: -24 }, ...prev].slice(0, 20);
         }
 
-        // Smart letter selection: prioritize needed letter when screen is sparse
-        let spawnNeeded = false;
-        if (need) {
-          if (hasNeededOnScreen) {
-            // Needed letter already available, normal distribution
-            spawnNeeded = Math.random() < 0.4;
-          } else {
-            // Needed letter not on screen - higher priority when screen is empty
-            if (letterCount < 3) {
-              spawnNeeded = Math.random() < 0.9; // Very high priority when sparse
+        // Progressive distractor system: spawn incorrect letters based on level
+        const distractorProbability = getDistractorProbability(level);
+        const shouldSpawnDistractor = Math.random() < distractorProbability;
+
+        let char: string;
+        
+        if (shouldSpawnDistractor) {
+          // Spawn a distractor (incorrect letter)
+          char = getDistractorLetter(problem.target, need);
+        } else {
+          // Spawn a correct letter (from target word)
+          // Smart letter selection: prioritize needed letter when screen is sparse
+          let spawnNeeded = false;
+          if (need) {
+            if (hasNeededOnScreen) {
+              // Needed letter already available, normal distribution
+              spawnNeeded = Math.random() < 0.4;
             } else {
-              spawnNeeded = Math.random() < 0.7; // High priority when moderate
+              // Needed letter not on screen - higher priority when screen is empty
+              if (letterCount < 3) {
+                spawnNeeded = Math.random() < 0.9; // Very high priority when sparse
+              } else {
+                spawnNeeded = Math.random() < 0.7; // High priority when moderate
+              }
             }
           }
+
+          const fallbackChar = problem.target[Math.floor(Math.random() * problem.target.length)] ?? need;
+          char = spawnNeeded ? need : fallbackChar;
         }
 
-        const fallbackChar = problem.target[Math.floor(Math.random() * problem.target.length)] ?? need;
-        const char = spawnNeeded ? need : fallbackChar;
         const lane = Math.floor(Math.random() * laneCount);
         const id = `wc-${problem.uid}-${problem.target}-${uidRef.current++}`;
 
@@ -191,7 +295,7 @@ export const WordCascadeView: React.FC<WordCascadeViewProps> = ({ problem, onAns
         spawnRef.current = null;
       }
     };
-  }, [problem.uid, problem.target, nextIdx, laneCount, baseSpawnMs]);
+  }, [problem.uid, problem.target, nextIdx, laneCount, baseSpawnMs, level]);
 
   // Animate falling letters
   useEffect(() => {
