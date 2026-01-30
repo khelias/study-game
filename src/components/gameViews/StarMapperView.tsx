@@ -101,13 +101,18 @@ export const StarMapperView: React.FC<StarMapperViewProps> = ({
       return;
     }
 
-    // All lines drawn but wrong: give feedback and count as wrong
+    // All lines drawn but wrong: brief feedback then hand off to global handler (toast, heart); clear state so user can retry same problem
     if (lines.length >= requiredLines.length) {
-      setStatus('wrong');
       playSound('error', soundEnabled);
+      const delay = 400;
       setTimeout(() => {
+        setSelectedStar(null);
+        setDrawnLines([]);
+        setSelectedOption(null);
+        setDragStartStarId(null);
+        setStatus('idle');
         onAnswer(false);
-      }, 2000);
+      }, delay);
     }
   }, [problem.constellation.lines, soundEnabled, onAnswer]);
 
@@ -174,13 +179,19 @@ export const StarMapperView: React.FC<StarMapperViewProps> = ({
 
     if (isCorrect) {
       playSound('success', soundEnabled);
+      setTimeout(() => onAnswer(true), 2200);
     } else {
       playSound('error', soundEnabled);
+      const wrongDelay = 400;
+      setTimeout(() => {
+        setSelectedStar(null);
+        setDrawnLines([]);
+        setSelectedOption(null);
+        setDragStartStarId(null);
+        setStatus('idle');
+        onAnswer(false);
+      }, wrongDelay);
     }
-
-    setTimeout(() => {
-      onAnswer(isCorrect);
-    }, isCorrect ? 2200 : 2000);
   };
 
   // Calculate star size based on magnitude (brighter stars are larger)
@@ -448,14 +459,6 @@ export const StarMapperView: React.FC<StarMapperViewProps> = ({
         {/* Success animation overlay */}
         {status === 'correct' && (
           <div className="absolute inset-0 bg-gradient-to-b from-transparent via-indigo-500/20 to-transparent animate-pulse pointer-events-none" />
-        )}
-        {/* Wrong state overlay */}
-        {status === 'wrong' && (
-          <div className="absolute inset-0 bg-red-500/15 flex items-center justify-center pointer-events-none">
-            <p className="text-slate-800 font-bold text-sm sm:text-base px-4 text-center">
-              {t.starMapper.tryAgain}
-            </p>
-          </div>
         )}
       </div>
 
