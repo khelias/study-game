@@ -758,6 +758,10 @@ export const et = {
         castle: 'Loss',
       },
     },
+    star_mapper: {
+      title: 'TÄHEKUJUNDID',
+      desc: 'Õpi tundma tähtkujusid',
+    },
   },
 
   // Difficulty levels
@@ -765,6 +769,43 @@ export const et = {
     easy: '⭐ Lihtne',
     medium: '⭐⭐ Keskmine',
     hard: '⭐⭐⭐ Raske',
+  },
+
+  // Star Mapper game
+  starMapper: {
+    title: 'TÄHEKUJUNDID',
+    desc: 'Õpi tundma tähtkujusid',
+    instructions: {
+      trace: 'Ühenda tähed, järgides juhisjooni',
+      build: 'Ühenda tähed mälu järgi',
+      identify: 'Mis tähtkuju see on?',
+      expert: 'Leia ja ühenda õiged tähed',
+    },
+    hint: 'Vihje',
+    linesRemaining: 'Jooni jäänud: {count}',
+    complete: 'Suurepärane! 🌟',
+    constellations: {
+      ursa_major: { name: 'Suur Vanker', folk: 'Odamus', desc: 'Põhjataeva kuulsaim tähtkuju' },
+      ursa_minor: { name: 'Väike Vanker', folk: 'Väike Vanker', desc: 'Siin asub Põhjanael' },
+      cassiopeia: { name: 'Kassiopeia', desc: 'W-kujuline kuninganna' },
+      orion: { name: 'Orion', folk: 'Reha ja Vikat', desc: 'Talvine kütt kolme vöötähega' },
+      cygnus: { name: 'Luik', desc: 'Suvine rist taevas' },
+      leo: { name: 'Lõvi', desc: 'Kevadine lõvi' },
+      lyra: { name: 'Lüüra', desc: 'Vega täht asub siin' },
+      aquila: { name: 'Kotkas', desc: 'Altair täht asub siin' },
+      pegasus: { name: 'Pegasus', desc: 'Sügisene suur ruut' },
+      draco: { name: 'Draakon', desc: 'Looklevas kujuga tähtkuju' },
+      cepheus: { name: 'Kefeusus', desc: 'Kuningas põhjataevas' },
+      taurus: { name: 'Sõnn', desc: 'Talvine härg Aldebaraniga' },
+      gemini: { name: 'Kaksikud', desc: 'Castor ja Pollux' },
+    },
+    seasons: {
+      circumpolar: 'Aastaringne',
+      winter: 'Talv',
+      spring: 'Kevad', 
+      summer: 'Suvi',
+      autumn: 'Sügis',
+    },
   },
 
   // Level label

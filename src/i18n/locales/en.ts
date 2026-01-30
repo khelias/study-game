@@ -758,6 +758,10 @@ export const en = {
         castle: 'Castle',
       },
     },
+    star_mapper: {
+      title: 'STAR MAPPER',
+      desc: 'Learn the constellations',
+    },
   },
 
   // Difficulty levels
@@ -765,6 +769,43 @@ export const en = {
     easy: '⭐ Easy',
     medium: '⭐⭐ Medium',
     hard: '⭐⭐⭐ Hard',
+  },
+
+  // Star Mapper game
+  starMapper: {
+    title: 'STAR MAPPER',
+    desc: 'Learn the constellations',
+    instructions: {
+      trace: 'Connect the stars following the guide',
+      build: 'Connect the stars from memory',
+      identify: 'Which constellation is this?',
+      expert: 'Find and connect the correct stars',
+    },
+    hint: 'Hint',
+    linesRemaining: 'Lines remaining: {count}',
+    complete: 'Excellent! 🌟',
+    constellations: {
+      ursa_major: { name: 'Big Dipper', folk: 'The Plough', desc: 'Most famous northern constellation' },
+      ursa_minor: { name: 'Little Dipper', folk: 'Little Bear', desc: 'Home of the North Star' },
+      cassiopeia: { name: 'Cassiopeia', desc: 'The W-shaped queen' },
+      orion: { name: 'Orion', folk: 'The Hunter', desc: 'Winter hunter with three belt stars' },
+      cygnus: { name: 'Cygnus', desc: 'The Northern Cross' },
+      leo: { name: 'Leo', desc: 'The spring lion' },
+      lyra: { name: 'Lyra', desc: 'Home of the star Vega' },
+      aquila: { name: 'Aquila', desc: 'Home of the star Altair' },
+      pegasus: { name: 'Pegasus', desc: 'The Great Square of autumn' },
+      draco: { name: 'Draco', desc: 'The winding dragon' },
+      cepheus: { name: 'Cepheus', desc: 'The king of the north' },
+      taurus: { name: 'Taurus', desc: 'Winter bull with Aldebaran' },
+      gemini: { name: 'Gemini', desc: 'Castor and Pollux twins' },
+    },
+    seasons: {
+      circumpolar: 'Year-round',
+      winter: 'Winter',
+      spring: 'Spring', 
+      summer: 'Summer',
+      autumn: 'Autumn',
+    },
   },
 
   // Level label
