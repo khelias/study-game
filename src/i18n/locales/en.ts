@@ -450,7 +450,7 @@ export const en = {
     rhythmEcho: {
       listen: '🎧 Listen...',
       yourTurn: '🎤 Your turn!',
-      result: 'Result',
+      resultTitle: 'Result',
       beats: 'beats',
       tapToPlay: 'Tap to play',
       pads: {

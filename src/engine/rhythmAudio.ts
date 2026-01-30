@@ -49,7 +49,7 @@ export class RhythmAudio {
   }
 
   close(): void {
-    this.audioContext?.close();
+    void this.audioContext?.close();
     this.audioContext = null;
   }
 }

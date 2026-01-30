@@ -25,7 +25,6 @@ export const RhythmEchoView: React.FC<RhythmEchoViewProps> = ({
   problem,
   onAnswer,
   soundEnabled,
-  level = 1,
 }) => {
   const t = useTranslation();
   const [phase, setPhase] = useState<'listen' | 'play' | 'result'>('listen');
@@ -53,7 +52,9 @@ export const RhythmEchoView: React.FC<RhythmEchoViewProps> = ({
     setActivePad(null);
     
     // Start playing pattern after delay
-    const timer = setTimeout(() => playPattern(), 800);
+    const timer = setTimeout(() => {
+      void playPattern();
+    }, 800);
     return () => clearTimeout(timer);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [problem.uid]);
@@ -160,12 +161,12 @@ export const RhythmEchoView: React.FC<RhythmEchoViewProps> = ({
       {/* Header */}
       <div className="mb-6 text-center">
         <h2 className="text-2xl sm:text-3xl font-bold text-white drop-shadow-lg">
-          {phase === 'listen' ? t.rhythmEcho.listen :
-           phase === 'play' ? t.rhythmEcho.yourTurn :
-           t.rhythmEcho.result}
+          {phase === 'listen' ? t.gameScreen.rhythmEcho.listen :
+           phase === 'play' ? t.gameScreen.rhythmEcho.yourTurn :
+           t.gameScreen.rhythmEcho.resultTitle}
         </h2>
         <p className="text-sm text-purple-200 mt-1">
-          {problem.pattern.beats.length} {t.rhythmEcho.beats} • {problem.pattern.bpm} BPM
+          {problem.pattern.beats.length} {t.gameScreen.rhythmEcho.beats} • {problem.pattern.bpm} BPM
         </p>
       </div>
 
@@ -220,7 +221,7 @@ export const RhythmEchoView: React.FC<RhythmEchoViewProps> = ({
           >
             <span className="text-3xl sm:text-4xl">{padEmojis[pad]}</span>
             <span className="text-xs font-bold text-white/80 uppercase">
-              {t.rhythmEcho.pads[pad]}
+              {t.gameScreen.rhythmEcho.pads[pad]}
             </span>
           </button>
         ))}
@@ -231,7 +232,6 @@ export const RhythmEchoView: React.FC<RhythmEchoViewProps> = ({
         <div className="mt-8 text-center animate-in fade-in zoom-in duration-300">
           {(() => {
             const perfectCount = results.filter(r => r.accuracy === 'perfect').length;
-            const goodCount = results.filter(r => r.accuracy === 'good').length;
             const hitCount = results.filter(r => r.accuracy !== 'miss').length;
             const total = results.length;
             const percentage = Math.round((hitCount / total) * 100);
@@ -242,13 +242,13 @@ export const RhythmEchoView: React.FC<RhythmEchoViewProps> = ({
                   {percentage >= 90 ? '🌟' : percentage >= 70 ? '👏' : '💪'}
                 </div>
                 <div className="text-2xl font-bold text-white mb-1">
-                  {percentage >= 90 ? t.rhythmEcho.result.excellent :
-                   percentage >= 70 ? t.rhythmEcho.result.good :
-                   t.rhythmEcho.result.tryAgain}
+                  {percentage >= 90 ? t.gameScreen.rhythmEcho.result.excellent :
+                   percentage >= 70 ? t.gameScreen.rhythmEcho.result.good :
+                   t.gameScreen.rhythmEcho.result.tryAgain}
                 </div>
                 <div className="text-purple-200 text-sm">
-                  {hitCount}/{total} {t.rhythmEcho.beats}
-                  {perfectCount > 0 && ` • ${perfectCount} ${t.rhythmEcho.accuracy.perfect}`}
+                  {hitCount}/{total} {t.gameScreen.rhythmEcho.beats}
+                  {perfectCount > 0 && ` • ${perfectCount} ${t.gameScreen.rhythmEcho.accuracy.perfect}`}
                 </div>
               </div>
             );
@@ -259,7 +259,7 @@ export const RhythmEchoView: React.FC<RhythmEchoViewProps> = ({
       {/* Instructions */}
       {phase === 'play' && (
         <p className="mt-6 text-sm text-purple-200 animate-pulse">
-          {t.rhythmEcho.tapToPlay}
+          {t.gameScreen.rhythmEcho.tapToPlay}
         </p>
       )}
     </div>

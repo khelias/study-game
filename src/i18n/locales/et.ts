@@ -450,7 +450,7 @@ export const et = {
     rhythmEcho: {
       listen: '🎧 Kuula...',
       yourTurn: '🎤 Sinu kord!',
-      result: 'Tulemus',
+      resultTitle: 'Tulemus',
       beats: 'lööki',
       tapToPlay: 'Puuduta, et mängida',
       pads: {
