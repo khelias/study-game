@@ -588,4 +588,153 @@ describe('Generators', () => {
       expect(relativeGapLevel8).toBeLessThanOrEqual(relativeGapLevel1 * 1.5);
     });
   });
+
+  describe('rhythm_echo', () => {
+    it('should generate valid rhythm echo problem', () => {
+      const rng = createRng(12345);
+      const generator = Generators.rhythm_echo;
+      if (!generator) throw new Error('rhythm_echo generator not found');
+      const problem = generator(1, rng, 'starter');
+      
+      expect(problem.type).toBe('rhythm_echo');
+      expect(problem).toHaveProperty('mode');
+      expect(problem).toHaveProperty('pattern');
+      expect(problem).toHaveProperty('pads');
+      expect(problem).toHaveProperty('toleranceMs');
+      expect(problem.playerBeats).toEqual([]);
+      expect(problem.pattern.beats).toBeInstanceOf(Array);
+      expect(problem.pattern.beats.length).toBeGreaterThan(0);
+    });
+
+    it('should use echo mode at level 1-3', () => {
+      const rng = createRng(12345);
+      const generator = Generators.rhythm_echo;
+      if (!generator) throw new Error('rhythm_echo generator not found');
+      
+      const problem1 = generator(1, rng, 'starter');
+      const problem2 = generator(2, rng, 'starter');
+      const problem3 = generator(3, rng, 'starter');
+      
+      expect(problem1.mode).toBe('echo');
+      expect(problem2.mode).toBe('echo');
+      expect(problem3.mode).toBe('echo');
+    });
+
+    it('should use rhythm mode at level 4-6', () => {
+      const rng = createRng(12345);
+      const generator = Generators.rhythm_echo;
+      if (!generator) throw new Error('rhythm_echo generator not found');
+      
+      const problem4 = generator(4, rng, 'starter');
+      const problem5 = generator(5, rng, 'starter');
+      const problem6 = generator(6, rng, 'starter');
+      
+      expect(problem4.mode).toBe('rhythm');
+      expect(problem5.mode).toBe('rhythm');
+      expect(problem6.mode).toBe('rhythm');
+    });
+
+    it('should use duo mode at level 7-10', () => {
+      const rng = createRng(12345);
+      const generator = Generators.rhythm_echo;
+      if (!generator) throw new Error('rhythm_echo generator not found');
+      
+      const problem7 = generator(7, rng, 'starter');
+      const problem10 = generator(10, rng, 'starter');
+      
+      expect(problem7.mode).toBe('duo');
+      expect(problem10.mode).toBe('duo');
+    });
+
+    it('should use band mode at level 11+', () => {
+      const rng = createRng(12345);
+      const generator = Generators.rhythm_echo;
+      if (!generator) throw new Error('rhythm_echo generator not found');
+      
+      const problem = generator(11, rng, 'starter');
+      
+      expect(problem.mode).toBe('band');
+    });
+
+    it('should have correct pad count for each mode', () => {
+      const rng = createRng(12345);
+      const generator = Generators.rhythm_echo;
+      if (!generator) throw new Error('rhythm_echo generator not found');
+      
+      const echo = generator(1, rng, 'starter');
+      const duo = generator(8, rng, 'starter');
+      const band = generator(12, rng, 'starter');
+      
+      expect(echo.pads).toEqual(['drum']);
+      expect(duo.pads).toEqual(['drum', 'bell']);
+      expect(band.pads).toEqual(['drum', 'bell', 'clap']);
+    });
+
+    it('should increase BPM with level', () => {
+      const rng = createRng(12345);
+      const generator = Generators.rhythm_echo;
+      if (!generator) throw new Error('rhythm_echo generator not found');
+      
+      const level1 = generator(1, rng, 'starter');
+      const level5 = generator(5, rng, 'starter');
+      const level8 = generator(8, rng, 'starter');
+      const level12 = generator(12, rng, 'starter');
+      
+      expect(level1.pattern.bpm).toBe(70);
+      expect(level5.pattern.bpm).toBe(90);
+      expect(level8.pattern.bpm).toBe(100);
+      expect(level12.pattern.bpm).toBe(120);
+    });
+
+    it('should decrease tolerance with level', () => {
+      const rng = createRng(12345);
+      const generator = Generators.rhythm_echo;
+      if (!generator) throw new Error('rhythm_echo generator not found');
+      
+      const level1 = generator(1, rng, 'starter');
+      const level5 = generator(5, rng, 'starter');
+      const level8 = generator(8, rng, 'starter');
+      const level12 = generator(12, rng, 'starter');
+      
+      expect(level1.toleranceMs).toBe(150);
+      expect(level5.toleranceMs).toBe(120);
+      expect(level8.toleranceMs).toBe(100);
+      expect(level12.toleranceMs).toBe(80);
+    });
+
+    it('should have valid beat timings', () => {
+      const rng = createRng(12345);
+      const generator = Generators.rhythm_echo;
+      if (!generator) throw new Error('rhythm_echo generator not found');
+      
+      const problem = generator(1, rng, 'starter');
+      const { beats, bpm, duration } = problem.pattern;
+      const beatDuration = 60000 / bpm;
+      
+      // All beats should be within the pattern duration
+      beats.forEach(beat => {
+        expect(beat.time).toBeGreaterThanOrEqual(0);
+        expect(beat.time).toBeLessThan(duration);
+      });
+      
+      // Beats should be evenly spaced based on the pattern template
+      beats.forEach((beat, i) => {
+        expect(beat.time % beatDuration).toBeCloseTo(0, 0.1);
+      });
+    });
+
+    it('should generate consistent problems with same seed', () => {
+      const rng1 = createRng(54321);
+      const rng2 = createRng(54321);
+      const generator = Generators.rhythm_echo;
+      if (!generator) throw new Error('rhythm_echo generator not found');
+      
+      const problem1 = generator(5, rng1, 'starter');
+      const problem2 = generator(5, rng2, 'starter');
+      
+      expect(problem1.mode).toBe(problem2.mode);
+      expect(problem1.pattern.bpm).toBe(problem2.pattern.bpm);
+      expect(problem1.pattern.beats.length).toBe(problem2.pattern.beats.length);
+    });
+  });
 });
