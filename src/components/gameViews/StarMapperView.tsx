@@ -8,6 +8,7 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import { playSound } from '../../engine/audio';
 import { useTranslation } from '../../i18n/useTranslation';
+import { getConstellationById } from '../../games/constellations';
 import type { StarMapperProblem, Star, ConstellationLine } from '../../types/game';
 
 type AnswerHandler = (answer: boolean) => void;
@@ -302,7 +303,7 @@ export const StarMapperView: React.FC<StarMapperViewProps> = ({
       {problem.mode === 'identify' && problem.options && (
         <div className="grid grid-cols-2 gap-3 sm:gap-4 w-full max-w-md mt-4">
           {problem.options.map((optionId) => {
-            const constellation = require('../../games/constellations').getConstellationById(optionId);
+            const constellation = getConstellationById(optionId);
             if (!constellation) return null;
 
             const isSelected = selectedOption === optionId;

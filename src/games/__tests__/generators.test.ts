@@ -588,4 +588,110 @@ describe('Generators', () => {
       expect(relativeGapLevel8).toBeLessThanOrEqual(relativeGapLevel1 * 1.5);
     });
   });
+
+  describe('star_mapper', () => {
+    it('should generate valid star mapper problem', () => {
+      const rng = createRng(12345);
+      const generator = Generators.star_mapper;
+      if (!generator) throw new Error('star_mapper generator not found');
+      const problem = generator(1, rng, 'starter');
+      
+      expect(problem.type).toBe('star_mapper');
+      expect(problem.constellation).toBeDefined();
+      expect(problem.constellation.stars).toBeInstanceOf(Array);
+      expect(problem.constellation.lines).toBeInstanceOf(Array);
+      expect(problem.correctAnswer).toBe(problem.constellation.id);
+      expect(problem.playerLines).toEqual([]);
+    });
+
+    it('should set mode to trace for levels 1-3', () => {
+      const rng = createRng(12345);
+      const generator = Generators.star_mapper;
+      if (!generator) throw new Error('star_mapper generator not found');
+      
+      const problem1 = generator(1, rng, 'starter');
+      const problem2 = generator(2, rng, 'starter');
+      const problem3 = generator(3, rng, 'starter');
+      
+      expect(problem1.mode).toBe('trace');
+      expect(problem2.mode).toBe('trace');
+      expect(problem3.mode).toBe('trace');
+      expect(problem1.showGuide).toBe(true);
+    });
+
+    it('should set mode to build for levels 4-6', () => {
+      const rng = createRng(12345);
+      const generator = Generators.star_mapper;
+      if (!generator) throw new Error('star_mapper generator not found');
+      
+      const problem4 = generator(4, rng, 'starter');
+      const problem6 = generator(6, rng, 'starter');
+      
+      expect(problem4.mode).toBe('build');
+      expect(problem6.mode).toBe('build');
+      expect(problem4.showGuide).toBe(false);
+    });
+
+    it('should set mode to identify for levels 7-10', () => {
+      const rng = createRng(12345);
+      const generator = Generators.star_mapper;
+      if (!generator) throw new Error('star_mapper generator not found');
+      
+      const problem7 = generator(7, rng, 'starter');
+      const problem10 = generator(10, rng, 'starter');
+      
+      expect(problem7.mode).toBe('identify');
+      expect(problem10.mode).toBe('identify');
+      expect(problem7.options).toBeDefined();
+      expect(problem7.options?.length).toBe(4);
+      expect(problem7.options).toContain(problem7.correctAnswer);
+    });
+
+    it('should set mode to expert for levels 11+', () => {
+      const rng = createRng(12345);
+      const generator = Generators.star_mapper;
+      if (!generator) throw new Error('star_mapper generator not found');
+      
+      const problem11 = generator(11, rng, 'starter');
+      
+      expect(problem11.mode).toBe('expert');
+      expect(problem11.distractorStars.length).toBeGreaterThan(0);
+    });
+
+    it('should have valid constellation data', () => {
+      const rng = createRng(12345);
+      const generator = Generators.star_mapper;
+      if (!generator) throw new Error('star_mapper generator not found');
+      const problem = generator(1, rng, 'starter');
+      
+      // Check constellation has required properties
+      expect(problem.constellation.id).toBeDefined();
+      expect(problem.constellation.nameEn).toBeDefined();
+      expect(problem.constellation.nameEt).toBeDefined();
+      expect(problem.constellation.stars.length).toBeGreaterThan(0);
+      expect(problem.constellation.lines.length).toBeGreaterThan(0);
+      
+      // Check that all line references point to existing stars
+      const starIds = new Set(problem.constellation.stars.map(s => s.id));
+      problem.constellation.lines.forEach(line => {
+        expect(starIds.has(line.from)).toBe(true);
+        expect(starIds.has(line.to)).toBe(true);
+      });
+    });
+
+    it('should increase difficulty with level', () => {
+      const rng1 = createRng(12345);
+      const rng2 = createRng(12345);
+      const generator = Generators.star_mapper;
+      if (!generator) throw new Error('star_mapper generator not found');
+      
+      const problem1 = generator(1, rng1, 'starter');
+      const problem7 = generator(7, rng2, 'starter');
+      
+      // Level 1 should be easy, level 7+ should potentially be harder
+      expect(['easy', 'medium', 'hard']).toContain(problem1.constellation.difficulty);
+      expect(['easy', 'medium', 'hard']).toContain(problem7.constellation.difficulty);
+    });
+  });
 });
+

@@ -1,5 +1,6 @@
 import { ALPHABET, WORD_DB, WORD_DB_EN, SCENE_DB, PROFILES } from './data';
 import { SYLLABLE_WORDS } from './syllableWords';
+import { CONSTELLATIONS, getConstellationsByDifficulty } from './constellations';
 import { getRandom, uid } from '../engine/rng';
 import { getLocale } from '../i18n/index';
 import { generateSentence, getSceneName } from './sentenceTranslations';
@@ -1274,9 +1275,6 @@ export const Generators: Record<string, GeneratorFunction> = {
     const profileInfo = profileMeta(profile);
     const effectiveLevel = level + profileInfo.difficultyOffset;
 
-    // Import constellation data
-    const { CONSTELLATIONS, getConstellationsByDifficulty } = require('./constellations');
-
     // Select difficulty based on level
     const difficulty = effectiveLevel <= 3 ? 'easy' 
       : effectiveLevel <= 6 ? 'medium' 
@@ -1337,8 +1335,6 @@ function generateDistractorStars(constellation: Constellation, rng: RngFunction,
 
 // Helper function to generate identify mode options
 function generateIdentifyOptions(correct: Constellation, rng: RngFunction): string[] {
-  const { CONSTELLATIONS } = require('./constellations');
-  
   // Get 3 wrong options from same or similar difficulty
   const allConstellations = CONSTELLATIONS.filter((c: Constellation) => c.id !== correct.id);
   const options: string[] = [correct.id];
