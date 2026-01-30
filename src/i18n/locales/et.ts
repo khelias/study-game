@@ -719,6 +719,10 @@ export const et = {
       leftItem: 'Vasak arv',
       rightItem: 'Parem arv',
     },
+    star_mapper: {
+      title: 'TÄHEKUJUNDID',
+      desc: 'Õpi tundma tähtkujusid',
+    },
   },
 
   // Difficulty levels

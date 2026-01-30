@@ -719,6 +719,10 @@ export const en = {
       leftItem: 'Left number',
       rightItem: 'Right number',
     },
+    star_mapper: {
+      title: 'STAR MAPPER',
+      desc: 'Learn the constellations',
+    },
   },
 
   // Difficulty levels
