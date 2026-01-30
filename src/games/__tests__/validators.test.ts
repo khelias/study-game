@@ -184,7 +184,7 @@ describe('validateStarMapper', () => {
       const wrongProblem = {
         type: 'word_builder',
         uid: 'test-9',
-      } as any;
+      } as unknown as StarMapperProblem;
 
       expect(validateStarMapper(wrongProblem, [])).toBe(false);
     });

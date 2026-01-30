@@ -24,7 +24,6 @@ export const StarMapperView: React.FC<StarMapperViewProps> = ({
   problem,
   onAnswer,
   soundEnabled,
-  level = 1,
 }) => {
   const t = useTranslation();
   const [selectedStar, setSelectedStar] = useState<string | null>(null);
@@ -127,6 +126,25 @@ export const StarMapperView: React.FC<StarMapperViewProps> = ({
   // Calculate remaining lines for trace/build modes
   const linesRemaining = problem.constellation.lines.length - drawnLines.length;
 
+  // Generate ambient stars positions once (stable across re-renders)
+  const ambientStars = useMemo(() => {
+    // Use problem UID to create stable random seed
+    const seed = problem.uid.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+    const seededRandom = (i: number) => {
+      const x = Math.sin(seed + i * 12.9898) * 43758.5453;
+      return x - Math.floor(x);
+    };
+
+    return [...Array(30)].map((_, i) => ({
+      key: i,
+      left: seededRandom(i * 5) * 100,
+      top: seededRandom(i * 5 + 1) * 100,
+      width: 1 + seededRandom(i * 5 + 2) * 2,
+      height: 1 + seededRandom(i * 5 + 3) * 2,
+      animationDelay: seededRandom(i * 5 + 4) * 3,
+    }));
+  }, [problem.uid]);
+
   return (
     <div className="w-full flex flex-col items-center px-4 sm:px-6 max-w-2xl mx-auto pt-4 sm:pt-6 animate-in fade-in duration-300">
       {/* Header - Constellation name */}
@@ -167,16 +185,16 @@ export const StarMapperView: React.FC<StarMapperViewProps> = ({
       >
         {/* Background ambient stars */}
         <div className="absolute inset-0">
-          {[...Array(30)].map((_, i) => (
+          {ambientStars.map((star) => (
             <div
-              key={i}
+              key={star.key}
               className="absolute rounded-full bg-white opacity-20 animate-twinkle"
               style={{
-                left: `${Math.random() * 100}%`,
-                top: `${Math.random() * 100}%`,
-                width: `${1 + Math.random() * 2}px`,
-                height: `${1 + Math.random() * 2}px`,
-                animationDelay: `${Math.random() * 3}s`,
+                left: `${star.left}%`,
+                top: `${star.top}%`,
+                width: `${star.width}px`,
+                height: `${star.height}px`,
+                animationDelay: `${star.animationDelay}s`,
               }}
             />
           ))}
