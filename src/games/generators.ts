@@ -19,6 +19,9 @@ import type {
   LetterMatchProblem,
   UnitConversionProblem,
   CompareSizesProblem,
+  StarMapperProblem,
+  Star,
+  Constellation,
   GeneratorFunction,
   SceneAnchor,
   SceneSubject,
@@ -1265,5 +1268,87 @@ export const Generators: Record<string, GeneratorFunction> = {
       showSymbols,
       uid: uid(rng)
     };
+  },
+
+  star_mapper: (level: number, rng: RngFunction = Math.random, profile: ProfileType = 'starter'): StarMapperProblem => {
+    const profileInfo = profileMeta(profile);
+    const effectiveLevel = level + profileInfo.difficultyOffset;
+
+    // Import constellation data
+    const { CONSTELLATIONS, getConstellationsByDifficulty } = require('./constellations');
+
+    // Select difficulty based on level
+    const difficulty = effectiveLevel <= 3 ? 'easy' 
+      : effectiveLevel <= 6 ? 'medium' 
+      : 'hard';
+
+    // Select mode based on level
+    const mode = effectiveLevel <= 3 ? 'trace' 
+      : effectiveLevel <= 6 ? 'build' 
+      : effectiveLevel <= 10 ? 'identify' 
+      : 'expert';
+
+    // Get constellations of appropriate difficulty
+    const constellationsOfDifficulty = getConstellationsByDifficulty(difficulty);
+    
+    // Pick a random constellation
+    const constellation = getRandom(constellationsOfDifficulty, rng);
+
+    // Generate distractor stars for expert mode
+    const distractorStars: Star[] = mode === 'expert' 
+      ? generateDistractorStars(constellation, rng, effectiveLevel)
+      : [];
+
+    // Generate options for identify mode
+    const options = mode === 'identify'
+      ? generateIdentifyOptions(constellation, rng)
+      : undefined;
+
+    return {
+      type: 'star_mapper',
+      uid: uid(rng),
+      mode,
+      constellation,
+      distractorStars,
+      showGuide: mode === 'trace',
+      options,
+      correctAnswer: constellation.id,
+      playerLines: [],
+    };
   }
 };
+
+// Helper function to generate distractor stars for expert mode
+function generateDistractorStars(constellation: Constellation, rng: RngFunction, level: number): Star[] {
+  const numDistractors = Math.min(3, Math.floor(level / 3)); // 1-3 distractor stars
+  const distractors: Star[] = [];
+  
+  for (let i = 0; i < numDistractors; i++) {
+    distractors.push({
+      id: `distractor_${i}`,
+      x: rng() * 100,
+      y: rng() * 100,
+      magnitude: 4 + rng() * 2, // Dim stars
+    });
+  }
+  
+  return distractors;
+}
+
+// Helper function to generate identify mode options
+function generateIdentifyOptions(correct: Constellation, rng: RngFunction): string[] {
+  const { CONSTELLATIONS } = require('./constellations');
+  
+  // Get 3 wrong options from same or similar difficulty
+  const allConstellations = CONSTELLATIONS.filter((c: Constellation) => c.id !== correct.id);
+  const options: string[] = [correct.id];
+  
+  // Shuffle and pick 3
+  const shuffled = [...allConstellations].sort(() => rng() - 0.5);
+  for (let i = 0; i < Math.min(3, shuffled.length); i++) {
+    options.push(shuffled[i].id);
+  }
+  
+  // Shuffle final options
+  return options.sort(() => rng() - 0.5);
+}

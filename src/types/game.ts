@@ -246,6 +246,44 @@ export interface WordCascadeProblem extends BaseProblem {
   columns: number; // number of lanes letters can fall in
 }
 
+// Star Mapper types
+export interface Star {
+  id: string;           // e.g., "betelgeuse"
+  x: number;            // Normalized 0-100 (relative to constellation bounds)
+  y: number;            // Normalized 0-100
+  magnitude: number;    // Visual brightness 0-6 (lower = brighter)
+  name?: string;        // Famous star name (optional)
+}
+
+export interface ConstellationLine {
+  from: string;         // Star ID
+  to: string;           // Star ID
+}
+
+export interface Constellation {
+  id: string;
+  nameEn: string;
+  nameEt: string;
+  folkNameEt?: string;  // Traditional Estonian name
+  descriptionKey: string;  // i18n key for description
+  season: 'circumpolar' | 'winter' | 'spring' | 'summer' | 'autumn';
+  difficulty: 'easy' | 'medium' | 'hard';
+  stars: Star[];
+  lines: ConstellationLine[];  // Correct connections
+  bounds: { width: number; height: number };  // Aspect ratio
+}
+
+export interface StarMapperProblem extends BaseProblem {
+  type: 'star_mapper';
+  mode: 'trace' | 'build' | 'identify' | 'expert';
+  constellation: Constellation;
+  distractorStars: Star[];           // Extra stars (expert mode)
+  showGuide: boolean;                // Trace mode
+  options?: string[];                // Identify mode - 4 constellation IDs
+  correctAnswer: string;             // Constellation ID
+  playerLines: ConstellationLine[];  // What player has drawn (starts empty)
+}
+
 // Answer metadata for game-specific actions
 // Union type for all problems
 export type Problem =
@@ -261,7 +299,8 @@ export type Problem =
   | SyllableBuilderProblem
   | LetterMatchProblem
   | UnitConversionProblem
-  | CompareSizesProblem;
+  | CompareSizesProblem
+  | StarMapperProblem;
 
 // RNG function type
 export type RngFunction = () => number;
