@@ -1280,10 +1280,10 @@ export const Generators: Record<string, GeneratorFunction> = {
       : effectiveLevel <= 6 ? 'medium' 
       : 'hard';
 
-    // Select mode based on level
-    const mode = effectiveLevel <= 3 ? 'trace' 
-      : effectiveLevel <= 6 ? 'build' 
-      : effectiveLevel <= 10 ? 'identify' 
+    // Softer mode progression: trace 1-2, build 3-5, identify 6-8, expert 9+
+    const mode = effectiveLevel <= 2 ? 'trace'
+      : effectiveLevel <= 5 ? 'build'
+      : effectiveLevel <= 8 ? 'identify'
       : 'expert';
 
     // Get constellation pool (includes easier difficulties to avoid repetition, e.g. hard = all 13)

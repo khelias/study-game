@@ -79,7 +79,7 @@ export const StarMapperView: React.FC<StarMapperViewProps> = ({
       playSound('success', soundEnabled);
       setTimeout(() => {
         onAnswer(true);
-      }, 1500);
+      }, 2200);
     }
   };
 
@@ -101,7 +101,7 @@ export const StarMapperView: React.FC<StarMapperViewProps> = ({
 
     setTimeout(() => {
       onAnswer(isCorrect);
-    }, isCorrect ? 1500 : 2000);
+    }, isCorrect ? 2200 : 2000);
   };
 
   // Calculate star size based on magnitude (brighter stars are larger)
@@ -174,9 +174,14 @@ export const StarMapperView: React.FC<StarMapperViewProps> = ({
           {getInstructions()}
         </p>
         {(problem.mode === 'trace' || problem.mode === 'build' || problem.mode === 'expert') && (
-          <p className="text-xs sm:text-sm text-slate-600 mt-1">
-            {t.starMapper.linesRemaining.replace('{count}', String(linesRemaining))}
-          </p>
+          <>
+            <p className="text-xs sm:text-sm text-slate-600 mt-1">
+              {t.starMapper.formLabel}: {problem.constellation.folkNameEt || problem.constellation.nameEt}
+            </p>
+            <p className="text-xs sm:text-sm text-slate-600 mt-0.5">
+              {t.starMapper.linesRemaining.replace('{count}', String(linesRemaining))}
+            </p>
+          </>
         )}
       </div>
 
@@ -226,6 +231,25 @@ export const StarMapperView: React.FC<StarMapperViewProps> = ({
             </filter>
           </defs>
           <g clipPath="url(#starFieldClip)">
+
+          {/* Constellation shape: identify mode (show shape so it can be recognized) */}
+          {problem.mode === 'identify' &&
+            problem.constellation.lines.map((line, idx) => {
+              const fromStar = starMap.get(line.from);
+              const toStar = starMap.get(line.to);
+              if (!fromStar || !toStar) return null;
+              return (
+                <line
+                  key={`shape-${idx}`}
+                  x1={fromStar.x}
+                  y1={fromStar.y}
+                  x2={toStar.x}
+                  y2={toStar.y}
+                  stroke="rgba(150, 200, 255, 0.85)"
+                  strokeWidth="0.7"
+                />
+              );
+            })}
 
           {/* Guide lines (trace mode) */}
           {problem.showGuide &&
@@ -342,6 +366,17 @@ export const StarMapperView: React.FC<StarMapperViewProps> = ({
         )}
       </div>
 
+      {/* One-line fact when correct (teaches something before next problem) */}
+      {status === 'correct' && (() => {
+        const constellations = t.starMapper.constellations as Record<string, { desc?: string }>;
+        const fact = constellations[problem.constellation.id]?.desc;
+        return fact ? (
+          <p className="mt-3 text-center text-sm text-slate-600 italic animate-in fade-in duration-300">
+            {fact}
+          </p>
+        ) : null;
+      })()}
+
       {/* Identify mode options */}
       {problem.mode === 'identify' && problem.options && (
         <div className="grid grid-cols-2 gap-3 sm:gap-4 w-full max-w-md mt-4">
@@ -380,14 +415,6 @@ export const StarMapperView: React.FC<StarMapperViewProps> = ({
         </div>
       )}
 
-      {/* Completion message */}
-      {status === 'correct' && (problem.mode === 'trace' || problem.mode === 'build' || problem.mode === 'expert') && (
-        <div className="mt-4 text-center animate-bounce">
-          <p className="text-xl sm:text-2xl font-bold text-green-400">
-            {t.starMapper.complete}
-          </p>
-        </div>
-      )}
     </div>
   );
 };

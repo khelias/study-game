@@ -597,7 +597,6 @@ export const WordCascadeView: React.FC<WordCascadeViewProps> = ({ problem, onAns
           </>
         )}
         {status === 'wrong' && <span className="text-red-600">{t.gameScreen.wordCascade.tryAgain}</span>}
-        {status === 'correct' && <span className="text-green-700">{t.gameScreen.wordCascade.greatJob}</span>}
       </div>
 
       <style>{`

@@ -743,6 +743,7 @@ export const et = {
       expert: 'Leia ja ühenda õiged tähed',
     },
     hint: 'Vihje',
+    formLabel: 'Kuju',
     linesRemaining: 'Jooni jäänud: {count}',
     complete: 'Suurepärane! 🌟',
     constellations: {

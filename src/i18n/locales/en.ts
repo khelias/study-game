@@ -743,6 +743,7 @@ export const en = {
       expert: 'Find and connect the correct stars',
     },
     hint: 'Hint',
+    formLabel: 'Form',
     linesRemaining: 'Lines remaining: {count}',
     complete: 'Excellent! 🌟',
     constellations: {
