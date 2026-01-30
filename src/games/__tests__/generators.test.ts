@@ -693,5 +693,109 @@ describe('Generators', () => {
       expect(['easy', 'medium', 'hard']).toContain(problem7.constellation.difficulty);
     });
   });
+
+  describe('shape_shift', () => {
+    it('should generate valid shape shift problem', () => {
+      const rng = createRng(12345);
+      const generator = Generators.shape_shift;
+      if (!generator) throw new Error('shape_shift generator not found');
+      const problem = generator(1, rng, 'starter');
+      
+      expect(problem.type).toBe('shape_shift');
+      expect(problem.mode).toBeDefined();
+      expect(problem.puzzle).toBeDefined();
+      expect(problem.pieces).toBeInstanceOf(Array);
+      expect(problem.pieces.length).toBeGreaterThan(0);
+      expect(problem.showHints).toBeDefined();
+    });
+
+    it('should use match mode for levels 1-3', () => {
+      const rng = createRng(12345);
+      const generator = Generators.shape_shift;
+      if (!generator) throw new Error('shape_shift generator not found');
+      
+      const problem1 = generator(1, rng, 'starter');
+      const problem2 = generator(2, rng, 'starter');
+      const problem3 = generator(3, rng, 'starter');
+      
+      expect(problem1.mode).toBe('match');
+      expect(problem2.mode).toBe('match');
+      expect(problem3.mode).toBe('match');
+    });
+
+    it('should use rotate mode for levels 4-6', () => {
+      const rng = createRng(12345);
+      const generator = Generators.shape_shift;
+      if (!generator) throw new Error('shape_shift generator not found');
+      
+      const problem4 = generator(4, rng, 'starter');
+      const problem5 = generator(5, rng, 'starter');
+      const problem6 = generator(6, rng, 'starter');
+      
+      expect(problem4.mode).toBe('rotate');
+      expect(problem5.mode).toBe('rotate');
+      expect(problem6.mode).toBe('rotate');
+    });
+
+    it('should use build mode for levels 7-10', () => {
+      const rng = createRng(12345);
+      const generator = Generators.shape_shift;
+      if (!generator) throw new Error('shape_shift generator not found');
+      
+      const problem7 = generator(7, rng, 'starter');
+      const problem10 = generator(10, rng, 'starter');
+      
+      expect(problem7.mode).toBe('build');
+      expect(problem10.mode).toBe('build');
+    });
+
+    it('should use expert mode for levels 11+', () => {
+      const rng = createRng(12345);
+      const generator = Generators.shape_shift;
+      if (!generator) throw new Error('shape_shift generator not found');
+      
+      const problem11 = generator(11, rng, 'starter');
+      
+      expect(problem11.mode).toBe('expert');
+    });
+
+    it('should include decoy piece in expert mode', () => {
+      const rng = createRng(12345);
+      const generator = Generators.shape_shift;
+      if (!generator) throw new Error('shape_shift generator not found');
+      
+      const problem = generator(11, rng, 'starter');
+      const decoyPieces = problem.pieces.filter(p => p.isDecoy);
+      
+      expect(decoyPieces.length).toBeGreaterThan(0);
+    });
+
+    it('should have pieces in tray initially', () => {
+      const rng = createRng(12345);
+      const generator = Generators.shape_shift;
+      if (!generator) throw new Error('shape_shift generator not found');
+      
+      const problem = generator(1, rng, 'starter');
+      
+      problem.pieces.forEach(piece => {
+        expect(piece.currentPosition).toBeNull();
+      });
+    });
+
+    it('should have correct rotation in match mode', () => {
+      const rng = createRng(12345);
+      const generator = Generators.shape_shift;
+      if (!generator) throw new Error('shape_shift generator not found');
+      
+      const problem = generator(1, rng, 'starter');
+      
+      expect(problem.mode).toBe('match');
+      problem.pieces.forEach(piece => {
+        if (!piece.isDecoy) {
+          expect(piece.currentRotation).toBe(piece.correctRotation);
+        }
+      });
+    });
+  });
 });
 

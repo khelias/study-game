@@ -58,6 +58,7 @@ export const GAME_CONFIG: Record<string, GameConfig> = {
   unit_conversion: { id: 'unit_conversion', title: 'UNITS', theme: THEME.blue!, icon: 'Ruler', desc: 'Convert units', allowedProfiles: ['starter'], difficulty: 'medium', category: 'math' },
   compare_sizes:   { id: 'compare_sizes', title: 'NUMBER COMPARE', theme: THEME.indigo!, icon: 'Hash', desc: 'Compare numbers', allowedProfiles: ['starter', 'advanced'], difficulty: 'easy', category: 'math' },
   star_mapper:     { id: 'star_mapper', title: 'STAR MAPPER', theme: THEME.indigo!, icon: 'Star', desc: 'Learn the constellations', allowedProfiles: ['starter', 'advanced'], difficulty: 'medium', category: 'logic' },
+  shape_shift:     { id: 'shape_shift', title: 'SHAPE SHIFT', theme: THEME.teal!, icon: 'Shapes', desc: 'Build shapes from pieces', allowedProfiles: ['starter', 'advanced'], difficulty: 'easy', category: 'logic' },
   
   // 8+ games - harder, logical (7 games - added letter_match_adv)
   balance_scale:   { id: 'balance_scale', title: 'SCALES', theme: THEME.blue!, icon: 'Scale', desc: 'Balance the scales', allowedProfiles: ['advanced'], difficulty: 'hard', category: 'math' },
@@ -93,7 +94,8 @@ export const ICONS: Record<string, string> = {
   FileText: 'FileText',
   Layers: 'Layers',
   Search: 'Search',
-  Star: 'Star'
+  Star: 'Star',
+  Shapes: 'Shapes',
 };
 
 export const ALPHABET: string[] = 'ABCDEFGHIJKLMNOPRSŠZŽTUVÕÄÖÜ'.split('');

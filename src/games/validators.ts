@@ -148,3 +148,55 @@ export const validateStarMapper: AnswerValidator = (problem: Problem, userAnswer
   );
 };
 
+/**
+ * Validator for shape shift games
+ */
+export const validateShapeShift: AnswerValidator = (problem: Problem, userAnswer: unknown): boolean => {
+  if (problem.type !== 'shape_shift') return false;
+  
+  const placedPieces = userAnswer as Array<{
+    id: string;
+    type: string;
+    isDecoy?: boolean;
+    currentPosition: { x: number; y: number } | null;
+    currentRotation: number;
+  }>;
+
+  if (!Array.isArray(placedPieces)) return false;
+
+  // Get required (non-decoy) pieces
+  const requiredPieces = problem.puzzle.pieces.filter(p => !p.isDecoy);
+
+  // Count placed non-decoy pieces
+  const placedNonDecoy = placedPieces.filter(p => !p.isDecoy && p.currentPosition !== null);
+  
+  if (placedNonDecoy.length !== requiredPieces.length) return false;
+
+  // Each required piece must be correctly placed
+  return requiredPieces.every(required => {
+    const placed = placedPieces.find(p => p.id === required.id);
+    if (!placed || !placed.currentPosition) return false;
+
+    // Check position (with tolerance)
+    const positionOk =
+      Math.abs(placed.currentPosition.x - required.correctPosition.x) < 0.5 &&
+      Math.abs(placed.currentPosition.y - required.correctPosition.y) < 0.5;
+
+    // Check rotation (handle symmetric shapes)
+    let rotationOk = false;
+    const placedRot = ((placed.currentRotation % 360) + 360) % 360;
+    const correctRot = ((required.correctRotation % 360) + 360) % 360;
+
+    if (required.type === 'circle') {
+      rotationOk = true;  // Any rotation is fine
+    } else if (required.type === 'square') {
+      rotationOk = placedRot % 90 === correctRot % 90;  // 90° symmetry
+    } else if (required.type === 'rectangle') {
+      rotationOk = placedRot % 180 === correctRot % 180;  // 180° symmetry
+    } else {
+      rotationOk = placedRot === correctRot;
+    }
+
+    return positionOk && rotationOk;
+  });
+};

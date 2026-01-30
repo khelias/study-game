@@ -1,6 +1,7 @@
 import { ALPHABET, WORD_DB, WORD_DB_EN, SCENE_DB, PROFILES } from './data';
 import { SYLLABLE_WORDS } from './syllableWords';
 import { CONSTELLATIONS, getConstellationsForLevel } from './constellations';
+import { PUZZLES } from './puzzles';
 import { getRandom, uid } from '../engine/rng';
 import { getLocale } from '../i18n/index';
 import { generateSentence, getSceneName } from './sentenceTranslations';
@@ -23,6 +24,9 @@ import type {
   StarMapperProblem,
   Star,
   Constellation,
+  ShapeShiftProblem,
+  PieceState,
+  ShapeType,
   GeneratorFunction,
   SceneAnchor,
   SceneSubject,
@@ -1311,7 +1315,84 @@ export const Generators: Record<string, GeneratorFunction> = {
       correctAnswer: constellation.id,
       playerLines: [],
     };
-  }
+  },
+
+  /**
+   * Shape Shift Generator
+   * Generates geometric puzzle problems with different modes based on level
+   */
+  shape_shift: (level: number, rng: RngFunction, _profile: ProfileType): ShapeShiftProblem => {
+    // Select mode based on level
+    const mode = level <= 3 ? 'match'
+      : level <= 6 ? 'rotate'
+      : level <= 10 ? 'build'
+      : 'expert';
+
+    // Select difficulty based on level
+    const difficulty = level <= 3 ? 'easy' : level <= 7 ? 'medium' : 'hard';
+
+    // Pick puzzle matching difficulty
+    const suitablePuzzles = PUZZLES.filter(p => p.difficulty === difficulty);
+    const puzzleIndex = Math.floor(rng() * suitablePuzzles.length);
+    const puzzle = suitablePuzzles[puzzleIndex] || PUZZLES[0];
+
+    // Helper to generate random rotation
+    const randomRotation = (): number => {
+      return [0, 90, 180, 270][Math.floor(rng() * 4)] || 0;
+    };
+
+    // Helper to shuffle array
+    const shuffleArray = <T>(array: T[]): T[] => {
+      const result = [...array];
+      for (let i = result.length - 1; i > 0; i--) {
+        const j = Math.floor(rng() * (i + 1));
+        [result[i], result[j]] = [result[j], result[i]];
+      }
+      return result;
+    };
+
+    // Helper to generate decoy piece
+    const generateDecoyPiece = (): PieceState => {
+      const colors = ['red', 'blue', 'green', 'yellow', 'purple', 'orange'];
+      const types: ShapeType[] = ['triangle', 'square', 'diamond', 'circle'];
+      
+      return {
+        id: 'decoy',
+        type: types[Math.floor(rng() * types.length)] || 'square',
+        color: colors[Math.floor(rng() * colors.length)] || 'gray',
+        size: 1 + Math.floor(rng() * 2),
+        correctPosition: { x: -1, y: -1 },
+        correctRotation: 0,
+        isDecoy: true,
+        currentPosition: null,
+        currentRotation: randomRotation(),
+      };
+    };
+
+    // Prepare piece states
+    const pieces: PieceState[] = puzzle.pieces.map(p => ({
+      ...p,
+      currentPosition: null,
+      currentRotation: mode === 'match' ? p.correctRotation : randomRotation(),
+    }));
+
+    // For expert mode, add a decoy piece
+    if (mode === 'expert') {
+      pieces.push(generateDecoyPiece());
+    }
+
+    // Shuffle pieces in tray
+    const shuffledPieces = shuffleArray(pieces);
+
+    return {
+      type: 'shape_shift',
+      uid: uid(rng),
+      mode,
+      puzzle,
+      pieces: shuffledPieces,
+      showHints: mode === 'match',
+    };
+  },
 };
 
 /**

@@ -284,6 +284,42 @@ export interface StarMapperProblem extends BaseProblem {
   playerLines: ConstellationLine[];  // What player has drawn (starts empty)
 }
 
+// Shape shift problem (geometric puzzle game)
+export type ShapeType = 'triangle' | 'half_square' | 'square' | 'rectangle' | 'hexagon' | 'diamond' | 'circle';
+
+export interface ShapePiece {
+  id: string;
+  type: ShapeType;
+  color: string;           // Tailwind color: 'red' | 'blue' | 'green' | 'yellow' | 'purple' | 'orange' | 'pink' | 'cyan'
+  size: number;            // Scale factor (1 = base unit)
+  correctPosition: { x: number; y: number };  // Target grid position
+  correctRotation: number; // Target rotation (0, 90, 180, 270)
+  isDecoy?: boolean;       // For expert mode - piece doesn't belong
+}
+
+export interface Puzzle {
+  id: string;
+  nameEt: string;
+  nameEn: string;
+  category: 'shapes' | 'animals' | 'objects' | 'letters' | 'abstract';
+  difficulty: 'easy' | 'medium' | 'hard';
+  gridSize: number;  // e.g., 6 = 6x6 grid
+  pieces: ShapePiece[];
+}
+
+export interface ShapeShiftProblem extends BaseProblem {
+  type: 'shape_shift';
+  mode: 'match' | 'rotate' | 'build' | 'expert';
+  puzzle: Puzzle;
+  pieces: PieceState[];  // Pieces with current position/rotation state
+  showHints: boolean;    // Match mode shows placement hints
+}
+
+export interface PieceState extends ShapePiece {
+  currentPosition: { x: number; y: number } | null;  // null = in tray
+  currentRotation: number;
+}
+
 // Answer metadata for game-specific actions
 // Union type for all problems
 export type Problem =
@@ -300,7 +336,8 @@ export type Problem =
   | LetterMatchProblem
   | UnitConversionProblem
   | CompareSizesProblem
-  | StarMapperProblem;
+  | StarMapperProblem
+  | ShapeShiftProblem;
 
 // RNG function type
 export type RngFunction = () => number;
