@@ -802,7 +802,7 @@ export const en = {
     seasons: {
       circumpolar: 'Year-round',
       winter: 'Winter',
-      spring: 'Spring', 
+      spring: 'Spring',
       summer: 'Summer',
       autumn: 'Autumn',
     },

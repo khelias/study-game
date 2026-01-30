@@ -802,7 +802,7 @@ export const et = {
     seasons: {
       circumpolar: 'Aastaringne',
       winter: 'Talv',
-      spring: 'Kevad', 
+      spring: 'Kevad',
       summer: 'Suvi',
       autumn: 'Sügis',
     },
