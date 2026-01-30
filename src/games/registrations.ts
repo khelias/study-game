@@ -25,6 +25,7 @@ import {
   SyllableGameView,
   TimeGameView,
   UnitConversionView,
+  RhythmEchoView,
 } from '../components/gameViews';
 import { MathSnakeView } from '../components/MathSnakeView';
 import { CompareSizesView } from '../components/CompareSizesView';
@@ -42,6 +43,7 @@ import {
   validateMathSnake,
   validateMemoryMath,
   validateRoboPath,
+  validateRhythmEcho,
 } from './validators';
 
 /**
@@ -231,6 +233,20 @@ function registerAllGames(): void {
       config: timeMatchConfig,
       validator: validateTimeMatch,
       allowedProfiles: timeMatchConfig.allowedProfiles,
+    });
+  }
+
+  // Rhythm Echo
+  const rhythmEchoConfig = GAME_CONFIG.rhythm_echo;
+  const rhythmEchoGenerator = Generators.rhythm_echo;
+  if (rhythmEchoConfig && rhythmEchoGenerator) {
+    gameRegistry.register({
+      id: 'rhythm_echo',
+      component: RhythmEchoView,
+      generator: rhythmEchoGenerator,
+      config: rhythmEchoConfig,
+      validator: validateRhythmEcho,
+      allowedProfiles: rhythmEchoConfig.allowedProfiles,
     });
   }
 }

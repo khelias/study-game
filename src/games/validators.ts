@@ -121,3 +121,61 @@ export const validateRoboPath: AnswerValidator = (_problem: Problem, _userAnswer
   // This is a placeholder
   return false;
 };
+
+/**
+ * Validator for rhythm echo games
+ */
+export const validateRhythmEcho: AnswerValidator = (problem: Problem, userAnswer: unknown): boolean => {
+  if (problem.type !== 'rhythm_echo') return false;
+  
+  const playerBeats = userAnswer as Array<{ time: number; pad: string }>;
+  const targetBeats = problem.pattern.beats;
+  const tolerance = problem.toleranceMs;
+
+  // Must have attempted at least as many beats as target
+  if (playerBeats.length < targetBeats.length) return false;
+
+  // Count how many target beats were hit correctly
+  let hitCount = 0;
+  const usedPlayerBeats = new Set<number>();
+
+  targetBeats.forEach(target => {
+    // Find best matching player beat
+    let bestMatch = -1;
+    let bestOffset = Infinity;
+
+    playerBeats.forEach((player, index) => {
+      if (usedPlayerBeats.has(index)) return;
+      if (player.pad !== target.pad) return;
+      
+      const offset = Math.abs(player.time - target.time);
+      if (offset <= tolerance && offset < bestOffset) {
+        bestMatch = index;
+        bestOffset = offset;
+      }
+    });
+
+    if (bestMatch >= 0) {
+      hitCount++;
+      usedPlayerBeats.add(bestMatch);
+    }
+  });
+
+  // Need at least 70% accuracy to pass
+  return hitCount >= targetBeats.length * 0.7;
+};
+
+/**
+ * Get beat accuracy based on timing offset
+ */
+export function getBeatAccuracy(
+  offsetMs: number, 
+  tolerance: number
+): 'perfect' | 'good' | 'ok' | 'miss' {
+  const absOffset = Math.abs(offsetMs);
+  if (absOffset <= tolerance * 0.3) return 'perfect';
+  if (absOffset <= tolerance * 0.6) return 'good';
+  if (absOffset <= tolerance) return 'ok';
+  return 'miss';
+}
+

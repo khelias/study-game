@@ -447,6 +447,35 @@ export const et = {
       lengthLabel: 'Pikkus',
       nextMathLabel: 'Järgmine tehe',
     },
+    rhythmEcho: {
+      listen: '🎧 Kuula...',
+      yourTurn: '🎤 Sinu kord!',
+      result: 'Tulemus',
+      beats: 'lööki',
+      tapToPlay: 'Puuduta, et mängida',
+      pads: {
+        drum: 'Trumm',
+        bell: 'Kell',
+        clap: 'Plaks',
+      },
+      accuracy: {
+        perfect: 'Ideaalne! ⭐',
+        good: 'Hea! 👍',
+        ok: 'Okei 👌',
+        miss: 'Mööda 😅',
+      },
+      result: {
+        excellent: 'Suurepärane! 🎉',
+        good: 'Tubli! 👏',
+        tryAgain: 'Proovi uuesti! 💪',
+      },
+      instructions: {
+        echo: 'Kuula ja korda',
+        rhythm: 'Püsi rütmis',
+        duo: 'Kaks trummi, kaks heli',
+        band: 'Terve bänd!',
+      },
+    },
     selectLevel: 'Vali tase',
     currentLevel: 'Praegune tase',
     selectNewLevel: 'Vali uus tase',
@@ -465,6 +494,7 @@ export const et = {
       timeMatch: 'Vaata kella osuteid!',
       unitConversion: 'Arvuta ümber!',
       compare_sizes: 'Võrdle suurusi hoolikalt!',
+      rhythm_echo: 'Kuula hoolikalt ja korda rütmi!',
       default: 'Proovi veel!',
     },
     hintButton: {
@@ -718,6 +748,10 @@ export const et = {
       equal: 'Nad on võrdsed',
       leftItem: 'Vasak arv',
       rightItem: 'Parem arv',
+    },
+    rhythm_echo: {
+      title: 'RÜTMIKAJA',
+      desc: 'Korda rütmi järele',
     },
   },
 

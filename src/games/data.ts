@@ -69,6 +69,7 @@ export const GAME_CONFIG: Record<string, GameConfig> = {
   letter_match_adv: { id: 'letter_match', title: 'LETTER DETECTIVE', theme: THEME.pink!, icon: 'Search', desc: 'Find the correct letter', allowedProfiles: ['advanced'], difficulty: 'hard', category: 'language' },
   unit_conversion_adv: { id: 'unit_conversion', title: 'UNITS', theme: THEME.blue!, icon: 'Ruler', desc: 'Convert units', allowedProfiles: ['advanced'], difficulty: 'hard', category: 'math' },
   word_cascade_adv: { id: 'word_cascade', title: 'WORD CASCADE', theme: THEME.pink!, icon: 'Layers', desc: 'Catch letters and build words fast', allowedProfiles: ['advanced'], difficulty: 'hard', category: 'language' },
+  rhythm_echo: { id: 'rhythm_echo', title: 'RHYTHM ECHO', theme: THEME.purple!, icon: 'Music', desc: 'Repeat the rhythm', allowedProfiles: ['starter', 'advanced'], difficulty: 'medium', category: 'logic' },
 };
 
 // Profiles are extensible with difficulty offset
@@ -91,7 +92,8 @@ export const ICONS: Record<string, string> = {
   Hash: 'Hash',
   FileText: 'FileText',
   Layers: 'Layers',
-  Search: 'Search'
+  Search: 'Search',
+  Music: 'Music'
 };
 
 export const ALPHABET: string[] = 'ABCDEFGHIJKLMNOPRSŠZŽTUVÕÄÖÜ'.split('');

@@ -19,6 +19,10 @@ import type {
   LetterMatchProblem,
   UnitConversionProblem,
   CompareSizesProblem,
+  RhythmEchoProblem,
+  Beat,
+  BeatPad,
+  RhythmPattern,
   GeneratorFunction,
   SceneAnchor,
   SceneSubject,
@@ -204,6 +208,33 @@ function addDistractorLetters(
   
   return [...correctLetters, ...distractors];
 }
+
+// Pattern building blocks for rhythm game (1 = beat, 0 = rest)
+const RHYTHM_PATTERNS = {
+  simple: [
+    [1, 0, 1, 0],           // ● ○ ● ○
+    [1, 1, 0, 0],           // ● ● ○ ○
+    [1, 0, 0, 1],           // ● ○ ○ ●
+    [0, 1, 1, 0],           // ○ ● ● ○
+    [1, 0, 1, 1],           // ● ○ ● ●
+  ],
+  
+  medium: [
+    [1, 0, 1, 0, 1, 0],     // ● ○ ● ○ ● ○
+    [1, 1, 0, 1, 1, 0],     // ● ● ○ ● ● ○
+    [1, 0, 1, 1, 0, 1],     // ● ○ ● ● ○ ●
+    [0, 1, 1, 0, 1, 1],     // ○ ● ● ○ ● ●
+    [1, 1, 1, 0, 0, 1],     // ● ● ● ○ ○ ●
+  ],
+  
+  complex: [
+    [1, 0, 1, 0, 1, 0, 1, 0],   // ● ○ ● ○ ● ○ ● ○
+    [1, 1, 0, 1, 0, 1, 1, 0],   // ● ● ○ ● ○ ● ● ○
+    [1, 0, 1, 1, 0, 0, 1, 1],   // ● ○ ● ● ○ ○ ● ●
+    [0, 1, 1, 0, 1, 0, 0, 1],   // ○ ● ● ○ ● ○ ○ ●
+    [1, 0, 0, 1, 1, 0, 1, 0],   // ● ○ ○ ● ● ○ ● ○
+  ],
+};
 
 export const Generators: Record<string, GeneratorFunction> = {
   balance_scale: (level: number, rng: RngFunction = Math.random, profile: ProfileType = 'starter'): BalanceScaleProblem => {
@@ -1264,6 +1295,67 @@ export const Generators: Record<string, GeneratorFunction> = {
       showNumbers: showNumbers || representationMode === 'number',
       showSymbols,
       uid: uid(rng)
+    };
+  },
+
+  rhythm_echo: (level: number, rng: RngFunction = Math.random, profile: ProfileType = 'starter'): RhythmEchoProblem => {
+    const meta = profileMeta(profile);
+    const effectiveLevel = level + meta.difficultyOffset;
+
+    // Determine mode and settings based on level
+    const mode = effectiveLevel <= 3 ? 'echo'
+      : effectiveLevel <= 6 ? 'rhythm'
+      : effectiveLevel <= 10 ? 'duo'
+      : 'band';
+
+    const bpm = effectiveLevel <= 3 ? 70 : effectiveLevel <= 6 ? 90 : effectiveLevel <= 10 ? 100 : 120;
+    const toleranceMs = effectiveLevel <= 3 ? 150 : effectiveLevel <= 6 ? 120 : effectiveLevel <= 10 ? 100 : 80;
+    
+    // Select pads based on mode
+    const pads: BeatPad[] = 
+      mode === 'echo' || mode === 'rhythm' ? ['drum']
+      : mode === 'duo' ? ['drum', 'bell']
+      : ['drum', 'bell', 'clap'];
+
+    // Select pattern complexity
+    const patterns = effectiveLevel <= 3 ? RHYTHM_PATTERNS.simple
+      : effectiveLevel <= 6 ? RHYTHM_PATTERNS.medium
+      : RHYTHM_PATTERNS.complex;
+    
+    const patternTemplate = patterns[Math.floor(rng() * patterns.length)];
+    const beatDuration = 60000 / bpm;  // ms per beat
+    
+    // Convert pattern to beats with timing
+    const beats: Beat[] = [];
+    patternTemplate.forEach((isHit, index) => {
+      if (isHit) {
+        // For multi-pad modes, randomly assign pads
+        const pad = pads.length === 1 
+          ? pads[0] 
+          : pads[Math.floor(rng() * pads.length)];
+        
+        beats.push({
+          time: index * beatDuration,
+          pad,
+        });
+      }
+    });
+
+    const pattern: RhythmPattern = {
+      id: uid(rng),
+      beats,
+      bpm,
+      duration: patternTemplate.length * beatDuration,
+    };
+
+    return {
+      type: 'rhythm_echo',
+      uid: uid(rng),
+      mode,
+      pattern,
+      pads,
+      toleranceMs,
+      playerBeats: [],
     };
   }
 };

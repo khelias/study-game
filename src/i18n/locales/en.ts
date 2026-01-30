@@ -447,6 +447,35 @@ export const en = {
       lengthLabel: 'Length',
       nextMathLabel: 'Math in',
     },
+    rhythmEcho: {
+      listen: '🎧 Listen...',
+      yourTurn: '🎤 Your turn!',
+      result: 'Result',
+      beats: 'beats',
+      tapToPlay: 'Tap to play',
+      pads: {
+        drum: 'Drum',
+        bell: 'Bell',
+        clap: 'Clap',
+      },
+      accuracy: {
+        perfect: 'Perfect! ⭐',
+        good: 'Good! 👍',
+        ok: 'OK 👌',
+        miss: 'Miss 😅',
+      },
+      result: {
+        excellent: 'Excellent! 🎉',
+        good: 'Nice! 👏',
+        tryAgain: 'Try again! 💪',
+      },
+      instructions: {
+        echo: 'Listen and repeat',
+        rhythm: 'Keep the beat',
+        duo: 'Two drums, two sounds',
+        band: 'Full band mode!',
+      },
+    },
     selectLevel: 'Select Level',
     currentLevel: 'Current level',
     selectNewLevel: 'Select new level',
@@ -465,6 +494,7 @@ export const en = {
       timeMatch: 'Look at the clock hands!',
       unitConversion: 'Calculate!',
       compare_sizes: 'Compare the sizes carefully!',
+      rhythm_echo: 'Listen carefully and repeat the rhythm!',
       default: 'Try again!',
     },
     hintButton: {
@@ -718,6 +748,10 @@ export const en = {
       equal: 'They are equal',
       leftItem: 'Left number',
       rightItem: 'Right number',
+    },
+    rhythm_echo: {
+      title: 'RHYTHM ECHO',
+      desc: 'Repeat the rhythm',
     },
   },
 

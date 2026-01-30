@@ -246,6 +246,37 @@ export interface WordCascadeProblem extends BaseProblem {
   columns: number; // number of lanes letters can fall in
 }
 
+// Rhythm echo types
+export type BeatPad = 'drum' | 'bell' | 'clap';
+
+export interface Beat {
+  time: number;      // Time offset in ms from pattern start
+  pad: BeatPad;      // Which pad/sound
+}
+
+export interface RhythmPattern {
+  id: string;
+  beats: Beat[];
+  bpm: number;
+  duration: number;  // Total pattern length in ms
+}
+
+export interface RhythmEchoProblem extends BaseProblem {
+  type: 'rhythm_echo';
+  mode: 'echo' | 'rhythm' | 'duo' | 'band';
+  pattern: RhythmPattern;
+  pads: BeatPad[];           // Which pads are active (1-3)
+  toleranceMs: number;       // Timing tolerance (150ms easy, 80ms hard)
+  playerBeats: Beat[];       // What player has tapped (starts empty)
+}
+
+export interface BeatResult {
+  beat: Beat;
+  playerTime: number | null;  // null = missed
+  accuracy: 'perfect' | 'good' | 'ok' | 'miss';
+  offsetMs: number;
+}
+
 // Answer metadata for game-specific actions
 // Union type for all problems
 export type Problem =
@@ -261,7 +292,8 @@ export type Problem =
   | SyllableBuilderProblem
   | LetterMatchProblem
   | UnitConversionProblem
-  | CompareSizesProblem;
+  | CompareSizesProblem
+  | RhythmEchoProblem;
 
 // RNG function type
 export type RngFunction = () => number;

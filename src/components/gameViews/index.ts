@@ -14,3 +14,4 @@ export { RoboPathView } from './RoboPathView';
 export { SyllableGameView } from './SyllableGameView';
 export { TimeGameView } from './TimeGameView';
 export { UnitConversionView } from './UnitConversionView';
+export { RhythmEchoView } from './RhythmEchoView';
