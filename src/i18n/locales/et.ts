@@ -784,6 +784,7 @@ export const et = {
     hint: 'Vihje',
     formLabel: 'Kuju',
     undo: 'Võta tagasi',
+    tryAgain: 'Proovi uuesti',
     linesRemaining: 'Jooni jäänud: {count}',
     complete: 'Suurepärane! 🌟',
     constellations: {

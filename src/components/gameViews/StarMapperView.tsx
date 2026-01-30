@@ -58,14 +58,18 @@ export const StarMapperView: React.FC<StarMapperViewProps> = ({
       setSelectedStar(null);
       playSound('tap', soundEnabled);
     } else {
-      // Draw line between selected and tapped
+      // Draw line between selected and tapped (reject duplicate connection)
       const newLine = { from: selectedStar, to: starId };
+      const alreadyExists = drawnLines.some(
+        l => (l.from === newLine.from && l.to === newLine.to) || (l.from === newLine.to && l.to === newLine.from)
+      );
+      if (alreadyExists) return;
+
       const newLines = [...drawnLines, newLine];
       setDrawnLines(newLines);
       setSelectedStar(null);
       playSound('connect', soundEnabled);
 
-      // Check if constellation complete
       checkCompletion(newLines);
     }
   };
@@ -78,7 +82,7 @@ export const StarMapperView: React.FC<StarMapperViewProps> = ({
     playSound('tap', soundEnabled);
   }, [status, drawnLines.length, soundEnabled]);
 
-  // Check if constellation is complete (used by tap and drag-to-connect)
+  // Check if constellation is complete or wrong (used by tap and drag-to-connect)
   const checkCompletion = useCallback((lines: ConstellationLine[]) => {
     const requiredLines = problem.constellation.lines;
     const allComplete = requiredLines.every(required =>
@@ -94,6 +98,16 @@ export const StarMapperView: React.FC<StarMapperViewProps> = ({
       setTimeout(() => {
         onAnswer(true);
       }, 2200);
+      return;
+    }
+
+    // All lines drawn but wrong: give feedback and count as wrong
+    if (lines.length >= requiredLines.length) {
+      setStatus('wrong');
+      playSound('error', soundEnabled);
+      setTimeout(() => {
+        onAnswer(false);
+      }, 2000);
     }
   }, [problem.constellation.lines, soundEnabled, onAnswer]);
 
@@ -134,11 +148,16 @@ export const StarMapperView: React.FC<StarMapperViewProps> = ({
     const starAt = getStarAtPosition(pt.x, pt.y);
     if (starAt && starAt.id !== dragStartStarId) {
       const newLine = { from: dragStartStarId, to: starAt.id };
-      const newLines = [...drawnLines, newLine];
-      setDrawnLines(newLines);
-      setSelectedStar(null);
-      playSound('connect', soundEnabled);
-      checkCompletion(newLines);
+      const alreadyExists = drawnLines.some(
+        l => (l.from === newLine.from && l.to === newLine.to) || (l.from === newLine.to && l.to === newLine.from)
+      );
+      if (!alreadyExists) {
+        const newLines = [...drawnLines, newLine];
+        setDrawnLines(newLines);
+        setSelectedStar(null);
+        playSound('connect', soundEnabled);
+        checkCompletion(newLines);
+      }
     }
     setDragStartStarId(null);
   }, [dragStartStarId, status, clientToViewBox, getStarAtPosition, drawnLines, soundEnabled, checkCompletion]);
@@ -211,46 +230,29 @@ export const StarMapperView: React.FC<StarMapperViewProps> = ({
     }));
   }, [problem.uid]);
 
+  const isConnectMode = problem.mode === 'trace' || problem.mode === 'build' || problem.mode === 'expert';
+
   return (
     <div className="w-full flex flex-col items-center px-4 sm:px-6 max-w-2xl mx-auto pt-4 sm:pt-6 animate-in fade-in duration-300">
-      {/* Header - Constellation name (dark text for contrast on light backgrounds) */}
-      <div className="mb-4 text-center">
-        <h2 className="text-2xl sm:text-3xl font-bold text-slate-800">
+      {/* Header - same structure as other game views (Pattern, etc.) */}
+      <div className="w-full max-w-3xl text-center mb-3 sm:mb-4">
+        <div className="text-[10px] sm:text-xs font-bold uppercase tracking-wide text-indigo-600">
+          {t.starMapper.title}
+        </div>
+        <div className="text-lg sm:text-2xl font-black text-slate-800">
           {problem.constellation.nameEt}
-        </h2>
-        <p className="text-sm text-slate-600">
+        </div>
+        <div className="text-xs sm:text-sm text-slate-500 mt-1">
           {problem.constellation.nameEn}
-        </p>
-        {problem.constellation.folkNameEt && (
-          <p className="text-xs text-slate-500 italic">
-            ({problem.constellation.folkNameEt})
-          </p>
-        )}
-      </div>
-
-      {/* Instructions */}
-      <div className="mb-3 text-center">
-        <p className="text-sm sm:text-base text-slate-700">
+          {problem.constellation.folkNameEt && ` (${problem.constellation.folkNameEt})`}
+        </div>
+        <p className="text-xs sm:text-sm text-slate-500 mt-1">
           {getInstructions()}
         </p>
-        {(problem.mode === 'trace' || problem.mode === 'build' || problem.mode === 'expert') && (
-          <>
-            <p className="text-xs sm:text-sm text-slate-600 mt-1">
-              {t.starMapper.formLabel}: {problem.constellation.folkNameEt || problem.constellation.nameEt}
-            </p>
-            <p className="text-xs sm:text-sm text-slate-600 mt-0.5">
-              {t.starMapper.linesRemaining.replace('{count}', String(linesRemaining))}
-            </p>
-            {drawnLines.length > 0 && status === 'idle' && (
-              <button
-                type="button"
-                onClick={handleUndo}
-                className="mt-2 px-3 py-1.5 text-sm font-medium rounded-lg border border-slate-300 bg-white text-slate-700 hover:bg-slate-50 active:bg-slate-100"
-              >
-                {t.starMapper.undo}
-              </button>
-            )}
-          </>
+        {isConnectMode && (
+          <p className="text-xs sm:text-sm text-slate-500 mt-0.5">
+            {t.starMapper.formLabel}: {problem.constellation.folkNameEt || problem.constellation.nameEt}
+          </p>
         )}
       </div>
 
@@ -447,7 +449,32 @@ export const StarMapperView: React.FC<StarMapperViewProps> = ({
         {status === 'correct' && (
           <div className="absolute inset-0 bg-gradient-to-b from-transparent via-indigo-500/20 to-transparent animate-pulse pointer-events-none" />
         )}
+        {/* Wrong state overlay */}
+        {status === 'wrong' && (
+          <div className="absolute inset-0 bg-red-500/15 flex items-center justify-center pointer-events-none">
+            <p className="text-slate-800 font-bold text-sm sm:text-base px-4 text-center">
+              {t.starMapper.tryAgain}
+            </p>
+          </div>
+        )}
       </div>
+
+      {/* Fixed bar below play area: lines remaining + Undo (no pop-in) */}
+      {isConnectMode && (
+        <div className="w-full max-w-md mt-3 flex items-center justify-between gap-3">
+          <span className="text-xs sm:text-sm text-slate-500">
+            {t.starMapper.linesRemaining.replace('{count}', String(linesRemaining))}
+          </span>
+          <button
+            type="button"
+            onClick={handleUndo}
+            disabled={drawnLines.length === 0 || status !== 'idle'}
+            className="px-3 py-1.5 text-xs sm:text-sm font-medium rounded-lg border border-slate-300 bg-white text-slate-700 hover:bg-slate-50 active:bg-slate-100 disabled:opacity-50 disabled:pointer-events-none"
+          >
+            {t.starMapper.undo}
+          </button>
+        </div>
+      )}
 
       {/* One-line fact when correct (teaches something before next problem) */}
       {status === 'correct' && (() => {

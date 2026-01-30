@@ -784,6 +784,7 @@ export const en = {
     hint: 'Hint',
     formLabel: 'Form',
     undo: 'Undo',
+    tryAgain: 'Not quite – try again',
     linesRemaining: 'Lines remaining: {count}',
     complete: 'Excellent! 🌟',
     constellations: {
