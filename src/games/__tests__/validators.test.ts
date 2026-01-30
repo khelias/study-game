@@ -28,10 +28,11 @@ describe('Validators', () => {
       
       const problem = generator(1, rng, 'starter');
       const tolerance = problem.toleranceMs;
+      const testRng = createRng(54321);
       
       // Add slight timing variations within tolerance
       const playerBeats: Beat[] = problem.pattern.beats.map(beat => ({
-        time: beat.time + (Math.random() * tolerance * 0.5), // Within half tolerance
+        time: beat.time + (testRng() * tolerance * 0.5), // Within half tolerance
         pad: beat.pad,
       }));
       

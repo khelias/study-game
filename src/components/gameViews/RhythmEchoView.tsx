@@ -110,19 +110,34 @@ export const RhythmEchoView: React.FC<RhythmEchoViewProps> = ({
   const evaluatePerformance = (beats: Beat[]) => {
     setPhase('result');
     
-    // Calculate results for each target beat
+    // Calculate results for each target beat using same algorithm as validator
+    const usedPlayerBeats = new Set<number>();
     const beatResults: BeatResult[] = problem.pattern.beats.map(target => {
-      const match = beats.find(b => 
-        b.pad === target.pad && 
-        Math.abs(b.time - target.time) <= problem.toleranceMs
-      );
-      
-      const offsetMs = match ? match.time - target.time : 0;
+      // Find best matching player beat
+      let bestMatch = -1;
+      let bestOffset = Infinity;
+
+      beats.forEach((player, index) => {
+        if (usedPlayerBeats.has(index)) return;
+        if (player.pad !== target.pad) return;
+        
+        const offset = Math.abs(player.time - target.time);
+        if (offset <= problem.toleranceMs && offset < bestOffset) {
+          bestMatch = index;
+          bestOffset = offset;
+        }
+      });
+
+      if (bestMatch >= 0) {
+        usedPlayerBeats.add(bestMatch);
+      }
+
+      const offsetMs = bestMatch >= 0 ? beats[bestMatch].time - target.time : 0;
       
       return {
         beat: target,
-        playerTime: match?.time || null,
-        accuracy: match ? getBeatAccuracy(offsetMs, problem.toleranceMs) : 'miss',
+        playerTime: bestMatch >= 0 ? beats[bestMatch].time : null,
+        accuracy: bestMatch >= 0 ? getBeatAccuracy(offsetMs, problem.toleranceMs) : 'miss',
         offsetMs,
       };
     });
