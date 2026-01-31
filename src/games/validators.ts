@@ -186,25 +186,31 @@ export const validateShapeShift: AnswerValidator = (problem: Problem, userAnswer
       Math.abs(placed.currentPosition.y - required.correctPosition.y) <= POSITION_TOLERANCE;
 
     // Check rotation (handle symmetric shapes)
-    let rotationOk = false;
     const placedRot = ((placed.currentRotation % 360) + 360) % 360;
     const correctRot = ((required.correctRotation % 360) + 360) % 360;
     const ROTATION_TOLERANCE = 15; // ±15 degrees
 
+    // Helper to check if angles are close (modulo 360)
+    const isAngleClose = (a: number, b: number, tolerance: number) => {
+      const diff = Math.abs(a - b) % 360;
+      return diff <= tolerance || diff >= 360 - tolerance;
+    };
+
+    let rotationOk = false;
+
     if (required.type === 'circle') {
-      rotationOk = true;  // Any rotation is fine
-    } else if (required.type === 'square') {
-      // 90° symmetry with tolerance
-      const diff = Math.abs(placedRot - correctRot);
-      rotationOk = diff <= ROTATION_TOLERANCE || diff >= (90 - ROTATION_TOLERANCE);
-    } else if (required.type === 'rectangle' || required.type === 'half_square') {
-      // 180° symmetry with tolerance
-      const diff = Math.abs(placedRot - correctRot);
-      rotationOk = diff <= ROTATION_TOLERANCE || diff >= (180 - ROTATION_TOLERANCE);
+      rotationOk = true; // Rotation irrelevant
+    } else if (required.type === 'square' || required.type === 'diamond') {
+      // 90° symmetry: (placed - correct) should be multiple of 90
+      const diff = Math.abs(placedRot - correctRot) % 90;
+      rotationOk = diff <= ROTATION_TOLERANCE || diff >= 90 - ROTATION_TOLERANCE;
+    } else if (required.type === 'rectangle' || required.type === 'hexagon') {
+      // 180° symmetry
+      const diff = Math.abs(placedRot - correctRot) % 180;
+      rotationOk = diff <= ROTATION_TOLERANCE || diff >= 180 - ROTATION_TOLERANCE;
     } else {
-      // General shapes: allow ±15 degree tolerance
-      const diff = Math.abs(placedRot - correctRot);
-      rotationOk = diff <= ROTATION_TOLERANCE || diff >= (360 - ROTATION_TOLERANCE);
+      // No symmetry (triangles)
+      rotationOk = isAngleClose(placedRot, correctRot, ROTATION_TOLERANCE);
     }
 
     return positionOk && rotationOk;

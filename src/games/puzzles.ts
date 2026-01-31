@@ -1,11 +1,10 @@
 /**
  * Shape Shift Puzzle Database
  *
- * REWRITTEN V3:
- * - Content Expansion: 30+ non-repeating puzzles.
- * - Designs: Better visual representation (Boat, Car, Animals).
- * - Grid: 24x24 (Standard).
- * - Scaling: Pieces ~8 units.
+ * REWRITTEN V4:
+ * - Grid: 100x100 (Pixel Perfect).
+ * - Designs: "Premium" aesthetic, clearer shapes, logical assemblies.
+ * - Coordinates: Top-Left based. Center of grid is 50,50.
  */
 
 import type { Puzzle } from '../types/game';
@@ -20,8 +19,11 @@ export const PUZZLES: Puzzle[] = [
     difficulty: 'easy',
     gridSize: 100,
     pieces: [
-      { id: 'p1', type: 'half_square', color: 'red', correctPosition: { x: 33, y: 33 }, correctRotation: 0, size: 33 },
-      { id: 'p2', type: 'half_square', color: 'blue', correctPosition: { x: 33, y: 33 }, correctRotation: 180, size: 33 },
+      // Two right triangles forming a square (Tangram style)
+      // Top-Left Half
+      { id: 'p1', type: 'half_square', color: 'blue', correctPosition: { x: 30, y: 30 }, correctRotation: 0, size: 40 },
+      // Bottom-Right Half
+      { id: 'p2', type: 'half_square', color: 'cyan', correctPosition: { x: 30, y: 30 }, correctRotation: 180, size: 40 },
     ],
   },
   {
@@ -32,8 +34,10 @@ export const PUZZLES: Puzzle[] = [
     difficulty: 'easy',
     gridSize: 100,
     pieces: [
-      { id: 'p1', type: 'triangle', color: 'red', correctPosition: { x: 33, y: 17 }, correctRotation: 0, size: 33 },
-      { id: 'p2', type: 'square', color: 'blue', correctPosition: { x: 33, y: 50 }, correctRotation: 0, size: 33 },
+      // Roof (Overhangs slightly)
+      { id: 'roof', type: 'triangle', color: 'red', correctPosition: { x: 25, y: 15 }, correctRotation: 0, size: 50 },
+      // Body
+      { id: 'walls', type: 'square', color: 'white', correctPosition: { x: 35, y: 50 }, correctRotation: 0, size: 30 },
     ],
   },
   {
@@ -44,8 +48,10 @@ export const PUZZLES: Puzzle[] = [
     difficulty: 'easy',
     gridSize: 100,
     pieces: [
-      { id: 'p1', type: 'triangle', color: 'green', correctPosition: { x: 33, y: 8 }, correctRotation: 0, size: 33 },
-      { id: 'p2', type: 'rectangle', color: 'brown', correctPosition: { x: 33, y: 42 }, correctRotation: 90, size: 33 },
+      // Foliage
+      { id: 'top', type: 'triangle', color: 'green', correctPosition: { x: 25, y: 10 }, correctRotation: 0, size: 50 },
+      // Trunk (Rotated rectangle to be vertical)
+      { id: 'trunk', type: 'rectangle', color: 'brown', correctPosition: { x: 40, y: 50 }, correctRotation: 90, size: 20 },
     ],
   },
   {
@@ -53,20 +59,16 @@ export const PUZZLES: Puzzle[] = [
     nameEt: 'Päike',
     nameEn: 'Sun',
     category: 'objects',
-    difficulty: 'medium',
+    difficulty: 'easy',
     gridSize: 100,
     pieces: [
-      // Center circle
-      { id: 'p1', type: 'circle', color: 'yellow', correctPosition: { x: 38, y: 38 }, correctRotation: 0, size: 25 },
-      // 8 rays (triangles pointing outward)
-      { id: 'p2', type: 'triangle', color: 'orange', correctPosition: { x: 42, y: 8 }, correctRotation: 0, size: 17 },      // Top
-      { id: 'p3', type: 'triangle', color: 'orange', correctPosition: { x: 63, y: 17 }, correctRotation: 45, size: 17 },   // Top-right
-      { id: 'p4', type: 'triangle', color: 'orange', correctPosition: { x: 75, y: 42 }, correctRotation: 90, size: 17 },   // Right
-      { id: 'p5', type: 'triangle', color: 'orange', correctPosition: { x: 63, y: 67 }, correctRotation: 135, size: 17 },  // Bottom-right
-      { id: 'p6', type: 'triangle', color: 'orange', correctPosition: { x: 42, y: 75 }, correctRotation: 180, size: 17 },  // Bottom
-      { id: 'p7', type: 'triangle', color: 'orange', correctPosition: { x: 21, y: 67 }, correctRotation: 225, size: 17 },  // Bottom-left
-      { id: 'p8', type: 'triangle', color: 'orange', correctPosition: { x: 8, y: 42 }, correctRotation: 270, size: 17 },   // Left
-      { id: 'p9', type: 'triangle', color: 'orange', correctPosition: { x: 21, y: 17 }, correctRotation: 315, size: 17 },  // Top-left
+      // Center
+      { id: 'core', type: 'circle', color: 'yellow', correctPosition: { x: 35, y: 35 }, correctRotation: 0, size: 30 },
+      // Rays (Cardinals)
+      { id: 'r_top', type: 'triangle', color: 'orange', correctPosition: { x: 40, y: 10 }, correctRotation: 0, size: 20 },
+      { id: 'r_bottom', type: 'triangle', color: 'orange', correctPosition: { x: 40, y: 70 }, correctRotation: 180, size: 20 },
+      { id: 'r_left', type: 'triangle', color: 'orange', correctPosition: { x: 10, y: 40 }, correctRotation: 270, size: 20 },
+      { id: 'r_right', type: 'triangle', color: 'orange', correctPosition: { x: 70, y: 40 }, correctRotation: 90, size: 20 },
     ],
   },
   {
@@ -77,26 +79,32 @@ export const PUZZLES: Puzzle[] = [
     difficulty: 'easy',
     gridSize: 100,
     pieces: [
-      // Wrapped candy: circle body with twist ends pointing outward
-      { id: 'p1', type: 'circle', color: 'pink', correctPosition: { x: 38, y: 38 }, correctRotation: 0, size: 25 },
-      { id: 'p2', type: 'triangle', color: 'red', correctPosition: { x: 8, y: 42 }, correctRotation: 270, size: 21 },   // Left twist
-      { id: 'p3', type: 'triangle', color: 'red', correctPosition: { x: 71, y: 42 }, correctRotation: 90, size: 21 },  // Right twist
+      // Center
+      { id: 'pop', type: 'circle', color: 'pink', correctPosition: { x: 35, y: 35 }, correctRotation: 0, size: 30 },
+      // Wrapper Ends
+      { id: 'w_left', type: 'triangle', color: 'purple', correctPosition: { x: 10, y: 35 }, correctRotation: 270, size: 25 },
+      { id: 'w_right', type: 'triangle', color: 'purple', correctPosition: { x: 65, y: 35 }, correctRotation: 90, size: 25 },
     ],
   },
 
   // ============ MEDIUM (Animals & Transport) ============
   {
-    id: 'boat_improved',
+    id: 'boat_sleek',
     nameEt: 'Paat',
     nameEn: 'Boat',
     category: 'objects',
-    difficulty: 'easy',
+    difficulty: 'medium',
     gridSize: 100,
     pieces: [
-      // Simple 3-piece boat
-      { id: 'p1', type: 'triangle', color: 'white', correctPosition: { x: 42, y: 21 }, correctRotation: 0, size: 21 },     // Sail
-      { id: 'p2', type: 'rectangle', color: 'brown', correctPosition: { x: 29, y: 50 }, correctRotation: 0, size: 42 },   // Hull
-      { id: 'p3', type: 'triangle', color: 'brown', correctPosition: { x: 42, y: 71 }, correctRotation: 180, size: 21 },  // Bottom
+      // Hull (Wide rectangle at bottom)
+      // Visual: x=10..90, y=60..100
+      { id: 'hull_main', type: 'rectangle', color: 'brown', correctPosition: { x: 10, y: 40 }, correctRotation: 0, size: 80 },
+      // Mast (Vertical rectangle)
+      // Visual: x=40..60, y=20..60
+      { id: 'mast', type: 'rectangle', color: 'gray', correctPosition: { x: 30, y: 20 }, correctRotation: 90, size: 40 },
+      // Sail (Triangle pointing right, attached to mast)
+      // Visual: x=60..100, y=20..60
+      { id: 'sail_main', type: 'triangle', color: 'white', correctPosition: { x: 60, y: 20 }, correctRotation: 90, size: 40 },
     ],
   },
   {
@@ -107,35 +115,39 @@ export const PUZZLES: Puzzle[] = [
     difficulty: 'medium',
     gridSize: 100,
     pieces: [
-      // Classic fish: circle body + triangle tail
-      { id: 'p1', type: 'circle', color: 'orange', correctPosition: { x: 29, y: 38 }, correctRotation: 0, size: 25 },
-      { id: 'p2', type: 'triangle', color: 'gold', correctPosition: { x: 54, y: 42 }, correctRotation: 90, size: 21 },
+      // Body (Circle) - Center 50,50. Radius 25. x=25..75
+      { id: 'body', type: 'circle', color: 'gold', correctPosition: { x: 25, y: 25 }, correctRotation: 0, size: 50 },
+      // Tail (Triangle pointing right) - Base attached to body at x=75.
+      // Rot 90 base is at x=75 (Left of box).
+      { id: 'tail', type: 'triangle', color: 'orange', correctPosition: { x: 75, y: 35 }, correctRotation: 90, size: 30 },
     ],
   },
   {
-    id: 'cat_face_v2',
+    id: 'cat_face',
     nameEt: 'Kass',
     nameEn: 'Cat',
     category: 'animals',
     difficulty: 'medium',
     gridSize: 100,
     pieces: [
-      { id: 'p1', type: 'circle', color: 'orange', correctPosition: { x: 17, y: 33 }, correctRotation: 0, size: 67 },
-      { id: 'p2', type: 'triangle', color: 'orange', correctPosition: { x: 17, y: 17 }, correctRotation: 0, size: 25 }, // Left Ear
-      { id: 'p3', type: 'triangle', color: 'orange', correctPosition: { x: 58, y: 17 }, correctRotation: 0, size: 25 }, // Right Ear
+      { id: 'head', type: 'circle', color: 'gray', correctPosition: { x: 25, y: 25 }, correctRotation: 0, size: 50 },
+      { id: 'ear_l', type: 'triangle', color: 'gray', correctPosition: { x: 20, y: 5 }, correctRotation: 0, size: 25 },
+      { id: 'ear_r', type: 'triangle', color: 'gray', correctPosition: { x: 55, y: 5 }, correctRotation: 0, size: 25 },
     ],
   },
   {
-    id: 'rocket_med',
+    id: 'rocket',
     nameEt: 'Rakett',
     nameEn: 'Rocket',
     category: 'objects',
     difficulty: 'medium',
     gridSize: 100,
     pieces: [
-      { id: 'p1', type: 'triangle', color: 'red', correctPosition: { x: 33, y: 0 }, correctRotation: 0, size: 33 },
-      { id: 'p2', type: 'rectangle', color: 'white', correctPosition: { x: 33, y: 33 }, correctRotation: 90, size: 33 },
-      { id: 'p3', type: 'triangle', color: 'orange', correctPosition: { x: 33, y: 67 }, correctRotation: 180, size: 33 },
+      { id: 'nose', type: 'triangle', color: 'red', correctPosition: { x: 35, y: 10 }, correctRotation: 0, size: 30 },
+      { id: 'body', type: 'rectangle', color: 'white', correctPosition: { x: 35, y: 35 }, correctRotation: 90, size: 30 },
+      // Fins
+      { id: 'fin_l', type: 'triangle', color: 'red', correctPosition: { x: 20, y: 60 }, correctRotation: 0, size: 20 },
+      { id: 'fin_r', type: 'triangle', color: 'red', correctPosition: { x: 60, y: 60 }, correctRotation: 0, size: 20 },
     ],
   },
   {
@@ -146,13 +158,13 @@ export const PUZZLES: Puzzle[] = [
     difficulty: 'medium',
     gridSize: 100,
     pieces: [
-      // Body (center circle)
-      { id: 'p1', type: 'circle', color: 'black', correctPosition: { x: 42, y: 42 }, correctRotation: 0, size: 17 },
-      // Wings (symmetrical triangles pointing outward)
-      { id: 'p2', type: 'triangle', color: 'purple', correctPosition: { x: 8, y: 29 }, correctRotation: 270, size: 29 },   // Left upper
-      { id: 'p3', type: 'triangle', color: 'purple', correctPosition: { x: 63, y: 29 }, correctRotation: 90, size: 29 },   // Right upper
-      { id: 'p4', type: 'triangle', color: 'pink', correctPosition: { x: 13, y: 54 }, correctRotation: 270, size: 25 },    // Left lower
-      { id: 'p5', type: 'triangle', color: 'pink', correctPosition: { x: 63, y: 54 }, correctRotation: 90, size: 25 },     // Right lower
+      // Body
+      { id: 'body', type: 'rectangle', color: 'gray', correctPosition: { x: 45, y: 30 }, correctRotation: 90, size: 10 },
+      // Wings
+      { id: 'wing_tl', type: 'triangle', color: 'pink', correctPosition: { x: 20, y: 20 }, correctRotation: 270, size: 30 },
+      { id: 'wing_tr', type: 'triangle', color: 'pink', correctPosition: { x: 50, y: 20 }, correctRotation: 90, size: 30 },
+      { id: 'wing_bl', type: 'triangle', color: 'purple', correctPosition: { x: 25, y: 50 }, correctRotation: 270, size: 20 },
+      { id: 'wing_br', type: 'triangle', color: 'purple', correctPosition: { x: 55, y: 50 }, correctRotation: 90, size: 20 },
     ],
   },
   {
@@ -163,92 +175,81 @@ export const PUZZLES: Puzzle[] = [
     difficulty: 'medium',
     gridSize: 100,
     pieces: [
-      // Vertical sword: blade pointing up, crossguard, handle
-      { id: 'p1', type: 'rectangle', color: 'gray', correctPosition: { x: 42, y: 13 }, correctRotation: 90, size: 42 },   // Blade
-      { id: 'p2', type: 'rectangle', color: 'gold', correctPosition: { x: 25, y: 54 }, correctRotation: 0, size: 50 },    // Crossguard
-      { id: 'p3', type: 'rectangle', color: 'brown', correctPosition: { x: 42, y: 67 }, correctRotation: 90, size: 25 }, // Handle
+      // Tip (Triangle) - Visual (40,0) to (60,20)
+      { id: 'blade_tip', type: 'triangle', color: 'white', correctPosition: { x: 40, y: 0 }, correctRotation: 0, size: 20 },
+      // Blade (Rotated Rect) - Visual (40,20) to (60,60)
+      { id: 'blade', type: 'rectangle', color: 'white', correctPosition: { x: 30, y: 20 }, correctRotation: 90, size: 40 },
+      // Guard (Rect) - Visual (20,60) to (80,80)
+      { id: 'guard', type: 'rectangle', color: 'gold', correctPosition: { x: 20, y: 50 }, correctRotation: 0, size: 60 }, // Fixed size 60 fits better
+      // Hilt (Rotated Rect) - Visual (45,80) to (55,100)
+      { id: 'hilt', type: 'rectangle', color: 'brown', correctPosition: { x: 40, y: 80 }, correctRotation: 90, size: 20 },
     ],
   },
 
-  // ============ HARD (Complex Constructions) ============
+  // ============ HARD (Premium & Complex) ============
   {
-    id: 'robot',
+    id: 'crown',
+    nameEt: 'Kroon',
+    nameEn: 'Crown',
+    category: 'objects',
+    difficulty: 'hard',
+    gridSize: 100,
+    pieces: [
+      // Base
+      { id: 'base', type: 'rectangle', color: 'gold', correctPosition: { x: 20, y: 60 }, correctRotation: 0, size: 60 },
+      // Points
+      { id: 'p_left', type: 'triangle', color: 'gold', correctPosition: { x: 20, y: 30 }, correctRotation: 0, size: 30 },
+      { id: 'p_mid', type: 'diamond', color: 'red', correctPosition: { x: 35, y: 10 }, correctRotation: 0, size: 30 },
+      { id: 'p_right', type: 'triangle', color: 'gold', correctPosition: { x: 50, y: 30 }, correctRotation: 0, size: 30 },
+    ],
+  },
+  {
+    id: 'gem_cluster',
+    nameEt: 'Juveel',
+    nameEn: 'Gem',
+    category: 'objects',
+    difficulty: 'hard',
+    gridSize: 100,
+    pieces: [
+      // Center
+      { id: 'center', type: 'hexagon', color: 'cyan', correctPosition: { x: 35, y: 35 }, correctRotation: 0, size: 30 },
+      // Facets
+      { id: 'f1', type: 'triangle', color: 'blue', correctPosition: { x: 35, y: 10 }, correctRotation: 0, size: 20 },
+      { id: 'f2', type: 'triangle', color: 'blue', correctPosition: { x: 60, y: 30 }, correctRotation: 90, size: 20 },
+      { id: 'f3', type: 'triangle', color: 'blue', correctPosition: { x: 40, y: 65 }, correctRotation: 180, size: 20 },
+      { id: 'f4', type: 'triangle', color: 'blue', correctPosition: { x: 15, y: 40 }, correctRotation: 270, size: 20 },
+    ],
+  },
+  {
+    id: 'laptop',
+    nameEt: 'Sülearvuti',
+    nameEn: 'Laptop',
+    category: 'objects',
+    difficulty: 'hard',
+    gridSize: 100,
+    pieces: [
+      // Screen
+      { id: 'screen', type: 'rectangle', color: 'gray', correctPosition: { x: 25, y: 20 }, correctRotation: 0, size: 50 },
+      { id: 'display', type: 'rectangle', color: 'cyan', correctPosition: { x: 30, y: 25 }, correctRotation: 0, size: 40 },
+      // Keyboard base
+      { id: 'base', type: 'rectangle', color: 'gray', correctPosition: { x: 20, y: 60 }, correctRotation: 0, size: 60 },
+    ],
+  },
+  {
+    id: 'robot_fancy',
     nameEt: 'Robot',
     nameEn: 'Robot',
     category: 'objects',
     difficulty: 'hard',
-    gridSize: 32,
+    gridSize: 100,
     pieces: [
-      { id: 'head', type: 'square', color: 'gray', correctPosition: { x: 50, y: 17 }, correctRotation: 0, size: 33 },
-      { id: 'body', type: 'square', color: 'blue', correctPosition: { x: 33, y: 50 }, correctRotation: 0, size: 67 },
-      { id: 'armL', type: 'rectangle', color: 'gray', correctPosition: { x: 17, y: 50 }, correctRotation: 90, size: 33 },
-      { id: 'armR', type: 'rectangle', color: 'gray', correctPosition: { x: 100, y: 50 }, correctRotation: 90, size: 33 },
-      { id: 'legL', type: 'rectangle', color: 'gray', correctPosition: { x: 42, y: 117 }, correctRotation: 90, size: 17 }, // legs
-      { id: 'legR', type: 'rectangle', color: 'gray', correctPosition: { x: 75, y: 117 }, correctRotation: 90, size: 17 },
-    ],
-  },
-  {
-    id: 'castle',
-    nameEt: 'Loss',
-    nameEn: 'Castle',
-    category: 'objects',
-    difficulty: 'hard',
-    gridSize: 32,
-    pieces: [
-      { id: 'main', type: 'square', color: 'gray', correctPosition: { x: 33, y: 50 }, correctRotation: 0, size: 67 },
-      { id: 'towerL', type: 'rectangle', color: 'gray', correctPosition: { x: 17, y: 33 }, correctRotation: 90, size: 67 },
-      { id: 'towerR', type: 'rectangle', color: 'gray', correctPosition: { x: 100, y: 33 }, correctRotation: 90, size: 67 },
-      { id: 'roofL', type: 'triangle', color: 'red', correctPosition: { x: 17, y: 0 }, correctRotation: 0, size: 33 },
-      { id: 'roofR', type: 'triangle', color: 'red', correctPosition: { x: 100, y: 0 }, correctRotation: 0, size: 33 },
-      { id: 'door', type: 'rectangle', color: 'brown', correctPosition: { x: 58, y: 83 }, correctRotation: 90, size: 33 },
-    ],
-  },
-  {
-    id: 'crab',
-    nameEt: 'Krabi',
-    nameEn: 'Crab',
-    category: 'animals',
-    difficulty: 'hard',
-    gridSize: 32,
-    pieces: [
-      { id: 'body', type: 'hexagon', color: 'red', correctPosition: { x: 42, y: 42 }, correctRotation: 0, size: 50 },
-      { id: 'claw1', type: 'triangle', color: 'red', correctPosition: { x: 17, y: 17 }, correctRotation: 270, size: 25 },
-      { id: 'claw2', type: 'triangle', color: 'red', correctPosition: { x: 92, y: 17 }, correctRotation: 90, size: 25 },
-      { id: 'leg1', type: 'rectangle', color: 'red', correctPosition: { x: 8, y: 58 }, correctRotation: 0, size: 33 },
-      { id: 'leg2', type: 'rectangle', color: 'red', correctPosition: { x: 92, y: 58 }, correctRotation: 0, size: 33 },
-    ],
-  },
-  {
-    id: 'windmill',
-    nameEt: 'Tuulik',
-    nameEn: 'Windmill',
-    category: 'objects',
-    difficulty: 'hard',
-    gridSize: 32,
-    pieces: [
-      { id: 'base', type: 'triangle', color: 'white', correctPosition: { x: 42, y: 67 }, correctRotation: 0, size: 50 },
-      { id: 'hub', type: 'circle', color: 'black', correctPosition: { x: 58, y: 50 }, correctRotation: 0, size: 17 },
-      // Blades
-      { id: 'b1', type: 'rectangle', color: 'brown', correctPosition: { x: 58, y: 17 }, correctRotation: 90, size: 33 },
-      { id: 'b2', type: 'rectangle', color: 'brown', correctPosition: { x: 58, y: 67 }, correctRotation: 90, size: 33 },
-      { id: 'b3', type: 'rectangle', color: 'brown', correctPosition: { x: 25, y: 58 }, correctRotation: 0, size: 33 },
-      { id: 'b4', type: 'rectangle', color: 'brown', correctPosition: { x: 75, y: 58 }, correctRotation: 0, size: 33 },
-    ],
-  },
-  {
-    id: 'flower',
-    nameEt: 'Lill',
-    nameEn: 'Flower',
-    category: 'nature',
-    difficulty: 'hard',
-    gridSize: 32,
-    pieces: [
-      { id: 'center', type: 'circle', color: 'yellow', correctPosition: { x: 50, y: 33 }, correctRotation: 0, size: 33 },
-      { id: 'p1', type: 'circle', color: 'pink', correctPosition: { x: 50, y: 0 }, correctRotation: 0, size: 33 },
-      { id: 'p2', type: 'circle', color: 'pink', correctPosition: { x: 50, y: 67 }, correctRotation: 0, size: 33 },
-      { id: 'p3', type: 'circle', color: 'pink', correctPosition: { x: 17, y: 33 }, correctRotation: 0, size: 33 },
-      { id: 'p4', type: 'circle', color: 'pink', correctPosition: { x: 83, y: 33 }, correctRotation: 0, size: 33 },
-      { id: 'stem', type: 'rectangle', color: 'green', correctPosition: { x: 58, y: 83 }, correctRotation: 90, size: 50 },
+      { id: 'head', type: 'square', color: 'gray', correctPosition: { x: 35, y: 10 }, correctRotation: 0, size: 30 },
+      { id: 'eye', type: 'circle', color: 'cyan', correctPosition: { x: 45, y: 20 }, correctRotation: 0, size: 10 },
+      { id: 'body', type: 'square', color: 'blue', correctPosition: { x: 25, y: 40 }, correctRotation: 0, size: 50 },
+      { id: 'arm_l', type: 'rectangle', color: 'gray', correctPosition: { x: 5, y: 40 }, correctRotation: 90, size: 30 },
+      { id: 'arm_r', type: 'rectangle', color: 'gray', correctPosition: { x: 75, y: 40 }, correctRotation: 90, size: 30 },
+      { id: 'foot_l', type: 'rectangle', color: 'gray', correctPosition: { x: 25, y: 90 }, correctRotation: 0, size: 20 },
+      { id: 'foot_r', type: 'rectangle', color: 'gray', correctPosition: { x: 55, y: 90 }, correctRotation: 0, size: 20 },
     ],
   },
 ];
