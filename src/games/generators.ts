@@ -1333,8 +1333,27 @@ export const Generators: Record<string, GeneratorFunction> = {
 
     // Pick puzzle matching difficulty
     const suitablePuzzles = PUZZLES.filter(p => p.difficulty === difficulty);
-    const puzzleIndex = Math.floor(rng() * suitablePuzzles.length);
-    const puzzle = suitablePuzzles[puzzleIndex] || PUZZLES[0];
+    // Smart Shuffle: Avoid recently played puzzles
+    // @ts-ignore
+    if (!globalThis._shapeShiftHistory) globalThis._shapeShiftHistory = [];
+    // @ts-ignore
+    const history = globalThis._shapeShiftHistory as string[];
+    
+    // Filter out recent 50% of history
+    const availablePuzzles = suitablePuzzles.filter(p => !history.includes(p.id));
+    
+    let pool = availablePuzzles.length > 0 ? availablePuzzles : suitablePuzzles;
+    if (availablePuzzles.length === 0) {
+      // @ts-ignore
+      globalThis._shapeShiftHistory = history.filter(id => !suitablePuzzles.find(p => p.id === id));
+    }
+
+    const puzzleIndex = Math.floor(rng() * pool.length);
+    const puzzle = pool[puzzleIndex] || PUZZLES[0];
+    
+    // Add to history
+    history.push(puzzle.id);
+    if (history.length > 20) history.shift();
 
     // Helper to generate random rotation
     const randomRotation = (): number => {

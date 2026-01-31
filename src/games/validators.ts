@@ -127,21 +127,21 @@ export const validateRoboPath: AnswerValidator = (_problem: Problem, _userAnswer
  */
 export const validateStarMapper: AnswerValidator = (problem: Problem, userAnswer: unknown): boolean => {
   if (problem.type !== 'star_mapper') return false;
-  
+
   if (problem.mode === 'identify') {
     // For identify mode, answer is constellation ID
     return userAnswer === problem.correctAnswer;
   }
-  
+
   // For trace/build/expert modes, answer is the lines drawn
   if (!Array.isArray(userAnswer)) return false;
-  
+
   const playerLines = userAnswer as Array<{ from: string; to: string }>;
   const requiredLines = problem.constellation.lines;
-  
+
   // Check if all required connections are made (order-independent, bidirectional)
-  return requiredLines.every(required => 
-    playerLines.some(player => 
+  return requiredLines.every(required =>
+    playerLines.some(player =>
       (player.from === required.from && player.to === required.to) ||
       (player.from === required.to && player.to === required.from)
     )
@@ -155,7 +155,7 @@ export const validateStarMapper: AnswerValidator = (problem: Problem, userAnswer
  */
 export const validateShapeShift: AnswerValidator = (problem: Problem, userAnswer: unknown): boolean => {
   if (problem.type !== 'shape_shift') return false;
-  
+
   const placedPieces = userAnswer as Array<{
     id: string;
     type: string;
@@ -171,7 +171,7 @@ export const validateShapeShift: AnswerValidator = (problem: Problem, userAnswer
 
   // Count placed non-decoy pieces
   const placedNonDecoy = placedPieces.filter(p => !p.isDecoy && p.currentPosition !== null);
-  
+
   if (placedNonDecoy.length !== requiredPieces.length) return false;
 
   // Each required piece must be correctly placed
@@ -179,24 +179,32 @@ export const validateShapeShift: AnswerValidator = (problem: Problem, userAnswer
     const placed = placedPieces.find(p => p.id === required.id);
     if (!placed || !placed.currentPosition) return false;
 
-    // Check position: exact match so shapes must actually touch / form the solution
+    // Check position: Allow ±6 units tolerance on 100x100 grid for smoother UX
+    const POSITION_TOLERANCE = 6;
     const positionOk =
-      placed.currentPosition.x === required.correctPosition.x &&
-      placed.currentPosition.y === required.correctPosition.y;
+      Math.abs(placed.currentPosition.x - required.correctPosition.x) <= POSITION_TOLERANCE &&
+      Math.abs(placed.currentPosition.y - required.correctPosition.y) <= POSITION_TOLERANCE;
 
     // Check rotation (handle symmetric shapes)
     let rotationOk = false;
     const placedRot = ((placed.currentRotation % 360) + 360) % 360;
     const correctRot = ((required.correctRotation % 360) + 360) % 360;
+    const ROTATION_TOLERANCE = 15; // ±15 degrees
 
     if (required.type === 'circle') {
       rotationOk = true;  // Any rotation is fine
     } else if (required.type === 'square') {
-      rotationOk = placedRot % 90 === correctRot % 90;  // 90° symmetry
+      // 90° symmetry with tolerance
+      const diff = Math.abs(placedRot - correctRot);
+      rotationOk = diff <= ROTATION_TOLERANCE || diff >= (90 - ROTATION_TOLERANCE);
     } else if (required.type === 'rectangle' || required.type === 'half_square') {
-      rotationOk = placedRot % 180 === correctRot % 180;  // 180° symmetry
+      // 180° symmetry with tolerance
+      const diff = Math.abs(placedRot - correctRot);
+      rotationOk = diff <= ROTATION_TOLERANCE || diff >= (180 - ROTATION_TOLERANCE);
     } else {
-      rotationOk = placedRot === correctRot;
+      // General shapes: allow ±15 degree tolerance
+      const diff = Math.abs(placedRot - correctRot);
+      rotationOk = diff <= ROTATION_TOLERANCE || diff >= (360 - ROTATION_TOLERANCE);
     }
 
     return positionOk && rotationOk;
