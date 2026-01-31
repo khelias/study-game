@@ -1,14 +1,10 @@
 /**
  * ShapeShiftView – Geometric puzzle: drag shapes onto the board to match the target.
  *
- * Grid layout (single source of truth):
- * - Board is a square (aspect-ratio 1), gs×gs cells. cellPct = 100/gs.
- * - Piece at grid (x,y) with size s: left = x*cellPct%, top = y*cellPct%, width/height = s*cellPct%.
- * - Drop: snap by piece center to logical grid via boardPxToGridTopLeft (high-res gs = 16–32).
- * - Piece scale: 1 so shapes fill their cell; edges meet at cell boundaries (no gaps).
- * - Draw order: center pieces first, then outer (by distance from center) so overlapping
- *   regions show the outer piece on top (e.g. star triangles on top of center square).
- * Feedback: success/wrong use global notifications (same as other games).
+ * Full rewrite: single layout formula from src/games/shapeShiftGrid.ts.
+ * - Board and outline: gridPieceToPercent(x, y, size, gridSize) only. No scaling.
+ * - Outline uses same puzzle.correctPosition / size / correctRotation as validator.
+ * - Ghost and tray size: (boardWidthPx / gridSize) * piece.size (capped for tray).
  */
 
 import React, { useCallback, useEffect, useRef, useState } from 'react';
@@ -16,14 +12,25 @@ import { playSound } from '../../engine/audio';
 import { useTranslation } from '../../i18n/useTranslation';
 import { getLocale } from '../../i18n';
 import { validateShapeShift } from '../../games/validators';
+import {
+  boardPxToGridTopLeft,
+  gridPieceToPercent,
+  sortByDistanceFromCenter,
+} from '../../games/shapeShiftGrid';
+import { usePlaySessionStore } from '../../stores/playSessionStore';
 import type { ShapeShiftProblem, PieceState, ShapeType } from '../../types/game';
 
-interface ShapeShiftViewProps {
-  problem: ShapeShiftProblem;
-  onAnswer: (isCorrect: boolean) => void;
-  soundEnabled: boolean;
-  level?: number;
-}
+// ─── Constants ─────────────────────────────────────────────────────────────
+
+const OUTLINE_BASE_COST = 1;
+const PLACE_PIECE_BASE_COST = 2;
+const OUTLINE_DURATION_MS = 12_000;
+
+const TAP_THRESHOLD_PX = 12;
+const TAP_ON_BOARD_THRESHOLD_PX = 24;
+const BOARD_MAX_WIDTH = '48rem';
+const GHOST_FALLBACK_PX = 48;
+const TRAY_CONTENT_MAX_PX = 40;
 
 const SHAPE_PATHS: Record<ShapeType, string> = {
   triangle: 'M25,0 L50,50 L0,50 Z',
@@ -50,13 +57,16 @@ const COLOR_CLASSES: Record<string, string> = {
   gray: '#64748b',
 };
 
-const TAP_THRESHOLD_PX = 12;
-const TAP_ON_BOARD_THRESHOLD_PX = 24; // larger so tap-to-rotate on board is reliable
-const BOARD_MAX_WIDTH = '32rem'; // larger play area for finer placement
-const PIECE_SCALE = 0.5; // shapes fill 50% of cell (centered)
-const GHOST_FALLBACK_PX = 48; // used before board is measured
-/** Tray content height (tray fixed height minus vertical padding); cap piece size so they stay inside */
-const TRAY_CONTENT_MAX_PX = 72;
+// ─── Types ──────────────────────────────────────────────────────────────────
+
+interface ShapeShiftViewProps {
+  problem: ShapeShiftProblem;
+  onAnswer: (isCorrect: boolean) => void;
+  soundEnabled: boolean;
+  level?: number;
+  stars?: number;
+  spendStars?: (count: number) => boolean;
+}
 
 type DragState = {
   pieceId: string;
@@ -64,45 +74,58 @@ type DragState = {
   startY: number;
   currentX: number;
   currentY: number;
-  /** Offset from pointer to piece center at drag start; drop uses piece center for snap */
   pointerOffsetX: number;
   pointerOffsetY: number;
 };
+
+// ─── Helpers ─────────────────────────────────────────────────────────────────
 
 function hapticDrop(): void {
   if (typeof navigator !== 'undefined' && navigator.vibrate) navigator.vibrate(10);
 }
 
-/**
- * Grid model: board is a square (gs×gs cells). Piece at (x,y) size s
- * occupies (x/gs, y/gs) to ((x+s)/gs, (y+s)/gs) in normalized [0,1].
- * Snap: pixel position → cell containing piece center → top-left of piece.
- */
-function boardPxToGridTopLeft(
-  rx: number,
-  ry: number,
-  boardWidthPx: number,
-  gs: number,
-  size: number
-): { x: number; y: number } {
-  const cellSizePx = boardWidthPx / gs;
-  const centerCellX = Math.floor(rx / cellSizePx);
-  const centerCellY = Math.floor(ry / cellSizePx);
-  const gx = centerCellX - Math.floor((size - 1) / 2);
-  const gy = centerCellY - Math.floor((size - 1) / 2);
-  return {
-    x: Math.max(0, Math.min(gx, gs - size)),
-    y: Math.max(0, Math.min(gy, gs - size)),
-  };
+function PieceSvg({
+  type,
+  color,
+  rotation,
+  className = '',
+  opacity = 1,
+}: {
+  type: ShapeType;
+  color: string;
+  rotation: number;
+  className?: string;
+  opacity?: number;
+}) {
+  const viewBox = type === 'rectangle' ? '0 0 100 50' : '0 0 50 50';
+  const preserveAspectRatio = type === 'rectangle' ? 'xMidYMid meet' : 'none';
+  const fill = COLOR_CLASSES[color] ?? COLOR_CLASSES.gray;
+  const stroke = color === 'white' ? '#cbd5e1' : 'none';
+  const strokeWidth = color === 'white' ? 2 : 0;
+  return (
+    <svg
+      viewBox={viewBox}
+      className={className}
+      preserveAspectRatio={preserveAspectRatio}
+      style={{ transform: `rotate(${rotation}deg)`, opacity }}
+    >
+      <path d={SHAPE_PATHS[type]} fill={fill} stroke={stroke} strokeWidth={strokeWidth} />
+    </svg>
+  );
 }
+
+// ─── Component ──────────────────────────────────────────────────────────────
 
 export const ShapeShiftView: React.FC<ShapeShiftViewProps> = ({
   problem,
   onAnswer,
   soundEnabled,
+  stars = 0,
+  spendStars,
 }) => {
   const t = useTranslation();
   const locale = getLocale();
+  const addNotification = usePlaySessionStore(state => state.addNotification);
   const boardRef = useRef<HTMLDivElement>(null);
   const trayRef = useRef<HTMLDivElement>(null);
 
@@ -113,7 +136,9 @@ export const ShapeShiftView: React.FC<ShapeShiftViewProps> = ({
   const [drag, setDrag] = useState<DragState | null>(null);
   const [showHint, setShowHint] = useState(true);
   const [boardWidthPx, setBoardWidthPx] = useState(0);
-  const boardRectRef = useRef<DOMRect | null>(null);
+  const [showOutlineOverlay, setShowOutlineOverlay] = useState(false);
+  const [outlineUseCount, setOutlineUseCount] = useState(0);
+  const [placePieceUseCount, setPlacePieceUseCount] = useState(0);
 
   const submittedUidRef = useRef<string | null>(null);
   const completionTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -126,9 +151,17 @@ export const ShapeShiftView: React.FC<ShapeShiftViewProps> = ({
   piecesRef.current = pieces;
   statusRef.current = status;
 
-  // Reset on new problem and clear any pending completion timeout
+  const gs = problem.puzzle.gridSize;
+  const outlineCost = OUTLINE_BASE_COST + outlineUseCount;
+  const placePieceCost = PLACE_PIECE_BASE_COST + placePieceUseCount;
+
+  // ─── Effects ──────────────────────────────────────────────────────────────
+
   useEffect(() => {
     submittedUidRef.current = null;
+    setShowOutlineOverlay(false);
+    setOutlineUseCount(0);
+    setPlacePieceUseCount(0);
     if (completionTimeoutRef.current) {
       clearTimeout(completionTimeoutRef.current);
       completionTimeoutRef.current = null;
@@ -138,15 +171,18 @@ export const ShapeShiftView: React.FC<ShapeShiftViewProps> = ({
     setShowHint(true);
   }, [problem.uid, problem.pieces]);
 
-  // Dismiss hint after delay
   useEffect(() => {
     if (!showHint) return;
     const id = setTimeout(() => setShowHint(false), 4000);
     return () => clearTimeout(id);
   }, [showHint]);
 
-  // Completion: when all non-decoy pieces are placed, validate once and call onAnswer.
-  // Timeout is stored in a ref so we don't clear it when status changes (effect re-runs and would cancel the timeout).
+  useEffect(() => {
+    if (!showOutlineOverlay) return;
+    const id = setTimeout(() => setShowOutlineOverlay(false), OUTLINE_DURATION_MS);
+    return () => clearTimeout(id);
+  }, [showOutlineOverlay]);
+
   useEffect(() => {
     if (status !== 'idle') return;
     if (submittedUidRef.current === problem.uid) return;
@@ -169,11 +205,8 @@ export const ShapeShiftView: React.FC<ShapeShiftViewProps> = ({
         setPieces(problemSnapshot.pieces.map(p => ({ ...p })));
       }
     }, delay);
-    // Do NOT clear the timeout here when effect re-runs (e.g. when status changes).
-    // Clearing it would cancel onAnswer and leave the game stuck in correct/wrong.
   }, [pieces, status, problem, soundEnabled, onAnswer]);
 
-  // Clear completion timeout only when problem changes or on unmount
   useEffect(() => {
     return () => {
       if (completionTimeoutRef.current) {
@@ -183,20 +216,57 @@ export const ShapeShiftView: React.FC<ShapeShiftViewProps> = ({
     };
   }, [problem.uid]);
 
-  // Measure board rect so ghost size and drop preview position are correct
   useEffect(() => {
     const el = boardRef.current;
     if (!el) return;
-    const update = () => {
-      const rect = el.getBoundingClientRect();
-      boardRectRef.current = rect;
-      setBoardWidthPx(rect.width);
-    };
+    const update = () => setBoardWidthPx(el.getBoundingClientRect().width);
     update();
     const ro = new ResizeObserver(update);
     ro.observe(el);
     return () => ro.disconnect();
   }, []);
+
+  // ─── Callbacks ───────────────────────────────────────────────────────────
+
+  const handleOutlineHint = useCallback(() => {
+    if (!spendStars || stars < outlineCost) {
+      if (stars < outlineCost && spendStars) {
+        addNotification({ type: 'hint', message: t.shop.notEnoughStars });
+      }
+      return;
+    }
+    if (!spendStars(outlineCost)) return;
+    setOutlineUseCount(c => c + 1);
+    setShowOutlineOverlay(true);
+    playSound('tap', soundEnabled);
+  }, [spendStars, stars, outlineCost, soundEnabled, addNotification, t.shop.notEnoughStars]);
+
+  const handlePlacePieceHint = useCallback(() => {
+    const unplaced = pieces.filter(p => !p.isDecoy && p.currentPosition === null);
+    if (unplaced.length === 0) return;
+    if (!spendStars || stars < placePieceCost) {
+      if (stars < placePieceCost && spendStars) {
+        addNotification({ type: 'hint', message: t.shop.notEnoughStars });
+      }
+      return;
+    }
+    const template = problem.puzzle.pieces.find(p => p.id === unplaced[0].id);
+    if (!template) return;
+    if (!spendStars(placePieceCost)) return;
+    setPlacePieceUseCount(c => c + 1);
+    setPieces(prev =>
+      prev.map(p =>
+        p.id === template.id
+          ? {
+              ...p,
+              currentPosition: { ...template.correctPosition },
+              currentRotation: template.correctRotation,
+            }
+          : p
+      )
+    );
+    playSound('tap', soundEnabled);
+  }, [spendStars, stars, placePieceCost, pieces, problem.puzzle.pieces, soundEnabled, addNotification, t.shop.notEnoughStars]);
 
   const startDrag = useCallback(
     (pieceId: string, clientX: number, clientY: number, pointerOffsetX: number, pointerOffsetY: number) => {
@@ -253,7 +323,6 @@ export const ShapeShiftView: React.FC<ShapeShiftViewProps> = ({
     let placed = false;
     let scheduledTap = false;
 
-    // Tap-to-rotate: small movement → rotate (ignore release point)
     if (piece?.currentPosition != null && moved < TAP_ON_BOARD_THRESHOLD_PX) {
       tapHandledInPerformDropRef.current = true;
       scheduledTap = true;
@@ -281,9 +350,8 @@ export const ShapeShiftView: React.FC<ShapeShiftViewProps> = ({
       const rect = boardRef.current.getBoundingClientRect();
       const rx = dropX - rect.left;
       const ry = dropY - rect.top;
-      const gs = problem.puzzle.gridSize;
       const cellSizePx = rect.width / gs;
-      const margin = cellSizePx * 0.5; // half a logical cell
+      const margin = cellSizePx * 0.5;
       const onBoard =
         rx >= -margin && rx <= rect.width + margin &&
         ry >= -margin && ry <= rect.height + margin;
@@ -315,9 +383,8 @@ export const ShapeShiftView: React.FC<ShapeShiftViewProps> = ({
     if (!scheduledTap) {
       dragJustEndedRef.current = true;
     }
-  }, [problem.puzzle.gridSize, soundEnabled, handleTapPiece]);
+  }, [gs, soundEnabled, handleTapPiece]);
 
-  // Native document capture: start drag on any piece (tray or board)
   useEffect(() => {
     const onStart = (e: MouseEvent | PointerEvent | TouchEvent) => {
       if (statusRef.current !== 'idle') return;
@@ -338,9 +405,7 @@ export const ShapeShiftView: React.FC<ShapeShiftViewProps> = ({
       const rect = el.getBoundingClientRect();
       const centerX = rect.left + rect.width / 2;
       const centerY = rect.top + rect.height / 2;
-      const pointerOffsetX = x - centerX;
-      const pointerOffsetY = y - centerY;
-      startDrag(pieceId, x, y, pointerOffsetX, pointerOffsetY);
+      startDrag(pieceId, x, y, x - centerX, y - centerY);
     };
     document.addEventListener('mousedown', onStart, true);
     document.addEventListener('pointerdown', onStart, true);
@@ -352,7 +417,6 @@ export const ShapeShiftView: React.FC<ShapeShiftViewProps> = ({
     };
   }, [startDrag]);
 
-  // Window: move and end drag
   useEffect(() => {
     if (!drag) return;
     const onMove = (e: PointerEvent | MouseEvent | TouchEvent) => {
@@ -398,34 +462,46 @@ export const ShapeShiftView: React.FC<ShapeShiftViewProps> = ({
     };
   }, [drag?.pieceId, performDrop]);
 
+  // ─── Derived ──────────────────────────────────────────────────────────────
+
   const unplaced = pieces.filter(p => p.currentPosition === null);
   const placed = pieces.filter(p => p.currentPosition !== null);
   const draggingPiece = drag ? pieces.find(p => p.id === drag.pieceId) : null;
   const puzzleName = locale === 'et' ? problem.puzzle.nameEt : problem.puzzle.nameEn;
-  const gs = problem.puzzle.gridSize;
-  const cellPct = 100 / gs;
 
-  // Draw order: center pieces first so outer pieces (e.g. star triangles) render on top at shared edges
-  const boardCenter = (gs - 1) / 2;
-  const placedSorted = [...placed].sort((a, b) => {
-    const acx = a.currentPosition!.x + (a.size - 1) / 2;
-    const acy = a.currentPosition!.y + (a.size - 1) / 2;
-    const bcx = b.currentPosition!.x + (b.size - 1) / 2;
-    const bcy = b.currentPosition!.y + (b.size - 1) / 2;
-    const da = (acx - boardCenter) ** 2 + (acy - boardCenter) ** 2;
-    const db = (bcx - boardCenter) ** 2 + (bcy - boardCenter) ** 2;
-    return da - db;
-  });
+  const placedSorted = sortByDistanceFromCenter(
+    placed,
+    gs,
+    p => p.currentPosition!,
+    p => p.size
+  );
 
-  // Ghost size = same as placed piece on board (cell size × piece size × scale)
+  /** Outline = same data as validator: puzzle.pieces (non-decoy) correctPosition/size/rotation */
+  const outlinePieces = problem.puzzle.pieces.filter(p => !p.isDecoy);
+  const outlinePiecesSorted = sortByDistanceFromCenter(
+    outlinePieces,
+    gs,
+    p => p.correctPosition,
+    p => p.size
+  );
+
+  /** Ghost size: same formula as board cell size × piece size */
   const ghostSizePx =
     draggingPiece && boardWidthPx > 0
-      ? (boardWidthPx / gs) * draggingPiece.size * PIECE_SCALE
+      ? (boardWidthPx / gs) * draggingPiece.size
       : GHOST_FALLBACK_PX;
+
+  /** Tray piece size: same formula, capped */
+  const trayPieceSizePx = (pieceSize: number) =>
+    boardWidthPx > 0
+      ? Math.min((boardWidthPx / gs) * pieceSize, TRAY_CONTENT_MAX_PX)
+      : GHOST_FALLBACK_PX;
+
+  // ─── Render ──────────────────────────────────────────────────────────────
 
   return (
     <div className="w-full flex flex-col items-center px-2 sm:px-4 max-w-2xl mx-auto pt-2 sm:pt-4 animate-in fade-in duration-300">
-      {/* Drag ghost – follows piece center so drop lands where you see it (no offset) */}
+      {/* Drag ghost – same size as on board */}
       {draggingPiece && drag && (
         <div
           className="fixed pointer-events-none z-[100]"
@@ -437,15 +513,13 @@ export const ShapeShiftView: React.FC<ShapeShiftViewProps> = ({
             transform: 'translate(-50%, -50%)',
           }}
         >
-          <div className="w-full h-full drop-shadow-lg" style={{ transform: `rotate(${draggingPiece.currentRotation}deg)` }}>
-            <svg viewBox={draggingPiece.type === 'rectangle' ? '0 0 100 50' : '0 0 50 50'} className="w-full h-full" preserveAspectRatio={draggingPiece.type === 'rectangle' ? 'xMidYMid meet' : 'none'}>
-              <path
-                d={SHAPE_PATHS[draggingPiece.type]}
-                fill={COLOR_CLASSES[draggingPiece.color] ?? COLOR_CLASSES.gray}
-                stroke={draggingPiece.color === 'white' ? '#cbd5e1' : 'none'}
-                strokeWidth={draggingPiece.color === 'white' ? 2 : 0}
-              />
-            </svg>
+          <div className="w-full h-full drop-shadow-lg">
+            <PieceSvg
+              type={draggingPiece.type}
+              color={draggingPiece.color}
+              rotation={draggingPiece.currentRotation}
+              className="w-full h-full"
+            />
           </div>
         </div>
       )}
@@ -454,9 +528,8 @@ export const ShapeShiftView: React.FC<ShapeShiftViewProps> = ({
         <h2 className="text-lg sm:text-xl font-bold text-slate-700">{puzzleName}</h2>
       </header>
 
-      {/* Board – larger play area */}
+      {/* Board – grid fills area; layout from gridPieceToPercent only */}
       <div
-        ref={boardRef}
         className="relative bg-slate-100 rounded-2xl border-2 border-dashed border-slate-300 overflow-hidden flex-shrink-0 select-none"
         style={{
           width: `min(96vw, ${BOARD_MAX_WIDTH})`,
@@ -464,52 +537,116 @@ export const ShapeShiftView: React.FC<ShapeShiftViewProps> = ({
           touchAction: 'none',
         }}
       >
-        {placedSorted.map(piece => {
-          const pos = piece.currentPosition!;
-          const isDragging = drag?.pieceId === piece.id;
-          const leftPct = (pos.x / gs) * 100;
-          const topPct = (pos.y / gs) * 100;
-          const sizePct = (piece.size / gs) * 100;
-          return (
+        <div ref={boardRef} className="absolute inset-0 rounded-xl overflow-hidden">
+          {/* Outline overlay – same positions/sizes/rotations as validator */}
+          {showOutlineOverlay && (
             <div
-              key={piece.id}
-              data-shape-piece
-              data-piece-id={piece.id}
               role="button"
               tabIndex={0}
-              className={`absolute flex items-center justify-center cursor-grab active:cursor-grabbing touch-none transition-transform duration-200 ${
-                isDragging ? 'opacity-40 pointer-events-none' : ''
-              }`}
-              style={{
-                left: `${leftPct}%`,
-                top: `${topPct}%`,
-                width: `${sizePct}%`,
-                height: `${sizePct}%`,
-                transform: `rotate(${piece.currentRotation}deg)`,
+              className="absolute inset-0 z-20 rounded-lg cursor-pointer bg-slate-300/30 focus:outline-none focus:ring-2 focus:ring-teal-400"
+              style={{ top: 0, right: 0, bottom: 0, left: 0 }}
+              onClick={() => setShowOutlineOverlay(false)}
+              onKeyDown={e => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  setShowOutlineOverlay(false);
+                }
               }}
-              onClick={() => onPieceClick(piece.id)}
+              aria-label={t.games.shape_shift.hintOutlineUsed}
             >
-              <div className="pointer-events-none w-full h-full flex items-center justify-center">
-                <div style={{ width: `${PIECE_SCALE * 100}%`, height: `${PIECE_SCALE * 100}%` }} className="flex-shrink-0">
-                  <svg viewBox={piece.type === 'rectangle' ? '0 0 100 50' : '0 0 50 50'} className="w-full h-full" preserveAspectRatio={piece.type === 'rectangle' ? 'xMidYMid meet' : 'none'}>
-                    <path
-                      d={SHAPE_PATHS[piece.type]}
-                      fill={COLOR_CLASSES[piece.color] ?? COLOR_CLASSES.gray}
-                      stroke={piece.color === 'white' ? '#cbd5e1' : 'none'}
-                      strokeWidth={piece.color === 'white' ? 2 : 0}
-                    />
-                  </svg>
-                </div>
+              <div className="absolute inset-0 pointer-events-none">
+                {outlinePiecesSorted.map(required => {
+                  const pct = gridPieceToPercent(
+                    required.correctPosition.x,
+                    required.correctPosition.y,
+                    required.size,
+                    gs
+                  );
+                  return (
+                    <div
+                      key={required.id}
+                      className="absolute w-full h-full opacity-50"
+                      style={{
+                        left: `${pct.left}%`,
+                        top: `${pct.top}%`,
+                        width: `${pct.width}%`,
+                        height: `${pct.height}%`,
+                        transform: `rotate(${required.correctRotation}deg)`,
+                      }}
+                    >
+                      <PieceSvg
+                        type={required.type as ShapeType}
+                        color={required.color}
+                        rotation={required.correctRotation}
+                        className="w-full h-full"
+                      />
+                    </div>
+                  );
+                })}
               </div>
             </div>
-          );
-        })}
+          )}
 
+          {/* Placed pieces – same layout formula */}
+          {placedSorted.map(piece => {
+            const pos = piece.currentPosition!;
+            const pct = gridPieceToPercent(pos.x, pos.y, piece.size, gs);
+            const isDragging = drag?.pieceId === piece.id;
+            return (
+              <div
+                key={piece.id}
+                data-shape-piece
+                data-piece-id={piece.id}
+                role="button"
+                tabIndex={0}
+                className={`absolute cursor-grab active:cursor-grabbing touch-none transition-transform duration-200 ${
+                  isDragging ? 'opacity-40 pointer-events-none' : ''
+                }`}
+                style={{
+                  left: `${pct.left}%`,
+                  top: `${pct.top}%`,
+                  width: `${pct.width}%`,
+                  height: `${pct.height}%`,
+                  transform: `rotate(${piece.currentRotation}deg)`,
+                }}
+                onClick={() => onPieceClick(piece.id)}
+              >
+                <PieceSvg
+                  type={piece.type}
+                  color={piece.color}
+                  rotation={piece.currentRotation}
+                  className="w-full h-full pointer-events-none"
+                />
+              </div>
+            );
+          })}
+        </div>
       </div>
 
       <p className="mt-3 mb-2 text-xs sm:text-sm text-slate-500 text-center" role="status">
         {t.games.shape_shift.instructions[problem.mode]}
       </p>
+
+      {typeof spendStars === 'function' && (
+        <div className="flex flex-wrap justify-center gap-2 mb-2">
+          <button
+            type="button"
+            onClick={handleOutlineHint}
+            disabled={stars < outlineCost}
+            className="px-3 py-1.5 rounded-lg text-xs font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed bg-amber-100 text-amber-800 border border-amber-300 hover:enabled:bg-amber-200"
+          >
+            {t.games.shape_shift.hintOutlineCost.replace('{cost}', String(outlineCost))}
+          </button>
+          <button
+            type="button"
+            onClick={handlePlacePieceHint}
+            disabled={stars < placePieceCost || unplaced.length === 0}
+            className="px-3 py-1.5 rounded-lg text-xs font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed bg-amber-100 text-amber-800 border border-amber-300 hover:enabled:bg-amber-200"
+          >
+            {t.games.shape_shift.hintPlacePieceCost.replace('{cost}', String(placePieceCost))}
+          </button>
+        </div>
+      )}
 
       {showHint && unplaced.length > 0 && (
         <p className="mb-2 text-xs sm:text-sm text-teal-600 font-medium text-center" role="status">
@@ -517,16 +654,13 @@ export const ShapeShiftView: React.FC<ShapeShiftViewProps> = ({
         </p>
       )}
 
-      {/* Tray – fixed-size drop zone; pieces capped so they stay inside */}
+      {/* Tray – piece size from same formula, capped */}
       <div
         ref={trayRef}
-        className="flex flex-wrap justify-center items-center gap-2 w-[min(96vw,32rem)] h-24 py-2 px-3 rounded-xl border-2 border-dashed border-slate-200 bg-slate-50/80 flex-shrink-0 overflow-hidden"
+        className="flex flex-wrap justify-center items-center gap-2 w-[min(96vw,48rem)] h-24 py-2 px-3 rounded-xl border-2 border-dashed border-slate-200 bg-slate-50/80 flex-shrink-0 overflow-hidden"
       >
         {unplaced.map(piece => {
           const isDragging = drag?.pieceId === piece.id;
-          const rawSize =
-            boardWidthPx > 0 ? (boardWidthPx / gs) * piece.size * PIECE_SCALE : GHOST_FALLBACK_PX;
-          const trayPieceSizePx = Math.min(rawSize, TRAY_CONTENT_MAX_PX);
           return (
             <div
               key={piece.id}
@@ -534,29 +668,22 @@ export const ShapeShiftView: React.FC<ShapeShiftViewProps> = ({
               data-piece-id={piece.id}
               role="button"
               tabIndex={0}
-              className={`relative cursor-grab active:cursor-grabbing rounded-lg border-2 border-slate-200 bg-white p-1 touch-none flex items-center justify-center flex-shrink-0 ${
+              className={`relative cursor-grab active:cursor-grabbing rounded-lg border border-slate-200 bg-slate-50/60 p-0.5 touch-none flex items-center justify-center flex-shrink-0 ${
                 isDragging ? 'opacity-40 pointer-events-none' : ''
               }`}
               style={{
                 touchAction: 'none',
-                width: trayPieceSizePx,
-                height: trayPieceSizePx,
+                width: trayPieceSizePx(piece.size),
+                height: trayPieceSizePx(piece.size),
               }}
               onClick={() => onPieceClick(piece.id)}
             >
-              <svg
-                viewBox={piece.type === 'rectangle' ? '0 0 100 50' : '0 0 50 50'}
+              <PieceSvg
+                type={piece.type}
+                color={piece.color}
+                rotation={piece.currentRotation}
                 className="w-full h-full pointer-events-none"
-                preserveAspectRatio={piece.type === 'rectangle' ? 'xMidYMid meet' : 'none'}
-                style={{ transform: `rotate(${piece.currentRotation}deg)` }}
-              >
-                <path
-                  d={SHAPE_PATHS[piece.type]}
-                  fill={COLOR_CLASSES[piece.color] ?? COLOR_CLASSES.gray}
-                  stroke={piece.color === 'white' ? '#cbd5e1' : 'none'}
-                  strokeWidth={piece.color === 'white' ? 2 : 0}
-                />
-              </svg>
+              />
             </div>
           );
         })}

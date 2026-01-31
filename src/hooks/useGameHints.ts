@@ -64,6 +64,8 @@ export function useGameHints(
           return buildUnitConversionQuestion(t, problem.value, problem.fromUnit, problem.toUnit);
         }
         return '';
+      case 'shape_shift':
+        return t.games.shape_shift.hintText;
       default:
         return t.gameScreen.hints.default;
     }

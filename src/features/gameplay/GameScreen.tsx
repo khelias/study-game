@@ -52,6 +52,7 @@ export const GameScreen: React.FC = () => {
   const gameType = usePlaySessionStore(state => state.gameType);
   const problem = usePlaySessionStore(state => state.problem);
   const stars = useGameStore(state => state.stars); // Persistent currency (for display in menu)
+  const spendStars = useGameStore(state => state.spendStars); // For shape_shift star hints
   const hearts = useGameStore(state => state.hearts); // Persistent global resource
   const score = usePlaySessionStore(state => state.score);
   const levelProgress = usePlaySessionStore(state => state.levelProgress);
@@ -392,6 +393,8 @@ export const GameScreen: React.FC = () => {
               onMove={isMathSnake ? handleMathSnakeMove : undefined}
               soundEnabled={soundEnabled}
               level={currentLevel}
+              stars={gameType === 'shape_shift' ? stars : undefined}
+              spendStars={gameType === 'shape_shift' ? spendStars : undefined}
             />
 
             {showHint && <HintButton onHint={handleHint} soundEnabled={soundEnabled} disabled={false} />}

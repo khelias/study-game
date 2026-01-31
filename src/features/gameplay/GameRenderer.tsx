@@ -13,6 +13,9 @@ interface GameRendererProps {
   onMove?: (direction: Direction) => void;
   soundEnabled: boolean;
   level?: number;
+  /** Passed to Shape Shift for star-based hints (outline / place one piece) */
+  stars?: number;
+  spendStars?: (count: number) => boolean;
 }
 
 export const GameRenderer: React.FC<GameRendererProps> = ({ 
@@ -21,7 +24,9 @@ export const GameRenderer: React.FC<GameRendererProps> = ({
   onAnswer, 
   onMove, 
   soundEnabled, 
-  level 
+  level,
+  stars,
+  spendStars,
 }) => {
   const t = useTranslation();
   
@@ -49,6 +54,8 @@ export const GameRenderer: React.FC<GameRendererProps> = ({
       soundEnabled={soundEnabled}
       level={level}
       gameType={gameType}
+      stars={stars}
+      spendStars={spendStars}
     />
   );
 };

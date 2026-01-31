@@ -149,7 +149,9 @@ export const validateStarMapper: AnswerValidator = (problem: Problem, userAnswer
 };
 
 /**
- * Validator for shape shift games
+ * Validator for shape shift games.
+ * Requires exact position (x, y) and rotation (with symmetry for circle, square, etc.).
+ * Coordinate model: see src/games/shapeShiftGrid.ts.
  */
 export const validateShapeShift: AnswerValidator = (problem: Problem, userAnswer: unknown): boolean => {
   if (problem.type !== 'shape_shift') return false;
@@ -177,10 +179,10 @@ export const validateShapeShift: AnswerValidator = (problem: Problem, userAnswer
     const placed = placedPieces.find(p => p.id === required.id);
     if (!placed || !placed.currentPosition) return false;
 
-    // Check position (tolerance 1 so small misdrops still count as correct)
+    // Check position: exact match so shapes must actually touch / form the solution
     const positionOk =
-      Math.abs(placed.currentPosition.x - required.correctPosition.x) <= 1 &&
-      Math.abs(placed.currentPosition.y - required.correctPosition.y) <= 1;
+      placed.currentPosition.x === required.correctPosition.x &&
+      placed.currentPosition.y === required.correctPosition.y;
 
     // Check rotation (handle symmetric shapes)
     let rotationOk = false;
