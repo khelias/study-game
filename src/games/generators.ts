@@ -1455,7 +1455,7 @@ export const Generators: Record<string, GeneratorFunction> = {
     }
     
     const correctIndex = Math.floor(rng() * 4);
-    const shuffledOptions = shuffleOptionsWithCorrect(options, correctAnswer, correctIndex);
+    const shuffledOptions = shuffleOptionsWithCorrect(options, correctAnswer, correctIndex, rng);
     
     return {
       type: 'battlelearn',
@@ -1529,7 +1529,7 @@ export const Generators: Record<string, GeneratorFunction> = {
     }
     
     const correctIndex = Math.floor(rng() * 4);
-    const shuffledOptions = shuffleOptionsWithCorrect(options, correctAnswer, correctIndex);
+    const shuffledOptions = shuffleOptionsWithCorrect(options, correctAnswer, correctIndex, rng);
     
     return {
       type: 'battlelearn',
@@ -1601,12 +1601,12 @@ function generateCoordinateOptions(correct: string, gridSize: number, rng: RngFu
 /**
  * Shuffle options and place correct answer at specified index
  */
-function shuffleOptionsWithCorrect(options: string[], correct: number | string, correctIndex: number): string[] {
+function shuffleOptionsWithCorrect(options: string[], correct: number | string, correctIndex: number, rng: RngFunction): string[] {
   const shuffled = [...options];
   
   // Shuffle all options first
   for (let i = shuffled.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
+    const j = Math.floor(rng() * (i + 1));
     [shuffled[i], shuffled[j]] = [shuffled[j]!, shuffled[i]!];
   }
   
