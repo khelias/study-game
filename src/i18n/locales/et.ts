@@ -775,6 +775,14 @@ export const et = {
       title: 'TÄHEKUJUNDID',
       desc: 'Õpi tundma tähtkujusid',
     },
+    battlelearn: {
+      title: 'LAEVADE UPUTAMINE',
+      desc: 'Uputa laevad ja õpi matemaatikat',
+    },
+    battlelearn_adv: {
+      title: 'LAEVADE UPUTAMINE PRO',
+      desc: 'Kasuta koordinaate ja loogikat laevastiku uputamiseks',
+    },
   },
 
   // Difficulty levels
