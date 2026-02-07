@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { validateStarMapper } from '../validators';
+import { validateStarMapper, validateBattleLearn } from '../validators';
 import type { StarMapperProblem } from '../../types/game';
 
 describe('validateStarMapper', () => {
@@ -188,5 +188,87 @@ describe('validateStarMapper', () => {
 
       expect(validateStarMapper(wrongProblem, [])).toBe(false);
     });
+  });
+});
+
+describe('validateBattleLearn', () => {
+  it('should return true for correct answer index', () => {
+    const problem = {
+      type: 'battlelearn' as const,
+      uid: 'test-1',
+      gridSize: 5,
+      ships: [],
+      revealed: [],
+      hits: [],
+      sunkShips: [],
+      shotAvailable: false,
+      question: {
+        prompt: 'What is 2 + 3?',
+        options: ['4', '5', '6', '7'],
+        correctIndex: 1,
+      },
+      gameWon: false,
+    };
+    
+    expect(validateBattleLearn(problem, 1)).toBe(true);
+  });
+  
+  it('should return false for incorrect answer index', () => {
+    const problem = {
+      type: 'battlelearn' as const,
+      uid: 'test-2',
+      gridSize: 5,
+      ships: [],
+      revealed: [],
+      hits: [],
+      sunkShips: [],
+      shotAvailable: false,
+      question: {
+        prompt: 'What is 2 + 3?',
+        options: ['4', '5', '6', '7'],
+        correctIndex: 1,
+      },
+      gameWon: false,
+    };
+    
+    expect(validateBattleLearn(problem, 0)).toBe(false);
+    expect(validateBattleLearn(problem, 2)).toBe(false);
+    expect(validateBattleLearn(problem, 3)).toBe(false);
+  });
+  
+  it('should return false for non-number answer', () => {
+    const problem = {
+      type: 'battlelearn' as const,
+      uid: 'test-3',
+      gridSize: 5,
+      ships: [],
+      revealed: [],
+      hits: [],
+      sunkShips: [],
+      shotAvailable: false,
+      question: {
+        prompt: 'What is 2 + 3?',
+        options: ['4', '5', '6', '7'],
+        correctIndex: 1,
+      },
+      gameWon: false,
+    };
+    
+    expect(validateBattleLearn(problem, '1')).toBe(false);
+    expect(validateBattleLearn(problem, null)).toBe(false);
+    expect(validateBattleLearn(problem, undefined)).toBe(false);
+    expect(validateBattleLearn(problem, {})).toBe(false);
+  });
+  
+  it('should return false for wrong problem type', () => {
+    const problem = {
+      type: 'word_builder' as const,
+      uid: 'test-4',
+      target: 'test',
+      emoji: '🎯',
+      shuffled: [],
+    };
+    
+    expect(validateBattleLearn(problem, 1)).toBe(false);
   });
 });
