@@ -539,6 +539,12 @@ export const en = {
         'Count or compare the sizes!',
         'Think which one is bigger!',
       ],
+      shape_shift: [
+        'Drag shapes to match the image',
+        'Tap a shape to rotate it 90°',
+        'Try different combinations!',
+        'Think how shapes fit together',
+      ],
     },
   },
 

@@ -238,14 +238,6 @@ export const ShapeShiftView: React.FC<ShapeShiftViewProps> = ({
   return (
     <div className="w-full flex flex-col items-center px-4 max-w-3xl mx-auto pt-4 animate-in fade-in duration-300 select-none">
 
-      {/* Header */}
-      <header className="mb-4 text-center flex flex-col items-center">
-        <h2 className="text-xl sm:text-2xl font-bold text-slate-700">{puzzleName}</h2>
-        <p className="text-sm text-slate-500 flex items-center gap-1">
-          <RotateCw size={14} /> {t.games.shape_shift.tapToRotate}
-        </p>
-      </header>
-
       {/* Game Board */}
       <div
         className="relative mb-6 rounded-2xl shadow-xl bg-slate-50 overflow-hidden border-4 border-slate-200"
@@ -349,28 +341,38 @@ export const ShapeShiftView: React.FC<ShapeShiftViewProps> = ({
         </div>
       )}
 
-
-      {/* Controls & Hints */}
+      {/* Hint Buttons (custom for shape_shift, styled like TipButton/HintButton) */}
       {typeof spendStars === 'function' && status !== 'correct' && (
-        <div className="flex gap-4 mb-6">
+        <div className="fixed bottom-4 right-4 flex flex-col gap-3" style={{ zIndex: 40 }}>
           <button
             onClick={handleOutlineHint}
             disabled={stars < OUTLINE_BASE_COST}
-            className="flex items-center gap-2 px-4 py-2 bg-amber-100 text-amber-900 rounded-full border border-amber-300 font-bold text-sm hover:bg-amber-200 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            className="relative p-4 rounded-full shadow-lg transition-all bg-yellow-400 hover:bg-yellow-500 text-yellow-900 hover:scale-110 active:scale-95 disabled:bg-slate-200 disabled:text-slate-400 disabled:cursor-not-allowed"
+            title={t.games.shape_shift.hintOutlineCost.replace('{cost}', String(OUTLINE_BASE_COST))}
+            aria-label={t.games.shape_shift.hintOutlineCost.replace('{cost}', String(OUTLINE_BASE_COST))}
           >
-            <span>👁️</span> {t.games.shape_shift.hintOutlineCost.replace('{cost}', String(OUTLINE_BASE_COST))}
+            <span className="text-2xl leading-none">👁️</span>
+            {/* Cost badge */}
+            <span className="absolute -top-1 -right-1 bg-amber-600 text-white text-xs font-bold rounded-full px-1.5 py-0.5 shadow-md">
+              {OUTLINE_BASE_COST}⭐
+            </span>
           </button>
 
           <button
             onClick={handlePlacePieceHint}
             disabled={stars < PLACE_PIECE_BASE_COST || trayPieces.length === 0}
-            className="flex items-center gap-2 px-4 py-2 bg-amber-100 text-amber-900 rounded-full border border-amber-300 font-bold text-sm hover:bg-amber-200 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            className="relative p-4 rounded-full shadow-lg transition-all bg-yellow-400 hover:bg-yellow-500 text-yellow-900 hover:scale-110 active:scale-95 disabled:bg-slate-200 disabled:text-slate-400 disabled:cursor-not-allowed"
+            title={t.games.shape_shift.hintPlacePieceCost.replace('{cost}', String(PLACE_PIECE_BASE_COST))}
+            aria-label={t.games.shape_shift.hintPlacePieceCost.replace('{cost}', String(PLACE_PIECE_BASE_COST))}
           >
-            <span>🧩</span> {t.games.shape_shift.hintPlacePieceCost.replace('{cost}', String(PLACE_PIECE_BASE_COST))}
+            <span className="text-2xl leading-none">🧩</span>
+            {/* Cost badge */}
+            <span className="absolute -top-1 -right-1 bg-amber-600 text-white text-xs font-bold rounded-full px-1.5 py-0.5 shadow-md">
+              {PLACE_PIECE_BASE_COST}⭐
+            </span>
           </button>
         </div>
       )}
-
 
       {/* Tray */}
       <div

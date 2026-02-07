@@ -464,7 +464,9 @@ export const GameScreen: React.FC = () => {
               spendStars={gameType === 'shape_shift' ? spendStars : undefined}
             />
 
-            {showHint && <HintButton onHint={handleHint} soundEnabled={soundEnabled} disabled={false} />}
+            {showHint && gameType !== 'shape_shift' && gameType !== 'shape_shift_adv' && (
+              <HintButton onHint={handleHint} soundEnabled={soundEnabled} disabled={false} />
+            )}
 
             <TipButton onTip={handleTipReplay} soundEnabled={soundEnabled} disabled={!canReopenTip} />
           </div>

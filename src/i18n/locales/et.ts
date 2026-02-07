@@ -539,6 +539,12 @@ export const et = {
         'Loe või võrdle suurusi!',
         'Mõtle, kumb on suurem!',
       ],
+      shape_shift: [
+        'Lohista kujundid vastavusse pildiga',
+        'Puuduta kujundit, et seda pöörata 90°',
+        'Proovi erinevaid kombinatsioone!',
+        'Mõtle, kuidas kujundid kokku sobivad',
+      ],
     },
   },
 
