@@ -58,7 +58,7 @@ export const SYLLABLE_WORDS: Record<'et' | 'en', SyllableWord[]> = {
     { syllables: ['KA', 'EL', 'KIR', 'JAK'], emoji: '🦒' },
     { syllables: ['LU', 'ME', 'SA', 'DU'], emoji: '❄️' },
     { syllables: ['VIH', 'MA', 'VA', 'RI'], emoji: '☂️' },
-    { syllables: ['MO', 'TOOR', 'RA', 'TAS'], emoji: '🏍️' },
+    { syllables: ['MO', 'TOR', 'RA', 'TAS'], emoji: '🏍️' },
     { syllables: ['VA', 'NA', 'E', 'MA'], emoji: '👵' },
     { syllables: ['VA', 'NA', 'I', 'SA'], emoji: '👴' },
   ],

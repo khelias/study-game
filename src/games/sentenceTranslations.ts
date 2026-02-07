@@ -40,7 +40,7 @@ const OBJECT_TRANSLATIONS: Record<string, { en: string }> = {
   'KELK': { en: 'Sled' },
   'KREVETT': { en: 'Shrimp' },
   'KRABI': { en: 'Crab' },
-  'KALLA': { en: 'Shell' },
+  'MERIKARP': { en: 'Shell' },
   'ÕUN': { en: 'Apple' },
   'LEIB': { en: 'Bread' },
   'KÜPSIS': { en: 'Cookie' },

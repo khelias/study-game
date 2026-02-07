@@ -361,14 +361,14 @@ export const SCENE_DB: Record<string, Scene> = {
     bg: 'bg-gradient-to-b from-cyan-200 to-blue-300',
     name: 'Beach',
     subjects: [
-      {n:'LAPS', e:'🧒'}, {n:'PALL', e:'⚽'}, {n:'KARP', e:'🐚'}, {n:'ÕHUPALL', e:'🎈'},
+      {n:'LAPS', e:'🧒'}, {n:'PALL', e:'⚽'}, {n:'MERIKARP', e:'🐚'}, {n:'ÕHUPALL', e:'🎈'},
       {n:'KREVETT', e:'🦐'}, {n:'KRABI', e:'🦀'}
     ],
     anchors: [
       {n:'RAND', adess:'RANNAL', iness:'RANNAS', genitive:'RANNA', e:'🏖️'}, 
       {n:'MERI', adess:'MEREL', iness:'MERES', genitive:'MERE', e:'🌊'}, 
       {n:'KIVI', adess:'KIVIL', iness:'KIVIS', genitive:'KIVI', e:'🪨'},
-      {n:'PÄIKESEVARI', adess:'PÄIKESEVARJU', iness:'PÄIKESEVARJU', genitive:'PÄIKESEVARJU', e:'⛱️'}
+      {n:'PÄIKESEVARI', adess:'PÄIKESEVARJUL', iness:'PÄIKESEVARJUS', genitive:'PÄIKESEVARJU', e:'⛱️'}
     ],
     positions: ['ON', 'UNDER', 'NEXT_TO', 'IN_FRONT', 'INSIDE']
   },

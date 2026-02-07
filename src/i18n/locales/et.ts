@@ -295,7 +295,7 @@ export const et = {
       },
       robo_master: {
         title: 'Robomeister',
-        desc: 'Jõua ROBOTEE tasemele 5',
+        desc: 'Jõua ROBO-RADA tasemele 5',
       },
       letter_detective: {
         title: 'Tähe detektiiv',
@@ -905,18 +905,18 @@ export const et = {
     titleAdv: 'LAEVADE UPUTAMINE',
     desc: 'Uputa laevad ja õpi matemaatikat',
     descAdv: 'Kasuta koordinaate ja loogikat laevastiku uputamiseks',
-    instructions: 'Tulista lahtrit! Kui mööda, pead vastama.',
-    shotReady: 'Jätka tulistamist!',
-    clickToShoot: 'Klõpsa lahtrile tulistamiseks!',
-    answerToEarnShot: 'Vasta, et jätkata',
+    instructions: 'Tulista lahtri poole! Kui läksid mööda, vasta küsimusele.',
+    shotReady: 'Võid tulistada!',
+    clickToShoot: 'Klõpsa lahtrile, et tulistada',
+    answerToEarnShot: 'Vasta õigesti, et jätkata tulistamist',
     answerToContinue: 'Vasta küsimusele, et jätkata tulistamist:',
     shipsRemaining: 'Laevu alles',
     hit: '💥 Tabamus!',
-    miss: '💦 Mööda! Vasta, et jätkata.',
+    miss: '💦 Mööda! Vasta küsimusele.',
     shipSunk: '🎯 Laev uppus!',
     victory: 'Võit!',
     allShipsSunk: 'Kõik laevad uppusid!',
-    alreadyShot: 'Sinna on juba lastud!',
+    alreadyShot: 'Sinna oled juba lasknud!',
     coordinateQuestion: 'Koordinaadi küsimus',
     navigationQuestion: 'Navigatsiooni ülesanne',
     fleetMath: 'Laevastiku matemaatika',
@@ -927,47 +927,47 @@ export const et = {
       // Arithmetic questions
       simpleAddition: '{a} laeva + {b} laeva = ?',
       simpleSubtraction: '{a} laeva - {b} laeva = ?',
-      ammunition: '{total} torpeedo - {fired} tulistatud = ?',
+      ammunition: 'Oli {total} torpeedot, tulistatud on {fired}. Kui palju on alles?',
       missingNumber: '{a} + ? = {result}',
       missingNumberSub: '{a} - ? = {result}',
       // Comparison questions
       greaterThan: 'Kumb on suurem: {a} või {b}?',
       lessThan: 'Kumb on väiksem: {a} või {b}?',
       // Coordinate questions
-      navigate: 'Positsioon {start}, liigu {moves} paremale',
-      navigateLeft: 'Positsioon {start}, liigu {moves} vasakule',
-      navigateUp: 'Positsioon {start}, liigu {moves} üles',
-      navigateDown: 'Positsioon {start}, liigu {moves} alla',
+      navigate: 'Alguspositsioon {start}. Liigu {moves} sammu paremale. Uus koordinaat?',
+      navigateLeft: 'Alguspositsioon {start}. Liigu {moves} sammu vasakule. Uus koordinaat?',
+      navigateUp: 'Alguspositsioon {start}. Liigu {moves} sammu üles. Uus koordinaat?',
+      navigateDown: 'Alguspositsioon {start}. Liigu {moves} sammu alla. Uus koordinaat?',
       // Pattern questions
       patternNext: 'Signaali muster: {pattern}, __',
       sequenceNext: 'Järgmine arv: {sequence}, __',
       // Word problems
-      wordProblem1: 'Kapten nägi {a} laeva hommikul ja {b} laeva õhtul. Kokku?',
-      wordProblem2: 'Laeval oli {total} meremiest. {left} lahkus. Mitu jäi?',
-      wordProblem3: 'Igal laeval on {perShip} kahureid. {ships} laeval kokku?',
+      wordProblem1: 'Kapten nägi hommikul {a} laeva ja õhtul {b} laeva. Kokku mitu laeva?',
+      wordProblem2: 'Laeval oli {total} meremeest. Seejärel lahkus {left} meremeest. Mitu jäi laevale?',
+      wordProblem3: 'Igal laeval on {perShip} kahurit. Kui laevu on {ships}, siis kokku mitu kahurit?',
       // Time-based
-      timeProblem: 'Reis algas kell {start}:00 ja kestis {duration} tundi. Millal lõppes?',
+      timeProblem: 'Reis algas kell {start}:00 ja kestis {duration} tundi. Millal reis lõppes? (anna vastuseks tunninumber)',
       // Money counting
-      coinProblem: 'Sul on {count} münti väärtusega {value}€. Kokku?',
+      coinProblem: 'Sul on {count} münti, igaüks {value}€ väärt. Kui palju raha kokku?',
       // Multi-step
-      twoStep: '{a} laeva saabus ja {b} lahkus. Algselt oli {initial}. Nüüd?',
+      twoStep: 'Sadamasse saabus {a} laeva ja lahkus {b} laeva. Algselt oli seal {initial} laeva. Mitu laeva on nüüd sadamas?',
       // Logic puzzles
-      logicPuzzle: 'Kui {a} > {b} ja {b} > {c}, siis {a} ? {c}',
+      logicPuzzle: 'Kui {a} > {b} ja {b} > {c}, siis {a} ? {c} (vali: >, < või =)',
       // Area/perimeter
-      areaProblem: 'Laev on {width} × {height} ruutu. Pindala?',
-      perimeterProblem: 'Dokk on {width} × {height} ruutu. Ümbermõõt?',
+      areaProblem: 'Laeva võrk on {width} × {height} ruutu suur. Kui suur on pindala (ruutühikutes)?',
+      perimeterProblem: 'Doki võrk on {width} × {height} ruutu. Kui pikk on ümbermõõt (ühikutes)?',
       // Direction sequences
       directionSequence: 'Liigu {dir1}, siis {dir2}. Mis suunas?',
       // Advanced coordinate
-      multiMove: 'Alusta {start}, liigu {right} paremale, {up} üles. Uus koordinaat?',
+      multiMove: 'Alguspunkt on {start}. Liigu {right} sammu paremale ja {up} sammu üles. Mis on uus koordinaat?',
       // Vector addition
-      vectorAdd: 'Laev liigub {right1} paremale ja {up1} üles, siis {right2} paremale ja {up2} üles. Kokku mitu sammu?',
+      vectorAdd: 'Laev liigub {right1} sammu paremale ja {up1} sammu üles, siis {right2} sammu paremale ja {up2} sammu üles. Kokku mitu sammu?',
       // Distance
-      distance: 'Laev {coord1}, sihtmärk {coord2}. Kaugus?',
+      distance: 'Laev asub {coord1}, sihtmärk on {coord2}. Mitu ühikut kaugusel?',
       // Multiplication
-      fleetMultiply: '{ships} hävitajat × {cannons} kahureid = ?',
+      fleetMultiply: 'Ühel hävitajal on {cannons} kahurit. Hävitajaid on {ships}. Kokku mitu kahurit?',
       // Formation problems
-      formationCount: 'Laevad reas: {row1}, {row2}, {row3}. Kokku?',
+      formationCount: 'Esimeses reas {row1} laeva, teises reas {row2} laeva, kolmandas reas {row3} laeva. Kokku mitu laeva?',
       // Strategic positioning
       strategicPos: 'Parim koht ründamiseks vahemikus {x1}-{x2}, {y1}-{y2}. Keskpunkt?',
     },
