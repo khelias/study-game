@@ -26,6 +26,10 @@ interface GameProblemModalProps {
   variant?: 'default' | 'compact';
   icon?: React.ReactNode;
   onClose?: () => void; // Optional close handler (for dismissible modals)
+  /** Indices of options to show as eliminated (e.g. paid hint "remove one wrong") */
+  eliminatedIndices?: number[];
+  /** Optional footer content (e.g. paid hint buttons) */
+  children?: React.ReactNode;
 }
 
 export const GameProblemModal: React.FC<GameProblemModalProps> = ({
@@ -40,6 +44,8 @@ export const GameProblemModal: React.FC<GameProblemModalProps> = ({
   variant = 'default',
   icon,
   onClose,
+  eliminatedIndices = [],
+  children,
 }) => {
   const modalRef = useRef<HTMLDivElement>(null);
   const firstOptionRef = useRef<HTMLButtonElement>(null);
@@ -122,7 +128,23 @@ export const GameProblemModal: React.FC<GameProblemModalProps> = ({
 
         {/* Options Grid */}
         <div className={`grid ${options.length === 2 ? 'grid-cols-2' : 'grid-cols-2'} gap-3 ${isCompact ? 'gap-2' : 'gap-3'}`}>
-          {options.map((option, index) => {
+          {(() => {
+            const firstInteractiveIndex = options.findIndex((_, i) => !eliminatedIndices.includes(i));
+            return options.map((option, index) => {
+            const isEliminated = eliminatedIndices.includes(index);
+            if (isEliminated) {
+              return (
+                <div
+                  key={index}
+                  className={`
+                    ${isCompact ? 'px-4 py-3 text-base' : 'px-6 py-4 text-lg sm:text-xl'}
+                    rounded-xl border-2 border-dashed border-slate-200 bg-slate-100/50
+                    min-h-[3rem] sm:min-h-[3.5rem]
+                  `}
+                  aria-hidden
+                />
+              );
+            }
             const isSelected = selectedOption === index;
             const isCorrect = index === correctIndex;
             const showResult = isSelected && selectedOption !== null;
@@ -130,7 +152,7 @@ export const GameProblemModal: React.FC<GameProblemModalProps> = ({
             return (
               <button
                 key={index}
-                ref={index === 0 ? firstOptionRef : null}
+                ref={index === firstInteractiveIndex ? firstOptionRef : null}
                 onClick={() => onOptionSelect(index)}
                 disabled={disabled || selectedOption !== null}
                 className={`
@@ -150,8 +172,11 @@ export const GameProblemModal: React.FC<GameProblemModalProps> = ({
                 {option}
               </button>
             );
-          })}
+          });
+          })()}
         </div>
+
+        {children && <div className="mt-4 flex justify-center">{children}</div>}
       </div>
     </div>
   );

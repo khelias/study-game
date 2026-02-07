@@ -429,12 +429,16 @@ export const et = {
     wordCascade: {
       tapLetters: 'Puuduta tähti, et sõna kokku panna',
       tryAgain: 'Proovi uuesti!',
+      wrongLetter: 'Vale täht',
+      triesLeft: '{count} katset jäänud',
+      outOfTries: 'Katsed otsas',
       greatJob: 'Tubli töö!',
       tutorial: 'Puuduta langevaid tähti, et sõna kokku panna. Punasele barjäärile jõudnud tähed annavad veamärke!',
       starPickup: 'Tähtede boonus',
       heartPickup: 'Südame boonus',
       shieldPickup: 'Veamärgi kaitse',
       pickupHint: 'Puuduta tähti, südameid ja kilpe, et saada boonuseid!',
+      tapGlowingLetter: 'Puuduta all olevat helendavat tähte!',
     },
     pattern: {
       tagline: 'Mustri-rong',
@@ -565,6 +569,11 @@ export const et = {
         'Järgi kuju ja loo tähtkuju',
         'Kasuta "Tagasi" nuppu, kui teed vea',
         'Proovi järjest tähtedest joont tõmmata',
+      ],
+      word_cascade: [
+        'Puuduta langevaid tähti, et sõna kokku panna. Punasele barjäärile jõudnud tähed annavad veamärke!',
+        'Puuduta tähti järjekorras, et sõna kirjutada. Otsi järgmiseks vajalikku tähte!',
+        'Puuduta tähti, südameid ja kilpe boonuste saamiseks! Tähed annavad ⭐, südamed annavad ❤️, kilbid eemaldavad veamärgi.',
       ],
     },
   },
@@ -700,6 +709,7 @@ export const et = {
     word_cascade: {
       title: 'SÕNAKOSK',
       desc: 'Püüa tähti ja lao sõnu kiiresti',
+      hintRevealNextCost: 'Näita järgmist tähte ({cost}⭐)',
     },
     syllable_builder: {
       title: 'SILBIMEISTER',
@@ -741,6 +751,7 @@ export const et = {
     math_snake: {
       title: 'NUMBRIMADU',
       desc: 'Sööda madu tehetega',
+      hintEliminateCost: 'Eemalda üks vale ({cost}⭐)',
     },
     compare_sizes: {
       title: 'ARVUDE VÕRDLEMINE',

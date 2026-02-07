@@ -33,6 +33,7 @@ const OBJECT_TRANSLATIONS: Record<string, { en: string }> = {
   'ROBOT': { en: 'Robot' },
   'PUSLE': { en: 'Puzzle' },
   'RAAMAT': { en: 'Book' },
+  'RAAMATUD': { en: 'Books' },
   'LAPS': { en: 'Child' },
   'RATAS': { en: 'Bicycle' },
   'ÕHUPALL': { en: 'Balloon' },

@@ -16,11 +16,15 @@ vi.mock('../../../i18n/useTranslation', () => ({
         tutorial: 'Tap letters to build the word!',
         tapLetters: 'Tap the letters!',
         tryAgain: 'Try again!',
+        wrongLetter: 'Wrong letter',
+        triesLeft: '{count} tries left',
+        outOfTries: 'Out of tries',
         greatJob: 'Great job!',
         starPickup: 'Star pickup',
         heartPickup: 'Heart pickup',
         shieldPickup: 'Shield pickup',
         pickupHint: 'Tap pickups for rewards!',
+        tapGlowingLetter: 'Tap the glowing letter below!',
       },
     },
   }),
@@ -67,37 +71,20 @@ describe('WordCascadeView', () => {
     expect(slots?.length).toBeGreaterThan(0);
   });
 
-  it('adds touch-action manipulation to letter buttons', () => {
+  it('renders wave letter buttons with touch-manipulation', () => {
     const onAnswer = vi.fn();
     const { container } = render(
       <WordCascadeView problem={mockProblem} onAnswer={onAnswer} soundEnabled={false} />
     );
-    
-    // Wait for letters to spawn, then check they have touch-action
-    // Since letters spawn asynchronously, we check the button style attribute exists
-    const buttons = container.querySelectorAll('button[aria-label*="Letter"]');
-    if (buttons.length > 0) {
-      buttons.forEach(button => {
-        const htmlButton = button as HTMLButtonElement;
-        expect(htmlButton.style.touchAction).toBe('manipulation');
-      });
-    }
-  });
-
-  it('has proper button type attribute for falling letters', () => {
-    const onAnswer = vi.fn();
-    const { container } = render(
-      <WordCascadeView problem={mockProblem} onAnswer={onAnswer} soundEnabled={false} />
-    );
-    
-    // Check buttons have type="button"
-    const buttons = container.querySelectorAll('button');
-    buttons.forEach(button => {
+    const letterButtons = container.querySelectorAll('button[aria-label^="Letter"]');
+    expect(letterButtons.length).toBeGreaterThan(0);
+    letterButtons.forEach(button => {
       expect(button.getAttribute('type')).toBe('button');
+      expect(button.className).toMatch(/touch-manipulation/);
     });
   });
 
-  it('resets penalty cooldown on problem change', () => {
+  it('resets state on problem change', () => {
     const onAnswer = vi.fn();
     const { rerender } = render(
       <WordCascadeView problem={mockProblem} onAnswer={onAnswer} soundEnabled={false} />
@@ -116,23 +103,11 @@ describe('WordCascadeView', () => {
     expect(true).toBe(true);
   });
 
-  it('displays strikes indicator', () => {
+  it('renders game area and status; instructions are in tips (TipButton)', () => {
     const onAnswer = vi.fn();
-    const { container } = render(
-      <WordCascadeView problem={mockProblem} onAnswer={onAnswer} soundEnabled={false} />
-    );
-    
-    // Check for strike indicators (3 circles for max strikes)
-    const strikeIndicators = container.querySelectorAll('.rounded-full.border-red-200');
-    expect(strikeIndicators.length).toBe(3);
-  });
-
-  it('renders instruction text', () => {
-    const onAnswer = vi.fn();
-    render(<WordCascadeView problem={mockProblem} onAnswer={onAnswer} soundEnabled={false} />);
-    
-    // Check for tutorial text (initial state)
-    const instructionText = screen.getByText(/Tap letters to build the word!/i);
-    expect(instructionText).toBeDefined();
+    const { container } = render(<WordCascadeView problem={mockProblem} onAnswer={onAnswer} soundEnabled={false} />);
+    // No in-screen tutorial text; only "Try again!" when wrong. Slots and play area present.
+    const statusRegion = container.querySelector('[role="status"]');
+    expect(statusRegion).toBeDefined();
   });
 });

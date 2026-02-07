@@ -57,6 +57,8 @@ export function useGameTips(
         return [...t.gameScreen.tips.shape_shift];
       case 'star_mapper':
         return [...t.gameScreen.tips.star_mapper];
+      case 'word_cascade':
+        return [...t.gameScreen.tips.word_cascade];
       default:
         return [];
     }

@@ -96,31 +96,83 @@ const spawnApple = (
   };
 };
 
+type EquationKind =
+  | 'add_result'      // a + b = ?
+  | 'add_missing'     // a + ? = c  or  ? + b = c
+  | 'sub_result'      // a - b = ?
+  | 'sub_missing_minuend'   // ? - b = c
+  | 'sub_missing_subtrahend' // a - ? = c
+  | 'mul_result'      // a × b = ?
+  | 'mul_missing';    // a × ? = c
+
 const generateEquation = (level: number, rng: RngFunction, harder: boolean) => {
   const baseMax = level <= 2 ? 10 : level <= 4 ? 15 : level <= 6 ? 20 : level <= 10 ? 30 : 50;
   const maxValue = Math.min(100, baseMax + (harder ? 15 : 0));
-  
-  // Introduce multiplication at level 5+
-  const useMultiplication = level >= 5 && rng() > 0.6;
-  const useSubtraction = level >= 4 && rng() > 0.5;
 
-  if (useMultiplication) {
-    // Multiplication: keep numbers reasonable
-    const a = randomInt(2, level <= 8 ? 5 : 10, rng);
-    const b = randomInt(2, level <= 8 ? 5 : 10, rng);
-    return { equation: `${a} × ${b}`, answer: a * b, maxValue };
+  const pool: EquationKind[] = ['add_result'];
+  if (level >= 2) pool.push('add_missing');
+  if (level >= 4) {
+    pool.push('sub_result', 'sub_missing_minuend');
   }
+  if (level >= 5) pool.push('sub_missing_subtrahend', 'mul_result');
+  if (level >= 6) pool.push('mul_missing');
 
-  if (useSubtraction) {
-    const a = randomInt(4, maxValue, rng);
-    const b = randomInt(1, Math.max(1, a - 1), rng);
-    return { equation: `${a} - ${b}`, answer: a - b, maxValue };
+  const kind = pool[randomInt(0, pool.length - 1, rng)]!;
+
+  switch (kind) {
+    case 'add_result': {
+      const sum = randomInt(4, maxValue, rng);
+      const a = randomInt(1, sum - 1, rng);
+      const b = sum - a;
+      return { equation: `${a} + ${b}`, answer: a + b, maxValue };
+    }
+    case 'add_missing': {
+      const c = randomInt(4, maxValue, rng);
+      const a = randomInt(1, c - 1, rng);
+      const answer = c - a;
+      if (rng() > 0.5) {
+        return { equation: `${a} + ? = ${c}`, answer, maxValue };
+      }
+      const b = randomInt(1, c - 1, rng);
+      return { equation: `? + ${b} = ${c}`, answer: c - b, maxValue };
+    }
+    case 'sub_result': {
+      const a = randomInt(4, maxValue, rng);
+      const b = randomInt(1, Math.max(1, a - 1), rng);
+      return { equation: `${a} - ${b}`, answer: a - b, maxValue };
+    }
+    case 'sub_missing_minuend': {
+      const b = randomInt(1, Math.min(15, maxValue - 1), rng);
+      const c = randomInt(0, Math.min(20, maxValue - b), rng);
+      const answer = b + c;
+      return { equation: `? - ${b} = ${c}`, answer, maxValue };
+    }
+    case 'sub_missing_subtrahend': {
+      const a = randomInt(5, maxValue, rng);
+      const c = randomInt(0, Math.max(0, a - 1), rng);
+      const answer = a - c;
+      return { equation: `${a} - ? = ${c}`, answer, maxValue };
+    }
+    case 'mul_result': {
+      const maxFactor = level <= 8 ? 5 : 10;
+      const a = randomInt(2, maxFactor, rng);
+      const b = randomInt(2, maxFactor, rng);
+      return { equation: `${a} × ${b}`, answer: a * b, maxValue };
+    }
+    case 'mul_missing': {
+      const a = randomInt(2, level <= 8 ? 5 : 10, rng);
+      const b = randomInt(2, level <= 8 ? 5 : 10, rng);
+      const c = a * b;
+      return { equation: `${a} × ? = ${c}`, answer: b, maxValue };
+    }
+    default:
+      return (() => {
+        const sum = randomInt(4, maxValue, rng);
+        const a = randomInt(1, sum - 1, rng);
+        const b = sum - a;
+        return { equation: `${a} + ${b}`, answer: a + b, maxValue };
+      })();
   }
-
-  const sum = randomInt(4, maxValue, rng);
-  const a = randomInt(1, sum - 1, rng);
-  const b = sum - a;
-  return { equation: `${a} + ${b}`, answer: a + b, maxValue };
 };
 
 const buildOptions = (answer: number, count: number, level: number, rng: RngFunction, maxValue: number) => {
@@ -148,7 +200,7 @@ const createMathChallenge = (level: number, rng: RngFunction, profile: ProfileTy
   const meta = profileMeta(profile);
   const harder = meta.difficultyOffset > 0;
   const { equation, answer, maxValue } = generateEquation(level, rng, harder);
-  const optionCount = level <= 5 ? 3 : 4; // 4 options for higher levels
+  const optionCount = 4; // Always 4 options for consistent layout
   const options = buildOptions(answer, optionCount, level, rng, maxValue);
   return { equation, answer, options };
 };

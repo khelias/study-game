@@ -49,13 +49,13 @@ export const CATEGORIES: Record<string, Category> = {
 export const GAME_CONFIG: Record<string, GameConfig> = {
   // 5+ games - simpler, visual (7 games - added letter_match)
   word_builder:    { id: 'word_builder', title: 'WORD MASTER', theme: THEME.orange!, icon: 'FileText', desc: 'Build a word from letters', allowedProfiles: ['starter', 'advanced'], difficulty: 'easy', category: 'language' },
-  word_cascade:    { id: 'word_cascade', title: 'WORD CASCADE', theme: THEME.pink!, icon: 'Layers', desc: 'Catch letters and build words fast', allowedProfiles: ['starter', 'advanced'], difficulty: 'medium', category: 'language' },
+  word_cascade:    { id: 'word_cascade', title: 'WORD CASCADE', theme: THEME.pink!, icon: 'Layers', desc: 'Catch letters and build words fast', allowedProfiles: ['starter', 'advanced'], difficulty: 'medium', category: 'language', paidHints: [{ id: 'reveal_next', icon: '🔤', cost: 1, labelKey: 'games.word_cascade.hintRevealNextCost' }] },
   syllable_builder:{ id: 'syllable_builder', title: 'SYLLABLE MASTER', theme: THEME.orange!, icon: 'Layers', desc: 'Put syllables together into a word', allowedProfiles: ['starter'], difficulty: 'easy', category: 'language' },
   pattern:         { id: 'pattern', title: 'PATTERN TRAIN', theme: THEME.teal!, icon: 'TrainFront', desc: 'Continue the pattern', allowedProfiles: ['starter', 'advanced'], difficulty: 'easy', category: 'logic', paidHints: [{ id: 'eliminate', icon: '❌', cost: 1, labelKey: 'games.pattern.hintEliminateCost' }] },
   sentence_logic:  { id: 'sentence_logic', title: 'SENTENCE DETECTIVE', theme: THEME.green!, icon: 'BookOpen', desc: 'Where is the object?', allowedProfiles: ['starter', 'advanced'], difficulty: 'medium', category: 'language' },
   memory_math:     { id: 'memory_math', title: 'MATH MEMORY', theme: THEME.green!, icon: 'Brain', desc: 'Find the equation and answer', allowedProfiles: ['starter', 'advanced'], difficulty: 'medium', category: 'math' },
   robo_path:       { id: 'robo_path', title: 'ROBO PATH', theme: THEME.indigo!, icon: 'Bot', desc: 'Program the robot', allowedProfiles: ['starter', 'advanced'], difficulty: 'medium', category: 'logic' },
-  math_snake:      { id: 'math_snake', title: 'NUMBER SNAKE', theme: THEME.purple!, icon: 'Gamepad2', desc: 'Move and collect apples', allowedProfiles: ['starter', 'advanced'], difficulty: 'medium', category: 'math' },
+  math_snake:      { id: 'math_snake', title: 'NUMBER SNAKE', theme: THEME.purple!, icon: 'Gamepad2', desc: 'Move and collect apples', allowedProfiles: ['starter', 'advanced'], difficulty: 'medium', category: 'math', paidHints: [{ id: 'eliminate', icon: '❌', cost: 1, labelKey: 'games.math_snake.hintEliminateCost' }] },
   letter_match:    { id: 'letter_match', title: 'LETTER DETECTIVE', theme: THEME.pink!, icon: 'Search', desc: 'Find the correct letter', allowedProfiles: ['starter', 'advanced'], difficulty: 'easy', category: 'language' },
   unit_conversion: { id: 'unit_conversion', title: 'UNITS', theme: THEME.blue!, icon: 'Ruler', desc: 'Convert units', allowedProfiles: ['starter', 'advanced'], difficulty: 'medium', category: 'math' },
   compare_sizes:   { id: 'compare_sizes', title: 'NUMBER COMPARE', theme: THEME.indigo!, icon: 'Hash', desc: 'Compare numbers', allowedProfiles: ['starter', 'advanced'], difficulty: 'easy', category: 'math' },
@@ -187,7 +187,7 @@ const BASE_WORDS: WordObject[] = [
   // home (added)
   { w: 'AKEN', e: '🪟' }, { w: 'PALK', e: '🪵' }, { w: 'PIRN', e: '💡' }, { w: 'SEIN', e: '🧱' },
   { w: 'PANN', e: '🍳' }, { w: 'VANN', e: '🛁' },
-  { w: 'RIIUL', e: '📚' }, { w: 'TELEVIISOR', e: '📺' },
+  { w: 'RIIUL', e: '🗄️' }, { w: 'TELEVIISOR', e: '📺' },
   
   // transportation (added)
   { w: 'MOPEED', e: '🛵' }, { w: 'MOTORRATAS', e: '🏍️' }, { w: 'VEOK', e: '🚚' },
@@ -319,7 +319,7 @@ export const SCENE_DB: Record<string, Scene> = {
       {n:'DIIVAN', adess:'DIIVANIL', iness:'DIIVANIS', genitive:'DIIVANI', e:'🛋️'}, 
       {n:'KAPP', adess:'KAPIL', iness:'KAPIS', genitive:'KAPI', e:'📦'}, 
       {n:'AKEN', adess:'AKNAL', iness:'AKNAS', genitive:'AKNA', e:'🪟'}, 
-      {n:'RIIUL', adess:'RIIULIL', iness:'RIIULIS', genitive:'RIIULI', e:'📚'}
+      {n:'RIIUL', adess:'RIIULIL', iness:'RIIULIS', genitive:'RIIULI', e:'🗄️'}
     ], 
     positions: ['INSIDE', 'ON', 'UNDER', 'NEXT_TO', 'IN_FRONT', 'BEHIND'] 
   },
@@ -336,7 +336,7 @@ export const SCENE_DB: Record<string, Scene> = {
       {n:'TABEL', adess:'TABELIL', iness:'TABELIS', genitive:'TABELI', e:'📋'}, 
       {n:'KAPP', adess:'KAPIL', iness:'KAPIS', genitive:'KAPI', e:'📦'},
       {n:'TOOL', adess:'TOOLIL', iness:'TOOLIS', genitive:'TOOLI', e:'🪑'}, 
-      {n:'RIIUL', adess:'RIIULIL', iness:'RIIULIS', genitive:'RIIULI', e:'📚'}
+      {n:'RIIUL', adess:'RIIULIL', iness:'RIIULIS', genitive:'RIIULI', e:'🗄️'}
     ],
     positions: ['ON', 'UNDER', 'NEXT_TO', 'IN_FRONT', 'BEHIND', 'INSIDE']
   },
@@ -384,7 +384,7 @@ export const SCENE_DB: Record<string, Scene> = {
       {n:'PLIIT', adess:'PLIIDIL', iness:'PLIIDIS', genitive:'PLIIDI', e:'🍳'}, 
       {n:'KAPP', adess:'KAPIL', iness:'KAPIS', genitive:'KAPI', e:'📦'}, 
       {n:'KÜLMIK', adess:'KÜLMIKUL', iness:'KÜLMIKUS', genitive:'KÜLMIKU', e:'❄️'},
-      {n:'RIIUL', adess:'RIIULIL', iness:'RIIULIS', genitive:'RIIULI', e:'📚'}, 
+      {n:'RIIUL', adess:'RIIULIL', iness:'RIIULIS', genitive:'RIIULI', e:'🗄️'}, 
       {n:'KARP', adess:'KARBIL', iness:'KARBIS', genitive:'KARBI', e:'📦'}
     ],
     positions: ['ON', 'UNDER', 'NEXT_TO', 'IN_FRONT', 'BEHIND', 'INSIDE']

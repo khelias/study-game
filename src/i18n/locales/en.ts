@@ -429,12 +429,16 @@ export const en = {
     wordCascade: {
       tapLetters: 'Tap letters to build the word',
       tryAgain: 'Try again!',
+      wrongLetter: 'Wrong letter',
+      triesLeft: '{count} tries left',
+      outOfTries: 'Out of tries',
       greatJob: 'Great job!',
       tutorial: 'Tap the falling letters to build the word. Letters that hit the red barrier add strikes!',
       starPickup: 'Star pickup',
       heartPickup: 'Heart pickup',
       shieldPickup: 'Shield pickup',
       pickupHint: 'Tap stars, hearts and shields to get bonuses!',
+      tapGlowingLetter: 'Tap the glowing letter below!',
     },
     pattern: {
       tagline: 'Pattern Train',
@@ -565,6 +569,11 @@ export const en = {
         'Follow the shape and create the constellation',
         'Use "Undo" button if you make a mistake',
         'Try connecting stars in sequence',
+      ],
+      word_cascade: [
+        'Tap the falling letters to build the word. Letters that hit the red barrier add strikes!',
+        'Tap letters in order to spell the word. Watch for the letter you need next!',
+        'Tap stars, hearts and shields to get bonuses! Stars give ⭐, hearts give ❤️, shields remove a strike.',
       ],
     },
   },
@@ -700,6 +709,7 @@ export const en = {
     word_cascade: {
       title: 'WORD CASCADE',
       desc: 'Catch letters and build words fast',
+      hintRevealNextCost: 'Reveal next letter ({cost}⭐)',
     },
     syllable_builder: {
       title: 'SYLLABLE MASTER',
@@ -741,6 +751,7 @@ export const en = {
     math_snake: {
       title: 'NUMBER SNAKE',
       desc: 'Feed the snake with equations',
+      hintEliminateCost: 'Remove one wrong ({cost}⭐)',
     },
     compare_sizes: {
       title: 'NUMBER COMPARE',

@@ -17,20 +17,28 @@ interface MathSnakeViewProps {
   spendStars?: (count: number) => boolean;
 }
 
-export const MathSnakeView: React.FC<MathSnakeViewProps> = ({ problem, onAnswer, onMove, soundEnabled, level = 1, gameType, stars = 0 }) => {
+export const MathSnakeView: React.FC<MathSnakeViewProps> = ({ problem, onAnswer, onMove, soundEnabled, level = 1, gameType, stars = 0, spendStars }) => {
   const t = useTranslation();
   const baseType = gameType?.replace('_adv', '') ?? 'math_snake';
   const paidHints = GAME_CONFIG[baseType]?.paidHints ?? [];
   const [status, setStatus] = useState<'idle' | 'correct' | 'wrong'>('idle');
   const [justAte, setJustAte] = useState(false);
   const [selectedOption, setSelectedOption] = useState<number | null>(null);
+  const [eliminatedOptions, setEliminatedOptions] = useState<number[]>([]);
+  const eliminatedRef = useRef<number[]>([]);
   const prevSnakeLengthRef = useRef(problem.snake.length);
-  
-  // Reset status when problem changes
+
+  useEffect(() => {
+    eliminatedRef.current = eliminatedOptions;
+  }, [eliminatedOptions]);
+
+  // Reset status and eliminated options when problem or math challenge changes
   React.useEffect(() => {
     setStatus('idle');
     setSelectedOption(null);
-  }, [problem.uid]);
+    setEliminatedOptions([]);
+    eliminatedRef.current = [];
+  }, [problem.uid, problem.math]);
 
   // Detect when snake eats and trigger animation
   useEffect(() => {
@@ -75,6 +83,25 @@ export const MathSnakeView: React.FC<MathSnakeViewProps> = ({ problem, onAnswer,
       setSelectedOption(null);
     }, 800);
   }, [onAnswer, problem.math, soundEnabled, status]);
+
+  const handlePaidHint = useCallback(
+    (hintId: string) => {
+      if (hintId !== 'eliminate' || !spendStars || !problem.math) return;
+      const correctIndex = problem.math.options.indexOf(problem.math.answer);
+      const wrongIndices = problem.math.options
+        .map((_, idx) => (idx !== correctIndex ? idx : -1))
+        .filter((i) => i >= 0 && !eliminatedRef.current.includes(i));
+      if (wrongIndices.length === 0) return;
+      if (!spendStars(1)) return;
+      const pick = wrongIndices[Math.floor(Math.random() * wrongIndices.length)] as number;
+      setEliminatedOptions((prev) => {
+        const next = [...prev, pick];
+        eliminatedRef.current = next;
+        return next;
+      });
+    },
+    [problem.math, spendStars]
+  );
 
   useEffect(() => {
     const handleKeyPress = (event: KeyboardEvent): void => {
@@ -420,14 +447,24 @@ export const MathSnakeView: React.FC<MathSnakeViewProps> = ({ problem, onAnswer,
         <GameProblemModal
           isOpen={true}
           title={t.gameScreen.mathSnake.nextMathLabel}
-          prompt={`${problem.math.equation} = ?`}
+          prompt={problem.math.equation.includes('=') ? problem.math.equation : `${problem.math.equation} = ?`}
           options={modalOptions}
           correctIndex={correctIndex}
           selectedOption={selectedIndex}
           onOptionSelect={(idx) => handleAnswerClick(problem.math!.options[idx]!)}
           disabled={status !== 'idle'}
           icon="🧮"
-        />
+          eliminatedIndices={eliminatedOptions}
+        >
+          {paidHints.length > 0 && (
+            <PaidHintButtons
+              hints={paidHints}
+              stars={stars}
+              onHintClick={handlePaidHint}
+              disabled={status !== 'idle'}
+            />
+          )}
+        </GameProblemModal>
       )}
 
       {/* Game Board - Scales with viewport */}
@@ -467,9 +504,6 @@ export const MathSnakeView: React.FC<MathSnakeViewProps> = ({ problem, onAnswer,
           compact
         />
       </div>
-      {paidHints.length > 0 && (
-        <PaidHintButtons hints={paidHints} stars={stars} onHintClick={() => {}} />
-      )}
     </div>
   );
 };
