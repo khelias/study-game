@@ -58,9 +58,9 @@ describe('Progression Engine (Phase 3)', () => {
       expect(getGameBaseStarReward('time_match')).toBe(3);
     });
 
-    it('should handle _adv suffix', () => {
-      expect(getGameBaseStarReward('math_snake_adv')).toBe(2);
-      expect(getGameBaseStarReward('balance_scale_adv')).toBe(3);
+    it('should handle game types for star reward', () => {
+      expect(getGameBaseStarReward('math_snake')).toBe(2);
+      expect(getGameBaseStarReward('balance_scale')).toBe(3);
     });
   });
 

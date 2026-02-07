@@ -862,82 +862,63 @@ describe('Generators', () => {
     });
   });
 
-  describe('battlelearn_adv', () => {
-    it('should generate valid battlelearn_adv problem', () => {
+  describe('battlelearn with advanced profile', () => {
+    it('should generate valid battlelearn problem for advanced profile', () => {
+      const generator = Generators.battlelearn;
+      if (!generator) throw new Error('battlelearn generator not found');
       const rng = createRng(12345);
-      const generator = Generators.battlelearn_adv;
-      if (!generator) throw new Error('battlelearn_adv generator not found');
       const problem = generator(1, rng, 'advanced');
-      
       expect(problem.type).toBe('battlelearn');
-      expect(problem.gridSize).toBeGreaterThanOrEqual(5); // Advanced: Level 1-2 = 5x5, Level 3+ = 6x6+
+      expect(problem.gridSize).toBeGreaterThanOrEqual(5);
       expect(problem.ships).toBeInstanceOf(Array);
       expect(problem.ships.length).toBeGreaterThan(0);
       expect(problem.question).toBeDefined();
       expect(problem.question.options).toHaveLength(4);
     });
 
-    it('should have larger grid than starter version', () => {
+    it('should have larger grid for advanced than starter at same level', () => {
+      const generator = Generators.battlelearn;
+      if (!generator) throw new Error('battlelearn generator not found');
       const rng1 = createRng(12345);
       const rng2 = createRng(12345);
-      const starterGen = Generators.battlelearn;
-      const advancedGen = Generators.battlelearn_adv;
-      if (!starterGen || !advancedGen) throw new Error('generators not found');
-      
-      const starterProblem = starterGen(1, rng1, 'starter');
-      const advancedProblem = advancedGen(1, rng2, 'advanced');
-      
+      const starterProblem = generator(1, rng1, 'starter');
+      const advancedProblem = generator(1, rng2, 'advanced');
       expect(advancedProblem.gridSize).toBeGreaterThan(starterProblem.gridSize);
     });
 
-    it('should generate coordinate or arithmetic questions', () => {
-      const generator = Generators.battlelearn_adv;
-      if (!generator) throw new Error('battlelearn_adv generator not found');
-      
-      // Test multiple seeds to check question variety
+    it('should generate coordinate or arithmetic questions for advanced', () => {
+      const generator = Generators.battlelearn;
+      if (!generator) throw new Error('battlelearn generator not found');
       const questions = new Set<string>();
       for (let seed = 0; seed < 20; seed++) {
         const rng = createRng(seed);
         const problem = generator(5, rng, 'advanced');
         questions.add(problem.question.prompt);
       }
-      
-      // Should have variety in questions
       expect(questions.size).toBeGreaterThan(1);
     });
 
-    it('should increase complexity with level', () => {
+    it('should increase complexity with level for advanced', () => {
+      const generator = Generators.battlelearn;
+      if (!generator) throw new Error('battlelearn generator not found');
       const rng1 = createRng(12345);
       const rng2 = createRng(54321);
-      const generator = Generators.battlelearn_adv;
-      if (!generator) throw new Error('battlelearn_adv generator not found');
-      
       const problem1 = generator(1, rng1, 'advanced');
       const problem10 = generator(10, rng2, 'advanced');
-      
-      // Higher level should have larger grid
       expect(problem10.gridSize).toBeGreaterThanOrEqual(problem1.gridSize);
-      
-      // Higher level should have more ships
       expect(problem10.ships.length).toBeGreaterThanOrEqual(problem1.ships.length);
     });
 
-    it('should have significant question variety (no bilingual strings)', () => {
-      const generator = Generators.battlelearn_adv;
-      if (!generator) throw new Error('battlelearn_adv generator not found');
-      
-      // Test for variety across many problems
+    it('should have significant question variety for advanced (no bilingual strings)', () => {
+      const generator = Generators.battlelearn;
+      if (!generator) throw new Error('battlelearn generator not found');
       const questions = new Set<string>();
       for (let seed = 0; seed < 50; seed++) {
         const rng = createRng(seed);
         const problem = generator(5, rng, 'advanced');
         questions.add(problem.question.prompt);
       }
-      
-      // Should have at least 5 different question types
       expect(questions.size).toBeGreaterThanOrEqual(5);
-      
-      // Check that no question contains bilingual format (no " / ")
       for (const question of questions) {
         expect(question).not.toContain(' / ');
       }

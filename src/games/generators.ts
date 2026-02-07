@@ -1300,7 +1300,11 @@ export const Generators: Record<string, GeneratorFunction> = {
         : 'expert';
 
     const pool = getConstellationsForLevel(difficulty);
-    const constellation = getRandom(pool, rng);
+    const picked = getRandom(pool, rng);
+    const constellation = picked ?? pool[0];
+    if (!constellation) {
+      throw new Error('Star Mapper: no constellations available for difficulty ' + difficulty);
+    }
 
     // Generate distractor stars for expert mode
     const distractorStars: Star[] = mode === 'expert' 
@@ -1421,24 +1425,84 @@ export const Generators: Record<string, GeneratorFunction> = {
     };
   },
 
-  battlelearn: (level: number, rng: RngFunction = Math.random, _profile: ProfileType = 'starter'): BattleLearnProblem => {
-    // Starter profile: gradual progression from very simple to moderate
-    // Level 1: 4x4, 1 small ship - easiest start
-    // Level 2-3: 4x4, 2 small ships
-    // Level 4-6: 5x5, 2 ships
-    // Level 7+: 6x6, 3 ships
-    const gridSize = level === 1 ? 4 : level <= 3 ? 4 : level <= 6 ? 5 : 6;
-    const shipLengths = level === 1 ? [2] : level <= 3 ? [2, 2] : level <= 6 ? [3, 2] : [3, 2, 2];
-    
-    // Place ships on grid
+  battlelearn: (level: number, rng: RngFunction = Math.random, profile: ProfileType = 'starter'): BattleLearnProblem => {
+    const isAdvanced = profile === 'advanced';
+    let gridSize: number;
+    let shipLengths: number[];
+
+    if (isAdvanced) {
+      // Advanced profile: starts moderate, grows to complex
+      gridSize = level <= 2 ? 5 : level <= 5 ? 6 : level <= 10 ? 7 : 8;
+      shipLengths = level <= 2 ? [3, 2] : level <= 5 ? [3, 2, 2] : level <= 10 ? [4, 3, 2] : [4, 3, 3, 2];
+    } else {
+      // Starter profile: gradual progression from very simple to moderate
+      gridSize = level === 1 ? 4 : level <= 3 ? 4 : level <= 6 ? 5 : 6;
+      shipLengths = level === 1 ? [2] : level <= 3 ? [2, 2] : level <= 6 ? [3, 2] : [3, 2, 2];
+    }
+
     const ships = placeShips(gridSize, shipLengths, rng);
-    
     let prompt: string;
     let correctAnswer: number | string;
     let options: string[];
-    
-    // Choose problem type based on level with variety
-    if (level === 1) {
+
+    if (isAdvanced) {
+      if (level <= 5) {
+        const questionTypes = [
+          () => generatePatternQuestion(level, rng),
+          () => generateDistanceQuestion(level, rng, gridSize),
+          () => generateWordProblem3(level, rng),
+          () => generateNavigateQuestion(level, rng, gridSize),
+          () => generateAreaProblem(level, rng),
+          () => generatePatternQuestion(level, rng),
+          () => generateDistanceQuestion(level, rng, gridSize),
+        ];
+        const question = questionTypes[Math.floor(rng() * questionTypes.length)]!();
+        prompt = question.prompt;
+        correctAnswer = question.correctAnswer;
+        if (typeof correctAnswer === 'string' && (correctAnswer.includes('-') || correctAnswer.includes('('))) {
+          options = generateCoordinateOptions(correctAnswer, gridSize, rng);
+        } else {
+          options = generateOptions(correctAnswer as number, 4, rng);
+        }
+      } else if (level <= 10) {
+        const questionTypes = [
+          () => generateMultiMoveQuestion(level, rng, gridSize),
+          () => generateFleetMultiplyQuestion(level, rng),
+          () => generateFormationCount(level, rng),
+          () => generateDistanceQuestion(level, rng, gridSize),
+          () => generateWordProblem3(level, rng),
+          () => generateAreaProblem(level, rng),
+          () => generateFleetMultiplyQuestion(level, rng),
+          () => generateMultiMoveQuestion(level, rng, gridSize),
+        ];
+        const question = questionTypes[Math.floor(rng() * questionTypes.length)]!();
+        prompt = question.prompt;
+        correctAnswer = question.correctAnswer;
+        if (typeof correctAnswer === 'string' && (correctAnswer.includes('-') || correctAnswer.includes('('))) {
+          options = generateCoordinateOptions(correctAnswer, gridSize, rng);
+        } else {
+          options = generateOptions(correctAnswer as number, 4, rng);
+        }
+      } else {
+        const questionTypes = [
+          () => generateVectorAddition(level, rng),
+          () => generateMultiMoveQuestion(level, rng, gridSize),
+          () => generateFleetMultiplyQuestion(level, rng),
+          () => generateFormationCount(level, rng),
+          () => generateDistanceQuestion(level, rng, gridSize),
+          () => generateVectorAddition(level, rng),
+          () => generateMultiMoveQuestion(level, rng, gridSize),
+        ];
+        const question = questionTypes[Math.floor(rng() * questionTypes.length)]!();
+        prompt = question.prompt;
+        correctAnswer = question.correctAnswer;
+        if (typeof correctAnswer === 'string' && (correctAnswer.includes('-') || correctAnswer.includes('('))) {
+          options = generateCoordinateOptions(correctAnswer, gridSize, rng);
+        } else {
+          options = generateOptions(correctAnswer as number, 4, rng);
+        }
+      }
+    } else if (level === 1) {
       // Level 1: Super simple - only counting (3 question types for easier start)
       const questionTypes = [
         () => generateCountShipsQuestion(level, rng),
@@ -1501,113 +1565,6 @@ export const Generators: Record<string, GeneratorFunction> = {
       
       // Check if answer is a coordinate string
       if (typeof correctAnswer === 'string' && correctAnswer.includes('-')) {
-        options = generateCoordinateOptions(correctAnswer, gridSize, rng);
-      } else {
-        options = generateOptions(correctAnswer as number, 4, rng);
-      }
-    }
-    
-    const correctIndex = Math.floor(rng() * 4);
-    const shuffledOptions = shuffleOptionsWithCorrect(options, correctAnswer, correctIndex, rng);
-    
-    return {
-      type: 'battlelearn',
-      uid: uid(rng),
-      gridSize,
-      ships,
-      revealed: [],
-      hits: [],
-      sunkShips: [],
-      shotAvailable: false,
-      question: {
-        prompt,
-        options: shuffledOptions,
-        correctIndex,
-      },
-      gameWon: false,
-    };
-  },
-
-  battlelearn_adv: (level: number, rng: RngFunction = Math.random, _profile: ProfileType = 'advanced'): BattleLearnProblem => {
-    // Advanced profile: starts moderate, grows to complex
-    // Level 1-2: 5x5, 2 ships - easier start even for advanced
-    // Level 3-5: 6x6, 3 ships
-    // Level 6-10: 7x7, 3 ships
-    // Level 11+: 8x8, 4 ships
-    const gridSize = level <= 2 ? 5 : level <= 5 ? 6 : level <= 10 ? 7 : 8;
-    const shipLengths = level <= 2 ? [3, 2] : level <= 5 ? [3, 2, 2] : level <= 10 ? [4, 3, 2] : [4, 3, 3, 2];
-    
-    // Place ships on grid
-    const ships = placeShips(gridSize, shipLengths, rng);
-    
-    let prompt: string;
-    let correctAnswer: number | string;
-    let options: string[];
-    
-    // Choose problem type based on level with variety
-    if (level <= 5) {
-      // Level 1-5: Pattern recognition and basic distance (7 question types)
-      const questionTypes = [
-        () => generatePatternQuestion(level, rng),
-        () => generateDistanceQuestion(level, rng, gridSize),
-        () => generateWordProblem3(level, rng),
-        () => generateNavigateQuestion(level, rng, gridSize),
-        () => generateAreaProblem(level, rng),
-        () => generatePatternQuestion(level, rng), // Appears twice
-        () => generateDistanceQuestion(level, rng, gridSize), // Appears twice
-      ];
-      const questionType = questionTypes[Math.floor(rng() * questionTypes.length)]!;
-      const question = questionType();
-      prompt = question.prompt;
-      correctAnswer = question.correctAnswer;
-      
-      // Check if answer is a coordinate string
-      if (typeof correctAnswer === 'string' && (correctAnswer.includes('-') || correctAnswer.includes('('))) {
-        options = generateCoordinateOptions(correctAnswer, gridSize, rng);
-      } else {
-        options = generateOptions(correctAnswer as number, 4, rng);
-      }
-    } else if (level <= 10) {
-      // Level 6-10: Complex arithmetic and multi-step navigation (8 question types)
-      const questionTypes = [
-        () => generateMultiMoveQuestion(level, rng, gridSize),
-        () => generateFleetMultiplyQuestion(level, rng),
-        () => generateFormationCount(level, rng),
-        () => generateDistanceQuestion(level, rng, gridSize),
-        () => generateWordProblem3(level, rng),
-        () => generateAreaProblem(level, rng),
-        () => generateFleetMultiplyQuestion(level, rng), // Appears twice
-        () => generateMultiMoveQuestion(level, rng, gridSize), // Appears twice
-      ];
-      const questionType = questionTypes[Math.floor(rng() * questionTypes.length)]!;
-      const question = questionType();
-      prompt = question.prompt;
-      correctAnswer = question.correctAnswer;
-      
-      // Check if answer is a coordinate string
-      if (typeof correctAnswer === 'string' && (correctAnswer.includes('-') || correctAnswer.includes('('))) {
-        options = generateCoordinateOptions(correctAnswer, gridSize, rng);
-      } else {
-        options = generateOptions(correctAnswer as number, 4, rng);
-      }
-    } else {
-      // Level 11+: Advanced coordinate systems and complex mathematics (7 question types)
-      const questionTypes = [
-        () => generateVectorAddition(level, rng),
-        () => generateMultiMoveQuestion(level, rng, gridSize),
-        () => generateFleetMultiplyQuestion(level, rng),
-        () => generateFormationCount(level, rng),
-        () => generateDistanceQuestion(level, rng, gridSize),
-        () => generateVectorAddition(level, rng), // Appears twice
-        () => generateMultiMoveQuestion(level, rng, gridSize), // Appears twice
-      ];
-      const questionType = questionTypes[Math.floor(rng() * questionTypes.length)]!;
-      const question = questionType();
-      prompt = question.prompt;
-      correctAnswer = question.correctAnswer;
-      
-      // Check if answer is a coordinate string
-      if (typeof correctAnswer === 'string' && (correctAnswer.includes('-') || correctAnswer.includes('('))) {
         options = generateCoordinateOptions(correctAnswer, gridSize, rng);
       } else {
         options = generateOptions(correctAnswer as number, 4, rng);

@@ -268,7 +268,7 @@ function registerAllGames(): void {
     });
   }
 
-  // BattleLearn (Starter)
+  // BattleLearn (profile-based difficulty in generator)
   const battlelearnConfig = GAME_CONFIG.battlelearn;
   const battlelearnGenerator = Generators.battlelearn;
   if (battlelearnConfig && battlelearnGenerator) {
@@ -279,20 +279,6 @@ function registerAllGames(): void {
       config: battlelearnConfig,
       validator: validateBattleLearn,
       allowedProfiles: battlelearnConfig.allowedProfiles,
-    });
-  }
-
-  // BattleLearn Advanced
-  const battlelearnAdvConfig = GAME_CONFIG.battlelearn_adv;
-  const battlelearnAdvGenerator = Generators.battlelearn_adv;
-  if (battlelearnAdvConfig && battlelearnAdvGenerator) {
-    gameRegistry.register({
-      id: 'battlelearn_adv',
-      component: BattleLearnView,
-      generator: battlelearnAdvGenerator,
-      config: battlelearnAdvConfig,
-      validator: validateBattleLearn,
-      allowedProfiles: battlelearnAdvConfig.allowedProfiles,
     });
   }
 }

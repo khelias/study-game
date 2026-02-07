@@ -17,7 +17,7 @@ import { useTranslation } from '../../i18n/useTranslation';
 import { useProfileText } from '../../hooks/useProfileText';
 import { useGameAudio } from '../../hooks/useGameAudio';
 import { ShopModal } from '../modals/ShopModal';
-import { GAME_CONFIG, CATEGORIES } from '../../games/data';
+import { GAME_CONFIG } from '../../games/data';
 
 export type GameResultType = 'victory' | 'perfect' | 'gameOver';
 
@@ -52,17 +52,13 @@ export const GameResultScreen: React.FC<GameResultScreenProps> = ({
 
   const baseType = gameType ? gameType.replace('_adv', '') : null;
   const gameConfig = baseType ? GAME_CONFIG[baseType] : undefined;
-  const category = gameConfig ? CATEGORIES[gameConfig.category] : undefined;
 
-  const headerEmoji = category?.emoji ?? '🎮';
   const headerTitle: string =
     baseType && t.games[baseType as keyof typeof t.games]
       ? (t.games[baseType as keyof typeof t.games].title as string)
       : formatText(t.game.gameOver);
 
   const themeBorder = gameConfig?.theme.border ?? 'border-slate-200';
-  const themeText = gameConfig?.theme.text ?? 'text-slate-800';
-  const themeBgSoft = gameConfig?.theme.bg ?? 'bg-slate-50';
 
   // Configuration based on result type
   const config = {
@@ -146,40 +142,34 @@ export const GameResultScreen: React.FC<GameResultScreenProps> = ({
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-4 py-8 bg-slate-50 animate-in fade-in">
+    <div className="fixed inset-0 flex items-center justify-center px-4 bg-slate-50/95 backdrop-blur-sm animate-in fade-in z-50">
       {showShop && (
         <ShopModal
           onClose={() => setShowShop(false)}
           openedFromNoHearts={true}
         />
       )}
-      <div className="w-full max-w-md">
-        <div className={`relative rounded-3xl bg-white/95 shadow-xl border ${themeBorder} px-6 py-6 sm:px-8 sm:py-8`}>
-          {/* Game title pill */}
-          <div className={`inline-flex items-center gap-2 px-3 py-1 rounded-full ${themeBgSoft} border border-slate-200 mb-4`}>
-            <span className="text-lg" aria-hidden="true">
-              {headerEmoji}
-            </span>
-            <span className={`text-xs font-semibold tracking-wide uppercase ${themeText}`}>
-              {headerTitle}
-            </span>
-          </div>
-
-          {/* Icon + headline */}
+      <div className="w-full max-w-md my-auto">
+        <div className={`relative rounded-3xl bg-white shadow-2xl border-2 ${themeBorder} px-6 py-8 sm:px-8 sm:py-10`}>
+          {/* Single focal block: icon + title + message (no duplicate pill) */}
           <div className="flex flex-col items-center text-center mb-6">
-            <div className="relative mb-3">
-              <div className={`w-20 h-20 sm:w-24 sm:h-24 rounded-3xl bg-gradient-to-br ${currentConfig.iconGradient} ${currentConfig.iconShadow} flex items-center justify-center`}>
-                <span className="text-4xl sm:text-5xl" aria-hidden="true">
-                  {currentConfig.icon}
-                </span>
-              </div>
+            <div className={`w-20 h-20 sm:w-24 sm:h-24 rounded-2xl bg-gradient-to-br ${currentConfig.iconGradient} ${currentConfig.iconShadow} flex items-center justify-center mb-4`}>
+              <span className="text-4xl sm:text-5xl" aria-hidden="true">
+                {currentConfig.icon}
+              </span>
             </div>
-            <h2 className="text-2xl sm:text-3xl font-black text-slate-900 mb-1">
+            <h2 className="text-xl sm:text-2xl font-black text-slate-900 mb-2">
               {currentConfig.title}
             </h2>
-            <p className="text-sm sm:text-base text-slate-600">
+            <p className="text-sm text-slate-600 max-w-xs mx-auto">
               {currentConfig.message}
             </p>
+            {/* Optional game name only when it adds context (e.g. not when title already says "Game Over") */}
+            {type !== 'gameOver' && headerTitle && (
+              <p className="mt-2 text-xs font-medium text-slate-500 uppercase tracking-wide">
+                {headerTitle}
+              </p>
+            )}
           </div>
 
           {/* Heart warning for game over with no hearts */}

@@ -130,14 +130,8 @@ export function useGameEngine() {
 
   const generateUniqueProblemForGame = useCallback((gameType: string, level: number, profile: string, adaptiveDifficulty: AdaptiveDifficulty): Problem | null => {
     try {
-      // Handle advanced versions of games
-      const baseType = gameType.replace('_adv', '');
-      const actualType = baseType !== gameType ? baseType : gameType;
-      
-      // Get effective level with adaptive difficulty
       const effectiveLevel = getEffectiveLevel(level, adaptiveDifficulty);
-      
-      return generateUniqueProblem(actualType, effectiveLevel, profile);
+      return generateUniqueProblem(gameType, effectiveLevel, profile);
     } catch (error) {
       console.error('Error generating problem:', error);
       return null;

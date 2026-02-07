@@ -363,7 +363,9 @@ export const MenuScreen: React.FC = () => {
         {showFeatured && (
           <div className="grid grid-cols-1 gap-3 sm:gap-4 mt-3 animate-fadeIn">
             {(() => {
-              const featuredGameKeys = profile === 'starter' ? ['battlelearn', 'word_cascade', 'math_snake'] : ['battlelearn_adv', 'word_cascade_adv', 'math_snake_adv'];
+              const featuredGameKeys = ['battlelearn', 'word_cascade', 'math_snake'].filter(
+                (key) => GAME_CONFIG[key]?.allowedProfiles?.includes(profile as ProfileType)
+              );
               return featuredGameKeys.map((key) => {
                 const conf = GAME_CONFIG[key];
                 if (!conf) return null;
@@ -392,7 +394,7 @@ export const MenuScreen: React.FC = () => {
       <div className="w-full pb-6 sm:pb-10">
         {Object.values(CATEGORIES).map(category => {
           // Featured games are shown separately, exclude them from categories
-          const featuredGameIds = ['word_cascade', 'word_cascade_adv', 'math_snake', 'math_snake_adv'];
+          const featuredGameIds = ['word_cascade', 'math_snake'];
           const categoryGames = Object.entries(GAME_CONFIG)
             .filter(([key, conf]) => 
               conf.category === category.id && 

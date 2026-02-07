@@ -229,7 +229,7 @@ describe('checkAchievements', () => {
   });
 
   it('should unlock battlelearn_captain at level 5', () => {
-    const stats = createTestStats({ maxLevels: { battlelearn_adv: 5 } });
+    const stats = createTestStats({ maxLevels: { battlelearn: 5 } });
     const unlocked: string[] = [];
     const newUnlocks = checkAchievements(stats, unlocked);
     expect(newUnlocks.find((a) => a.id === 'battlelearn_captain')).toBeDefined();

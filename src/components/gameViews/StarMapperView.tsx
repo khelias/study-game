@@ -5,7 +5,7 @@
  * Supports multiple game modes: trace, build, identify, expert.
  */
 
-import React, { useState, useMemo, useRef, useCallback } from 'react';
+import React, { useState, useMemo, useRef, useCallback, useEffect } from 'react';
 import { playSound } from '../../engine/audio';
 import { useTranslation } from '../../i18n/useTranslation';
 import { getConstellationById } from '../../games/constellations';

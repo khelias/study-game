@@ -10,8 +10,8 @@ describe('gameSlug utilities', () => {
     });
 
     it('should handle IDs with multiple underscores', () => {
-      expect(gameIdToSlug('word_cascade_adv')).toBe('word-cascade-adv');
-      expect(gameIdToSlug('math_snake_adv')).toBe('math-snake-adv');
+      expect(gameIdToSlug('word_cascade')).toBe('word-cascade');
+      expect(gameIdToSlug('math_snake')).toBe('math-snake');
     });
 
     it('should handle IDs without underscores', () => {
@@ -27,9 +27,10 @@ describe('gameSlug utilities', () => {
       expect(slugToGameId('balance-scale')).toBe('balance_scale');
     });
 
-    it('should handle slugs with multiple hyphens', () => {
-      expect(slugToGameId('word-cascade-adv')).toBe('word_cascade_adv');
-      expect(slugToGameId('math-snake-adv')).toBe('math_snake_adv');
+    it('should map legacy -adv slugs to single game id', () => {
+      expect(slugToGameId('word-cascade-adv')).toBe('word_cascade');
+      expect(slugToGameId('math-snake-adv')).toBe('math_snake');
+      expect(slugToGameId('battlelearn-adv')).toBe('battlelearn');
     });
 
     it('should handle slugs without hyphens', () => {
@@ -39,13 +40,13 @@ describe('gameSlug utilities', () => {
   });
 
   describe('isValidGameSlug', () => {
-    const validGameIds = ['word_cascade', 'math_snake', 'pattern', 'word_cascade_adv'];
+    const validGameIds = ['word_cascade', 'math_snake', 'pattern', 'balance_scale'];
 
     it('should return true for valid slugs', () => {
       expect(isValidGameSlug('word-cascade', validGameIds)).toBe(true);
       expect(isValidGameSlug('math-snake', validGameIds)).toBe(true);
       expect(isValidGameSlug('pattern', validGameIds)).toBe(true);
-      expect(isValidGameSlug('word-cascade-adv', validGameIds)).toBe(true);
+      expect(isValidGameSlug('balance-scale', validGameIds)).toBe(true);
     });
 
     it('should return false for invalid slugs', () => {
@@ -57,8 +58,7 @@ describe('gameSlug utilities', () => {
 
   describe('round-trip conversion', () => {
     it('should maintain consistency when converting back and forth', () => {
-      const gameIds = ['word_cascade', 'math_snake_adv', 'pattern', 'balance_scale'];
-      
+      const gameIds = ['word_cascade', 'math_snake', 'pattern', 'balance_scale'];
       gameIds.forEach(gameId => {
         const slug = gameIdToSlug(gameId);
         const convertedBack = slugToGameId(slug);
