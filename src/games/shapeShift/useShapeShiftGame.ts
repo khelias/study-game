@@ -33,12 +33,17 @@ export function useShapeShiftGame(
 
     const lastCheckedHash = useRef<string>('');
 
-    // Initialize/Reset
-    useEffect(() => {
+    // Reset state when problem changes (render-time sync avoids cascading effect renders)
+    const [prevUid, setPrevUid] = useState(problem.uid);
+    if (prevUid !== problem.uid) {
+        setPrevUid(problem.uid);
         setPieces(problem.pieces.map(p => ({ ...p, currentPosition: null, currentRotation: p.currentRotation ?? p.correctRotation })));
         setStatus('idle');
+    }
+    // Ref updates must happen outside render; reset the hash when uid changes
+    useEffect(() => {
         lastCheckedHash.current = '';
-    }, [problem.uid, problem.pieces]);
+    }, [problem.uid]);
 
     // Check for completion
     useEffect(() => {
@@ -121,6 +126,21 @@ export function useShapeShiftGame(
         };
     }, []);
 
+    const rotatePiece = useCallback((pieceId: string) => {
+        setPieces(prev => prev.map(p => {
+            if (p.id !== pieceId) return p;
+            const nextRot = (p.currentRotation + 90) % 360;
+            return { ...p, currentRotation: nextRot };
+        }));
+        playSound('tap', soundEnabled);
+    }, [soundEnabled]);
+
+    const updatePiecePosition = useCallback((pieceId: string, pos: { x: number, y: number } | null) => {
+        setPieces(prev => prev.map(p =>
+            p.id === pieceId ? { ...p, currentPosition: pos } : p
+        ));
+    }, []);
+
     const handleDragEnd = useCallback((clientX: number, clientY: number, boardRect: DOMRect | null, trayRect: DOMRect | null) => {
         if (!dragRef.current) return;
 
@@ -140,22 +160,6 @@ export function useShapeShiftGame(
         }
 
         // Handle Drop
-        // Adjust drop point using dragScale to find pure canvas coordinates at mouse tip
-        // But what defines "drop point"? Usually center of the piece? 
-        // Or top-left?
-        // grid logic expects center-of-piece for snapping, OR we can transform.
-        // boardPxToGridTopLeft calculates from "center of drop".
-        // Let's deduce where the CENTER of the ghost was.
-        // Ghost Center = MousePos - (pointerOffset * scale) + (width/2, height/2) ... wait.
-        // Actually simpler:
-        // Ghost TopLeft = MousePos - (pointerOffset * scale)
-        // Center of Ghost = Ghost TopLeft + (GhostSize / 2)
-        // Let's pass the Center coordinate to boardPxToGridTopLeft if it expects center.
-        // Checking boardPxToGridTopLeft: it calculates center by `Math.floor(rx / cellSizePx)`. 
-        // It treats rx/ry as "point of interest".
-        // If we pass the Center of Grid Piece, it snaps that center to a cell.
-
-        // Let's compute TopLeft first
         const ghostSizePx = (boardWidthPx / problem.puzzle.gridSize) * piece.size;
         const ghostTopLeftX = clientX - (pointerOffsetX * dragScale);
         const ghostTopLeftY = clientY - (pointerOffsetY * dragScale);
@@ -198,22 +202,7 @@ export function useShapeShiftGame(
             updatePiecePosition(pieceId, null);
         }
 
-    }, [pieces, problem.puzzle.gridSize, soundEnabled, boardWidthPx]);
-
-    const rotatePiece = useCallback((pieceId: string) => {
-        setPieces(prev => prev.map(p => {
-            if (p.id !== pieceId) return p;
-            const nextRot = (p.currentRotation + 90) % 360;
-            return { ...p, currentRotation: nextRot };
-        }));
-        playSound('tap', soundEnabled);
-    }, [soundEnabled]);
-
-    const updatePiecePosition = useCallback((pieceId: string, pos: { x: number, y: number } | null) => {
-        setPieces(prev => prev.map(p =>
-            p.id === pieceId ? { ...p, currentPosition: pos } : p
-        ));
-    }, []);
+    }, [pieces, problem.puzzle.gridSize, soundEnabled, boardWidthPx, rotatePiece, updatePiecePosition]);
 
     const placeHintPiece = useCallback(() => {
         const unplaced = pieces.filter(p => !p.isDecoy && p.currentPosition === null);

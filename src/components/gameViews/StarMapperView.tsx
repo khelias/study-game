@@ -5,7 +5,7 @@
  * Supports multiple game modes: trace, build, identify, expert.
  */
 
-import React, { useEffect, useState, useMemo, useRef, useCallback } from 'react';
+import React, { useState, useMemo, useRef, useCallback } from 'react';
 import { playSound } from '../../engine/audio';
 import { useTranslation } from '../../i18n/useTranslation';
 import { getConstellationById } from '../../games/constellations';
@@ -36,14 +36,16 @@ export const StarMapperView: React.FC<StarMapperViewProps> = ({
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
   const [dragStartStarId, setDragStartStarId] = useState<string | null>(null);
 
-  // Reset on new problem
-  useEffect(() => {
+  // Reset state when problem changes (render-time sync avoids cascading effect renders)
+  const [prevUid, setPrevUid] = useState(problem.uid);
+  if (prevUid !== problem.uid) {
+    setPrevUid(problem.uid);
     setSelectedStar(null);
     setDrawnLines([]);
     setStatus('idle');
     setSelectedOption(null);
     setDragStartStarId(null);
-  }, [problem.uid]);
+  }
 
   // Star tap handler for trace/build/expert modes
   const handleStarTap = (starId: string) => {
@@ -140,7 +142,7 @@ export const StarMapperView: React.FC<StarMapperViewProps> = ({
   }, []);
 
   // Pointer up on star field: complete drag-to-connect if we started on a star and released on another
-  const handleStarFieldPointerUp = useCallback((e: React.PointerEvent) => {
+  const handleStarFieldPointerUp = (e: React.PointerEvent) => {
     if (!dragStartStarId || status !== 'idle') {
       setDragStartStarId(null);
       return;
@@ -165,7 +167,7 @@ export const StarMapperView: React.FC<StarMapperViewProps> = ({
       }
     }
     setDragStartStarId(null);
-  }, [dragStartStarId, status, clientToViewBox, getStarAtPosition, drawnLines, soundEnabled, checkCompletion]);
+  };
 
   // Handle identify mode option selection
   const handleIdentify = (constellationId: string) => {
@@ -209,7 +211,7 @@ export const StarMapperView: React.FC<StarMapperViewProps> = ({
 
   // Render mode instructions
   const getInstructions = (): string => {
-    return t.starMapper.instructions[problem.mode as keyof typeof t.starMapper.instructions];
+    return t.starMapper.instructions[problem.mode];
   };
 
   // Calculate remaining lines for trace/build modes
@@ -231,7 +233,7 @@ export const StarMapperView: React.FC<StarMapperViewProps> = ({
       return x - Math.floor(x);
     };
 
-    return [...Array(30)].map((_, i) => ({
+    return Array.from({ length: 30 }, (_, i) => ({
       key: i,
       left: seededRandom(i * 5) * 100,
       top: seededRandom(i * 5 + 1) * 100,

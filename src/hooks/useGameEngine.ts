@@ -2,7 +2,7 @@ import { useState, useCallback } from 'react';
 import { gameRegistry } from '../games/registry';
 import { getEffectiveLevel } from '../engine/adaptiveDifficulty';
 import { createRng } from '../engine/rng';
-import type { Problem, ProfileType, StarMapperProblem } from '../types/game';
+import type { Problem, ProfileType } from '../types/game';
 
 // Import registrations to ensure games are registered
 import '../games/registrations';
@@ -34,7 +34,7 @@ const makeKey = (prob: Problem | null): string => {
     }
     case 'time_match': return `time:${prob.answer}`;
     case 'unit_conversion': return `unit:${prob.value}${prob.fromUnit}=${prob.answer}${prob.toUnit}`;
-    case 'star_mapper': return `star:${(prob as StarMapperProblem).constellation.id}`;
+    case 'star_mapper': return `star:${prob.constellation.id}`;
     default: {
       // TypeScript narrowing - this should never happen but satisfies type checker
       return `${String((prob as Problem).type)}:${(prob as Problem).uid}`;

@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components -- Constants co-located with PieceSvg by design */
 import React from 'react';
 import { ShapeType } from '../../types/game';
 
@@ -45,8 +46,10 @@ export const SHAPE_COLORS: Record<string, { fill: string; stroke: string; stroke
   gray: { fill: '#64748b', stroke: '#334155', strokeWidth: 2 },
 };
 
-export const getShapeStyle = (colorName: string) => {
-  return SHAPE_COLORS[colorName] || SHAPE_COLORS.gray;
+const DEFAULT_STYLE = { fill: '#64748b', stroke: '#334155', strokeWidth: 2 };
+
+export const getShapeStyle = (colorName: string): { fill: string; stroke: string; strokeWidth: number } => {
+  return SHAPE_COLORS[colorName] ?? DEFAULT_STYLE;
 };
 
 interface PieceSvgProps {

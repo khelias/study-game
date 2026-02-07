@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { usePlaySessionStore } from '../../stores/playSessionStore';
 import { useGameStore } from '../../stores/gameStore';
@@ -19,10 +19,21 @@ export const GameRoute: React.FC = () => {
   const recordGameStart = useGameStore(state => state.recordGameStart);
   const hearts = useGameStore(state => state.hearts);
 
+  // Guard: only start the game once per route visit.
+  // Without this, returnToMenu() sets gameState back to 'menu', which
+  // re-triggers the effect below and restarts the game before navigate('/')
+  // completes — causing the "need to click home twice" bug.
+  const hasStartedRef = useRef(false);
+
+  // Reset the guard when navigating to a different game slug
+  useEffect(() => {
+    hasStartedRef.current = false;
+  }, [gameSlug]);
+
   useEffect(() => {
     // Validate the game slug
     if (!gameSlug) {
-      navigate('/');
+      void navigate('/');
       return;
     }
 
@@ -31,21 +42,20 @@ export const GameRoute: React.FC = () => {
 
     if (!isValidGameSlug(gameSlug, validGameIds)) {
       // Invalid game slug, redirect to menu
-      navigate('/');
+      void navigate('/');
       return;
     }
 
     // Check if player has hearts before starting
     if (hearts <= 0) {
       // Redirect to menu where they can buy hearts
-      navigate('/');
+      void navigate('/');
       return;
     }
 
-    // Start the game if we're not already playing this specific game
-    // Allow restart from menu or game_over states
-    if (gameState === 'menu' || gameState === 'game_over') {
-      // Record game start and check for achievements
+    // Start the game only once per route visit
+    if (!hasStartedRef.current && (gameState === 'menu' || gameState === 'game_over')) {
+      hasStartedRef.current = true;
       recordGameStart(gameId);
       startGame(gameId);
     }

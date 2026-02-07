@@ -4,7 +4,7 @@
  * Game view for word builder games.
  */
 
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { playSound } from '../../engine/audio';
 import { useTranslation } from '../../i18n/useTranslation';
 import type { WordBuilderProblem, LetterObject } from '../../types/game';

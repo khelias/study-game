@@ -16,7 +16,6 @@ export const GameOverScreen: React.FC = () => {
   const soundEnabled = useGameStore(state => state.soundEnabled);
   const gameType = usePlaySessionStore(state => state.gameType);
   const returnToMenu = usePlaySessionStore(state => state.returnToMenu);
-  const startGame = usePlaySessionStore(state => state.startGame);
   const getHighScore = useGameStore(state => state.getHighScore);
   const { playClick } = useGameAudio(soundEnabled);
   const scoreMessage = formatText(
@@ -46,7 +45,7 @@ export const GameOverScreen: React.FC = () => {
       // Navigate back to the same game route to restart
       // The GameRoute component will handle restarting the game
       const slug = gameIdToSlug(gameType);
-      navigate(`/games/${slug}`);
+      void navigate(`/games/${slug}`);
     }
   };
 
@@ -130,7 +129,7 @@ export const GameOverScreen: React.FC = () => {
                 playClick();
                 // High score is already updated on each score increase
                 returnToMenu();
-                navigate('/');
+                void navigate('/');
               }}
               className="flex-1 inline-flex items-center justify-center px-4 py-3 rounded-xl bg-slate-100 text-slate-800 font-semibold text-sm sm:text-base border border-slate-300 hover:bg-slate-200 active:scale-95 transition-transform"
             >

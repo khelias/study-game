@@ -89,8 +89,10 @@ export const ShapeShiftView: React.FC<ShapeShiftViewProps> = ({
   }, [showOutlineOverlay]);
 
   // Use refs for drag handlers to access latest state without re-binding
-  const boardRefValues = useRef({ board: boardRef.current, tray: trayRef.current });
-  boardRefValues.current = { board: boardRef.current, tray: trayRef.current };
+  const boardRefValues = useRef<{ board: HTMLDivElement | null; tray: HTMLDivElement | null }>({ board: null, tray: null });
+  useEffect(() => {
+    boardRefValues.current = { board: boardRef.current, tray: trayRef.current };
+  });
 
   // ─── Input Handlers ──────────────────────────────────────────────────────
 
@@ -166,7 +168,7 @@ export const ShapeShiftView: React.FC<ShapeShiftViewProps> = ({
     if (e.currentTarget.hasPointerCapture(e.pointerId)) {
       try {
         e.currentTarget.releasePointerCapture(e.pointerId);
-      } catch (err) {
+      } catch {
         // Ignore if already released
       }
     }

@@ -1336,17 +1336,17 @@ export const Generators: Record<string, GeneratorFunction> = {
     // Pick puzzle matching difficulty
     const suitablePuzzles = PUZZLES.filter(p => p.difficulty === difficulty);
     // Smart Shuffle: Avoid recently played puzzles
-    // @ts-ignore
+    // @ts-expect-error -- dynamic property on globalThis for session-scoped history
     if (!globalThis._shapeShiftHistory) globalThis._shapeShiftHistory = [];
-    // @ts-ignore
+    // @ts-expect-error -- dynamic property on globalThis for session-scoped history
     const history = globalThis._shapeShiftHistory as string[];
     
     // Filter out recent 50% of history
     const availablePuzzles = suitablePuzzles.filter(p => !history.includes(p.id));
     
-    let pool = availablePuzzles.length > 0 ? availablePuzzles : suitablePuzzles;
+    const pool = availablePuzzles.length > 0 ? availablePuzzles : suitablePuzzles;
     if (availablePuzzles.length === 0) {
-      // @ts-ignore
+      // @ts-expect-error -- dynamic property on globalThis for session-scoped history
       globalThis._shapeShiftHistory = history.filter(id => !suitablePuzzles.find(p => p.id === id));
     }
 
@@ -1415,7 +1415,7 @@ export const Generators: Record<string, GeneratorFunction> = {
     };
   },
 
-  battlelearn: (level: number, rng: RngFunction = Math.random, profile: ProfileType = 'starter'): BattleLearnProblem => {
+  battlelearn: (level: number, rng: RngFunction = Math.random, _profile: ProfileType = 'starter'): BattleLearnProblem => {
     // Starter profile: smaller grid, simpler questions
     const gridSize = level <= 5 ? 5 : 6;
     const shipLengths = level <= 3 ? [3, 2] : level <= 6 ? [3, 2, 2] : [3, 3, 2];
@@ -1443,7 +1443,7 @@ export const Generators: Record<string, GeneratorFunction> = {
       const question = questionType();
       prompt = question.prompt;
       correctAnswer = question.correctAnswer;
-      options = generateOptions(correctAnswer as number, 4, rng);
+      options = generateOptions(correctAnswer, 4, rng);
     } else if (level <= 6) {
       // Level 4-6: Subtraction/addition (8 question types)
       const questionTypes = [
@@ -1460,7 +1460,7 @@ export const Generators: Record<string, GeneratorFunction> = {
       const question = questionType();
       prompt = question.prompt;
       correctAnswer = question.correctAnswer;
-      options = generateOptions(correctAnswer as number, 4, rng);
+      options = generateOptions(correctAnswer, 4, rng);
     } else {
       // Level 7+: Coordinates/logic (7 question types)
       const questionTypes = [
@@ -1506,7 +1506,7 @@ export const Generators: Record<string, GeneratorFunction> = {
     };
   },
 
-  battlelearn_adv: (level: number, rng: RngFunction = Math.random, profile: ProfileType = 'advanced'): BattleLearnProblem => {
+  battlelearn_adv: (level: number, rng: RngFunction = Math.random, _profile: ProfileType = 'advanced'): BattleLearnProblem => {
     // Advanced profile: larger grid, coordinate + arithmetic questions
     const gridSize = level <= 5 ? 6 : level <= 10 ? 7 : 8;
     const shipLengths = level <= 5 ? [3, 2, 2] : level <= 10 ? [4, 3, 2] : [4, 3, 3, 2];
@@ -1619,14 +1619,14 @@ export const Generators: Record<string, GeneratorFunction> = {
 function formatQuestion(template: string, params: Record<string, string | number>): string {
   let result = template;
   for (const [key, value] of Object.entries(params)) {
-    result = result.replaceAll(`{${key}}`, String(value));
+    result = result.split(`{${key}}`).join(String(value));
   }
   return result;
 }
 
 // Starter Profile Question Generators (Level 1-3: Basic counting/arithmetic)
 
-function generateCountShipsQuestion(level: number, rng: RngFunction): { prompt: string; correctAnswer: number } {
+function generateCountShipsQuestion(level: number, _rng: RngFunction): { prompt: string; correctAnswer: number } {
   const t = getTranslations();
   const shipCount = Math.min(level + 1, 10);
   const shipEmoji = '🚢 '.repeat(shipCount);
@@ -2019,7 +2019,7 @@ export function generateBattleLearnQuestion(
       const question = questionType();
       prompt = question.prompt;
       correctAnswer = question.correctAnswer;
-      options = generateOptions(correctAnswer as number, 4, rng);
+      options = generateOptions(correctAnswer, 4, rng);
     } else if (level <= 6) {
       // Level 4-6: Subtraction and word problems
       const questionTypes = [
@@ -2033,7 +2033,7 @@ export function generateBattleLearnQuestion(
       const question = questionType();
       prompt = question.prompt;
       correctAnswer = question.correctAnswer;
-      options = generateOptions(correctAnswer as number, 4, rng);
+      options = generateOptions(correctAnswer, 4, rng);
     } else {
       // Level 7+: Coordinates and multi-step problems
       const questionTypes = [

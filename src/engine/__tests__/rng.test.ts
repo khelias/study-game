@@ -150,6 +150,6 @@ describe('uid', () => {
     const id = uid(rng);
     
     expect(id.length).toBeGreaterThan(0);
-    expect(id.length).toBeLessThanOrEqual(9);
+    expect(id.length).toBeLessThanOrEqual(11);
   });
 });

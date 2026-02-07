@@ -5,7 +5,6 @@ import {
   Type, Brain, Scale, BookOpen, GraduationCap, TrainFront, Bot, Clock3, Ruler, Gamepad2, ChevronDown, ChevronUp, Languages, Menu, X, Hash, FileText, Layers, Search, Star
 } from 'lucide-react';
 import { useGameStore } from '../../stores/gameStore';
-import { usePlaySessionStore } from '../../stores/playSessionStore';
 import { useGameAudio } from '../../hooks/useGameAudio';
 import { GameCard } from '../../components/GameCard';
 import { StatsModal } from '../modals/StatsModal';
@@ -47,9 +46,7 @@ export const MenuScreen: React.FC = () => {
   const toggleSound = useGameStore(state => state.toggleSound);
   const resetGame = useGameStore(state => state.resetGame);
   const markTutorialSeen = useGameStore(state => state.markTutorialSeen);
-  const recordGameStart = useGameStore(state => state.recordGameStart);
-  
-  const startGame = usePlaySessionStore(state => state.startGame);
+  // Game start logic is handled by GameRoute when navigating to /games/:slug
   
   const { playClick } = useGameAudio(soundEnabled);
   
@@ -92,7 +89,7 @@ export const MenuScreen: React.FC = () => {
     
     // Navigate to the game route using URL slug
     const slug = gameIdToSlug(gameType);
-    navigate(`/games/${slug}`);
+    void navigate(`/games/${slug}`);
   };
 
   const toggleCategory = (categoryId: string) => {

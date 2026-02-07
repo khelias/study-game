@@ -308,7 +308,7 @@ export const GameScreen: React.FC = () => {
           playClick();
           // High score is already updated on each score increase
           returnToMenu();
-          navigate('/');
+          void navigate('/');
         }}
         onSettingsClick={() => {
           setShowSettingsMenu(!showSettingsMenu);
@@ -331,7 +331,7 @@ export const GameScreen: React.FC = () => {
             playClick();
             // High score is already updated on each score increase
             returnToMenu();
-            navigate('/');
+            void navigate('/');
           }}
           onClose={() => setShowSettingsMenu(false)}
           onShowAchievements={() => setShowAchievements(true)}
