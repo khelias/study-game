@@ -6,6 +6,7 @@
  */
 
 import React, { useEffect, useRef, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Loader2, Trophy, TrendingUp } from 'lucide-react';
 import { useGameStore } from '../../stores/gameStore';
 import { usePlaySessionStore } from '../../stores/playSessionStore';
@@ -36,6 +37,7 @@ import type { Direction, ProfileType } from '../../types/game';
 import type { AchievementUnlock } from '../../types/achievement';
 
 export const GameScreen: React.FC = () => {
+  const navigate = useNavigate();
   // Global state
   const profile = useGameStore(state => state.profile);
   const profileId = profile as ProfileType;
@@ -306,6 +308,7 @@ export const GameScreen: React.FC = () => {
           playClick();
           // High score is already updated on each score increase
           returnToMenu();
+          navigate('/');
         }}
         onSettingsClick={() => {
           setShowSettingsMenu(!showSettingsMenu);
@@ -328,6 +331,7 @@ export const GameScreen: React.FC = () => {
             playClick();
             // High score is already updated on each score increase
             returnToMenu();
+            navigate('/');
           }}
           onClose={() => setShowSettingsMenu(false)}
           onShowAchievements={() => setShowAchievements(true)}

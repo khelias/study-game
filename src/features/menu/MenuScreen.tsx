@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { 
   Trash2, Volume2, VolumeX, BarChart3,
   Type, Brain, Scale, BookOpen, GraduationCap, TrainFront, Bot, Clock3, Ruler, Gamepad2, ChevronDown, ChevronUp, Languages, Menu, X, Hash, FileText, Layers, Search, Star
@@ -24,10 +25,12 @@ import { SmartGamesLogo } from '../../components/shared/SmartGamesLogo';
 import { SettingsMenu } from '../../components/SettingsMenu';
 import type { ProfileType } from '../../types/game';
 import type { AchievementUnlock } from '../../types/achievement';
+import { gameIdToSlug } from '../../utils/gameSlug';
 
 const ICON_MAP = { Type, Brain, Scale, BookOpen, GraduationCap, TrainFront, Bot, Clock3, Ruler, Gamepad2, Hash, FileText, Layers, Search, Star };
 
 export const MenuScreen: React.FC = () => {
+  const navigate = useNavigate();
   const t = useTranslation();
   const { formatText } = useProfileText();
   const profile = useGameStore(state => state.profile);
@@ -87,10 +90,9 @@ export const MenuScreen: React.FC = () => {
       return;
     }
     
-    // Record game start and check for achievements
-    recordGameStart(gameType);
-    
-    startGame(gameType);
+    // Navigate to the game route using URL slug
+    const slug = gameIdToSlug(gameType);
+    navigate(`/games/${slug}`);
   };
 
   const toggleCategory = (categoryId: string) => {
