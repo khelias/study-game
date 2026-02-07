@@ -1619,7 +1619,7 @@ export const Generators: Record<string, GeneratorFunction> = {
 function formatQuestion(template: string, params: Record<string, string | number>): string {
   let result = template;
   for (const [key, value] of Object.entries(params)) {
-    result = result.replace(`{${key}}`, String(value));
+    result = result.replaceAll(`{${key}}`, String(value));
   }
   return result;
 }
