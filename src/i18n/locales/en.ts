@@ -775,6 +775,14 @@ export const en = {
       title: 'STAR MAPPER',
       desc: 'Learn the constellations',
     },
+    battlelearn: {
+      title: 'BATTLELEARN',
+      desc: 'Answer and sink ships',
+    },
+    battlelearn_adv: {
+      title: 'BATTLELEARN PRO',
+      desc: 'Master coordinates and arithmetic',
+    },
   },
 
   // Difficulty levels
@@ -825,6 +833,24 @@ export const en = {
       summer: 'Summer',
       autumn: 'Autumn',
     },
+  },
+
+  // BattleLearn game
+  battlelearn: {
+    title: 'BATTLELEARN',
+    titleAdv: 'BATTLELEARN PRO',
+    desc: 'Answer questions to earn shots and sink ships',
+    descAdv: 'Master coordinates and arithmetic to sink the fleet',
+    instructions: 'Answer correctly to earn a shot, then click a grid cell to fire!',
+    shotReady: 'Shot Ready!',
+    clickToShoot: 'Click a cell to shoot!',
+    answerToEarnShot: 'Answer to earn a shot:',
+    shipsRemaining: 'Ships',
+    hit: '💥 Hit!',
+    miss: '💦 Miss!',
+    shipSunk: '🎯 Ship sunk!',
+    victory: '🏆 Victory! All ships sunk!',
+    alreadyShot: 'Already shot here!',
   },
 
   // Level label

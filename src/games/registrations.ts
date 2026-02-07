@@ -27,6 +27,7 @@ import {
   UnitConversionView,
   StarMapperView,
   ShapeShiftView,
+  BattleLearnView,
 } from '../components/gameViews';
 import { MathSnakeView } from '../components/MathSnakeView';
 import { CompareSizesView } from '../components/CompareSizesView';
@@ -46,6 +47,7 @@ import {
   validateRoboPath,
   validateStarMapper,
   validateShapeShift,
+  validateBattleLearn,
 } from './validators';
 
 /**
@@ -263,6 +265,34 @@ function registerAllGames(): void {
       config: shapeShiftConfig,
       validator: validateShapeShift,
       allowedProfiles: shapeShiftConfig.allowedProfiles,
+    });
+  }
+
+  // BattleLearn (Starter)
+  const battlelearnConfig = GAME_CONFIG.battlelearn;
+  const battlelearnGenerator = Generators.battlelearn;
+  if (battlelearnConfig && battlelearnGenerator) {
+    gameRegistry.register({
+      id: 'battlelearn',
+      component: BattleLearnView,
+      generator: battlelearnGenerator,
+      config: battlelearnConfig,
+      validator: validateBattleLearn,
+      allowedProfiles: battlelearnConfig.allowedProfiles,
+    });
+  }
+
+  // BattleLearn Advanced
+  const battlelearnAdvConfig = GAME_CONFIG.battlelearn_adv;
+  const battlelearnAdvGenerator = Generators.battlelearn_adv;
+  if (battlelearnAdvConfig && battlelearnAdvGenerator) {
+    gameRegistry.register({
+      id: 'battlelearn_adv',
+      component: BattleLearnView,
+      generator: battlelearnAdvGenerator,
+      config: battlelearnAdvConfig,
+      validator: validateBattleLearn,
+      allowedProfiles: battlelearnAdvConfig.allowedProfiles,
     });
   }
 }
