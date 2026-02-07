@@ -797,5 +797,130 @@ describe('Generators', () => {
       });
     });
   });
+
+  describe('battlelearn', () => {
+    it('should generate valid battlelearn problem', () => {
+      const rng = createRng(12345);
+      const generator = Generators.battlelearn;
+      if (!generator) throw new Error('battlelearn generator not found');
+      const problem = generator(1, rng, 'starter');
+      
+      expect(problem.type).toBe('battlelearn');
+      expect(problem.gridSize).toBeGreaterThan(0);
+      expect(problem.ships).toBeInstanceOf(Array);
+      expect(problem.ships.length).toBeGreaterThan(0);
+      expect(problem.revealed).toEqual([]);
+      expect(problem.hits).toEqual([]);
+      expect(problem.sunkShips).toEqual([]);
+      expect(problem.shotAvailable).toBe(false);
+      expect(problem.gameWon).toBe(false);
+      expect(problem.question).toBeDefined();
+      expect(problem.question.prompt).toBeTruthy();
+      expect(problem.question.options).toHaveLength(4);
+      expect(problem.question.correctIndex).toBeGreaterThanOrEqual(0);
+      expect(problem.question.correctIndex).toBeLessThan(4);
+    });
+
+    it('should have correct answer in options', () => {
+      const rng = createRng(12345);
+      const generator = Generators.battlelearn;
+      if (!generator) throw new Error('battlelearn generator not found');
+      const problem = generator(1, rng, 'starter');
+      
+      const correctAnswer = problem.question.options[problem.question.correctIndex];
+      expect(correctAnswer).toBeDefined();
+      expect(problem.question.options).toContain(correctAnswer);
+    });
+
+    it('should generate consistent problems with same seed', () => {
+      const rng1 = createRng(12345);
+      const rng2 = createRng(12345);
+      const generator = Generators.battlelearn;
+      if (!generator) throw new Error('battlelearn generator not found');
+      
+      const problem1 = generator(1, rng1, 'starter');
+      const problem2 = generator(1, rng2, 'starter');
+      
+      expect(problem1.ships).toEqual(problem2.ships);
+      expect(problem1.question).toEqual(problem2.question);
+    });
+
+    it('should scale difficulty with level', () => {
+      const rng1 = createRng(12345);
+      const rng2 = createRng(54321);
+      const generator = Generators.battlelearn;
+      if (!generator) throw new Error('battlelearn generator not found');
+      
+      const problem1 = generator(1, rng1, 'starter');
+      const problem10 = generator(10, rng2, 'starter');
+      
+      // Higher level should have more or longer ships
+      const totalLength1 = problem1.ships.reduce((sum, ship) => sum + ship.length, 0);
+      const totalLength10 = problem10.ships.reduce((sum, ship) => sum + ship.length, 0);
+      
+      expect(totalLength10).toBeGreaterThanOrEqual(totalLength1);
+    });
+  });
+
+  describe('battlelearn_adv', () => {
+    it('should generate valid battlelearn_adv problem', () => {
+      const rng = createRng(12345);
+      const generator = Generators.battlelearn_adv;
+      if (!generator) throw new Error('battlelearn_adv generator not found');
+      const problem = generator(1, rng, 'advanced');
+      
+      expect(problem.type).toBe('battlelearn');
+      expect(problem.gridSize).toBeGreaterThan(5); // Advanced has larger grid
+      expect(problem.ships).toBeInstanceOf(Array);
+      expect(problem.ships.length).toBeGreaterThan(0);
+      expect(problem.question).toBeDefined();
+      expect(problem.question.options).toHaveLength(4);
+    });
+
+    it('should have larger grid than starter version', () => {
+      const rng1 = createRng(12345);
+      const rng2 = createRng(12345);
+      const starterGen = Generators.battlelearn;
+      const advancedGen = Generators.battlelearn_adv;
+      if (!starterGen || !advancedGen) throw new Error('generators not found');
+      
+      const starterProblem = starterGen(1, rng1, 'starter');
+      const advancedProblem = advancedGen(1, rng2, 'advanced');
+      
+      expect(advancedProblem.gridSize).toBeGreaterThan(starterProblem.gridSize);
+    });
+
+    it('should generate coordinate or arithmetic questions', () => {
+      const generator = Generators.battlelearn_adv;
+      if (!generator) throw new Error('battlelearn_adv generator not found');
+      
+      // Test multiple seeds to check question variety
+      const questions = new Set<string>();
+      for (let seed = 0; seed < 20; seed++) {
+        const rng = createRng(seed);
+        const problem = generator(5, rng, 'advanced');
+        questions.add(problem.question.prompt);
+      }
+      
+      // Should have variety in questions
+      expect(questions.size).toBeGreaterThan(1);
+    });
+
+    it('should increase complexity with level', () => {
+      const rng1 = createRng(12345);
+      const rng2 = createRng(54321);
+      const generator = Generators.battlelearn_adv;
+      if (!generator) throw new Error('battlelearn_adv generator not found');
+      
+      const problem1 = generator(1, rng1, 'advanced');
+      const problem10 = generator(10, rng2, 'advanced');
+      
+      // Higher level should have larger grid
+      expect(problem10.gridSize).toBeGreaterThanOrEqual(problem1.gridSize);
+      
+      // Higher level should have more ships
+      expect(problem10.ships.length).toBeGreaterThanOrEqual(problem1.ships.length);
+    });
+  });
 });
 

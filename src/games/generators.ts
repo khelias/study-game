@@ -6,6 +6,7 @@ import { getRandom, uid } from '../engine/rng';
 import { getLocale } from '../i18n/index';
 import { generateSentence, getSceneName } from './sentenceTranslations';
 import { createMathSnakeProblem } from '../engine/mathSnake';
+import { placeShips } from '../engine/battlelearn';
 import type { 
   RngFunction, 
   ProfileType, 
@@ -31,7 +32,8 @@ import type {
   SceneAnchor,
   SceneSubject,
   LetterObject,
-  PatternRuleId
+  PatternRuleId,
+  BattleLearnProblem
 } from '../types/game';
 
 const profileMeta = (profileId: ProfileType) => PROFILES[profileId] || PROFILES.starter;
@@ -1410,6 +1412,176 @@ export const Generators: Record<string, GeneratorFunction> = {
       puzzle,
       pieces: shuffledPieces,
       showHints: mode === 'match',
+    };
+  },
+
+  battlelearn: (level: number, rng: RngFunction = Math.random, profile: ProfileType = 'starter'): BattleLearnProblem => {
+    // Starter profile: smaller grid, simpler questions
+    const gridSize = 5;
+    const shipLengths = level <= 3 ? [3, 2] : level <= 6 ? [3, 2, 2] : [3, 3, 2];
+    
+    // Place ships on grid
+    const ships = placeShips(gridSize, shipLengths, rng);
+    
+    // Generate simple addition question for starter
+    const num1 = Math.floor(rng() * (5 + level)) + 1;
+    const num2 = Math.floor(rng() * (5 + level)) + 1;
+    const correctAnswer = num1 + num2;
+    
+    // Generate wrong options
+    const options: string[] = [String(correctAnswer)];
+    const wrongOffsets = [-2, -1, 1, 2];
+    for (const offset of wrongOffsets) {
+      const wrongValue = correctAnswer + offset;
+      if (wrongValue > 0 && wrongValue !== correctAnswer && options.length < 4) {
+        options.push(String(wrongValue));
+      }
+    }
+    
+    // Fill to 4 options if needed
+    while (options.length < 4) {
+      const wrongValue = Math.floor(rng() * (correctAnswer * 2 + 1)) + 1;
+      if (!options.includes(String(wrongValue))) {
+        options.push(String(wrongValue));
+      }
+    }
+    
+    // Shuffle options
+    for (let i = options.length - 1; i > 0; i--) {
+      const j = Math.floor(rng() * (i + 1));
+      [options[i], options[j]] = [options[j], options[i]];
+    }
+    
+    const correctIndex = options.indexOf(String(correctAnswer));
+    
+    return {
+      type: 'battlelearn',
+      uid: uid(rng),
+      gridSize,
+      ships,
+      revealed: [],
+      hits: [],
+      sunkShips: [],
+      shotAvailable: false,
+      question: {
+        prompt: `What is ${num1} + ${num2}?`,
+        options,
+        correctIndex,
+      },
+      gameWon: false,
+    };
+  },
+
+  battlelearn_adv: (level: number, rng: RngFunction = Math.random, profile: ProfileType = 'advanced'): BattleLearnProblem => {
+    // Advanced profile: larger grid, coordinate + arithmetic questions
+    const gridSize = level <= 3 ? 6 : level <= 6 ? 7 : 8;
+    const shipLengths = level <= 3 ? [3, 2, 2] : level <= 6 ? [4, 3, 2] : [4, 3, 3, 2];
+    
+    // Place ships on grid
+    const ships = placeShips(gridSize, shipLengths, rng);
+    
+    // Generate question - mix of coordinate and arithmetic
+    const questionType = rng() < 0.5 ? 'coordinate' : 'arithmetic';
+    
+    let prompt: string;
+    let options: string[];
+    let correctIndex: number;
+    
+    if (questionType === 'coordinate') {
+      // Coordinate question: What is at position (x, y)?
+      const letters = 'ABCDEFGH'.slice(0, gridSize);
+      const row = Math.floor(rng() * gridSize);
+      const col = Math.floor(rng() * gridSize);
+      const correctCoord = `${letters[col]}${row + 1}`;
+      
+      prompt = `What coordinate is at column ${letters[col]}, row ${row + 1}?`;
+      options = [correctCoord];
+      
+      // Generate wrong options
+      while (options.length < 4) {
+        const wrongCol = Math.floor(rng() * gridSize);
+        const wrongRow = Math.floor(rng() * gridSize);
+        const wrongCoord = `${letters[wrongCol]}${wrongRow + 1}`;
+        if (!options.includes(wrongCoord)) {
+          options.push(wrongCoord);
+        }
+      }
+    } else {
+      // Arithmetic question: multiplication or harder addition
+      const isMultiplication = level > 3 && rng() < 0.5;
+      
+      if (isMultiplication) {
+        const num1 = Math.floor(rng() * (level + 2)) + 2;
+        const num2 = Math.floor(rng() * Math.min(level + 1, 10)) + 2;
+        const correctAnswer = num1 * num2;
+        
+        prompt = `What is ${num1} × ${num2}?`;
+        options = [String(correctAnswer)];
+        
+        // Generate plausible wrong answers
+        const wrongOffsets = [-num1, -num2, num1, num2];
+        for (const offset of wrongOffsets) {
+          const wrongValue = correctAnswer + offset;
+          if (wrongValue > 0 && wrongValue !== correctAnswer && options.length < 4) {
+            options.push(String(wrongValue));
+          }
+        }
+      } else {
+        const num1 = Math.floor(rng() * (10 + level * 2)) + 5;
+        const num2 = Math.floor(rng() * (10 + level * 2)) + 5;
+        const correctAnswer = num1 + num2;
+        
+        prompt = `What is ${num1} + ${num2}?`;
+        options = [String(correctAnswer)];
+        
+        const wrongOffsets = [-3, -1, 1, 3];
+        for (const offset of wrongOffsets) {
+          const wrongValue = correctAnswer + offset;
+          if (wrongValue > 0 && wrongValue !== correctAnswer && options.length < 4) {
+            options.push(String(wrongValue));
+          }
+        }
+      }
+    }
+    
+    // Fill to 4 options if needed
+    while (options.length < 4) {
+      const wrongValue = Math.floor(rng() * 100) + 1;
+      if (!options.includes(String(wrongValue))) {
+        options.push(String(wrongValue));
+      }
+    }
+    
+    // Shuffle options
+    for (let i = options.length - 1; i > 0; i--) {
+      const j = Math.floor(rng() * (i + 1));
+      [options[i], options[j]] = [options[j], options[i]];
+    }
+    
+    correctIndex = options.indexOf(options[0]!);
+    if (questionType === 'coordinate') {
+      const correctCoord = options[0];
+      correctIndex = options.indexOf(correctCoord!);
+    } else {
+      const correctAnswer = options[0];
+      correctIndex = options.indexOf(correctAnswer!);
+    }
+    
+    return {
+      type: 'battlelearn',
+      uid: uid(rng),
+      gridSize,
+      ships,
+      revealed: [],
+      hits: [],
+      sunkShips: [],
+      shotAvailable: false,
+      question: {
+        prompt,
+        options,
+        correctIndex,
+      },
+      gameWon: false,
     };
   },
 };
