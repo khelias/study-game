@@ -44,8 +44,8 @@ export const GameOverScreen: React.FC = () => {
     playClick();
     if (gameType) {
       // Navigate back to the same game route to restart
+      // The GameRoute component will handle restarting the game
       const slug = gameIdToSlug(gameType);
-      returnToMenu(); // Reset game state first
       navigate(`/games/${slug}`);
     }
   };

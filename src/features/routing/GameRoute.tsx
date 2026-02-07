@@ -22,7 +22,7 @@ export const GameRoute: React.FC = () => {
   useEffect(() => {
     // Validate the game slug
     if (!gameSlug) {
-      void navigate('/');
+      navigate('/');
       return;
     }
 
@@ -31,19 +31,20 @@ export const GameRoute: React.FC = () => {
 
     if (!isValidGameSlug(gameSlug, validGameIds)) {
       // Invalid game slug, redirect to menu
-      void navigate('/');
+      navigate('/');
       return;
     }
 
     // Check if player has hearts before starting
     if (hearts <= 0) {
       // Redirect to menu where they can buy hearts
-      void navigate('/');
+      navigate('/');
       return;
     }
 
-    // Only start the game if we're not already in a game state
-    if (gameState === 'menu') {
+    // Start the game if we're not already playing this specific game
+    // Allow restart from menu or game_over states
+    if (gameState === 'menu' || gameState === 'game_over') {
       // Record game start and check for achievements
       recordGameStart(gameId);
       startGame(gameId);
