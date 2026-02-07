@@ -277,8 +277,10 @@ export const GameScreen: React.FC = () => {
     const notification = notifications.find(n => n.id === id);
     removeNotification(id);
 
+    // Level-up: next problem and level record are already handled by levelUpOnDismiss in useAnswerHandler.
+    // Do not call handleNextLevel() here or we would set the problem twice and double-record level up.
     if (notification?.type === 'levelUp') {
-      handleNextLevel();
+      return;
     }
   };
 

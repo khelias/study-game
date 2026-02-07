@@ -705,6 +705,8 @@ export const en = {
     word_builder: {
       title: 'WORD MASTER',
       desc: 'Build a word from letters',
+      hintRevealNextCost: 'Reveal next letter ({cost}⭐)',
+      hintEliminateCost: 'Remove one wrong letter ({cost}⭐)',
     },
     word_cascade: {
       title: 'WORD CASCADE',

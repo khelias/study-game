@@ -705,6 +705,8 @@ export const et = {
     word_builder: {
       title: 'SÕNAMEISTER',
       desc: 'Lao tähtedest sõna kokku',
+      hintRevealNextCost: 'Näita järgmist tähte ({cost}⭐)',
+      hintEliminateCost: 'Eemalda üks vale täht ({cost}⭐)',
     },
     word_cascade: {
       title: 'SÕNAKOSK',

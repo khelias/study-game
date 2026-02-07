@@ -4,7 +4,7 @@
  * Game view for word builder games.
  */
 
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { playSound } from '../../engine/audio';
 import { useTranslation } from '../../i18n/useTranslation';
 import { GAME_CONFIG } from '../../games/data';
@@ -22,15 +22,37 @@ interface WordGameViewProps {
   spendStars?: (count: number) => boolean;
 }
 
-export const WordGameView: React.FC<WordGameViewProps> = ({ problem, onAnswer, soundEnabled, gameType, stars = 0 }) => {
+/** Returns ids of pool letters that are distractors (excess over target) */
+function getDistractorIds(target: string, pool: LetterObject[]): string[] {
+  const need = new Map<string, number>();
+  for (const c of target) {
+    const key = c.toUpperCase();
+    need.set(key, (need.get(key) ?? 0) + 1);
+  }
+  const ids: string[] = [];
+  for (const l of pool) {
+    const key = l.char.toUpperCase();
+    const n = need.get(key) ?? 0;
+    if (n > 0) {
+      need.set(key, n - 1);
+    } else {
+      ids.push(l.id);
+    }
+  }
+  return ids;
+}
+
+export const WordGameView: React.FC<WordGameViewProps> = ({ problem, onAnswer, soundEnabled, gameType, stars = 0, spendStars }) => {
   const t = useTranslation();
   const baseType = gameType?.replace('_adv', '') ?? 'word_builder';
   const paidHints = GAME_CONFIG[baseType]?.paidHints ?? [];
   const [userWord, setUserWord] = useState<Array<{ char: string; id: string } | null>>([]);
   const [pool, setPool] = useState<Array<{ char: string; id: string }>>(problem.shuffled || []);
-  
+  const [eliminatedLetterIds, setEliminatedLetterIds] = useState<string[]>([]);
+
   // Reset state when problem changes
   useEffect(() => { 
+    setEliminatedLetterIds([]);
     // Build initial word state
     const next: Array<{ char: string; id: string } | null> = [];
     for (let i = 0; i < problem.target.length; i++) {
@@ -81,16 +103,15 @@ export const WordGameView: React.FC<WordGameViewProps> = ({ problem, onAnswer, s
       const newWord = [...prevWord];
       newWord[emptyIndex] = letter;
       
-      // Check if all positions are filled
+      // Check if all positions are filled (defer onAnswer to avoid setState-during-render)
       if (newWord.every(l => l !== null)) {
         const userString = newWord.map(l => (l as LetterObject).char).join('');
-        // Case-insensitive comparison for word games
-        if (userString.toLowerCase() === problem.target.toLowerCase()) {
-          onAnswer(true);
+        const isCorrect = userString.toLowerCase() === problem.target.toLowerCase();
+        if (isCorrect) {
+          setTimeout(() => onAnswer(true), 0);
         } else {
           setTimeout(() => { 
             onAnswer(false);
-            // Reset to initial state
             const resetWord: Array<{ char: string; id: string } | null> = [];
             for (let i = 0; i < problem.target.length; i++) {
               if (problem.preFilledPositions?.includes(i)) {
@@ -123,6 +144,78 @@ export const WordGameView: React.FC<WordGameViewProps> = ({ problem, onAnswer, s
     
     setPool(prev => prev.filter(l => l.id !== letter.id));
   };
+
+  const visiblePool = useMemo(
+    () => pool.filter(l => !eliminatedLetterIds.includes(l.id)),
+    [pool, eliminatedLetterIds]
+  );
+
+  const getResetState = useCallback(() => {
+    const resetWord: Array<{ char: string; id: string } | null> = [];
+    for (let i = 0; i < problem.target.length; i++) {
+      if (problem.preFilledPositions?.includes(i)) {
+        const char = problem.target[i];
+        resetWord[i] = char ? { char, id: `prefilled-${i}` } : null;
+      } else {
+        resetWord[i] = null;
+      }
+    }
+    const resetPool = [...(problem.shuffled || [])];
+    problem.preFilledPositions?.forEach(idx => {
+      const char = problem.target[idx];
+      if (char) {
+        const indexInPool = resetPool.findIndex(
+          l => l.char.toUpperCase() === char.toUpperCase()
+        );
+        if (indexInPool !== -1) resetPool.splice(indexInPool, 1);
+      }
+    });
+    return { resetWord, resetPool };
+  }, [problem.target, problem.shuffled, problem.preFilledPositions]);
+
+  const handlePaidHint = useCallback(
+    (hintId: string) => {
+      if (!spendStars) return;
+      if (hintId === 'reveal_next') {
+        const firstEmpty = userWord.findIndex((l, idx) => !isPreFilled(idx) && l === null);
+        if (firstEmpty === -1) return;
+        const neededChar = problem.target[firstEmpty];
+        if (!neededChar) return;
+        const letterInPool = pool.find(
+          l => l.char.toUpperCase() === neededChar.toUpperCase() && !eliminatedLetterIds.includes(l.id)
+        );
+        if (!letterInPool) return;
+        if (!spendStars(1)) return;
+        const nextWord: Array<{ char: string; id: string } | null> = [...userWord];
+        nextWord[firstEmpty] = letterInPool;
+        setUserWord(nextWord);
+        setPool(prev => prev.filter(l => l.id !== letterInPool.id));
+        if (nextWord.every(l => l !== null)) {
+          const userString = nextWord.map(l => (l as LetterObject).char).join('');
+          const isCorrect = userString.toLowerCase() === problem.target.toLowerCase();
+          const { resetWord, resetPool } = getResetState();
+          const delay = isCorrect ? 0 : 500;
+          setTimeout(() => {
+            onAnswer(isCorrect);
+            if (!isCorrect) {
+              setUserWord(resetWord);
+              setPool(resetPool);
+            }
+          }, delay);
+        }
+        return;
+      }
+      if (hintId === 'eliminate') {
+        const distractorIds = getDistractorIds(problem.target, pool);
+        const stillPresent = distractorIds.filter(id => !eliminatedLetterIds.includes(id));
+        if (stillPresent.length === 0) return;
+        if (!spendStars(1)) return;
+        const pick = stillPresent[Math.floor(Math.random() * stillPresent.length)]!;
+        setEliminatedLetterIds(prev => [...prev, pick]);
+      }
+    },
+    [problem.target, pool, userWord, eliminatedLetterIds, spendStars, onAnswer, getResetState]
+  );
 
   const handleRemove = (letter: LetterObject, idx: number): void => {
     // Cannot remove pre-filled letters
@@ -187,7 +280,7 @@ export const WordGameView: React.FC<WordGameViewProps> = ({ problem, onAnswer, s
       
       {/* Letter pool */}
       <div className="flex flex-wrap gap-2 sm:gap-3 justify-center">
-        {pool.map(l => (
+        {visiblePool.map(l => (
           <button 
             key={l.id} 
             onPointerDown={(e) => {
@@ -203,7 +296,7 @@ export const WordGameView: React.FC<WordGameViewProps> = ({ problem, onAnswer, s
         ))}
       </div>
       {paidHints.length > 0 && (
-        <PaidHintButtons hints={paidHints} stars={stars ?? 0} onHintClick={() => {}} />
+        <PaidHintButtons hints={paidHints} stars={stars ?? 0} onHintClick={handlePaidHint} />
       )}
     </div>
   );
