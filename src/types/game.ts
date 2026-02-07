@@ -320,6 +320,32 @@ export interface PieceState extends ShapePiece {
   currentRotation: number;
 }
 
+// BattleLearn problem (Battleship-inspired educational game)
+export interface Ship {
+  id: string;
+  length: number;
+  positions: Array<[number, number]>;  // Grid coordinates occupied by ship
+  hits: number;  // Number of hits on this ship
+}
+
+export interface BattleLearnQuestion {
+  prompt: string;           // Question text
+  options: string[];        // Multiple choice options
+  correctIndex: number;     // Index of correct answer
+}
+
+export interface BattleLearnProblem extends BaseProblem {
+  type: 'battlelearn';
+  gridSize: number;         // Grid dimensions (e.g., 5 for 5x5)
+  ships: Ship[];            // Ship placements (hidden from UI initially)
+  revealed: Array<[number, number]>;  // Cells that have been shot
+  hits: Array<[number, number]>;      // Cells that were hits
+  sunkShips: string[];      // IDs of ships that have been sunk
+  shotAvailable: boolean;   // Whether player can take a shot
+  question: BattleLearnQuestion;  // Current educational question
+  gameWon: boolean;         // All ships sunk
+}
+
 // Answer metadata for game-specific actions
 // Union type for all problems
 export type Problem =
@@ -337,7 +363,8 @@ export type Problem =
   | UnitConversionProblem
   | CompareSizesProblem
   | StarMapperProblem
-  | ShapeShiftProblem;
+  | ShapeShiftProblem
+  | BattleLearnProblem;
 
 // RNG function type
 export type RngFunction = () => number;
