@@ -838,12 +838,14 @@ export const en = {
       desc: 'Answer and sink ships',
       hintRevealEmptyCost: 'Reveal one empty cell ({cost}⭐)',
       hintRevealCost: 'Reveal one ship position ({cost}⭐)',
+      hintEliminateCost: 'Eliminate one wrong answer ({cost}⭐)',
     },
     battlelearn_adv: {
       title: 'BATTLELEARN',
       desc: 'Master coordinates and arithmetic',
       hintRevealEmptyCost: 'Reveal one empty cell ({cost}⭐)',
       hintRevealCost: 'Reveal one ship position ({cost}⭐)',
+      hintEliminateCost: 'Eliminate one wrong answer ({cost}⭐)',
     },
   },
 

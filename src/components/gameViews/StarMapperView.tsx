@@ -57,7 +57,6 @@ export const StarMapperView: React.FC<StarMapperViewProps> = ({
 
   // Reset state when problem changes
   /* eslint-disable react-hooks/set-state-in-effect -- reset all state when problem.uid changes */
-  /* eslint-disable-next-line @typescript-eslint/no-unsafe-call -- useEffect from React */
   useEffect(() => {
     setSelectedStar(null);
     setDrawnLines([]);

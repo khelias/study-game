@@ -60,6 +60,8 @@ export const BattleLearnView: React.FC<BattleLearnViewProps> = ({
   const [selectedOption, setSelectedOption] = useState<number | null>(null);
   const [gamePhase, setGamePhase] = useState<'shooting' | 'answering'>('shooting');
   const [currentUid, setCurrentUid] = useState(problem.uid);
+  /** Indices of options eliminated in the problem modal (only visible while modal is open); reset per question */
+  const [eliminatedIndices, setEliminatedIndices] = useState<number[]>([]);
 
   // Only reset game state when it's a brand new game (different UID AND empty revealed array)
   // Update question when parent provides new question (after answering)
@@ -80,11 +82,13 @@ export const BattleLearnView: React.FC<BattleLearnViewProps> = ({
       setQuestion(problem.question);
       setCurrentUid(problem.uid);
       setSelectedOption(null);
+      setEliminatedIndices([]);
       setGamePhase('shooting');
     } else {
       // Same game session, new question - update question and sync board state from problem
       setQuestion(problem.question);
       setCurrentUid(problem.uid);
+      setEliminatedIndices([]);
       // Sync board state to ensure any external updates are reflected
       setGameState(prev => ({
         ...prev,
@@ -101,6 +105,19 @@ export const BattleLearnView: React.FC<BattleLearnViewProps> = ({
   const handlePaidHint = useCallback(
     (hintId: string) => {
       if (!spendStars) return;
+
+      if (hintId === 'eliminate') {
+        if (spendStars(1) === false) return;
+        const correctIdx = question.correctIndex;
+        const wrongIndices = question.options
+          .map((_, i) => i)
+          .filter((i) => i !== correctIdx && !eliminatedIndices.includes(i));
+        if (wrongIndices.length === 0) return;
+        const pick = wrongIndices[Math.floor(Math.random() * wrongIndices.length)]!;
+        setEliminatedIndices((prev) => [...prev, pick]);
+        playSound('click', soundEnabled);
+        return;
+      }
 
       const { gridSize, ships, revealed, hits, sunkShips } = gameState;
       const revealedSet = new Set(revealed.map(([r, c]) => `${r},${c}`));
@@ -165,7 +182,7 @@ export const BattleLearnView: React.FC<BattleLearnViewProps> = ({
         if (gameWon) setTimeout(() => playSound('success', soundEnabled), 500);
       }
     },
-    [gameState, problem, spendStars, soundEnabled, setProblem]
+    [gameState, problem, question.correctIndex, question.options, eliminatedIndices, spendStars, soundEnabled, setProblem]
   );
 
   const handleOptionSelect = (index: number) => {
@@ -228,6 +245,7 @@ export const BattleLearnView: React.FC<BattleLearnViewProps> = ({
     } else {
       // MISS: Must answer problem to continue
       playSound('wrong', soundEnabled);
+      setEliminatedIndices([]); // Fresh state for this question
       setGamePhase('answering'); // Switch to problem phase (opens modal)
     }
     
@@ -401,10 +419,20 @@ export const BattleLearnView: React.FC<BattleLearnViewProps> = ({
         selectedOption={selectedOption}
         onOptionSelect={handleOptionSelect}
         disabled={selectedOption !== null}
+        eliminatedIndices={eliminatedIndices}
         icon={<Target className="text-orange-600" />}
       />
+      {/* Same hint area as other games: shooting = grid hints, answering = eliminate only */}
       {paidHints.length > 0 && (
-        <PaidHintButtons hints={paidHints} stars={stars} onHintClick={handlePaidHint} disabled={gameState.gameWon || gamePhase === 'answering'} />
+        <PaidHintButtons
+          hints={gamePhase === 'shooting' ? paidHints.filter((h) => h.id !== 'eliminate') : paidHints.filter((h) => h.id === 'eliminate')}
+          stars={stars}
+          onHintClick={handlePaidHint}
+          disabled={
+            gameState.gameWon ||
+            (gamePhase === 'answering' && (selectedOption !== null || eliminatedIndices.length >= question.options.length - 1))
+          }
+        />
       )}
     </div>
   );

@@ -41,6 +41,7 @@ export const TimeGameView: React.FC<TimeGameViewProps> = ({
   const feedbackTimeoutsRef = useRef<ReturnType<typeof setTimeout>[]>([]);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- reset UI when problem.uid changes
     setDisabled([]);
     setEliminatedIndices([]);
     setFeedback(null);

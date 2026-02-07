@@ -56,6 +56,7 @@ export const BalanceScaleView: React.FC<BalanceScaleViewProps> = ({
   const [tilt, setTilt] = useState<number>(-10);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- reset UI when problem changes
     setDisabled([]);
     setEliminatedIndices([]);
     setTilt(-10);

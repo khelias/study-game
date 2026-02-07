@@ -1529,7 +1529,7 @@ export const Generators: Record<string, GeneratorFunction> = {
       const question = questionType();
       prompt = question.prompt;
       correctAnswer = question.correctAnswer;
-      options = generateOptions(correctAnswer as number, 4, rng);
+      options = generateOptions(correctAnswer, 4, rng);
     } else if (level <= 6) {
       // Level 4-6: Subtraction/addition and word problems
       const questionTypes = [
@@ -1548,7 +1548,7 @@ export const Generators: Record<string, GeneratorFunction> = {
       const question = questionType();
       prompt = question.prompt;
       correctAnswer = question.correctAnswer;
-      options = generateOptions(correctAnswer as number, 4, rng);
+      options = generateOptions(correctAnswer, 4, rng);
     } else {
       // Level 7+: Coordinates/logic and multi-step
       const questionTypes = [

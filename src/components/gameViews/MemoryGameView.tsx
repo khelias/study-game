@@ -36,6 +36,7 @@ export const MemoryGameView: React.FC<MemoryGameViewProps> = ({ problem, onAnswe
   const problemUid: string = problem.uid;
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- reset UI when problem changes
     setCards(problem.cards);
     setFlipped([]);
     setMatchedPairs(0);

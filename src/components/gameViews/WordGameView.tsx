@@ -51,7 +51,8 @@ export const WordGameView: React.FC<WordGameViewProps> = ({ problem, onAnswer, s
   const [eliminatedLetterIds, setEliminatedLetterIds] = useState<string[]>([]);
 
   // Reset state when problem changes
-  useEffect(() => { 
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- reset UI when problem changes
     setEliminatedLetterIds([]);
     // Build initial word state
     const next: Array<{ char: string; id: string } | null> = [];
@@ -81,16 +82,15 @@ export const WordGameView: React.FC<WordGameViewProps> = ({ problem, onAnswer, s
         }
       }
     });
-    
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     setUserWord(next);
     setPool(remainingPool);
   }, [problem.uid, problem.target, problem.shuffled, problem.preFilledPositions]);
-  
-  const isPreFilled = (index: number): boolean => {
-    return problem.preFilledPositions?.includes(index) || false;
-  };
-  
+
+  const isPreFilled = useCallback(
+    (index: number): boolean => problem.preFilledPositions?.includes(index) ?? false,
+    [problem.preFilledPositions]
+  );
+
   const handleSelect = (letter: LetterObject): void => {
     playSound('click', soundEnabled);
     
@@ -214,7 +214,7 @@ export const WordGameView: React.FC<WordGameViewProps> = ({ problem, onAnswer, s
         setEliminatedLetterIds(prev => [...prev, pick]);
       }
     },
-    [problem.target, pool, userWord, eliminatedLetterIds, spendStars, onAnswer, getResetState]
+    [problem.target, pool, userWord, eliminatedLetterIds, spendStars, onAnswer, getResetState, isPreFilled]
   );
 
   const handleRemove = (letter: LetterObject, idx: number): void => {

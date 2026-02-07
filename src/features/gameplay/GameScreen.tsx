@@ -178,7 +178,7 @@ export const GameScreen: React.FC = () => {
 
   // Handle next level (legacy - now handled automatically in Phase 3)
   // This is kept for backward compatibility with level-up modal
-  const handleNextLevel = () => {
+  const _handleNextLevel = () => {
     if (!gameType) return;
 
     clearNotifications();

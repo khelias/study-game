@@ -60,6 +60,7 @@ export const CompareSizesView: React.FC<CompareSizesViewProps> = ({
   const [eliminatedOptions, setEliminatedOptions] = useState<CompareOption[]>([]);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- reset UI when problem.uid changes
     setEliminatedOptions([]);
   }, [problem.uid]);
 

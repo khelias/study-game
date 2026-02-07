@@ -141,6 +141,7 @@ export const WordCascadeView: React.FC<WordCascadeViewProps> = ({
   );
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- reset UI when problem changes
     setProgress('');
     setStatus('idle');
     setStrikes(0);
