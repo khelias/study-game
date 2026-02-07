@@ -3,7 +3,7 @@ import { SYLLABLE_WORDS } from './syllableWords';
 import { CONSTELLATIONS, getConstellationsForLevel } from './constellations';
 import { PUZZLES } from './puzzles';
 import { getRandom, uid } from '../engine/rng';
-import { getLocale } from '../i18n/index';
+import { getLocale, getTranslations } from '../i18n/index';
 import { generateSentence, getSceneName } from './sentenceTranslations';
 import { createMathSnakeProblem } from '../engine/mathSnake';
 import { placeShips } from '../engine/battlelearn';
@@ -1427,31 +1427,62 @@ export const Generators: Record<string, GeneratorFunction> = {
     let correctAnswer: number | string;
     let options: string[];
     
-    // Choose problem type based on level
+    // Choose problem type based on level with variety
     if (level <= 3) {
-      // Visual fleet counting
-      const shipCount = level + 1;
-      correctAnswer = shipCount;
-      const shipEmoji = '🚢 '.repeat(shipCount);
-      prompt = `${shipEmoji}\nMitu laeva? / How many ships?`;
-      options = generateOptions(correctAnswer, 4, rng);
+      // Level 1-3: Basic counting/arithmetic (7 question types)
+      const questionTypes = [
+        () => generateCountShipsQuestion(level, rng),
+        () => generateSimpleAddition(level, rng),
+        () => generateSimpleSubtraction(level, rng),
+        () => generateGreaterThanQuestion(level, rng),
+        () => generateCountShipsQuestion(level, rng), // Count ships appears twice for more frequency
+        () => generateSimpleAddition(level, rng), // Simple addition appears twice
+        () => generateSimpleSubtraction(level, rng), // Simple subtraction appears twice
+      ];
+      const questionType = questionTypes[Math.floor(rng() * questionTypes.length)]!;
+      const question = questionType();
+      prompt = question.prompt;
+      correctAnswer = question.correctAnswer;
+      options = generateOptions(correctAnswer as number, 4, rng);
     } else if (level <= 6) {
-      // Ammunition subtraction
-      const total = Math.floor(rng() * 10) + 10;
-      const fired = Math.floor(rng() * 5) + 3;
-      correctAnswer = total - fired;
-      prompt = `${total} torpeedo - ${fired} tulistatud = ? / ${total} torpedoes - ${fired} fired = ?`;
-      options = generateOptions(correctAnswer, 4, rng);
+      // Level 4-6: Subtraction/addition (8 question types)
+      const questionTypes = [
+        () => generateAmmunitionQuestion(level, rng),
+        () => generateMissingNumber(level, rng),
+        () => generateWordProblem1(level, rng),
+        () => generateWordProblem2(level, rng),
+        () => generateTwoStepProblem(level, rng),
+        () => generateSimpleAddition(level, rng),
+        () => generateSimpleSubtraction(level, rng),
+        () => generateAmmunitionQuestion(level, rng), // Appears twice for frequency
+      ];
+      const questionType = questionTypes[Math.floor(rng() * questionTypes.length)]!;
+      const question = questionType();
+      prompt = question.prompt;
+      correctAnswer = question.correctAnswer;
+      options = generateOptions(correctAnswer as number, 4, rng);
     } else {
-      // Coordinate navigation
-      const cols = ['A', 'B', 'C', 'D', 'E', 'F'];
-      const startCol = Math.floor(rng() * 3);
-      const startRow = Math.floor(rng() * gridSize) + 1;
-      const move = Math.floor(rng() * 2) + 1;
-      const correctCol = cols[startCol + move];
-      correctAnswer = `${correctCol}-${startRow}`;
-      prompt = `Positsioon ${cols[startCol]}-${startRow}, liigu ${move} paremale / Position ${cols[startCol]}-${startRow}, move ${move} right`;
-      options = generateCoordinateOptions(correctAnswer, gridSize, rng);
+      // Level 7+: Coordinates/logic (7 question types)
+      const questionTypes = [
+        () => generateNavigateQuestion(level, rng, gridSize),
+        () => generateSequenceQuestion(level, rng),
+        () => generateAreaProblem(level, rng),
+        () => generateWordProblem3(level, rng),
+        () => generateNavigateQuestion(level, rng, gridSize), // Appears twice
+        () => generateTwoStepProblem(level, rng),
+        () => generateSequenceQuestion(level, rng), // Appears twice
+      ];
+      const questionType = questionTypes[Math.floor(rng() * questionTypes.length)]!;
+      const question = questionType();
+      prompt = question.prompt;
+      correctAnswer = question.correctAnswer;
+      
+      // Check if answer is a coordinate string
+      if (typeof correctAnswer === 'string' && correctAnswer.includes('-')) {
+        options = generateCoordinateOptions(correctAnswer, gridSize, rng);
+      } else {
+        options = generateOptions(correctAnswer as number, 4, rng);
+      }
     }
     
     const correctIndex = Math.floor(rng() * 4);
@@ -1487,45 +1518,74 @@ export const Generators: Record<string, GeneratorFunction> = {
     let correctAnswer: number | string;
     let options: string[];
     
-    // Choose problem type based on level
+    // Choose problem type based on level with variety
     if (level <= 5) {
-      // Pattern recognition
-      const patterns = [
-        { seq: [2, 4, 8], answer: 16, desc: 'doubling' },
-        { seq: [5, 10, 15], answer: 20, desc: '+5' },
-        { seq: [3, 6, 12], answer: 24, desc: 'doubling' },
-        { seq: [1, 3, 5], answer: 7, desc: '+2' },
-        { seq: [10, 20, 30], answer: 40, desc: '+10' },
+      // Level 1-5: Pattern recognition and basic distance (7 question types)
+      const questionTypes = [
+        () => generatePatternQuestion(level, rng),
+        () => generateDistanceQuestion(level, rng, gridSize),
+        () => generateWordProblem3(level, rng),
+        () => generateNavigateQuestion(level, rng, gridSize),
+        () => generateAreaProblem(level, rng),
+        () => generatePatternQuestion(level, rng), // Appears twice
+        () => generateDistanceQuestion(level, rng, gridSize), // Appears twice
       ];
-      const pattern = patterns[Math.floor(rng() * patterns.length)]!;
-      correctAnswer = pattern.answer;
-      prompt = `Signaali muster: ${pattern.seq.join(', ')}, __ / Signal pattern: ${pattern.seq.join(', ')}, __`;
-      options = generateOptions(correctAnswer, 4, rng);
-    } else if (level <= 10) {
-      // Distance calculation (same row/col for simplicity)
-      const useRow = rng() < 0.5;
-      const x1 = Math.floor(rng() * gridSize);
-      const y1 = Math.floor(rng() * gridSize);
+      const questionType = questionTypes[Math.floor(rng() * questionTypes.length)]!;
+      const question = questionType();
+      prompt = question.prompt;
+      correctAnswer = question.correctAnswer;
       
-      if (useRow) {
-        // Same row, different column
-        const y2 = y1 + Math.floor(rng() * 3) + 2;
-        correctAnswer = Math.abs(y2 - y1);
-        prompt = `Laev (${x1},${y1}), sihtmärk (${x1},${Math.min(y2, gridSize - 1)}). Kaugus? / Ship at (${x1},${y1}), target at (${x1},${Math.min(y2, gridSize - 1)}). Distance?`;
+      // Check if answer is a coordinate string
+      if (typeof correctAnswer === 'string' && (correctAnswer.includes('-') || correctAnswer.includes('('))) {
+        options = generateCoordinateOptions(correctAnswer, gridSize, rng);
       } else {
-        // Same column, different row
-        const x2 = x1 + Math.floor(rng() * 3) + 2;
-        correctAnswer = Math.abs(x2 - x1);
-        prompt = `Laev (${x1},${y1}), sihtmärk (${Math.min(x2, gridSize - 1)},${y1}). Kaugus? / Ship at (${x1},${y1}), target at (${Math.min(x2, gridSize - 1)},${y1}). Distance?`;
+        options = generateOptions(correctAnswer as number, 4, rng);
       }
-      options = generateOptions(correctAnswer, 4, rng);
+    } else if (level <= 10) {
+      // Level 6-10: Complex arithmetic and multi-step navigation (8 question types)
+      const questionTypes = [
+        () => generateMultiMoveQuestion(level, rng, gridSize),
+        () => generateFleetMultiplyQuestion(level, rng),
+        () => generateFormationCount(level, rng),
+        () => generateDistanceQuestion(level, rng, gridSize),
+        () => generateWordProblem3(level, rng),
+        () => generateAreaProblem(level, rng),
+        () => generateFleetMultiplyQuestion(level, rng), // Appears twice
+        () => generateMultiMoveQuestion(level, rng, gridSize), // Appears twice
+      ];
+      const questionType = questionTypes[Math.floor(rng() * questionTypes.length)]!;
+      const question = questionType();
+      prompt = question.prompt;
+      correctAnswer = question.correctAnswer;
+      
+      // Check if answer is a coordinate string
+      if (typeof correctAnswer === 'string' && (correctAnswer.includes('-') || correctAnswer.includes('('))) {
+        options = generateCoordinateOptions(correctAnswer, gridSize, rng);
+      } else {
+        options = generateOptions(correctAnswer as number, 4, rng);
+      }
     } else {
-      // Fleet multiplication
-      const ships = Math.floor(rng() * 3) + 2;
-      const cannonsPerShip = Math.floor(rng() * 4) + 3;
-      correctAnswer = ships * cannonsPerShip;
-      prompt = `${ships} hävitajat × ${cannonsPerShip} kahureid = ? / ${ships} destroyers × ${cannonsPerShip} cannons = ?`;
-      options = generateOptions(correctAnswer, 4, rng);
+      // Level 11+: Advanced coordinate systems and complex mathematics (7 question types)
+      const questionTypes = [
+        () => generateVectorAddition(level, rng),
+        () => generateMultiMoveQuestion(level, rng, gridSize),
+        () => generateFleetMultiplyQuestion(level, rng),
+        () => generateFormationCount(level, rng),
+        () => generateDistanceQuestion(level, rng, gridSize),
+        () => generateVectorAddition(level, rng), // Appears twice
+        () => generateMultiMoveQuestion(level, rng, gridSize), // Appears twice
+      ];
+      const questionType = questionTypes[Math.floor(rng() * questionTypes.length)]!;
+      const question = questionType();
+      prompt = question.prompt;
+      correctAnswer = question.correctAnswer;
+      
+      // Check if answer is a coordinate string
+      if (typeof correctAnswer === 'string' && (correctAnswer.includes('-') || correctAnswer.includes('('))) {
+        options = generateCoordinateOptions(correctAnswer, gridSize, rng);
+      } else {
+        options = generateOptions(correctAnswer as number, 4, rng);
+      }
     }
     
     const correctIndex = Math.floor(rng() * 4);
@@ -1549,6 +1609,280 @@ export const Generators: Record<string, GeneratorFunction> = {
     };
   },
 };
+
+/**
+ * BattleLearn Question Generators
+ * These functions generate different types of questions for the BattleLearn game
+ */
+
+// Helper to format translation with parameters
+function formatQuestion(template: string, params: Record<string, string | number>): string {
+  let result = template;
+  for (const [key, value] of Object.entries(params)) {
+    result = result.replaceAll(`{${key}}`, String(value));
+  }
+  return result;
+}
+
+// Starter Profile Question Generators (Level 1-3: Basic counting/arithmetic)
+
+function generateCountShipsQuestion(level: number, rng: RngFunction): { prompt: string; correctAnswer: number } {
+  const t = getTranslations();
+  const shipCount = Math.min(level + 1, 10);
+  const shipEmoji = '🚢 '.repeat(shipCount);
+  return {
+    prompt: `${shipEmoji}\n${t.battlelearn.questions.countShips}`,
+    correctAnswer: shipCount,
+  };
+}
+
+function generateSimpleAddition(level: number, rng: RngFunction): { prompt: string; correctAnswer: number } {
+  const t = getTranslations();
+  const a = Math.floor(rng() * 5) + 1;
+  const b = Math.floor(rng() * 5) + 1;
+  return {
+    prompt: formatQuestion(t.battlelearn.questions.simpleAddition, { a, b }),
+    correctAnswer: a + b,
+  };
+}
+
+function generateSimpleSubtraction(level: number, rng: RngFunction): { prompt: string; correctAnswer: number } {
+  const t = getTranslations();
+  const a = Math.floor(rng() * 10) + 5;
+  const b = Math.floor(rng() * (a - 1)) + 1;
+  return {
+    prompt: formatQuestion(t.battlelearn.questions.simpleSubtraction, { a, b }),
+    correctAnswer: a - b,
+  };
+}
+
+function generateGreaterThanQuestion(level: number, rng: RngFunction): { prompt: string; correctAnswer: number } {
+  const t = getTranslations();
+  const a = Math.floor(rng() * 10) + 1;
+  const b = Math.floor(rng() * 10) + 1;
+  const larger = Math.max(a, b);
+  return {
+    prompt: formatQuestion(t.battlelearn.questions.greaterThan, { a, b }),
+    correctAnswer: larger,
+  };
+}
+
+// Starter Profile Question Generators (Level 4-6: Subtraction/addition)
+
+function generateAmmunitionQuestion(level: number, rng: RngFunction): { prompt: string; correctAnswer: number } {
+  const t = getTranslations();
+  const total = Math.floor(rng() * 10) + 10;
+  const fired = Math.floor(rng() * 5) + 3;
+  return {
+    prompt: formatQuestion(t.battlelearn.questions.ammunition, { total, fired }),
+    correctAnswer: total - fired,
+  };
+}
+
+function generateMissingNumber(level: number, rng: RngFunction): { prompt: string; correctAnswer: number } {
+  const t = getTranslations();
+  const a = Math.floor(rng() * 10) + 1;
+  const missing = Math.floor(rng() * 10) + 1;
+  const result = a + missing;
+  return {
+    prompt: formatQuestion(t.battlelearn.questions.missingNumber, { a, result }),
+    correctAnswer: missing,
+  };
+}
+
+function generateWordProblem1(level: number, rng: RngFunction): { prompt: string; correctAnswer: number } {
+  const t = getTranslations();
+  const a = Math.floor(rng() * 5) + 2;
+  const b = Math.floor(rng() * 5) + 2;
+  return {
+    prompt: formatQuestion(t.battlelearn.questions.wordProblem1, { a, b }),
+    correctAnswer: a + b,
+  };
+}
+
+function generateWordProblem2(level: number, rng: RngFunction): { prompt: string; correctAnswer: number } {
+  const t = getTranslations();
+  const total = Math.floor(rng() * 10) + 10;
+  const left = Math.floor(rng() * (total - 2)) + 1;
+  return {
+    prompt: formatQuestion(t.battlelearn.questions.wordProblem2, { total, left }),
+    correctAnswer: total - left,
+  };
+}
+
+function generateTwoStepProblem(level: number, rng: RngFunction): { prompt: string; correctAnswer: number } {
+  const t = getTranslations();
+  const initial = Math.floor(rng() * 5) + 5;
+  const a = Math.floor(rng() * 3) + 1;
+  const b = Math.floor(rng() * 3) + 1;
+  return {
+    prompt: formatQuestion(t.battlelearn.questions.twoStep, { a, b, initial }),
+    correctAnswer: initial + a - b,
+  };
+}
+
+// Starter Profile Question Generators (Level 7+: Coordinates/logic)
+
+function generateNavigateQuestion(level: number, rng: RngFunction, gridSize: number): { prompt: string; correctAnswer: string } {
+  const t = getTranslations();
+  const cols = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'];
+  const directions = ['navigate', 'navigateLeft'] as const;
+  const direction = directions[Math.floor(rng() * directions.length)]!;
+  
+  if (direction === 'navigate') {
+    const startCol = Math.floor(rng() * (gridSize - 2));
+    const moves = Math.floor(rng() * 2) + 1;
+    const startRow = Math.floor(rng() * gridSize) + 1;
+    const correctCol = cols[startCol + moves];
+    const start = `${cols[startCol]}-${startRow}`;
+    return {
+      prompt: formatQuestion(t.battlelearn.questions.navigate, { start, moves }),
+      correctAnswer: `${correctCol}-${startRow}`,
+    };
+  } else {
+    const startCol = Math.floor(rng() * (gridSize - 2)) + 2;
+    const moves = Math.floor(rng() * 2) + 1;
+    const startRow = Math.floor(rng() * gridSize) + 1;
+    const correctCol = cols[startCol - moves];
+    const start = `${cols[startCol]}-${startRow}`;
+    return {
+      prompt: formatQuestion(t.battlelearn.questions.navigateLeft, { start, moves }),
+      correctAnswer: `${correctCol}-${startRow}`,
+    };
+  }
+}
+
+function generateSequenceQuestion(level: number, rng: RngFunction): { prompt: string; correctAnswer: number } {
+  const t = getTranslations();
+  const patterns = [
+    { seq: [2, 4, 6], answer: 8 },
+    { seq: [5, 10, 15], answer: 20 },
+    { seq: [1, 3, 5], answer: 7 },
+    { seq: [10, 20, 30], answer: 40 },
+    { seq: [3, 6, 9], answer: 12 },
+  ];
+  const pattern = patterns[Math.floor(rng() * patterns.length)]!;
+  return {
+    prompt: formatQuestion(t.battlelearn.questions.sequenceNext, { sequence: pattern.seq.join(', ') }),
+    correctAnswer: pattern.answer,
+  };
+}
+
+function generateAreaProblem(level: number, rng: RngFunction): { prompt: string; correctAnswer: number } {
+  const t = getTranslations();
+  const width = Math.floor(rng() * 4) + 2;
+  const height = Math.floor(rng() * 4) + 2;
+  return {
+    prompt: formatQuestion(t.battlelearn.questions.areaProblem, { width, height }),
+    correctAnswer: width * height,
+  };
+}
+
+// Advanced Profile Question Generators (Level 1-5)
+
+function generatePatternQuestion(level: number, rng: RngFunction): { prompt: string; correctAnswer: number } {
+  const t = getTranslations();
+  const patterns = [
+    { seq: [2, 4, 8], answer: 16 },
+    { seq: [5, 10, 15], answer: 20 },
+    { seq: [3, 6, 12], answer: 24 },
+    { seq: [1, 3, 5], answer: 7 },
+    { seq: [10, 20, 30], answer: 40 },
+    { seq: [1, 2, 4], answer: 8 },
+    { seq: [3, 9, 27], answer: 81 },
+  ];
+  const pattern = patterns[Math.floor(rng() * patterns.length)]!;
+  return {
+    prompt: formatQuestion(t.battlelearn.questions.patternNext, { pattern: pattern.seq.join(', ') }),
+    correctAnswer: pattern.answer,
+  };
+}
+
+function generateDistanceQuestion(level: number, rng: RngFunction, gridSize: number): { prompt: string; correctAnswer: number } {
+  const t = getTranslations();
+  const useRow = rng() < 0.5;
+  const x1 = Math.floor(rng() * gridSize);
+  const y1 = Math.floor(rng() * gridSize);
+  
+  if (useRow) {
+    const y2 = y1 + Math.floor(rng() * 3) + 2;
+    const distance = Math.abs(Math.min(y2, gridSize - 1) - y1);
+    return {
+      prompt: formatQuestion(t.battlelearn.questions.distance, { 
+        x1, y1, x2: x1, y2: Math.min(y2, gridSize - 1) 
+      }),
+      correctAnswer: distance,
+    };
+  } else {
+    const x2 = x1 + Math.floor(rng() * 3) + 2;
+    const distance = Math.abs(Math.min(x2, gridSize - 1) - x1);
+    return {
+      prompt: formatQuestion(t.battlelearn.questions.distance, { 
+        x1, y1, x2: Math.min(x2, gridSize - 1), y2: y1 
+      }),
+      correctAnswer: distance,
+    };
+  }
+}
+
+function generateWordProblem3(level: number, rng: RngFunction): { prompt: string; correctAnswer: number } {
+  const t = getTranslations();
+  const ships = Math.floor(rng() * 4) + 2;
+  const perShip = Math.floor(rng() * 5) + 3;
+  return {
+    prompt: formatQuestion(t.battlelearn.questions.wordProblem3, { ships, perShip }),
+    correctAnswer: ships * perShip,
+  };
+}
+
+// Advanced Profile Question Generators (Level 6-10)
+
+function generateMultiMoveQuestion(level: number, rng: RngFunction, gridSize: number): { prompt: string; correctAnswer: string } {
+  const t = getTranslations();
+  const x = Math.floor(rng() * (gridSize - 3));
+  const y = Math.floor(rng() * (gridSize - 3));
+  const dx = Math.floor(rng() * 2) + 1;
+  const dy = Math.floor(rng() * 2) + 1;
+  return {
+    prompt: formatQuestion(t.battlelearn.questions.multiMove, { x, y, dx, dy }),
+    correctAnswer: `(${x + dx},${y + dy})`,
+  };
+}
+
+function generateFleetMultiplyQuestion(level: number, rng: RngFunction): { prompt: string; correctAnswer: number } {
+  const t = getTranslations();
+  const ships = Math.floor(rng() * 4) + 3;
+  const cannons = Math.floor(rng() * 5) + 4;
+  return {
+    prompt: formatQuestion(t.battlelearn.questions.fleetMultiply, { ships, cannons }),
+    correctAnswer: ships * cannons,
+  };
+}
+
+function generateFormationCount(level: number, rng: RngFunction): { prompt: string; correctAnswer: number } {
+  const t = getTranslations();
+  const row1 = Math.floor(rng() * 5) + 3;
+  const row2 = Math.floor(rng() * 5) + 3;
+  const row3 = Math.floor(rng() * 5) + 3;
+  return {
+    prompt: formatQuestion(t.battlelearn.questions.formationCount, { row1, row2, row3 }),
+    correctAnswer: row1 + row2 + row3,
+  };
+}
+
+// Advanced Profile Question Generators (Level 11+)
+
+function generateVectorAddition(level: number, rng: RngFunction): { prompt: string; correctAnswer: string } {
+  const t = getTranslations();
+  const dx1 = Math.floor(rng() * 4) + 1;
+  const dy1 = Math.floor(rng() * 4) + 1;
+  const dx2 = Math.floor(rng() * 4) + 1;
+  const dy2 = Math.floor(rng() * 4) + 1;
+  return {
+    prompt: formatQuestion(t.battlelearn.questions.vectorAdd, { dx1, dy1, dx2, dy2 }),
+    correctAnswer: `(${dx1 + dx2},${dy1 + dy2})`,
+  };
+}
 
 /**
  * Generate numeric options for a problem
@@ -1585,13 +1919,30 @@ function generateCoordinateOptions(correct: string, gridSize: number, rng: RngFu
   const options = [correct];
   const attempts = new Set<string>([correct]);
   
-  while (options.length < 4 && attempts.size < gridSize * gridSize) {
-    const col = cols[Math.floor(rng() * Math.min(gridSize, cols.length))];
-    const row = Math.floor(rng() * gridSize) + 1;
-    const option = `${col}-${row}`;
-    if (!attempts.has(option)) {
-      attempts.add(option);
-      options.push(option);
+  // Check if coordinate is in (x,y) format or A-1 format
+  const isNumericFormat = correct.startsWith('(');
+  
+  if (isNumericFormat) {
+    // Generate (x,y) format options
+    while (options.length < 4 && attempts.size < gridSize * gridSize) {
+      const x = Math.floor(rng() * gridSize);
+      const y = Math.floor(rng() * gridSize);
+      const option = `(${x},${y})`;
+      if (!attempts.has(option)) {
+        attempts.add(option);
+        options.push(option);
+      }
+    }
+  } else {
+    // Generate A-1 format options
+    while (options.length < 4 && attempts.size < gridSize * gridSize) {
+      const col = cols[Math.floor(rng() * Math.min(gridSize, cols.length))];
+      const row = Math.floor(rng() * gridSize) + 1;
+      const option = `${col}-${row}`;
+      if (!attempts.has(option)) {
+        attempts.add(option);
+        options.push(option);
+      }
     }
   }
   

@@ -856,6 +856,57 @@ export const en = {
     coordinateQuestion: 'Coordinate question',
     navigationQuestion: 'Navigation task',
     fleetMath: 'Fleet mathematics',
+    questions: {
+      // Counting questions
+      countShips: 'How many ships?',
+      countObjects: 'How many {item}?',
+      // Arithmetic questions
+      simpleAddition: '{a} ships + {b} ships = ?',
+      simpleSubtraction: '{a} ships - {b} ships = ?',
+      ammunition: '{total} torpedoes - {fired} fired = ?',
+      missingNumber: '{a} + ? = {result}',
+      missingNumberSub: '{a} - ? = {result}',
+      // Comparison questions
+      greaterThan: 'Which is greater: {a} or {b}?',
+      lessThan: 'Which is less: {a} or {b}?',
+      // Coordinate questions
+      navigate: 'Position {start}, move {moves} right',
+      navigateLeft: 'Position {start}, move {moves} left',
+      navigateUp: 'Position {start}, move {moves} up',
+      navigateDown: 'Position {start}, move {moves} down',
+      // Pattern questions
+      patternNext: 'Signal pattern: {pattern}, __',
+      sequenceNext: 'Next number: {sequence}, __',
+      // Word problems
+      wordProblem1: 'Captain saw {a} ships in morning and {b} in evening. Total?',
+      wordProblem2: 'Ship had {total} sailors. {left} departed. How many remain?',
+      wordProblem3: 'Each ship has {perShip} cannons. {ships} ships total?',
+      // Time-based
+      timeProblem: 'Journey started at {start}:00 and lasted {duration} hours. When did it end?',
+      // Money counting
+      coinProblem: 'You have {count} coins worth {value}€. Total?',
+      // Multi-step
+      twoStep: '{a} ships arrived and {b} left. Initially there were {initial}. Now?',
+      // Logic puzzles
+      logicPuzzle: 'If {a} > {b} and {b} > {c}, then {a} ? {c}',
+      // Area/perimeter
+      areaProblem: 'Ship is {width} × {height} squares. Area?',
+      perimeterProblem: 'Dock is {width} × {height} squares. Perimeter?',
+      // Direction sequences
+      directionSequence: 'Move {dir1}, then {dir2}. What direction?',
+      // Advanced coordinate
+      multiMove: 'Start at ({x},{y}), move {dx} right, {dy} up. New coordinate?',
+      // Vector addition
+      vectorAdd: 'Ship moves ({dx1},{dy1}), then ({dx2},{dy2}). Total?',
+      // Distance
+      distance: 'Ship at ({x1},{y1}), target at ({x2},{y2}). Distance?',
+      // Multiplication
+      fleetMultiply: '{ships} destroyers × {cannons} cannons = ?',
+      // Formation problems
+      formationCount: 'Ships in rows: {row1}, {row2}, {row3}. Total?',
+      // Strategic positioning
+      strategicPos: 'Best attack position in range {x1}-{x2}, {y1}-{y2}. Center point?',
+    },
   },
 
   // Level label

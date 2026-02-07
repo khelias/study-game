@@ -921,6 +921,87 @@ describe('Generators', () => {
       // Higher level should have more ships
       expect(problem10.ships.length).toBeGreaterThanOrEqual(problem1.ships.length);
     });
+
+    it('should have significant question variety (no bilingual strings)', () => {
+      const generator = Generators.battlelearn_adv;
+      if (!generator) throw new Error('battlelearn_adv generator not found');
+      
+      // Test for variety across many problems
+      const questions = new Set<string>();
+      for (let seed = 0; seed < 50; seed++) {
+        const rng = createRng(seed);
+        const problem = generator(5, rng, 'advanced');
+        questions.add(problem.question.prompt);
+      }
+      
+      // Should have at least 5 different question types
+      expect(questions.size).toBeGreaterThanOrEqual(5);
+      
+      // Check that no question contains bilingual format (no " / ")
+      for (const question of questions) {
+        expect(question).not.toContain(' / ');
+      }
+    });
+  });
+
+  describe('battlelearn question variety', () => {
+    it('should generate varied questions for starter profile level 1-3', () => {
+      const generator = Generators.battlelearn;
+      if (!generator) throw new Error('battlelearn generator not found');
+      
+      const questions = new Set<string>();
+      for (let seed = 0; seed < 30; seed++) {
+        const rng = createRng(seed);
+        const problem = generator(2, rng, 'starter');
+        questions.add(problem.question.prompt);
+      }
+      
+      // Should have variety
+      expect(questions.size).toBeGreaterThanOrEqual(3);
+    });
+
+    it('should generate varied questions for starter profile level 4-6', () => {
+      const generator = Generators.battlelearn;
+      if (!generator) throw new Error('battlelearn generator not found');
+      
+      const questions = new Set<string>();
+      for (let seed = 0; seed < 30; seed++) {
+        const rng = createRng(seed);
+        const problem = generator(5, rng, 'starter');
+        questions.add(problem.question.prompt);
+      }
+      
+      // Should have variety
+      expect(questions.size).toBeGreaterThanOrEqual(3);
+    });
+
+    it('should generate varied questions for starter profile level 7+', () => {
+      const generator = Generators.battlelearn;
+      if (!generator) throw new Error('battlelearn generator not found');
+      
+      const questions = new Set<string>();
+      for (let seed = 0; seed < 30; seed++) {
+        const rng = createRng(seed);
+        const problem = generator(8, rng, 'starter');
+        questions.add(problem.question.prompt);
+      }
+      
+      // Should have variety
+      expect(questions.size).toBeGreaterThanOrEqual(3);
+    });
+
+    it('should not have bilingual questions in starter profile', () => {
+      const generator = Generators.battlelearn;
+      if (!generator) throw new Error('battlelearn generator not found');
+      
+      for (let level = 1; level <= 10; level++) {
+        const rng = createRng(level);
+        const problem = generator(level, rng, 'starter');
+        
+        // No bilingual format
+        expect(problem.question.prompt).not.toContain(' / ');
+      }
+    });
   });
 });
 
