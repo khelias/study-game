@@ -827,6 +827,28 @@ export const et = {
     },
   },
 
+  // BattleLearn game
+  battlelearn: {
+    title: 'LAEVADE UPUTAMINE',
+    titleAdv: 'LAEVADE UPUTAMINE PRO',
+    desc: 'Uputa laevad ja õpi matemaatikat',
+    descAdv: 'Kasuta koordinaate ja loogikat laevastiku uputamiseks',
+    instructions: 'Tulista lahtrit! Kui mööda, pead vastama.',
+    shotReady: 'Jätka tulistamist!',
+    clickToShoot: 'Klõpsa lahtrile tulistamiseks!',
+    answerToEarnShot: 'Vasta õigesti, et jätkata:',
+    answerToContinue: 'Vasta küsimusele, et jätkata tulistamist:',
+    shipsRemaining: 'Laevu alles',
+    hit: '💥 Tabamus!',
+    miss: '💦 Mööda! Vasta küsimusele.',
+    shipSunk: '🎯 Laev uppus!',
+    victory: '🏆 Võit! Kõik laevad uppusid!',
+    alreadyShot: 'Sinna on juba lastud!',
+    coordinateQuestion: 'Koordinaadi küsimus',
+    navigationQuestion: 'Navigatsiooni ülesanne',
+    fleetMath: 'Laevastiku matemaatika',
+  },
+
   // Level label
   level: 'Tase',
 } as const;

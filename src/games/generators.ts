@@ -1415,157 +1415,123 @@ export const Generators: Record<string, GeneratorFunction> = {
     };
   },
 
+  // Helper functions for BattleLearn problem generation
+};
+
+/**
+ * Generate numeric options for a problem
+ */
+function generateOptions(correct: number, count: number, rng: RngFunction): string[] {
+  const options = [String(correct)];
+  const attempts = new Set<number>([correct]);
+  
+  while (options.length < count && attempts.size < count * 3) {
+    const offset = Math.floor(rng() * 10) - 5; // -5 to 4
+    const wrong = correct + offset;
+    if (wrong > 0 && !attempts.has(wrong)) {
+      attempts.add(wrong);
+      options.push(String(wrong));
+    }
+  }
+  
+  // Fill remaining with random numbers if needed
+  while (options.length < count) {
+    const wrong = Math.floor(rng() * (correct * 2 + 10)) + 1;
+    if (!options.includes(String(wrong))) {
+      options.push(String(wrong));
+    }
+  }
+  
+  return options;
+}
+
+/**
+ * Generate coordinate options for navigation problems
+ */
+function generateCoordinateOptions(correct: string, gridSize: number, rng: RngFunction): string[] {
+  const cols = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'];
+  const options = [correct];
+  const attempts = new Set<string>([correct]);
+  
+  while (options.length < 4 && attempts.size < gridSize * gridSize) {
+    const col = cols[Math.floor(rng() * Math.min(gridSize, cols.length))];
+    const row = Math.floor(rng() * gridSize) + 1;
+    const option = `${col}-${row}`;
+    if (!attempts.has(option)) {
+      attempts.add(option);
+      options.push(option);
+    }
+  }
+  
+  return options;
+}
+
+/**
+ * Shuffle options and place correct answer at specified index
+ */
+function shuffleOptionsWithCorrect(options: string[], correct: number | string, correctIndex: number): string[] {
+  const shuffled = [...options];
+  
+  // Shuffle all options first
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [shuffled[i], shuffled[j]] = [shuffled[j]!, shuffled[i]!];
+  }
+  
+  // Find and move correct answer to desired index
+  const correctStr = String(correct);
+  const currentCorrectIndex = shuffled.indexOf(correctStr);
+  if (currentCorrectIndex !== -1 && currentCorrectIndex !== correctIndex) {
+    [shuffled[currentCorrectIndex], shuffled[correctIndex]] = [shuffled[correctIndex]!, shuffled[currentCorrectIndex]!];
+  }
+  
+  return shuffled;
+}
+
+const generators: Record<string, GeneratorFunction> = {
+  // ... (existing generators)
+
   battlelearn: (level: number, rng: RngFunction = Math.random, profile: ProfileType = 'starter'): BattleLearnProblem => {
     // Starter profile: smaller grid, simpler questions
-    const gridSize = 5;
+    const gridSize = level <= 5 ? 5 : 6;
     const shipLengths = level <= 3 ? [3, 2] : level <= 6 ? [3, 2, 2] : [3, 3, 2];
     
     // Place ships on grid
     const ships = placeShips(gridSize, shipLengths, rng);
     
-    // Generate simple addition question for starter
-    const num1 = Math.floor(rng() * (5 + level)) + 1;
-    const num2 = Math.floor(rng() * (5 + level)) + 1;
-    const correctAnswer = num1 + num2;
-    
-    // Generate wrong options
-    const options: string[] = [String(correctAnswer)];
-    const wrongOffsets = [-2, -1, 1, 2];
-    for (const offset of wrongOffsets) {
-      const wrongValue = correctAnswer + offset;
-      if (wrongValue > 0 && wrongValue !== correctAnswer && options.length < 4) {
-        options.push(String(wrongValue));
-      }
-    }
-    
-    // Fill to 4 options if needed
-    while (options.length < 4) {
-      const wrongValue = Math.floor(rng() * (correctAnswer * 2 + 1)) + 1;
-      if (!options.includes(String(wrongValue))) {
-        options.push(String(wrongValue));
-      }
-    }
-    
-    // Shuffle options
-    for (let i = options.length - 1; i > 0; i--) {
-      const j = Math.floor(rng() * (i + 1));
-      [options[i], options[j]] = [options[j], options[i]];
-    }
-    
-    const correctIndex = options.indexOf(String(correctAnswer));
-    
-    return {
-      type: 'battlelearn',
-      uid: uid(rng),
-      gridSize,
-      ships,
-      revealed: [],
-      hits: [],
-      sunkShips: [],
-      shotAvailable: false,
-      question: {
-        prompt: `What is ${num1} + ${num2}?`,
-        options,
-        correctIndex,
-      },
-      gameWon: false,
-    };
-  },
-
-  battlelearn_adv: (level: number, rng: RngFunction = Math.random, profile: ProfileType = 'advanced'): BattleLearnProblem => {
-    // Advanced profile: larger grid, coordinate + arithmetic questions
-    const gridSize = level <= 3 ? 6 : level <= 6 ? 7 : 8;
-    const shipLengths = level <= 3 ? [3, 2, 2] : level <= 6 ? [4, 3, 2] : [4, 3, 3, 2];
-    
-    // Place ships on grid
-    const ships = placeShips(gridSize, shipLengths, rng);
-    
-    // Generate question - mix of coordinate and arithmetic
-    const questionType = rng() < 0.5 ? 'coordinate' : 'arithmetic';
-    
     let prompt: string;
+    let correctAnswer: number | string;
     let options: string[];
-    let correctIndex: number;
     
-    if (questionType === 'coordinate') {
-      // Coordinate question: What is at position (x, y)?
-      const letters = 'ABCDEFGH'.slice(0, gridSize);
-      const row = Math.floor(rng() * gridSize);
-      const col = Math.floor(rng() * gridSize);
-      const correctCoord = `${letters[col]}${row + 1}`;
-      
-      prompt = `What coordinate is at column ${letters[col]}, row ${row + 1}?`;
-      options = [correctCoord];
-      
-      // Generate wrong options
-      while (options.length < 4) {
-        const wrongCol = Math.floor(rng() * gridSize);
-        const wrongRow = Math.floor(rng() * gridSize);
-        const wrongCoord = `${letters[wrongCol]}${wrongRow + 1}`;
-        if (!options.includes(wrongCoord)) {
-          options.push(wrongCoord);
-        }
-      }
+    // Choose problem type based on level
+    if (level <= 3) {
+      // Visual fleet counting
+      const shipCount = level + 1;
+      correctAnswer = shipCount;
+      const shipEmoji = '🚢 '.repeat(shipCount);
+      prompt = `${shipEmoji}\nMitu laeva? / How many ships?`;
+      options = generateOptions(correctAnswer, 4, rng);
+    } else if (level <= 6) {
+      // Ammunition subtraction
+      const total = Math.floor(rng() * 10) + 10;
+      const fired = Math.floor(rng() * 5) + 3;
+      correctAnswer = total - fired;
+      prompt = `${total} torpeedo - ${fired} tulistatud = ? / ${total} torpedoes - ${fired} fired = ?`;
+      options = generateOptions(correctAnswer, 4, rng);
     } else {
-      // Arithmetic question: multiplication or harder addition
-      const isMultiplication = level > 3 && rng() < 0.5;
-      
-      if (isMultiplication) {
-        const num1 = Math.floor(rng() * (level + 2)) + 2;
-        const num2 = Math.floor(rng() * Math.min(level + 1, 10)) + 2;
-        const correctAnswer = num1 * num2;
-        
-        prompt = `What is ${num1} × ${num2}?`;
-        options = [String(correctAnswer)];
-        
-        // Generate plausible wrong answers
-        const wrongOffsets = [-num1, -num2, num1, num2];
-        for (const offset of wrongOffsets) {
-          const wrongValue = correctAnswer + offset;
-          if (wrongValue > 0 && wrongValue !== correctAnswer && options.length < 4) {
-            options.push(String(wrongValue));
-          }
-        }
-      } else {
-        const num1 = Math.floor(rng() * (10 + level * 2)) + 5;
-        const num2 = Math.floor(rng() * (10 + level * 2)) + 5;
-        const correctAnswer = num1 + num2;
-        
-        prompt = `What is ${num1} + ${num2}?`;
-        options = [String(correctAnswer)];
-        
-        const wrongOffsets = [-3, -1, 1, 3];
-        for (const offset of wrongOffsets) {
-          const wrongValue = correctAnswer + offset;
-          if (wrongValue > 0 && wrongValue !== correctAnswer && options.length < 4) {
-            options.push(String(wrongValue));
-          }
-        }
-      }
+      // Coordinate navigation
+      const cols = ['A', 'B', 'C', 'D', 'E', 'F'];
+      const startCol = Math.floor(rng() * 3);
+      const startRow = Math.floor(rng() * gridSize) + 1;
+      const move = Math.floor(rng() * 2) + 1;
+      const correctCol = cols[startCol + move];
+      correctAnswer = `${correctCol}-${startRow}`;
+      prompt = `Positsioon ${cols[startCol]}-${startRow}, liigu ${move} paremale / Position ${cols[startCol]}-${startRow}, move ${move} right`;
+      options = generateCoordinateOptions(correctAnswer, gridSize, rng);
     }
     
-    // Fill to 4 options if needed
-    while (options.length < 4) {
-      const wrongValue = Math.floor(rng() * 100) + 1;
-      if (!options.includes(String(wrongValue))) {
-        options.push(String(wrongValue));
-      }
-    }
-    
-    // Shuffle options
-    for (let i = options.length - 1; i > 0; i--) {
-      const j = Math.floor(rng() * (i + 1));
-      [options[i], options[j]] = [options[j], options[i]];
-    }
-    
-    correctIndex = options.indexOf(options[0]!);
-    if (questionType === 'coordinate') {
-      const correctCoord = options[0];
-      correctIndex = options.indexOf(correctCoord!);
-    } else {
-      const correctAnswer = options[0];
-      correctIndex = options.indexOf(correctAnswer!);
-    }
+    const correctIndex = Math.floor(rng() * 4);
+    const shuffledOptions = shuffleOptionsWithCorrect(options, correctAnswer, correctIndex);
     
     return {
       type: 'battlelearn',
@@ -1578,7 +1544,81 @@ export const Generators: Record<string, GeneratorFunction> = {
       shotAvailable: false,
       question: {
         prompt,
-        options,
+        options: shuffledOptions,
+        correctIndex,
+      },
+      gameWon: false,
+    };
+  },
+
+  battlelearn_adv: (level: number, rng: RngFunction = Math.random, profile: ProfileType = 'advanced'): BattleLearnProblem => {
+    // Advanced profile: larger grid, coordinate + arithmetic questions
+    const gridSize = level <= 5 ? 6 : level <= 10 ? 7 : 8;
+    const shipLengths = level <= 5 ? [3, 2, 2] : level <= 10 ? [4, 3, 2] : [4, 3, 3, 2];
+    
+    // Place ships on grid
+    const ships = placeShips(gridSize, shipLengths, rng);
+    
+    let prompt: string;
+    let correctAnswer: number | string;
+    let options: string[];
+    
+    // Choose problem type based on level
+    if (level <= 5) {
+      // Pattern recognition
+      const patterns = [
+        { seq: [2, 4, 8], answer: 16, desc: 'doubling' },
+        { seq: [5, 10, 15], answer: 20, desc: '+5' },
+        { seq: [3, 6, 12], answer: 24, desc: 'doubling' },
+        { seq: [1, 3, 5], answer: 7, desc: '+2' },
+        { seq: [10, 20, 30], answer: 40, desc: '+10' },
+      ];
+      const pattern = patterns[Math.floor(rng() * patterns.length)]!;
+      correctAnswer = pattern.answer;
+      prompt = `Signaali muster: ${pattern.seq.join(', ')}, __ / Signal pattern: ${pattern.seq.join(', ')}, __`;
+      options = generateOptions(correctAnswer, 4, rng);
+    } else if (level <= 10) {
+      // Distance calculation (same row/col for simplicity)
+      const useRow = rng() < 0.5;
+      const x1 = Math.floor(rng() * gridSize);
+      const y1 = Math.floor(rng() * gridSize);
+      
+      if (useRow) {
+        // Same row, different column
+        const y2 = y1 + Math.floor(rng() * 3) + 2;
+        correctAnswer = Math.abs(y2 - y1);
+        prompt = `Laev (${x1},${y1}), sihtmärk (${x1},${Math.min(y2, gridSize - 1)}). Kaugus? / Ship at (${x1},${y1}), target at (${x1},${Math.min(y2, gridSize - 1)}). Distance?`;
+      } else {
+        // Same column, different row
+        const x2 = x1 + Math.floor(rng() * 3) + 2;
+        correctAnswer = Math.abs(x2 - x1);
+        prompt = `Laev (${x1},${y1}), sihtmärk (${Math.min(x2, gridSize - 1)},${y1}). Kaugus? / Ship at (${x1},${y1}), target at (${Math.min(x2, gridSize - 1)},${y1}). Distance?`;
+      }
+      options = generateOptions(correctAnswer, 4, rng);
+    } else {
+      // Fleet multiplication
+      const ships = Math.floor(rng() * 3) + 2;
+      const cannonsPerShip = Math.floor(rng() * 4) + 3;
+      correctAnswer = ships * cannonsPerShip;
+      prompt = `${ships} hävitajat × ${cannonsPerShip} kahureid = ? / ${ships} destroyers × ${cannonsPerShip} cannons = ?`;
+      options = generateOptions(correctAnswer, 4, rng);
+    }
+    
+    const correctIndex = Math.floor(rng() * 4);
+    const shuffledOptions = shuffleOptionsWithCorrect(options, correctAnswer, correctIndex);
+    
+    return {
+      type: 'battlelearn',
+      uid: uid(rng),
+      gridSize,
+      ships,
+      revealed: [],
+      hits: [],
+      sunkShips: [],
+      shotAvailable: false,
+      question: {
+        prompt,
+        options: shuffledOptions,
         correctIndex,
       },
       gameWon: false,

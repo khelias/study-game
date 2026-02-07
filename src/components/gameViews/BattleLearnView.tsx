@@ -28,6 +28,7 @@ export const BattleLearnView: React.FC<BattleLearnViewProps> = ({
   const [selectedOption, setSelectedOption] = useState<number | null>(null);
   const [feedback, setFeedback] = useState<string>('');
   const [showFeedback, setShowFeedback] = useState(false);
+  const [gamePhase, setGamePhase] = useState<'shooting' | 'answering'>('shooting');
 
   // Reset when problem changes
   useEffect(() => {
@@ -35,10 +36,11 @@ export const BattleLearnView: React.FC<BattleLearnViewProps> = ({
     setSelectedOption(null);
     setFeedback('');
     setShowFeedback(false);
+    setGamePhase('shooting'); // Always start in shooting phase
   }, [problem.uid]);
 
   const handleOptionSelect = (index: number) => {
-    if (localProblem.shotAvailable || localProblem.gameWon) return;
+    if (gamePhase !== 'answering' || localProblem.gameWon) return;
     
     playSound('click', soundEnabled);
     setSelectedOption(index);
@@ -46,26 +48,35 @@ export const BattleLearnView: React.FC<BattleLearnViewProps> = ({
     const isCorrect = index === localProblem.question.correctIndex;
     
     if (isCorrect) {
-      setFeedback('✅ Correct! Take your shot!');
+      const correctFeedback = t.feedback.correct[Math.floor(Math.random() * t.feedback.correct.length)];
+      setFeedback(correctFeedback);
       setShowFeedback(true);
-      setTimeout(() => setShowFeedback(false), 2000);
       
-      // Grant shot
-      setLocalProblem(prev => ({ ...prev, shotAvailable: true }));
-      onAnswer(true);
-    } else {
-      setFeedback('❌ Try again!');
-      setShowFeedback(true);
+      // Return to shooting phase
+      setGamePhase('shooting');
+      onAnswer(true); // No heart lost
+      
       setTimeout(() => {
         setShowFeedback(false);
         setSelectedOption(null);
       }, 1500);
-      onAnswer(false);
+    } else {
+      const wrongFeedback = t.feedback.wrong[Math.floor(Math.random() * t.feedback.wrong.length)];
+      setFeedback(wrongFeedback);
+      setShowFeedback(true);
+      
+      setTimeout(() => {
+        setShowFeedback(false);
+        setSelectedOption(null);
+      }, 1500);
+      
+      onAnswer(false); // Lose heart
+      // Stay in answering phase until correct
     }
   };
 
   const handleCellClick = (row: number, col: number) => {
-    if (!localProblem.shotAvailable || localProblem.gameWon) return;
+    if (gamePhase !== 'shooting' || localProblem.gameWon) return;
     
     playSound('click', soundEnabled);
     
@@ -73,7 +84,7 @@ export const BattleLearnView: React.FC<BattleLearnViewProps> = ({
     const result = applyShot(localProblem.ships, localProblem.revealed, row, col);
     
     if (result.alreadyShot) {
-      setFeedback('Already shot here!');
+      setFeedback(t.battlelearn.alreadyShot);
       setShowFeedback(true);
       setTimeout(() => setShowFeedback(false), 1000);
       return;
@@ -91,15 +102,19 @@ export const BattleLearnView: React.FC<BattleLearnViewProps> = ({
     const gameWon = checkWinCondition(localProblem.ships);
     
     if (result.hit) {
+      // HIT: No problem needed, continue shooting
       if (result.sunkShipId) {
         playSound('success', soundEnabled);
-        setFeedback('🎯 Ship sunk!');
+        setFeedback(t.battlelearn.shipSunk);
       } else {
         playSound('success', soundEnabled);
-        setFeedback('💥 Hit!');
+        setFeedback(t.battlelearn.hit);
       }
+      // Stay in shooting phase
     } else {
-      setFeedback('💦 Miss!');
+      // MISS: Must answer problem to continue
+      setFeedback(t.battlelearn.miss);
+      setGamePhase('answering'); // Switch to problem phase
     }
     
     setShowFeedback(true);
@@ -110,7 +125,6 @@ export const BattleLearnView: React.FC<BattleLearnViewProps> = ({
       revealed: newRevealed,
       hits: newHits,
       sunkShips: newSunkShips,
-      shotAvailable: false,
       gameWon,
     }));
     
@@ -119,7 +133,7 @@ export const BattleLearnView: React.FC<BattleLearnViewProps> = ({
     if (gameWon) {
       setTimeout(() => {
         playSound('success', soundEnabled);
-        setFeedback('🏆 Victory! All ships sunk!');
+        setFeedback(t.battlelearn.victory);
         setShowFeedback(true);
       }, 500);
     }
@@ -140,21 +154,21 @@ export const BattleLearnView: React.FC<BattleLearnViewProps> = ({
         let cellContent = '';
         
         if (!isRevealed) {
-          cellClass += ' bg-blue-400 hover:bg-blue-500 cursor-pointer';
-          if (localProblem.shotAvailable && !localProblem.gameWon) {
-            cellClass += ' hover:scale-110 hover:shadow-lg';
+          cellClass += ' bg-gradient-to-br from-blue-400 to-blue-600 hover:from-blue-500 hover:to-blue-700 shadow-md hover:shadow-xl cursor-pointer transform hover:-translate-y-0.5 transition-all';
+          if (gamePhase === 'shooting' && !localProblem.gameWon) {
+            cellClass += ' animate-pulse';
           }
         } else if (isHit) {
           if (isSunk) {
-            cellClass += ' bg-red-600 text-white';
-            cellContent = '💀';
+            cellClass += ' bg-gradient-to-br from-red-600 to-red-800 shadow-xl text-white';
+            cellContent = '☠️';
           } else {
-            cellClass += ' bg-red-400 text-white';
+            cellClass += ' bg-gradient-to-br from-orange-400 to-red-500 shadow-lg text-white';
             cellContent = '💥';
           }
         } else {
-          cellClass += ' bg-blue-200 text-blue-600';
-          cellContent = '💦';
+          cellClass += ' bg-gradient-to-br from-slate-200 to-slate-300 text-blue-600';
+          cellContent = '💨';
         }
         
         cells.push(
@@ -164,7 +178,7 @@ export const BattleLearnView: React.FC<BattleLearnViewProps> = ({
             onClick={() => handleCellClick(row, col)}
             style={{ 
               aspectRatio: '1/1',
-              cursor: localProblem.shotAvailable && !isRevealed && !localProblem.gameWon ? 'pointer' : 'default'
+              cursor: gamePhase === 'shooting' && !isRevealed && !localProblem.gameWon ? 'pointer' : 'default'
             }}
           >
             {cellContent}
@@ -177,7 +191,7 @@ export const BattleLearnView: React.FC<BattleLearnViewProps> = ({
   };
 
   const gridCols = `grid-cols-${localProblem.gridSize}`;
-  const gridClass = `grid gap-1 ${gridCols} max-w-md mx-auto`;
+  const gridClass = `grid gap-2 ${gridCols} max-w-2xl mx-auto shadow-lg rounded-lg p-2 bg-gradient-to-br from-slate-100 to-slate-200`;
 
   return (
     <div className="w-full flex flex-col items-center px-4 py-6 animate-in fade-in duration-300">
@@ -186,20 +200,29 @@ export const BattleLearnView: React.FC<BattleLearnViewProps> = ({
         <div className="flex items-center justify-center gap-4 text-sm">
           <div className="flex items-center gap-1">
             <Target className="w-4 h-4" />
-            <span>Ships: {localProblem.ships.length - localProblem.sunkShips.length}/{localProblem.ships.length}</span>
+            <span>{t.battlelearn.shipsRemaining}: {localProblem.ships.length - localProblem.sunkShips.length}/{localProblem.ships.length}</span>
           </div>
-          {localProblem.shotAvailable && (
+          {gamePhase === 'shooting' && !localProblem.gameWon && (
             <div className="flex items-center gap-1 text-green-600 font-bold animate-pulse">
               <Target className="w-4 h-4" />
-              <span>Shot Ready!</span>
+              <span>{t.battlelearn.shotReady}</span>
             </div>
           )}
           {localProblem.gameWon && (
             <div className="flex items-center gap-1 text-yellow-600 font-bold">
               <Trophy className="w-5 h-5" />
-              <span>Victory!</span>
+              <span>{t.battlelearn.victory}</span>
             </div>
           )}
+        </div>
+      </div>
+
+      {/* Instructions */}
+      <div className="mb-4 w-full max-w-2xl">
+        <div className="bg-gradient-to-r from-blue-50 to-cyan-50 border-2 border-blue-200 rounded-lg p-3 text-center">
+          <p className="text-sm font-medium text-gray-700">
+            {t.battlelearn.instructions}
+          </p>
         </div>
       </div>
 
@@ -218,42 +241,38 @@ export const BattleLearnView: React.FC<BattleLearnViewProps> = ({
       </div>
 
       {/* Question Card */}
-      {!localProblem.gameWon && (
-        <div className="w-full max-w-2xl">
-          <div className="bg-white rounded-xl shadow-lg p-6 border-2 border-blue-300">
+      {!localProblem.gameWon && gamePhase === 'answering' && (
+        <div className="w-full max-w-2xl animate-in slide-in-from-bottom duration-300">
+          <div className="bg-gradient-to-br from-yellow-50 to-orange-50 rounded-xl shadow-lg p-6 border-2 border-orange-300">
             <div className="flex items-center gap-2 mb-4">
-              <Waves className="w-5 h-5 text-blue-600" />
+              <Target className="w-5 h-5 text-orange-600" />
               <h3 className="text-lg font-bold text-gray-800">
-                {localProblem.shotAvailable ? 'Click a cell to shoot!' : 'Answer to earn a shot:'}
+                {t.battlelearn.answerToContinue}
               </h3>
             </div>
             
-            {!localProblem.shotAvailable && (
-              <>
-                <p className="text-xl font-medium mb-4 text-center text-gray-700">
-                  {localProblem.question.prompt}
-                </p>
-                
-                <div className="grid grid-cols-2 gap-3">
-                  {localProblem.question.options.map((option, index) => (
-                    <button
-                      key={index}
-                      onClick={() => handleOptionSelect(index)}
-                      disabled={selectedOption !== null}
-                      className={`px-6 py-4 rounded-lg font-bold text-lg transition-all duration-200 ${
-                        selectedOption === index
-                          ? index === localProblem.question.correctIndex
-                            ? 'bg-green-500 text-white'
-                            : 'bg-red-500 text-white'
-                          : 'bg-blue-100 hover:bg-blue-200 text-gray-800 hover:scale-105 hover:shadow-md'
-                      }`}
-                    >
-                      {option}
-                    </button>
-                  ))}
-                </div>
-              </>
-            )}
+            <p className="text-xl font-medium mb-4 text-center text-gray-700">
+              {localProblem.question.prompt}
+            </p>
+            
+            <div className="grid grid-cols-2 gap-3">
+              {localProblem.question.options.map((option, index) => (
+                <button
+                  key={index}
+                  onClick={() => handleOptionSelect(index)}
+                  disabled={selectedOption !== null}
+                  className={`px-6 py-4 rounded-lg font-bold text-lg transition-all duration-200 ${
+                    selectedOption === index
+                      ? index === localProblem.question.correctIndex
+                        ? 'bg-green-500 text-white'
+                        : 'bg-red-500 text-white'
+                      : 'bg-blue-100 hover:bg-blue-200 text-gray-800 hover:scale-105 hover:shadow-md'
+                  }`}
+                >
+                  {option}
+                </button>
+              ))}
+            </div>
           </div>
         </div>
       )}
