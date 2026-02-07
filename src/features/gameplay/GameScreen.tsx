@@ -397,9 +397,10 @@ export const GameScreen: React.FC = () => {
           };
           
           const gameEmoji = gameConfig?.icon ? iconToEmoji[gameConfig.icon] ?? '🎮' : '🎮';
-          const gameName = gameConfig && t.games[baseType as keyof typeof t.games]
-            ? formatText(t.games[baseType as keyof typeof t.games].title)
-            : gameType.toUpperCase();
+          const gameTitleStr: string = (gameConfig && t.games[baseType as keyof typeof t.games]
+            ? t.games[baseType as keyof typeof t.games].title
+            : gameType.toUpperCase()) as string;
+          const gameName = formatText(gameTitleStr);
           
           return (
             <div 

@@ -141,7 +141,7 @@ export const WordCascadeView: React.FC<WordCascadeViewProps> = ({ problem, onAns
   const earnStars = useGameStore(state => state.earnStars);
   const addHeart = useGameStore(state => state.addHeart);
   const nextIdx = progress.length;
-  const gameTitle = t.games['word_cascade' as keyof typeof t.games]?.title ?? 'Word Cascade';
+  const gameTitle: string = (t.games['word_cascade' as keyof typeof t.games]?.title ?? 'Word Cascade') as string;
   const MAX_STRIKES = 3;
 
   const laneCount = clamp(problem.columns ?? 4, 3, 6);

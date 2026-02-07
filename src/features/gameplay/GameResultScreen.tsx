@@ -55,9 +55,9 @@ export const GameResultScreen: React.FC<GameResultScreenProps> = ({
   const category = gameConfig ? CATEGORIES[gameConfig.category] : undefined;
 
   const headerEmoji = category?.emoji ?? '🎮';
-  const headerTitle =
+  const headerTitle: string =
     baseType && t.games[baseType as keyof typeof t.games]
-      ? t.games[baseType as keyof typeof t.games].title
+      ? (t.games[baseType as keyof typeof t.games].title as string)
       : formatText(t.game.gameOver);
 
   const themeBorder = gameConfig?.theme.border ?? 'border-slate-200';
@@ -83,8 +83,8 @@ export const GameResultScreen: React.FC<GameResultScreenProps> = ({
       icon: '⭐',
       iconGradient: 'from-yellow-300 via-yellow-400 to-amber-400',
       iconShadow: 'shadow-[0_0_28px_rgba(250,204,21,0.6)]',
-      title: formatText(t.roboPath?.perfect || 'Perfect!'),
-      message: customMessage || formatText(t.roboPath?.perfectMessage || 'You found the optimal solution!'),
+      title: formatText((t.roboPath?.perfect ?? 'Perfect!') as string),
+      message: customMessage || formatText((t.roboPath?.perfectMessage ?? 'You found the optimal solution!') as string),
       primaryButton: formatText(t.roboPath?.continueButton || 'Next Level'),
       primaryAction: onContinue,
       primaryGradient: 'from-sky-400 via-blue-500 to-indigo-500',
@@ -120,6 +120,8 @@ export const GameResultScreen: React.FC<GameResultScreenProps> = ({
 
   const currentConfig = config[type];
 
+  type ActionFn = () => void;
+
   const handlePrimaryAction = () => {
     playClick();
 
@@ -129,17 +131,15 @@ export const GameResultScreen: React.FC<GameResultScreenProps> = ({
       return;
     }
 
-    if (currentConfig.primaryAction) {
-      currentConfig.primaryAction();
-    }
+    const action: ActionFn | undefined = currentConfig.primaryAction as ActionFn | undefined;
+    if (action) action();
   };
 
   const handleSecondaryAction = () => {
     playClick();
-    
-    if (currentConfig.secondaryAction) {
-      currentConfig.secondaryAction();
-    } else {
+    const secAction: ActionFn | undefined = currentConfig.secondaryAction as ActionFn | undefined;
+    if (secAction) secAction();
+    else {
       returnToMenu();
       void navigate('/');
     }

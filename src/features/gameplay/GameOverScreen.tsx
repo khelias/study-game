@@ -30,9 +30,9 @@ export const GameOverScreen: React.FC = () => {
   const category = gameConfig ? CATEGORIES[gameConfig.category] : undefined;
 
   const headerEmoji = category?.emoji ?? '🎮';
-  const headerTitle =
+  const headerTitle: string =
     baseType && t.games[baseType as keyof typeof t.games]
-      ? t.games[baseType as keyof typeof t.games].title
+      ? (t.games[baseType as keyof typeof t.games].title as string)
       : formatText(t.game.gameOver);
 
   const themeBorder = gameConfig?.theme.border ?? 'border-slate-200';
