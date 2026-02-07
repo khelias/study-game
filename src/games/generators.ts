@@ -1972,6 +1972,171 @@ function shuffleOptionsWithCorrect(options: string[], correct: number | string, 
 }
 
 /**
+ * Generate a new question for BattleLearn game while preserving board state
+ * 
+ * This helper generates only a new question (not a new problem) to maintain
+ * game continuity. The board state (revealed, hits, sunkShips, ships) is preserved.
+ * 
+ * @param currentProblem - The current BattleLearn problem with board state
+ * @param level - Current difficulty level
+ * @param profile - Player profile (starter or advanced)
+ * @param rng - Random number generator
+ * @returns Updated problem with new question but same board state
+ * 
+ * @example
+ * // After a player clicks a cell and answers a question, generate next question:
+ * const currentProblem = {
+ *   ...problem,
+ *   revealed: [[0, 0], [1, 2]], // Previous shots
+ *   hits: [[1, 2]],              // Previous hits
+ *   sunkShips: [],
+ * };
+ * const nextQuestion = generateBattleLearnQuestion(currentProblem, 3, 'advanced', rng);
+ * // Result: New question with same board state (revealed/hits preserved)
+ */
+export function generateBattleLearnQuestion(
+  currentProblem: BattleLearnProblem,
+  level: number,
+  profile: ProfileType,
+  rng: RngFunction = Math.random
+): BattleLearnProblem {
+  const gridSize = currentProblem.gridSize;
+  let prompt: string;
+  let correctAnswer: number | string;
+  let options: string[];
+  
+  // Generate question based on profile and level (same logic as generators)
+  if (profile === 'starter') {
+    if (level <= 3) {
+      // Level 1-3: Basic counting and arithmetic
+      const questionTypes = [
+        () => generateCountShipsQuestion(level, rng),
+        () => generateSimpleAddition(level, rng),
+        () => generateSimpleSubtraction(level, rng),
+        () => generateGreaterThanQuestion(level, rng),
+      ];
+      const questionType = questionTypes[Math.floor(rng() * questionTypes.length)]!;
+      const question = questionType();
+      prompt = question.prompt;
+      correctAnswer = question.correctAnswer;
+      options = generateOptions(correctAnswer as number, 4, rng);
+    } else if (level <= 6) {
+      // Level 4-6: Subtraction and word problems
+      const questionTypes = [
+        () => generateAmmunitionQuestion(level, rng),
+        () => generateMissingNumber(level, rng),
+        () => generateWordProblem1(level, rng),
+        () => generateWordProblem2(level, rng),
+        () => generateSimpleAddition(level, rng),
+      ];
+      const questionType = questionTypes[Math.floor(rng() * questionTypes.length)]!;
+      const question = questionType();
+      prompt = question.prompt;
+      correctAnswer = question.correctAnswer;
+      options = generateOptions(correctAnswer as number, 4, rng);
+    } else {
+      // Level 7+: Coordinates and multi-step problems
+      const questionTypes = [
+        () => generateWordProblem3(level, rng),
+        () => generateNavigateQuestion(level, rng, gridSize),
+        () => generateTwoStepProblem(level, rng),
+        () => generateSequenceQuestion(level, rng),
+      ];
+      const questionType = questionTypes[Math.floor(rng() * questionTypes.length)]!;
+      const question = questionType();
+      prompt = question.prompt;
+      correctAnswer = question.correctAnswer;
+      
+      if (typeof correctAnswer === 'string' && correctAnswer.includes('-')) {
+        options = generateCoordinateOptions(correctAnswer, gridSize, rng);
+      } else {
+        options = generateOptions(correctAnswer as number, 4, rng);
+      }
+    }
+  } else {
+    // Advanced profile
+    if (level <= 5) {
+      const questionTypes = [
+        () => generatePatternQuestion(level, rng),
+        () => generateDistanceQuestion(level, rng, gridSize),
+        () => generateWordProblem3(level, rng),
+        () => generateNavigateQuestion(level, rng, gridSize),
+        () => generateAreaProblem(level, rng),
+      ];
+      const questionType = questionTypes[Math.floor(rng() * questionTypes.length)]!;
+      const question = questionType();
+      prompt = question.prompt;
+      correctAnswer = question.correctAnswer;
+      
+      if (typeof correctAnswer === 'string' && (correctAnswer.includes('-') || correctAnswer.includes('('))) {
+        options = generateCoordinateOptions(correctAnswer, gridSize, rng);
+      } else {
+        options = generateOptions(correctAnswer as number, 4, rng);
+      }
+    } else if (level <= 10) {
+      const questionTypes = [
+        () => generateMultiMoveQuestion(level, rng, gridSize),
+        () => generateFleetMultiplyQuestion(level, rng),
+        () => generateFormationCount(level, rng),
+        () => generateDistanceQuestion(level, rng, gridSize),
+        () => generateWordProblem3(level, rng),
+        () => generateAreaProblem(level, rng),
+      ];
+      const questionType = questionTypes[Math.floor(rng() * questionTypes.length)]!;
+      const question = questionType();
+      prompt = question.prompt;
+      correctAnswer = question.correctAnswer;
+      
+      if (typeof correctAnswer === 'string' && (correctAnswer.includes('-') || correctAnswer.includes('('))) {
+        options = generateCoordinateOptions(correctAnswer, gridSize, rng);
+      } else {
+        options = generateOptions(correctAnswer as number, 4, rng);
+      }
+    } else {
+      const questionTypes = [
+        () => generateVectorAddition(level, rng),
+        () => generateMultiMoveQuestion(level, rng, gridSize),
+        () => generateFleetMultiplyQuestion(level, rng),
+        () => generateFormationCount(level, rng),
+        () => generateDistanceQuestion(level, rng, gridSize),
+      ];
+      const questionType = questionTypes[Math.floor(rng() * questionTypes.length)]!;
+      const question = questionType();
+      prompt = question.prompt;
+      correctAnswer = question.correctAnswer;
+      
+      if (typeof correctAnswer === 'string' && (correctAnswer.includes('-') || correctAnswer.includes('('))) {
+        options = generateCoordinateOptions(correctAnswer, gridSize, rng);
+      } else {
+        options = generateOptions(correctAnswer as number, 4, rng);
+      }
+    }
+  }
+  
+  const correctIndex = Math.floor(rng() * 4);
+  const shuffledOptions = shuffleOptionsWithCorrect(options, correctAnswer, correctIndex, rng);
+  
+  // Return updated problem with new question but SAME board state
+  return {
+    ...currentProblem,
+    // Generate new UID to trigger React update
+    uid: uid(rng),
+    question: {
+      prompt,
+      options: shuffledOptions,
+      correctIndex,
+    },
+    // Preserve board state
+    revealed: currentProblem.revealed,
+    hits: currentProblem.hits,
+    sunkShips: currentProblem.sunkShips,
+    ships: currentProblem.ships,
+    gameWon: currentProblem.gameWon,
+    shotAvailable: currentProblem.shotAvailable,
+  };
+}
+
+/**
  * Helper function to generate distractor stars for expert mode
  * 
  * Creates dim background stars that are not part of the constellation

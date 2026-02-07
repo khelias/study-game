@@ -10,6 +10,7 @@ import { Target, Waves, Trophy } from 'lucide-react';
 import { playSound } from '../../engine/audio';
 import { useTranslation } from '../../i18n/useTranslation';
 import { applyShot, checkWinCondition, isShipSunk } from '../../engine/battlelearn';
+import { usePlaySessionStore } from '../../stores/playSessionStore';
 import type { BattleLearnProblem } from '../../types/game';
 
 interface BattleLearnViewProps {
@@ -24,6 +25,8 @@ export const BattleLearnView: React.FC<BattleLearnViewProps> = ({
   soundEnabled 
 }) => {
   const t = useTranslation();
+  const setProblem = usePlaySessionStore(state => state.setProblem);
+  
   // Separate game state from question state
   const [gameState, setGameState] = useState({
     gridSize: problem.gridSize,
@@ -42,6 +45,7 @@ export const BattleLearnView: React.FC<BattleLearnViewProps> = ({
 
   // Only reset game state when it's a brand new game (different UID AND empty revealed array)
   // Update question when parent provides new question (after answering)
+  // Sync board state from problem if it has been updated externally
   useEffect(() => {
     const isNewGame = problem.uid !== currentUid && problem.revealed.length === 0;
     
@@ -62,9 +66,18 @@ export const BattleLearnView: React.FC<BattleLearnViewProps> = ({
       setShowFeedback(false);
       setGamePhase('shooting');
     } else {
-      // Just update the question (same game session, new question after answering)
+      // Same game session, new question - update question and sync board state from problem
       setQuestion(problem.question);
       setCurrentUid(problem.uid);
+      // Sync board state to ensure any external updates are reflected
+      setGameState(prev => ({
+        ...prev,
+        revealed: problem.revealed,
+        hits: problem.hits,
+        sunkShips: problem.sunkShips,
+        ships: problem.ships,
+        gameWon: problem.gameWon,
+      }));
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [problem.uid]);
@@ -150,6 +163,7 @@ export const BattleLearnView: React.FC<BattleLearnViewProps> = ({
     setShowFeedback(true);
     setTimeout(() => setShowFeedback(false), 2000);
     
+    // Update local state
     setGameState(prev => ({
       ...prev,
       revealed: newRevealed,
@@ -157,6 +171,15 @@ export const BattleLearnView: React.FC<BattleLearnViewProps> = ({
       sunkShips: newSunkShips,
       gameWon,
     }));
+    
+    // CRITICAL: Also update the problem in the store so parent handlers have current state
+    setProblem({
+      ...problem,
+      revealed: newRevealed,
+      hits: newHits,
+      sunkShips: newSunkShips,
+      gameWon,
+    });
     
     setSelectedOption(null);
     
@@ -238,7 +261,7 @@ export const BattleLearnView: React.FC<BattleLearnViewProps> = ({
     <div className="w-full flex flex-col items-center px-4 py-6 animate-in fade-in duration-300">
       {/* Game Status */}
       <div className="mb-4 text-center">
-        <div className="flex items-center justify-center gap-4 text-sm">
+        <div className="flex items-center justify-center gap-4 text-sm flex-wrap">
           <div className="flex items-center gap-1">
             <Target className="w-4 h-4" />
             <span>{t.battlelearn.shipsRemaining}: {gameState.ships.length - gameState.sunkShips.length}/{gameState.ships.length}</span>
@@ -274,7 +297,7 @@ export const BattleLearnView: React.FC<BattleLearnViewProps> = ({
         </div>
       )}
 
-      {/* Instructions */}
+      {/* Instructions - Always visible to prevent layout shift */}
       <div className="mb-4 w-full max-w-2xl">
         <div className="bg-gradient-to-r from-blue-50 to-cyan-50 border-2 border-blue-200 rounded-lg p-3 text-center">
           <p className="text-sm font-medium text-gray-700">
@@ -283,14 +306,16 @@ export const BattleLearnView: React.FC<BattleLearnViewProps> = ({
         </div>
       </div>
 
-      {/* Feedback */}
-      {showFeedback && (
-        <div className="mb-4 px-4 py-2 bg-white border-2 border-blue-400 rounded-lg shadow-lg text-lg font-bold animate-in zoom-in duration-200">
-          {feedback}
-        </div>
-      )}
+      {/* Reserved Feedback Space - Fixed height to prevent layout shift on mobile */}
+      <div className="mb-4 w-full max-w-2xl min-h-12">
+        {showFeedback && (
+          <div className="px-4 py-2 bg-white border-2 border-blue-400 rounded-lg shadow-lg text-base sm:text-lg font-bold animate-in zoom-in duration-200 text-center">
+            {feedback}
+          </div>
+        )}
+      </div>
 
-      {/* Grid */}
+      {/* Grid - Always in the same position */}
       <div className="mb-6 w-full max-w-2xl">
         <div className={gridClass} style={{ gridTemplateColumns: `repeat(${gameState.gridSize}, minmax(0, 1fr))` }}>
           {renderGrid()}

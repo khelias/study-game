@@ -19,6 +19,8 @@ import {
   checkLevelUp, 
   calculateStarReward
 } from '../engine/progression';
+import { generateBattleLearnQuestion } from '../games/generators';
+import type { BattleLearnProblem } from '../types/game';
 
 export interface UseAnswerHandlerResult {
   handleAnswer: (isCorrect: boolean, shouldShowAchievement?: () => boolean) => void;
@@ -168,8 +170,15 @@ export function useAnswerHandler(): UseAnswerHandlerResult {
         setTimeout(() => {
           if (baseGameType !== 'math_snake') {
             setBgClass('bg-slate-50');
-            const newProblem = generateUniqueProblemForGame(gameType, newLevel, profile, adaptiveDifficulty);
-            setProblem(newProblem);
+            // For BattleLearn, generate new question but keep board state
+            if (baseGameType === 'battlelearn' && problem.type === 'battlelearn') {
+              const rng = getRng();
+              const newQuestion = generateBattleLearnQuestion(problem, newLevel, profile, rng);
+              setProblem(newQuestion);
+            } else {
+              const newProblem = generateUniqueProblemForGame(gameType, newLevel, profile, adaptiveDifficulty);
+              setProblem(newProblem);
+            }
           }
         }, 2000); // After level-up animation completes
       }, 800);
@@ -225,8 +234,15 @@ export function useAnswerHandler(): UseAnswerHandlerResult {
         // Generate new problem for standard games (only if not leveling up)
         setTimeout(() => {
           setBgClass('bg-slate-50');
-          const newProblem = generateUniqueProblemForGame(gameType, levelForNextProblem, profile, adaptiveDifficulty);
-          setProblem(newProblem);
+          // For BattleLearn, generate new question but keep board state
+          if (baseGameType === 'battlelearn' && problem.type === 'battlelearn') {
+            const rng = getRng();
+            const newQuestion = generateBattleLearnQuestion(problem, levelForNextProblem, profile, rng);
+            setProblem(newQuestion);
+          } else {
+            const newProblem = generateUniqueProblemForGame(gameType, levelForNextProblem, profile, adaptiveDifficulty);
+            setProblem(newProblem);
+          }
         }, 600);
       } else if (!shouldLevelUp) {
         // Just reset background if not leveling up
