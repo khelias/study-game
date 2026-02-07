@@ -1,9 +1,9 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { playSound } from '../engine/audio';
 import { useTranslation } from '../i18n/useTranslation';
-import { useProfileText } from '../hooks/useProfileText';
 import { ControlPad } from './ControlPad';
-import { GameProblemModal } from './shared';
+import { GameProblemModal, PaidHintButtons } from './shared';
+import { GAME_CONFIG } from '../games/data';
 import type { Direction, MathSnakeProblem } from '../types/game';
 
 interface MathSnakeViewProps {
@@ -13,11 +13,14 @@ interface MathSnakeViewProps {
   soundEnabled: boolean;
   level?: number;
   gameType?: string;
+  stars?: number;
+  spendStars?: (count: number) => boolean;
 }
 
-export const MathSnakeView: React.FC<MathSnakeViewProps> = ({ problem, onAnswer, onMove, soundEnabled, level = 1 }) => {
+export const MathSnakeView: React.FC<MathSnakeViewProps> = ({ problem, onAnswer, onMove, soundEnabled, level = 1, gameType, stars = 0 }) => {
   const t = useTranslation();
-  const { formatText } = useProfileText();
+  const baseType = gameType?.replace('_adv', '') ?? 'math_snake';
+  const paidHints = GAME_CONFIG[baseType]?.paidHints ?? [];
   const [status, setStatus] = useState<'idle' | 'correct' | 'wrong'>('idle');
   const [justAte, setJustAte] = useState(false);
   const [selectedOption, setSelectedOption] = useState<number | null>(null);
@@ -464,6 +467,9 @@ export const MathSnakeView: React.FC<MathSnakeViewProps> = ({ problem, onAnswer,
           compact
         />
       </div>
+      {paidHints.length > 0 && (
+        <PaidHintButtons hints={paidHints} stars={stars} onHintClick={() => {}} />
+      )}
     </div>
   );
 };

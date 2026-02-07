@@ -8,6 +8,8 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { playSound } from '../../engine/audio';
 import { useTranslation } from '../../i18n/useTranslation';
 import { useProfileText } from '../../hooks/useProfileText';
+import { GAME_CONFIG } from '../../games/data';
+import { PaidHintButtons } from '../shared';
 import type { SyllableBuilderProblem } from '../../types/game';
 
 type AnswerHandler = (answer: boolean) => void;
@@ -16,11 +18,16 @@ interface SyllableGameViewProps {
   problem: SyllableBuilderProblem;
   onAnswer: AnswerHandler;
   soundEnabled: boolean;
+  gameType?: string;
+  stars?: number;
+  spendStars?: (count: number) => boolean;
 }
 
-export const SyllableGameView: React.FC<SyllableGameViewProps> = ({ problem, onAnswer, soundEnabled }) => {
+export const SyllableGameView: React.FC<SyllableGameViewProps> = ({ problem, onAnswer, soundEnabled, gameType, stars = 0 }) => {
   const t = useTranslation();
   const { formatText } = useProfileText();
+  const baseType = gameType?.replace('_adv', '') ?? 'syllable_builder';
+  const paidHints = GAME_CONFIG[baseType]?.paidHints ?? [];
   interface SyllablePart {
     part: { text: string; id: string };
     id: string;
@@ -110,6 +117,9 @@ export const SyllableGameView: React.FC<SyllableGameViewProps> = ({ problem, onA
           </button>
         ))}
       </div>
+      {paidHints.length > 0 && (
+        <PaidHintButtons hints={paidHints} stars={stars} onHintClick={() => {}} />
+      )}
     </div>
   );
 };

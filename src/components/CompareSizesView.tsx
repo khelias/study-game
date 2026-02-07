@@ -2,11 +2,16 @@ import React, { useState } from 'react';
 import type { CompareSizesProblem } from '../types/game';
 import { useTranslation } from '../i18n/useTranslation';
 import { playSound } from '../engine/audio';
+import { GAME_CONFIG } from '../games/data';
+import { PaidHintButtons } from './shared';
 
 interface CompareSizesViewProps {
   problem: CompareSizesProblem;
   onAnswer: (isCorrect: boolean) => void;
   soundEnabled: boolean;
+  gameType?: string;
+  stars?: number;
+  spendStars?: (count: number) => boolean;
 }
 
 // Dice face dots patterns (1-6) - using CSS Grid for robust scaling
@@ -38,12 +43,16 @@ const DiceFace: React.FC<{ value: number }> = ({ value }) => {
   );
 };
 
-export const CompareSizesView: React.FC<CompareSizesViewProps> = ({ 
-  problem, 
-  onAnswer, 
-  soundEnabled 
+export const CompareSizesView: React.FC<CompareSizesViewProps> = ({
+  problem,
+  onAnswer,
+  soundEnabled,
+  gameType,
+  stars = 0,
 }) => {
   const t = useTranslation();
+  const baseType = gameType?.replace('_adv', '') ?? 'compare_sizes';
+  const paidHints = GAME_CONFIG[baseType]?.paidHints ?? [];
   const [selectedAnswer, setSelectedAnswer] = useState<'left' | 'right' | 'equal' | null>(null);
 
   const handleAnswer = (userAnswer: 'left' | 'right' | 'equal') => {
@@ -230,6 +239,9 @@ export const CompareSizesView: React.FC<CompareSizesViewProps> = ({
             </span>
           )}
         </div>
+      )}
+      {paidHints.length > 0 && (
+        <PaidHintButtons hints={paidHints} stars={stars} onHintClick={() => {}} />
       )}
     </div>
   );

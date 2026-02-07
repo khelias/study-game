@@ -211,7 +211,7 @@ export const ShapeShiftView: React.FC<ShapeShiftViewProps> = ({
   // ─── Rendering Helpers ──────────────────────────────────────────────────
 
   const gs = problem.puzzle.gridSize;
-  const puzzleName = locale === 'et' ? problem.puzzle.nameEt : problem.puzzle.nameEn;
+  const _puzzleName = locale === 'et' ? problem.puzzle.nameEt : problem.puzzle.nameEn;
 
   // Sort pieces for z-index (center pieces on top)
   const placedPieces = pieces.filter(p => p.currentPosition !== null);

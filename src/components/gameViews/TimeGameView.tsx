@@ -9,6 +9,8 @@ import { playSound } from '../../engine/audio';
 import { useTranslation } from '../../i18n/useTranslation';
 import { useProfileText } from '../../hooks/useProfileText';
 import { TimeDisplay } from '../shared/TimeDisplay';
+import { GAME_CONFIG } from '../../games/data';
+import { PaidHintButtons } from '../shared';
 import type { TimeMatchProblem } from '../../types/game';
 
 type AnswerHandler = (answer: boolean) => void;
@@ -17,11 +19,16 @@ interface TimeGameViewProps {
   problem: TimeMatchProblem;
   onAnswer: AnswerHandler;
   soundEnabled: boolean;
+  gameType?: string;
+  stars?: number;
+  spendStars?: (count: number) => boolean;
 }
 
-export const TimeGameView: React.FC<TimeGameViewProps> = ({ problem, onAnswer, soundEnabled }) => {
+export const TimeGameView: React.FC<TimeGameViewProps> = ({ problem, onAnswer, soundEnabled, gameType, stars = 0 }) => {
   const t = useTranslation();
   const { formatText } = useProfileText();
+  const baseType = gameType?.replace('_adv', '') ?? 'time_match';
+  const paidHints = GAME_CONFIG[baseType]?.paidHints ?? [];
   const [disabled, setDisabled] = useState<string[]>([]);
   const [feedback, setFeedback] = useState<string | null>(null);
 
@@ -71,6 +78,9 @@ export const TimeGameView: React.FC<TimeGameViewProps> = ({ problem, onAnswer, s
           </button>
         ))}
       </div>
+      {paidHints.length > 0 && (
+        <PaidHintButtons hints={paidHints} stars={stars} onHintClick={() => {}} />
+      )}
     </div>
   );
 };

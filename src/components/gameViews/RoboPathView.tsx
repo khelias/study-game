@@ -10,6 +10,8 @@ import { playSound } from '../../engine/audio';
 import { useTranslation } from '../../i18n/useTranslation';
 import { useProfileText } from '../../hooks/useProfileText';
 import { ControlPad } from '../ControlPad';
+import { GAME_CONFIG } from '../../games/data';
+import { PaidHintButtons } from '../shared';
 import type { RoboPathProblem } from '../../types/game';
 
 type AnswerHandler = (answer: boolean) => void;
@@ -18,11 +20,16 @@ interface RoboPathViewProps {
   problem: RoboPathProblem;
   onAnswer: AnswerHandler;
   soundEnabled: boolean;
+  gameType?: string;
+  stars?: number;
+  spendStars?: (count: number) => boolean;
 }
 
-export const RoboPathView: React.FC<RoboPathViewProps> = ({ problem, onAnswer, soundEnabled }) => {
+export const RoboPathView: React.FC<RoboPathViewProps> = ({ problem, onAnswer, soundEnabled, gameType, stars = 0 }) => {
   const t = useTranslation();
   const { formatText } = useProfileText();
+  const baseType = gameType?.replace('_adv', '') ?? 'robo_path';
+  const paidHints = GAME_CONFIG[baseType]?.paidHints ?? [];
   const [commands, setCommands] = useState<string[]>([]);
   const [robotPos, setRobotPos] = useState<[number, number]>(problem.start);
   const [robotDirection, setRobotDirection] = useState<'UP' | 'DOWN' | 'LEFT' | 'RIGHT'>('DOWN');
@@ -389,6 +396,9 @@ export const RoboPathView: React.FC<RoboPathViewProps> = ({ problem, onAnswer, s
            </button>
          </div>
        </div>
+      {paidHints.length > 0 && (
+        <PaidHintButtons hints={paidHints} stars={stars ?? 0} onHintClick={() => {}} />
+      )}
     </div>
   );
 };

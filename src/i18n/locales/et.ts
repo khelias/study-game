@@ -678,6 +678,9 @@ export const et = {
 
   // Game names and descriptions
   games: {
+    hint: {
+      genericCost: 'Vihje ({cost}⭐)',
+    },
     word_builder: {
       title: 'SÕNAMEISTER',
       desc: 'Lao tähtedest sõna kokku',
@@ -798,10 +801,12 @@ export const et = {
     battlelearn: {
       title: 'LAEVADE UPUTAMINE',
       desc: 'Uputa laevad ja õpi matemaatikat',
+      hintRevealCost: 'Näita üht laeva asukohta ({cost}⭐)',
     },
     battlelearn_adv: {
       title: 'LAEVADE UPUTAMINE',
       desc: 'Kasuta koordinaate ja loogikat laevastiku uputamiseks',
+      hintRevealCost: 'Näita üht laeva asukohta ({cost}⭐)',
     },
   },
 

@@ -7,6 +7,8 @@
 import React, { useEffect, useState } from 'react';
 import { playSound } from '../../engine/audio';
 import { useTranslation } from '../../i18n/useTranslation';
+import { GAME_CONFIG } from '../../games/data';
+import { PaidHintButtons } from '../shared';
 import type { WordBuilderProblem, LetterObject } from '../../types/game';
 
 type AnswerHandler = (answer: boolean) => void;
@@ -15,10 +17,15 @@ interface WordGameViewProps {
   problem: WordBuilderProblem;
   onAnswer: AnswerHandler;
   soundEnabled: boolean;
+  gameType?: string;
+  stars?: number;
+  spendStars?: (count: number) => boolean;
 }
 
-export const WordGameView: React.FC<WordGameViewProps> = ({ problem, onAnswer, soundEnabled }) => {
+export const WordGameView: React.FC<WordGameViewProps> = ({ problem, onAnswer, soundEnabled, gameType, stars = 0 }) => {
   const t = useTranslation();
+  const baseType = gameType?.replace('_adv', '') ?? 'word_builder';
+  const paidHints = GAME_CONFIG[baseType]?.paidHints ?? [];
   const [userWord, setUserWord] = useState<Array<{ char: string; id: string } | null>>([]);
   const [pool, setPool] = useState<Array<{ char: string; id: string }>>(problem.shuffled || []);
   
@@ -195,6 +202,9 @@ export const WordGameView: React.FC<WordGameViewProps> = ({ problem, onAnswer, s
           </button>
         ))}
       </div>
+      {paidHints.length > 0 && (
+        <PaidHintButtons hints={paidHints} stars={stars ?? 0} onHintClick={() => {}} />
+      )}
     </div>
   );
 };

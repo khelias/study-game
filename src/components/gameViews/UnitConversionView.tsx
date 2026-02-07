@@ -9,6 +9,8 @@ import { playSound } from '../../engine/audio';
 import { useTranslation } from '../../i18n/useTranslation';
 import { useProfileText } from '../../hooks/useProfileText';
 import { buildUnitConversionQuestion } from '../../utils/unitConversion';
+import { GAME_CONFIG } from '../../games/data';
+import { PaidHintButtons } from '../shared';
 import type { UnitConversionProblem } from '../../types/game';
 
 type AnswerHandler = (answer: boolean) => void;
@@ -17,11 +19,16 @@ interface UnitConversionViewProps {
   problem: UnitConversionProblem;
   onAnswer: AnswerHandler;
   soundEnabled: boolean;
+  gameType?: string;
+  stars?: number;
+  spendStars?: (count: number) => boolean;
 }
 
-export const UnitConversionView: React.FC<UnitConversionViewProps> = ({ problem, onAnswer, soundEnabled }) => {
+export const UnitConversionView: React.FC<UnitConversionViewProps> = ({ problem, onAnswer, soundEnabled, gameType, stars = 0 }) => {
   const t = useTranslation();
   const { formatText } = useProfileText();
+  const baseType = gameType?.replace('_adv', '') ?? 'unit_conversion';
+  const paidHints = GAME_CONFIG[baseType]?.paidHints ?? [];
   const [disabled, setDisabled] = useState<number[]>([]);
   const questionText = useMemo(
     () => buildUnitConversionQuestion(t, problem.value, problem.fromUnit, problem.toUnit),
@@ -86,6 +93,9 @@ export const UnitConversionView: React.FC<UnitConversionViewProps> = ({ problem,
           );
         })}
       </div>
+      {paidHints.length > 0 && (
+        <PaidHintButtons hints={paidHints} stars={stars} onHintClick={() => {}} />
+      )}
     </div>
   );
 };

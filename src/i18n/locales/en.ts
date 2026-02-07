@@ -678,6 +678,9 @@ export const en = {
 
   // Game names and descriptions
   games: {
+    hint: {
+      genericCost: 'Hint ({cost}⭐)',
+    },
     word_builder: {
       title: 'WORD MASTER',
       desc: 'Build a word from letters',
@@ -798,10 +801,12 @@ export const en = {
     battlelearn: {
       title: 'BATTLELEARN',
       desc: 'Answer and sink ships',
+      hintRevealCost: 'Reveal one ship position ({cost}⭐)',
     },
     battlelearn_adv: {
       title: 'BATTLELEARN',
       desc: 'Master coordinates and arithmetic',
+      hintRevealCost: 'Reveal one ship position ({cost}⭐)',
     },
   },
 

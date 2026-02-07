@@ -8,6 +8,8 @@ import React, { useEffect, useState } from 'react';
 import { playSound } from '../../engine/audio';
 import { useTranslation } from '../../i18n/useTranslation';
 import { useProfileText } from '../../hooks/useProfileText';
+import { GAME_CONFIG } from '../../games/data';
+import { PaidHintButtons } from '../shared';
 import type { MemoryMathProblem } from '../../types/game';
 
 type AnswerHandler = (answer: boolean) => void;
@@ -16,11 +18,16 @@ interface MemoryGameViewProps {
   problem: MemoryMathProblem;
   onAnswer: AnswerHandler;
   soundEnabled: boolean;
+  gameType?: string;
+  stars?: number;
+  spendStars?: (count: number) => boolean;
 }
 
-export const MemoryGameView: React.FC<MemoryGameViewProps> = ({ problem, onAnswer, soundEnabled }) => {
+export const MemoryGameView: React.FC<MemoryGameViewProps> = ({ problem, onAnswer, soundEnabled, gameType, stars = 0 }) => {
   const t = useTranslation();
   const { formatText } = useProfileText();
+  const baseType = gameType?.replace('_adv', '') ?? 'memory_math';
+  const paidHints = GAME_CONFIG[baseType]?.paidHints ?? [];
   const [cards, setCards] = useState<Array<{ id: string; content: string; matched?: boolean; flipped?: boolean; solved?: boolean; matchId?: string; type?: string }>>(problem.cards || []);
   const [flipped, setFlipped] = useState<number[]>([]); 
   const [matchedPairs, setMatchedPairs] = useState<number>(0);
@@ -179,6 +186,9 @@ export const MemoryGameView: React.FC<MemoryGameViewProps> = ({ problem, onAnswe
       <style>{`
         /* Removed rotation animations - simpler and calmer */
       `}</style>
+      {paidHints.length > 0 && (
+        <PaidHintButtons hints={paidHints} stars={stars} onHintClick={() => {}} />
+      )}
     </div>
   );
 };

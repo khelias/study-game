@@ -12,31 +12,41 @@
  * - Generic victory screen (GameResultScreen)
  */
 
-import React, { useState, useEffect } from 'react';
+import React, { useCallback, useState, useEffect } from 'react';
 import { Target } from 'lucide-react';
 import { playSound } from '../../engine/audio';
 import { useTranslation } from '../../i18n/useTranslation';
 import { applyShot, checkWinCondition, isShipSunk } from '../../engine/battlelearn';
 import { usePlaySessionStore } from '../../stores/playSessionStore';
-import type { BattleLearnProblem } from '../../types/game';
+import type { BattleLearnProblem, Ship } from '../../types/game';
 import { GameProblemModal } from '../shared/GameProblemModal';
 import { GameStatsBar, type GameStat } from '../shared/GameStatsBar';
+import { PaidHintButtons } from '../shared';
 import { GameResultScreen } from '../../features/gameplay/GameResultScreen';
+import { GAME_CONFIG } from '../../games/data';
 
 interface BattleLearnViewProps {
   problem: BattleLearnProblem;
   onAnswer: (isCorrect: boolean) => void;
   soundEnabled: boolean;
+  gameType?: string;
+  stars?: number;
+  spendStars?: (count: number) => boolean;
 }
 
-export const BattleLearnView: React.FC<BattleLearnViewProps> = ({ 
-  problem, 
-  onAnswer, 
-  soundEnabled 
+export const BattleLearnView: React.FC<BattleLearnViewProps> = ({
+  problem,
+  onAnswer,
+  soundEnabled,
+  gameType,
+  stars = 0,
+  spendStars,
 }) => {
   const t = useTranslation();
   const setProblem = usePlaySessionStore(state => state.setProblem);
-  
+  const configKey = gameType ?? 'battlelearn';
+  const paidHints = GAME_CONFIG[configKey]?.paidHints ?? [];
+
   // Separate game state from question state
   const [gameState, setGameState] = useState({
     gridSize: problem.gridSize,
@@ -87,6 +97,47 @@ export const BattleLearnView: React.FC<BattleLearnViewProps> = ({
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [problem.uid]);
+
+  const handlePaidHint = useCallback(
+    (hintId: string) => {
+      if (hintId !== 'reveal' || !spendStars || !spendStars(1)) return;
+      const { ships, revealed, hits, sunkShips } = gameState;
+      const revealedSet = new Set(revealed.map(([r, c]) => `${r},${c}`));
+      const unrevealedShipPositions: Array<[number, number]> = [];
+      for (const ship of ships) {
+        for (const pos of ship.positions) {
+          if (!revealedSet.has(`${pos[0]},${pos[1]}`)) unrevealedShipPositions.push(pos);
+        }
+      }
+      if (unrevealedShipPositions.length === 0) return;
+      const [row, col] = unrevealedShipPositions[Math.floor(Math.random() * unrevealedShipPositions.length)]!;
+      const shipsCopy = JSON.parse(JSON.stringify(ships)) as Ship[];
+      const result = applyShot(shipsCopy, revealed, row, col);
+      const newRevealed = [...revealed, [row, col]];
+      const newHits = result.hit ? [...hits, [row, col]] : hits;
+      const newSunkShips = result.sunkShipId ? [...sunkShips, result.sunkShipId] : sunkShips;
+      const gameWon = checkWinCondition(shipsCopy);
+      setGameState((prev) => ({
+        ...prev,
+        ships: shipsCopy,
+        revealed: newRevealed,
+        hits: newHits,
+        sunkShips: newSunkShips,
+        gameWon,
+      }));
+      setProblem({
+        ...problem,
+        revealed: newRevealed,
+        hits: newHits,
+        sunkShips: newSunkShips,
+        ships: shipsCopy,
+        gameWon,
+      });
+      if (result.hit) playSound('success', soundEnabled);
+      if (gameWon) setTimeout(() => playSound('success', soundEnabled), 500);
+    },
+    [gameState, problem, spendStars, soundEnabled, setProblem]
+  );
 
   const handleOptionSelect = (index: number) => {
     if (gamePhase !== 'answering' || gameState.gameWon) return;
@@ -323,6 +374,9 @@ export const BattleLearnView: React.FC<BattleLearnViewProps> = ({
         disabled={selectedOption !== null}
         icon={<Target className="text-orange-600" />}
       />
+      {paidHints.length > 0 && (
+        <PaidHintButtons hints={paidHints} stars={stars} onHintClick={handlePaidHint} disabled={gameState.gameWon || gamePhase === 'answering'} />
+      )}
     </div>
   );
 };

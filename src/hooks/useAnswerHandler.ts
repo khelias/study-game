@@ -129,7 +129,7 @@ export function useAnswerHandler(): UseAnswerHandlerResult {
     if (levelUpStrategy === 'onGameWin') {
       // Level up only when game is won
       const gameWon = problem.type === 'battlelearn' 
-        ? (problem as BattleLearnProblem).gameWon 
+        ? (problem).gameWon 
         : false;
       shouldLevelUp = gameWon && isCorrect;
     } else {
@@ -241,7 +241,7 @@ export function useAnswerHandler(): UseAnswerHandlerResult {
           // For BattleLearn, if game is won, don't generate new question (GameResultScreen handles it)
           // If game continues (wrong answer), generate new question but keep board state
           if (baseGameType === 'battlelearn' && problem.type === 'battlelearn') {
-            const battleLearnProb = problem as BattleLearnProblem;
+            const battleLearnProb = problem;
             if (!battleLearnProb.gameWon) {
               const rng = getRng();
               const newQuestion = generateBattleLearnQuestion(battleLearnProb, levelForNextProblem, profile, rng);

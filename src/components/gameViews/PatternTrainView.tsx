@@ -50,6 +50,8 @@ export const PatternTrainView: React.FC<PatternTrainViewProps> = ({
   const config = GAME_CONFIG[baseType];
   const paidHints = config?.paidHints ?? [];
 
+  // Reset and enter animation when problem changes (key on parent may not remount this view)
+  /* eslint-disable react-hooks/set-state-in-effect -- intentional reset on problem change */
   useEffect(() => {
     setDisabled([]);
     setTrainState('enter');
@@ -60,6 +62,7 @@ export const PatternTrainView: React.FC<PatternTrainViewProps> = ({
     const timer = setTimeout(() => setTrainState('idle'), 600);
     return () => clearTimeout(timer);
   }, [problemUid]);
+  /* eslint-enable react-hooks/set-state-in-effect */
 
   const handlePaidHint = useCallback(
     (hintId: string) => {

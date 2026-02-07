@@ -44,6 +44,8 @@ export const CATEGORIES: Record<string, Category> = {
   }
 };
 
+// Paid hints: only add game-specific hints that give a real advantage in that game.
+// Use the same system (GAME_CONFIG.paidHints, PaidHintButtons, stars/spendStars) for all.
 export const GAME_CONFIG: Record<string, GameConfig> = {
   // 5+ games - simpler, visual (7 games - added letter_match)
   word_builder:    { id: 'word_builder', title: 'WORD MASTER', theme: THEME.orange!, icon: 'FileText', desc: 'Build a word from letters', allowedProfiles: ['starter', 'advanced'], difficulty: 'easy', category: 'language' },
@@ -59,7 +61,7 @@ export const GAME_CONFIG: Record<string, GameConfig> = {
   compare_sizes:   { id: 'compare_sizes', title: 'NUMBER COMPARE', theme: THEME.indigo!, icon: 'Hash', desc: 'Compare numbers', allowedProfiles: ['starter', 'advanced'], difficulty: 'easy', category: 'math' },
   star_mapper:     { id: 'star_mapper', title: 'STAR MAPPER', theme: THEME.indigo!, icon: 'Star', desc: 'Learn the constellations', allowedProfiles: ['starter', 'advanced'], difficulty: 'medium', category: 'logic', paidHints: [{ id: 'guide', icon: '💡', cost: 1, labelKey: 'games.star_mapper.hintGuideCost' }, { id: 'connect', icon: '✨', cost: 2, labelKey: 'games.star_mapper.hintConnectCost' }] },
   shape_shift:     { id: 'shape_shift', title: 'SHAPE SHIFT', theme: THEME.teal!, icon: 'Shapes', desc: 'Build shapes from pieces', allowedProfiles: ['starter', 'advanced'], difficulty: 'easy', category: 'logic', paidHints: [{ id: 'outline', icon: '👁️', cost: 1, labelKey: 'games.shape_shift.hintOutlineCost' }, { id: 'place', icon: '🧩', cost: 2, labelKey: 'games.shape_shift.hintPlacePieceCost' }] },
-  battlelearn:     { id: 'battlelearn', title: 'BATTLELEARN', theme: THEME.blue!, icon: 'Anchor', desc: 'Answer and sink ships', allowedProfiles: ['starter'], difficulty: 'medium', category: 'math', levelUpStrategy: 'onGameWin' },
+  battlelearn:     { id: 'battlelearn', title: 'BATTLELEARN', theme: THEME.blue!, icon: 'Anchor', desc: 'Answer and sink ships', allowedProfiles: ['starter'], difficulty: 'medium', category: 'math', levelUpStrategy: 'onGameWin', paidHints: [{ id: 'reveal', icon: '🎯', cost: 1, labelKey: 'games.battlelearn.hintRevealCost' }] },
   
   // 8+ games - harder, logical (7 games - added letter_match_adv)
   balance_scale:   { id: 'balance_scale', title: 'SCALES', theme: THEME.blue!, icon: 'Scale', desc: 'Balance the scales', allowedProfiles: ['advanced'], difficulty: 'hard', category: 'math' },
@@ -72,7 +74,7 @@ export const GAME_CONFIG: Record<string, GameConfig> = {
   letter_match_adv: { id: 'letter_match', title: 'LETTER DETECTIVE', theme: THEME.pink!, icon: 'Search', desc: 'Find the correct letter', allowedProfiles: ['advanced'], difficulty: 'hard', category: 'language' },
   unit_conversion_adv: { id: 'unit_conversion', title: 'UNITS', theme: THEME.blue!, icon: 'Ruler', desc: 'Convert units', allowedProfiles: ['advanced'], difficulty: 'hard', category: 'math' },
   word_cascade_adv: { id: 'word_cascade', title: 'WORD CASCADE', theme: THEME.pink!, icon: 'Layers', desc: 'Catch letters and build words fast', allowedProfiles: ['advanced'], difficulty: 'hard', category: 'language' },
-  battlelearn_adv: { id: 'battlelearn_adv', title: 'BATTLELEARN', theme: THEME.blue!, icon: 'Anchor', desc: 'Master coordinates and arithmetic', allowedProfiles: ['advanced'], difficulty: 'hard', category: 'math', levelUpStrategy: 'onGameWin' },
+  battlelearn_adv: { id: 'battlelearn_adv', title: 'BATTLELEARN', theme: THEME.blue!, icon: 'Anchor', desc: 'Master coordinates and arithmetic', allowedProfiles: ['advanced'], difficulty: 'hard', category: 'math', levelUpStrategy: 'onGameWin', paidHints: [{ id: 'reveal', icon: '🎯', cost: 1, labelKey: 'games.battlelearn.hintRevealCost' }] },
 };
 
 // Profiles are extensible with difficulty offset

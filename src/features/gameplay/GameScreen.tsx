@@ -13,12 +13,10 @@ import { usePlaySessionStore } from '../../stores/playSessionStore';
 import { useGameEngine } from '../../hooks/useGameEngine';
 import { useGameAudio } from '../../hooks/useGameAudio';
 import { useAnswerHandler } from '../../hooks/useAnswerHandler';
-import { useGameHints } from '../../hooks/useGameHints';
 import { useGameTips } from '../../hooks/useGameTips';
 import { GameRenderer } from './GameRenderer';
 import { Confetti } from '../../components/shared/Confetti';
 import { NotificationSystem } from '../../components/NotificationSystem';
-import { HintButton } from '../../components/HintButton';
 import { TipButton } from '../../components/TipButton';
 import { EnhancedConfetti } from '../../components/EnhancedAnimations';
 import { ParticleEffect } from '../../components/ParticleEffect';
@@ -66,7 +64,6 @@ export const GameScreen: React.FC = () => {
   const confetti = usePlaySessionStore(state => state.confetti);
   const enhancedConfetti = usePlaySessionStore(state => state.enhancedConfetti);
   const particleActive = usePlaySessionStore(state => state.particleActive);
-  const showHint = usePlaySessionStore(state => state.showHint);
   const adaptiveDifficulty = usePlaySessionStore(state => state.adaptiveDifficulty);
   const gameStartTime = usePlaySessionStore(state => state.gameStartTime);
   const notifications = usePlaySessionStore(state => state.notifications);
@@ -93,8 +90,7 @@ export const GameScreen: React.FC = () => {
   const handleAnswer = (isCorrect: boolean) => {
     handleAnswerBase(isCorrect, () => !achievementShown);
   };
-  const { showHint: showHintForProblem } = useGameHints(addNotification, setBgClass);
-  
+
   const [isCompactLayout, setIsCompactLayout] = useState(false);
   const [showSettingsMenu, setShowSettingsMenu] = useState(false);
   const [showStats, setShowStats] = useState(false);
@@ -276,12 +272,6 @@ export const GameScreen: React.FC = () => {
     setProblem(result.problem);
   };
 
-  // Handle hint button click
-  const handleHint = () => {
-    if (!problem) return;
-    showHintForProblem(problem);
-  };
-
   // Handle notification dismissal
   const handleNotificationDismiss = (id: string) => {
     const notification = notifications.find(n => n.id === id);
@@ -458,19 +448,9 @@ export const GameScreen: React.FC = () => {
               onMove={isMathSnake ? handleMathSnakeMove : undefined}
               soundEnabled={soundEnabled}
               level={currentLevel}
-              stars={(gameType === 'shape_shift' || gameType === 'shape_shift_adv' || gameType === 'star_mapper' || gameType === 'star_mapper_adv' || gameType === 'pattern' || gameType === 'pattern_adv') ? stars : undefined}
-              spendStars={(gameType === 'shape_shift' || gameType === 'shape_shift_adv' || gameType === 'star_mapper' || gameType === 'star_mapper_adv' || gameType === 'pattern' || gameType === 'pattern_adv') ? spendStars : undefined}
+              stars={stars}
+              spendStars={spendStars}
             />
-
-            {showHint &&
-             gameType !== 'shape_shift' &&
-             gameType !== 'shape_shift_adv' &&
-             gameType !== 'star_mapper' &&
-             gameType !== 'star_mapper_adv' &&
-             gameType !== 'pattern' &&
-             gameType !== 'pattern_adv' && (
-              <HintButton onHint={handleHint} soundEnabled={soundEnabled} disabled={false} />
-            )}
 
             <TipButton onTip={handleTipReplay} soundEnabled={soundEnabled} disabled={!canReopenTip} />
           </div>

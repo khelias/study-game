@@ -8,15 +8,22 @@ import React, { useState, useEffect } from 'react';
 import { playSound } from '../../engine/audio';
 import type { BalanceScaleProblem } from '../../types/game';
 import { SvgWeight } from '../shared/SvgWeight';
+import { GAME_CONFIG } from '../../games/data';
+import { PaidHintButtons } from '../shared';
 
 interface BalanceScaleViewProps {
   problem: BalanceScaleProblem;
   onAnswer: (isCorrect: boolean) => void;
   soundEnabled: boolean;
+  gameType?: string;
+  stars?: number;
+  spendStars?: (count: number) => boolean;
 }
 
-export const BalanceScaleView: React.FC<BalanceScaleViewProps> = ({ problem, onAnswer, soundEnabled }) => {
+export const BalanceScaleView: React.FC<BalanceScaleViewProps> = ({ problem, onAnswer, soundEnabled, gameType, stars = 0 }) => {
   const problemUid: string = problem.uid;
+  const baseType = gameType?.replace('_adv', '') ?? 'balance_scale';
+  const paidHints = GAME_CONFIG[baseType]?.paidHints ?? [];
   const [disabled, setDisabled] = useState<number[]>([]);
   const [tilt, setTilt] = useState<number>(-10);
 
@@ -192,6 +199,9 @@ export const BalanceScaleView: React.FC<BalanceScaleViewProps> = ({ problem, onA
           );
         })}
       </div>
+      {paidHints.length > 0 && (
+        <PaidHintButtons hints={paidHints} stars={stars} onHintClick={() => {}} />
+      )}
     </div>
   );
 };

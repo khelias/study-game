@@ -64,6 +64,10 @@ export function useGameHints(
           return buildUnitConversionQuestion(t, problem.value, problem.fromUnit, problem.toUnit);
         }
         return '';
+      case 'compare_sizes':
+        return t.gameScreen.hints.compare_sizes;
+      case 'letter_match':
+        return t.gameScreen.hints.default;
       case 'shape_shift':
         return t.games.shape_shift.hintText;
       default:

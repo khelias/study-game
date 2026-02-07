@@ -63,8 +63,8 @@ export const MenuScreen: React.FC = () => {
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     if (params.get('openShop') === 'true') {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- sync from URL on mount
       setShowShop(true);
-      // Clean up URL
       window.history.replaceState({}, '', '/');
     }
   }, []);

@@ -8,7 +8,8 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { playSound } from '../../engine/audio';
 import { useTranslation } from '../../i18n/useTranslation';
 import { useGameStore } from '../../stores/gameStore';
-import { ALPHABET } from '../../games/data';
+import { ALPHABET, GAME_CONFIG } from '../../games/data';
+import { PaidHintButtons } from '../shared';
 import type { WordCascadeProblem } from '../../types/game';
 
 type FallingItemKind = 'letter' | 'star' | 'heart' | 'strike';
@@ -26,6 +27,9 @@ interface WordCascadeViewProps {
   onAnswer: (isCorrect: boolean) => void;
   soundEnabled: boolean;
   level?: number;
+  gameType?: string;
+  stars?: number;
+  spendStars?: (count: number) => boolean;
 }
 
 const BOARD_H = 320;
@@ -123,8 +127,10 @@ function getDistractorLetter(targetWord: string, neededLetter: string | null): s
   }
 }
 
-export const WordCascadeView: React.FC<WordCascadeViewProps> = ({ problem, onAnswer, soundEnabled, level = 1 }) => {
+export const WordCascadeView: React.FC<WordCascadeViewProps> = ({ problem, onAnswer, soundEnabled, level = 1, gameType, stars = 0 }) => {
   const t = useTranslation();
+  const baseType = gameType?.replace('_adv', '') ?? 'word_cascade';
+  const paidHints = GAME_CONFIG[baseType]?.paidHints ?? [];
   const [progress, setProgress] = useState('');
   const [status, setStatus] = useState<'idle' | 'correct' | 'wrong'>('idle');
   const [letters, setLetters] = useState<FallingItem[]>([]);
@@ -610,6 +616,9 @@ export const WordCascadeView: React.FC<WordCascadeViewProps> = ({ problem, onAns
           animation: wc-shake 0.2s ease-in-out;
         }
       `}</style>
+      {paidHints.length > 0 && (
+        <PaidHintButtons hints={paidHints} stars={stars} onHintClick={() => {}} />
+      )}
     </div>
   );
 };

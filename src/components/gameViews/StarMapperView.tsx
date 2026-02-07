@@ -55,10 +55,10 @@ export const StarMapperView: React.FC<StarMapperViewProps> = ({
   const identifyHandlingRef = useRef(false);
   const wrongAnswerTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Reset state when problem changes (render-time sync avoids cascading effect renders)
-  const [prevUid, setPrevUid] = useState(problem.uid);
-  if (prevUid !== problem.uid) {
-    setPrevUid(problem.uid);
+  // Reset state when problem changes
+  /* eslint-disable react-hooks/set-state-in-effect -- reset all state when problem.uid changes */
+  /* eslint-disable-next-line @typescript-eslint/no-unsafe-call -- useEffect from React */
+  useEffect(() => {
     setSelectedStar(null);
     setDrawnLines([]);
     setStatus('idle');
@@ -70,7 +70,8 @@ export const StarMapperView: React.FC<StarMapperViewProps> = ({
       clearTimeout(wrongAnswerTimeoutRef.current);
       wrongAnswerTimeoutRef.current = null;
     }
-  }
+  }, [problem.uid]);
+  /* eslint-enable react-hooks/set-state-in-effect */
 
   // Hints logic
   const handleHintClick = (hintId: string) => {
@@ -275,7 +276,7 @@ export const StarMapperView: React.FC<StarMapperViewProps> = ({
   };
 
   // Render mode instructions
-  const getInstructions = (): string => {
+  const _getInstructions = (): string => {
     return t.starMapper.instructions[problem.mode];
   };
 
@@ -471,7 +472,7 @@ export const StarMapperView: React.FC<StarMapperViewProps> = ({
           {/* Constellation stars: large touch target (r=TOUCH_TARGET_R) + visible star */}
           {problem.constellation.stars.map(star => {
             const isSelected = selectedStar === star.id;
-            const isConnected = drawnLines.some(l => l.from === star.id || l.to === star.id);
+            const _isConnected = drawnLines.some(l => l.from === star.id || l.to === star.id);
             const size = getStarSize(star.magnitude);
             const color = getStarColor(star.magnitude);
 

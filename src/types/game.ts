@@ -45,6 +45,7 @@ export type PositionType = typeof POSITION[keyof typeof POSITION];
 export type LevelUpStrategy = 'standard' | 'onGameWin';
 
 // Game configuration
+/** Paid hint: must be game-specific and give a real advantage in that game (e.g. eliminate wrong option, show outline). */
 export interface PaidHint {
   id: string;
   icon: string; // emoji
