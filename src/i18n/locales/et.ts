@@ -534,6 +534,7 @@ export const et = {
         'Kontrolli vastust väikese näitega!',
       ],
       compare_sizes: [
+        'Vali õige võrdlussümbol: < (väiksem), = (võrdne) või > (suurem)',
         'Vaata mõlemat poolt hoolikalt!',
         'Loe või võrdle suurusi!',
         'Mõtle, kumb on suurem!',

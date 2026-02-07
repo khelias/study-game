@@ -23,7 +23,7 @@ export function useGameTips(
 ): UseGameTipsResult {
   const t = useTranslation();
   const tipShownOnceRef = useRef(false);
-  const tipMessageRef = useRef<string | null>(null);
+  const currentTipIndexRef = useRef<number>(0);
   const [canReopenTip, setCanReopenTip] = useState(false);
 
   const getTipsForGame = useCallback((type: string): string[] => {
@@ -51,25 +51,40 @@ export function useGameTips(
         return [...t.gameScreen.tips.letter_match];
       case 'unit_conversion':
         return [...t.gameScreen.tips.unit_conversion];
+      case 'compare_sizes':
+        return [...t.gameScreen.tips.compare_sizes];
       default:
         return [];
     }
   }, [t]);
 
   const handleTipReplay = useCallback(() => {
-    if (!tipMessageRef.current) return;
+    if (!gameType) return;
     const hasTipNotification = notifications.some(n => n.type === 'tip');
     if (hasTipNotification) return;
+    
+    const gameTypeBase = gameType.replace('_adv', '');
+    const tips = getTipsForGame(gameTypeBase);
+    
+    if (tips.length === 0) return;
+    
+    // Get next tip in cycle
+    const tipMessage = tips[currentTipIndexRef.current];
+    if (!tipMessage) return;
+    
+    // Move to next tip for next time (cycle back to 0 if at end)
+    currentTipIndexRef.current = (currentTipIndexRef.current + 1) % tips.length;
+    
     addNotification({
       type: 'tip',
-      message: tipMessageRef.current,
+      message: tipMessage,
     });
-  }, [addNotification, notifications]);
+  }, [addNotification, notifications, gameType, getTipsForGame]);
 
   // Reset tip state when game type changes
   useEffect(() => {
     tipShownOnceRef.current = false;
-    tipMessageRef.current = null;
+    currentTipIndexRef.current = 0;
     const resetTimer = setTimeout(() => setCanReopenTip(false), 0);
     return () => clearTimeout(resetTimer);
   }, [gameType]);
@@ -87,10 +102,12 @@ export function useGameTips(
       const tips = getTipsForGame(gameTypeBase);
 
       if (tips.length > 0) {
-        const tipMessage = tips[Math.floor(Math.random() * tips.length)];
+        // Start with first tip
+        const tipMessage = tips[0];
         if (tipMessage) {
           tipShownOnceRef.current = true;
-          tipMessageRef.current = tipMessage;
+          // Next time will show tip at index 1
+          currentTipIndexRef.current = 1;
           const tipTimer = setTimeout(() => {
             setCanReopenTip(true);
             if (!isCompactLayout) {

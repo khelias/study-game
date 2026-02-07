@@ -534,6 +534,7 @@ export const en = {
         'Use a small example to check your answer!',
       ],
       compare_sizes: [
+        'Choose the right symbol: < (less than), = (equal) or > (greater than)',
         'Look at both sides carefully!',
         'Count or compare the sizes!',
         'Think which one is bigger!',

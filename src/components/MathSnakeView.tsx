@@ -3,6 +3,7 @@ import { playSound } from '../engine/audio';
 import { useTranslation } from '../i18n/useTranslation';
 import { useProfileText } from '../hooks/useProfileText';
 import { ControlPad } from './ControlPad';
+import { GameProblemModal } from './shared';
 import type { Direction, MathSnakeProblem } from '../types/game';
 
 interface MathSnakeViewProps {
@@ -19,11 +20,13 @@ export const MathSnakeView: React.FC<MathSnakeViewProps> = ({ problem, onAnswer,
   const { formatText } = useProfileText();
   const [status, setStatus] = useState<'idle' | 'correct' | 'wrong'>('idle');
   const [justAte, setJustAte] = useState(false);
+  const [selectedOption, setSelectedOption] = useState<number | null>(null);
   const prevSnakeLengthRef = useRef(problem.snake.length);
   
   // Reset status when problem changes
   React.useEffect(() => {
     setStatus('idle');
+    setSelectedOption(null);
   }, [problem.uid]);
 
   // Detect when snake eats and trigger animation
@@ -60,12 +63,14 @@ export const MathSnakeView: React.FC<MathSnakeViewProps> = ({ problem, onAnswer,
   const handleAnswerClick = useCallback((value: number) => {
     if (!problem.math || status !== 'idle') return;
     const isCorrect = value === problem.math.answer;
+    setSelectedOption(value);
     playSound(isCorrect ? 'correct' : 'wrong', soundEnabled);
     setStatus(isCorrect ? 'correct' : 'wrong');
     setTimeout(() => {
       onAnswer(isCorrect);
       setStatus('idle');
-    }, 350);
+      setSelectedOption(null);
+    }, 800);
   }, [onAnswer, problem.math, soundEnabled, status]);
 
   useEffect(() => {
@@ -398,8 +403,30 @@ export const MathSnakeView: React.FC<MathSnakeViewProps> = ({ problem, onAnswer,
   
   const levelTheme = getLevelTheme(level);
   
+  // Prepare modal options
+  const modalOptions = problem.math ? problem.math.options.map(String) : [];
+  const correctIndex = problem.math ? problem.math.options.indexOf(problem.math.answer) : -1;
+  const selectedIndex = problem.math && selectedOption !== null 
+    ? problem.math.options.indexOf(selectedOption) 
+    : null;
+  
   return (
     <div className="w-full flex flex-col items-center px-4 sm:px-6 max-w-2xl mx-auto pt-4 sm:pt-6 animate-in fade-in duration-300">
+      {/* Math Problem Modal */}
+      {problem.math && (
+        <GameProblemModal
+          isOpen={true}
+          title={t.gameScreen.mathSnake.nextMathLabel}
+          prompt={`${problem.math.equation} = ?`}
+          options={modalOptions}
+          correctIndex={correctIndex}
+          selectedOption={selectedIndex}
+          onOptionSelect={(idx) => handleAnswerClick(problem.math!.options[idx]!)}
+          disabled={status !== 'idle'}
+          icon="🧮"
+        />
+      )}
+
       {/* Game Board - Scales with viewport */}
       <div className="w-full" style={{ maxWidth: 'min(90vw, 28rem, 100%)' }}>
         <div
@@ -423,72 +450,7 @@ export const MathSnakeView: React.FC<MathSnakeViewProps> = ({ problem, onAnswer,
         </div>
       </div>
 
-      {/* Math Problem or Status - Below game board */}
-      <div 
-        className="w-full mt-3 sm:mt-4"
-        style={{ maxWidth: 'min(90vw, 28rem, 100%)' }}
-      >
-        {problem.math ? (
-          <div 
-            className="bg-gradient-to-br from-emerald-50 via-white to-emerald-50 rounded-xl sm:rounded-2xl shadow-lg border-2 border-emerald-300/60"
-            style={{ padding: 'clamp(0.75rem, 2.5vw, 1.25rem)' }}
-          >
-            <div className="text-center mb-2 sm:mb-3">
-              <div 
-                className="font-black text-slate-800 tracking-tight whitespace-nowrap"
-                style={{ fontSize: 'clamp(1rem, 4vw, 1.5rem)' }}
-              >
-                {problem.math.equation} = ?
-              </div>
-            </div>
-            <div className="flex gap-1.5 sm:gap-2 justify-center items-center flex-wrap">
-              {problem.math.options.map(option => (
-                <button
-                  key={`${problem.uid}-${option}`}
-                  type="button"
-                  disabled={status !== 'idle'}
-                  onClick={() => handleAnswerClick(option)}
-                  className={`px-3 sm:px-4 py-2 sm:py-2.5 rounded-lg sm:rounded-xl border-2 font-black shadow-md transition-all duration-200 active:scale-95 disabled:opacity-50 ${
-                    status === 'correct' && option === problem.math?.answer
-                      ? 'bg-emerald-500 border-emerald-600 text-white scale-105'
-                      : status === 'wrong' && option !== problem.math?.answer
-                      ? 'bg-red-100 border-red-300 text-red-700'
-                      : 'bg-white border-emerald-300 text-emerald-700 hover:bg-emerald-50 hover:border-emerald-400 hover:shadow-lg'
-                  }`}
-                  style={{ 
-                    minWidth: 'clamp(3rem, 8vw, 4.5rem)',
-                    fontSize: 'clamp(0.875rem, 2.5vw, 1rem)'
-                  }}
-                >
-                  {option}
-                </button>
-              ))}
-            </div>
-          </div>
-        ) : (
-          <div 
-            className="bg-gradient-to-br from-amber-50 via-white to-amber-50 rounded-xl sm:rounded-2xl shadow-lg border-2 border-amber-300/60"
-            style={{ padding: 'clamp(0.75rem, 2.5vw, 1.25rem)' }}
-          >
-            <div className="text-center">
-              <div 
-                className="uppercase tracking-wider text-amber-600 font-bold mb-1 sm:mb-2"
-                style={{ fontSize: 'clamp(0.625rem, 2vw, 0.875rem)' }}
-              >
-                {formatText(t.gameScreen.mathSnake.nextMathLabel)}
-              </div>
-              <div 
-                className="font-black text-amber-700"
-                style={{ fontSize: 'clamp(1.5rem, 6vw, 2.5rem)' }}
-              >
-                {problem.applesUntilMath}
-              </div>
-            </div>
-          </div>
-        )}
-      </div>
-
-      {/* Control Pad - Below math problem */}
+      {/* Control Pad - Below game board */}
       <div 
         className="w-full mt-3 sm:mt-4 flex justify-center"
         style={{ maxWidth: 'min(90vw, 28rem, 100%)' }}

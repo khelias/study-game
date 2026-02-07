@@ -97,9 +97,19 @@ const spawnApple = (
 };
 
 const generateEquation = (level: number, rng: RngFunction, harder: boolean) => {
-  const baseMax = level <= 2 ? 10 : level <= 4 ? 15 : level <= 6 ? 20 : 30;
-  const maxValue = Math.min(50, baseMax + (harder ? 10 : 0));
-  const useSubtraction = level >= 4 && rng() > 0.4;
+  const baseMax = level <= 2 ? 10 : level <= 4 ? 15 : level <= 6 ? 20 : level <= 10 ? 30 : 50;
+  const maxValue = Math.min(100, baseMax + (harder ? 15 : 0));
+  
+  // Introduce multiplication at level 5+
+  const useMultiplication = level >= 5 && rng() > 0.6;
+  const useSubtraction = level >= 4 && rng() > 0.5;
+
+  if (useMultiplication) {
+    // Multiplication: keep numbers reasonable
+    const a = randomInt(2, level <= 8 ? 5 : 10, rng);
+    const b = randomInt(2, level <= 8 ? 5 : 10, rng);
+    return { equation: `${a} × ${b}`, answer: a * b, maxValue };
+  }
 
   if (useSubtraction) {
     const a = randomInt(4, maxValue, rng);
@@ -115,7 +125,7 @@ const generateEquation = (level: number, rng: RngFunction, harder: boolean) => {
 
 const buildOptions = (answer: number, count: number, level: number, rng: RngFunction, maxValue: number) => {
   const optionsSet = new Set<number>([answer]);
-  const spread = level <= 3 ? 2 : level <= 6 ? 4 : 6;
+  const spread = level <= 3 ? 2 : level <= 6 ? 4 : level <= 10 ? 8 : 12;
   let guard = 0;
   while (optionsSet.size < count && guard < 40) {
     const delta = randomInt(-spread, spread, rng);
@@ -124,11 +134,11 @@ const buildOptions = (answer: number, count: number, level: number, rng: RngFunc
       continue;
     }
     const candidate = answer + delta;
-    if (candidate > 0) optionsSet.add(candidate);
+    if (candidate > 0 && candidate <= maxValue + 10) optionsSet.add(candidate);
     guard++;
   }
   while (optionsSet.size < count) {
-    const candidate = randomInt(1, maxValue, rng);
+    const candidate = randomInt(1, Math.min(100, maxValue + 20), rng);
     if (candidate !== answer) optionsSet.add(candidate);
   }
   return shuffle(Array.from(optionsSet), rng);
@@ -138,7 +148,8 @@ const createMathChallenge = (level: number, rng: RngFunction, profile: ProfileTy
   const meta = profileMeta(profile);
   const harder = meta.difficultyOffset > 0;
   const { equation, answer, maxValue } = generateEquation(level, rng, harder);
-  const options = buildOptions(answer, 3, level, rng, maxValue);
+  const optionCount = level <= 5 ? 3 : 4; // 4 options for higher levels
+  const options = buildOptions(answer, optionCount, level, rng, maxValue);
   return { equation, answer, options };
 };
 
