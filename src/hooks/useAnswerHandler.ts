@@ -158,34 +158,54 @@ export function useAnswerHandler(): UseAnswerHandlerResult {
       
       // Reset level progress for new level
       resetLevelProgress();
-      
-      // Show level-up notification; generate next problem only when user dismisses popup
+
       playWin();
       setEnhancedConfetti(true);
-      setTimeout(() => {
-        setConfetti(true);
-        const gameConfig = GAME_CONFIG[gameType] ?? GAME_CONFIG['word_builder']!;
-        addNotification({
-          type: 'levelUp',
-          title: `${t.levelUp.level} ${newLevel}`,
-          emoji: gameConfig.icon,
-          message: formatText(t.levelUp.greatWork),
-          levelUpOnDismiss: () => {
-            setBgClass('bg-slate-50');
-            if (baseGameType !== 'math_snake') {
-              const newProblem = generateUniqueProblemForGame(gameType, newLevel, profile, adaptiveDifficulty);
-              setProblem(newProblem);
-            }
-          },
-        });
+
+      if (levelUpStrategy === 'onGameWin') {
+        // Victory screen already shown by the game; no second (level-up) popup. Go straight to next game.
+        setBgClass('bg-slate-50');
+        if (baseGameType !== 'math_snake') {
+          const newProblem = generateUniqueProblemForGame(gameType, newLevel, profile, adaptiveDifficulty);
+          setProblem(newProblem);
+        }
+        setTimeout(() => {
+          setConfetti(true);
+          setEnhancedConfetti(false);
+        }, 300);
         setTimeout(() => {
           addNotification({
             type: 'info',
             message: `⭐ Earned ${starsEarned} ${starsEarned === 1 ? 'star' : 'stars'}!`,
           });
-        }, 1000);
-        setEnhancedConfetti(false);
-      }, 800);
+        }, 600);
+      } else {
+        // Standard: show level-up modal; generate next problem when user dismisses
+        setTimeout(() => {
+          setConfetti(true);
+          const gameConfig = GAME_CONFIG[gameType] ?? GAME_CONFIG['word_builder']!;
+          addNotification({
+            type: 'levelUp',
+            title: `${t.levelUp.level} ${newLevel}`,
+            emoji: gameConfig.icon,
+            message: formatText(t.levelUp.greatWork),
+            levelUpOnDismiss: () => {
+              setBgClass('bg-slate-50');
+              if (baseGameType !== 'math_snake') {
+                const newProblem = generateUniqueProblemForGame(gameType, newLevel, profile, adaptiveDifficulty);
+                setProblem(newProblem);
+              }
+            },
+          });
+          setTimeout(() => {
+            addNotification({
+              type: 'info',
+              message: `⭐ Earned ${starsEarned} ${starsEarned === 1 ? 'star' : 'stars'}!`,
+            });
+          }, 1000);
+          setEnhancedConfetti(false);
+        }, 800);
+      }
     }
 
     // Handle correct answer

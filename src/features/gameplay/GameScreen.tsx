@@ -304,6 +304,7 @@ export const GameScreen: React.FC = () => {
         hearts={hearts}
         levelProgress={levelProgress}
         levelUpRequirement={calculateLevelUpRequirement(currentLevel)}
+        showLevelProgress={GAME_CONFIG[gameType]?.levelUpStrategy !== 'onGameWin'}
         particleActive={particleActive}
         onReturnToMenu={() => {
           playClick();

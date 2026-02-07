@@ -19,6 +19,8 @@ interface GameHeaderProps {
     totalAnswers: number;
   } | null;
   levelUpRequirement: number; // How many correct answers needed to level up
+  /** When false (e.g. onGameWin games), level progress bar is hidden */
+  showLevelProgress?: boolean;
   particleActive: boolean;
   onReturnToMenu: () => void;
   onSettingsClick: () => void;
@@ -34,6 +36,7 @@ export const GameHeader: React.FC<GameHeaderProps> = ({
   hearts,
   levelProgress,
   levelUpRequirement,
+  showLevelProgress = true,
   particleActive: _particleActive,
   onReturnToMenu,
   onSettingsClick,
@@ -65,19 +68,21 @@ export const GameHeader: React.FC<GameHeaderProps> = ({
           <ResourceBadge type="stars" value={stars} compact={true} onClick={onShopClick} />
         </div>
 
-        {/* Center: Level Progress */}
+        {/* Center: Level Progress (hidden for onGameWin games) */}
         <div className="flex-1 flex flex-col items-center gap-1 min-w-0 mx-2 sm:mx-4">
-          <div className="w-full max-w-[120px] sm:max-w-[180px]">
-            <div className="text-xs sm:text-sm font-bold text-slate-700 text-center mb-1">
-              {progressCount}/{progressTotal}
+          {showLevelProgress && (
+            <div className="w-full max-w-[120px] sm:max-w-[180px]">
+              <div className="text-xs sm:text-sm font-bold text-slate-700 text-center mb-1">
+                {progressCount}/{progressTotal}
+              </div>
+              <div className="w-full h-2 sm:h-2.5 bg-slate-200 rounded-full overflow-hidden shadow-inner">
+                <div
+                  className="h-full bg-gradient-to-r from-yellow-400 via-yellow-500 to-orange-500 transition-all duration-500 ease-out rounded-full"
+                  style={{ width: `${Math.min(100, (progressCount / progressTotal) * 100)}%` }}
+                />
+              </div>
             </div>
-            <div className="w-full h-2 sm:h-2.5 bg-slate-200 rounded-full overflow-hidden shadow-inner">
-              <div
-                className="h-full bg-gradient-to-r from-yellow-400 via-yellow-500 to-orange-500 transition-all duration-500 ease-out rounded-full"
-                style={{ width: `${Math.min(100, (progressCount / progressTotal) * 100)}%` }}
-              />
-            </div>
-          </div>
+          )}
         </div>
 
         {/* Right: Hearts + Menu */}

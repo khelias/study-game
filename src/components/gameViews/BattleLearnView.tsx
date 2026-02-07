@@ -100,41 +100,70 @@ export const BattleLearnView: React.FC<BattleLearnViewProps> = ({
 
   const handlePaidHint = useCallback(
     (hintId: string) => {
-      if (hintId !== 'reveal' || !spendStars || !spendStars(1)) return;
-      const { ships, revealed, hits, sunkShips } = gameState;
+      if (!spendStars) return;
+
+      const { gridSize, ships, revealed, hits, sunkShips } = gameState;
       const revealedSet = new Set(revealed.map(([r, c]) => `${r},${c}`));
-      const unrevealedShipPositions: Array<[number, number]> = [];
+      const shipCells = new Set<string>();
       for (const ship of ships) {
         for (const pos of ship.positions) {
-          if (!revealedSet.has(`${pos[0]},${pos[1]}`)) unrevealedShipPositions.push(pos);
+          shipCells.add(`${pos[0]},${pos[1]}`);
         }
       }
-      if (unrevealedShipPositions.length === 0) return;
-      const [row, col] = unrevealedShipPositions[Math.floor(Math.random() * unrevealedShipPositions.length)]!;
-      const shipsCopy = JSON.parse(JSON.stringify(ships)) as Ship[];
-      const result = applyShot(shipsCopy, revealed, row, col);
-      const newRevealed = [...revealed, [row, col]];
-      const newHits = result.hit ? [...hits, [row, col]] : hits;
-      const newSunkShips = result.sunkShipId ? [...sunkShips, result.sunkShipId] : sunkShips;
-      const gameWon = checkWinCondition(shipsCopy);
-      setGameState((prev) => ({
-        ...prev,
-        ships: shipsCopy,
-        revealed: newRevealed,
-        hits: newHits,
-        sunkShips: newSunkShips,
-        gameWon,
-      }));
-      setProblem({
-        ...problem,
-        revealed: newRevealed,
-        hits: newHits,
-        sunkShips: newSunkShips,
-        ships: shipsCopy,
-        gameWon,
-      });
-      if (result.hit) playSound('success', soundEnabled);
-      if (gameWon) setTimeout(() => playSound('success', soundEnabled), 500);
+
+      if (hintId === 'reveal_empty') {
+        if (!spendStars(1)) return;
+        const emptyCells: Array<[number, number]> = [];
+        for (let r = 0; r < gridSize; r++) {
+          for (let c = 0; c < gridSize; c++) {
+            const key = `${r},${c}`;
+            if (!revealedSet.has(key) && !shipCells.has(key)) emptyCells.push([r, c]);
+          }
+        }
+        if (emptyCells.length === 0) return;
+        const [row, col] = emptyCells[Math.floor(Math.random() * emptyCells.length)]!;
+        const newRevealed: Array<[number, number]> = [...revealed, [row, col]];
+        setGameState((prev) => ({ ...prev, revealed: newRevealed }));
+        setProblem({ ...problem, revealed: newRevealed });
+        playSound('click', soundEnabled);
+        return;
+      }
+
+      if (hintId === 'reveal') {
+        if (!spendStars(10)) return;
+        const unrevealedShipPositions: Array<[number, number]> = [];
+        for (const ship of ships) {
+          for (const pos of ship.positions) {
+            if (!revealedSet.has(`${pos[0]},${pos[1]}`)) unrevealedShipPositions.push(pos);
+          }
+        }
+        if (unrevealedShipPositions.length === 0) return;
+        const [row, col] = unrevealedShipPositions[Math.floor(Math.random() * unrevealedShipPositions.length)]!;
+        const shipsCopy = JSON.parse(JSON.stringify(ships)) as Ship[];
+        const result = applyShot(shipsCopy, revealed, row, col);
+        const newRevealed = [...revealed, [row, col]];
+        const newHits = result.hit ? [...hits, [row, col]] : hits;
+        const newSunkShips = result.sunkShipId ? [...sunkShips, result.sunkShipId] : sunkShips;
+        const gameWon = checkWinCondition(shipsCopy);
+        setGameState((prev) => ({
+          ...prev,
+          ships: shipsCopy,
+          revealed: newRevealed,
+          hits: newHits,
+          sunkShips: newSunkShips,
+          gameWon,
+        }));
+        setProblem({
+          ...problem,
+          revealed: newRevealed,
+          hits: newHits,
+          sunkShips: newSunkShips,
+          ships: shipsCopy,
+          gameWon,
+        });
+        if (result.hit) playSound('success', soundEnabled);
+        if (gameWon) setTimeout(() => playSound('success', soundEnabled), 500);
+      }
     },
     [gameState, problem, spendStars, soundEnabled, setProblem]
   );
@@ -350,16 +379,16 @@ export const BattleLearnView: React.FC<BattleLearnViewProps> = ({
 
   return (
     <div className="w-full flex flex-col items-center px-4 py-6 animate-in fade-in duration-300">
-      {/* Game Stats Bar - Only essential info */}
-      <div className="mb-4 w-full max-w-2xl">
-        <GameStatsBar stats={stats} />
-      </div>
-
-      {/* Grid - Main focus with coordinates */}
+      {/* Grid - Main play area */}
       <div className="w-full max-w-2xl">
         <div className="shadow-lg rounded-lg p-3 sm:p-4 bg-gradient-to-br from-slate-100 to-slate-200">
           {renderGrid()}
         </div>
+      </div>
+
+      {/* Ships remaining - under main play area */}
+      <div className="mt-4 w-full max-w-2xl">
+        <GameStatsBar stats={stats} />
       </div>
 
       {/* Problem Modal - Only shown when answering */}
