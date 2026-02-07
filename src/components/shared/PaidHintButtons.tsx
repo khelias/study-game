@@ -49,6 +49,7 @@ export const PaidHintButtons: React.FC<PaidHintButtonsProps> = ({
 
         return (
           <button
+            type="button"
             key={hint.id}
             onClick={() => !isDisabled && onHintClick(hint.id)}
             disabled={isDisabled}

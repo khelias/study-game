@@ -1,4 +1,4 @@
-type SoundType = 'correct' | 'wrong' | 'click' | 'win';
+export type SoundType = 'correct' | 'wrong' | 'click' | 'win' | 'tap' | 'success' | 'error' | 'connect';
 
 let audioContext: AudioContext | null = null;
 
@@ -72,6 +72,38 @@ export const playSound = (type: SoundType, active = true): void => {
       gain.gain.linearRampToValueAtTime(0, now + 0.6);
       osc.start(now);
       osc.stop(now + 0.6);
+    } else if (type === 'tap') {
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(400, now);
+      gain.gain.setValueAtTime(0.06, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.08);
+      osc.start(now);
+      osc.stop(now + 0.08);
+    } else if (type === 'success') {
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(523, now);
+      osc.frequency.setValueAtTime(659, now + 0.06);
+      osc.frequency.setValueAtTime(784, now + 0.12);
+      gain.gain.setValueAtTime(0.12, now);
+      gain.gain.exponentialRampToValueAtTime(0.01, now + 0.25);
+      osc.start(now);
+      osc.stop(now + 0.25);
+    } else if (type === 'error') {
+      osc.type = 'sawtooth';
+      osc.frequency.setValueAtTime(150, now);
+      osc.frequency.linearRampToValueAtTime(80, now + 0.2);
+      gain.gain.setValueAtTime(0.15, now);
+      gain.gain.exponentialRampToValueAtTime(0.01, now + 0.2);
+      osc.start(now);
+      osc.stop(now + 0.2);
+    } else if (type === 'connect') {
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(440, now);
+      osc.frequency.setValueAtTime(554, now + 0.05);
+      gain.gain.setValueAtTime(0.08, now);
+      gain.gain.exponentialRampToValueAtTime(0.01, now + 0.15);
+      osc.start(now);
+      osc.stop(now + 0.15);
     }
   } catch {
     // Audio playback failed - ignore silently

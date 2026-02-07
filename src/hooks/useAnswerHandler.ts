@@ -166,8 +166,8 @@ export function useAnswerHandler(): UseAnswerHandlerResult {
         // Victory screen already shown by the game; no second (level-up) popup. Go straight to next game.
         setBgClass('bg-slate-50');
         if (baseGameType !== 'math_snake') {
-          const newProblem = generateUniqueProblemForGame(gameType, newLevel, profile, adaptiveDifficulty);
-          setProblem(newProblem);
+          const newProblem = generateUniqueProblemForGame(baseGameType, newLevel, profile, adaptiveDifficulty);
+          if (newProblem) setProblem(newProblem);
         }
         setTimeout(() => {
           setConfetti(true);
@@ -192,8 +192,8 @@ export function useAnswerHandler(): UseAnswerHandlerResult {
             levelUpOnDismiss: () => {
               setBgClass('bg-slate-50');
               if (baseGameType !== 'math_snake') {
-                const newProblem = generateUniqueProblemForGame(gameType, newLevel, profile, adaptiveDifficulty);
-                setProblem(newProblem);
+                const newProblem = generateUniqueProblemForGame(baseGameType, newLevel, profile, adaptiveDifficulty);
+                if (newProblem) setProblem(newProblem);
               }
             },
           });
@@ -268,8 +268,8 @@ export function useAnswerHandler(): UseAnswerHandlerResult {
               setProblem(newQuestion);
             }
           } else {
-            const newProblem = generateUniqueProblemForGame(gameType, levelForNextProblem, profile, adaptiveDifficulty);
-            setProblem(newProblem);
+            const newProblem = generateUniqueProblemForGame(baseGameType, levelForNextProblem, profile, adaptiveDifficulty);
+            if (newProblem) setProblem(newProblem);
           }
         }, 600);
       } else if (!shouldLevelUp) {

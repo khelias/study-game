@@ -4,7 +4,7 @@
  * Clock game: read the analog clock and choose the matching time. Visual feedback on clock; optional quarter/half label; paid hint to eliminate one wrong option; correct-answer sound; accessible.
  */
 
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { playSound } from '../../engine/audio';
 import { TimeDisplay } from '../shared/TimeDisplay';
 import { GAME_CONFIG } from '../../games/data';
@@ -38,11 +38,16 @@ export const TimeGameView: React.FC<TimeGameViewProps> = ({
   const [disabled, setDisabled] = useState<string[]>([]);
   const [eliminatedIndices, setEliminatedIndices] = useState<number[]>([]);
   const [feedback, setFeedback] = useState<'correct' | 'wrong' | null>(null);
+  const feedbackTimeoutsRef = useRef<ReturnType<typeof setTimeout>[]>([]);
 
   useEffect(() => {
     setDisabled([]);
     setEliminatedIndices([]);
     setFeedback(null);
+    return () => {
+      feedbackTimeoutsRef.current.forEach(clearTimeout);
+      feedbackTimeoutsRef.current = [];
+    };
   }, [problem.uid]);
 
   const handlePaidHint = useCallback(
@@ -61,17 +66,21 @@ export const TimeGameView: React.FC<TimeGameViewProps> = ({
 
   const handleChoice = (opt: string): void => {
     playSound('click', soundEnabled);
+    feedbackTimeoutsRef.current.forEach(clearTimeout);
+    feedbackTimeoutsRef.current = [];
     const correct = opt === problem.answer;
     if (correct) {
       playSound('correct', soundEnabled);
       setFeedback('correct');
       onAnswer(true);
-      setTimeout(() => setFeedback(null), 500);
+      const id = setTimeout(() => setFeedback(null), 500);
+      feedbackTimeoutsRef.current.push(id);
     } else {
       setFeedback('wrong');
       setDisabled((prev) => [...prev, opt]);
       onAnswer(false);
-      setTimeout(() => setFeedback(null), 600);
+      const id = setTimeout(() => setFeedback(null), 600);
+      feedbackTimeoutsRef.current.push(id);
     }
   };
 
