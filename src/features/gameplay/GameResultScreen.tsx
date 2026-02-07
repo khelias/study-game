@@ -136,8 +136,8 @@ export const GameResultScreen: React.FC<GameResultScreenProps> = ({
     const secAction: ActionFn | undefined = currentConfig.secondaryAction as ActionFn | undefined;
     if (secAction) secAction();
     else {
+      navigate('/', { replace: true });
       returnToMenu();
-      void navigate('/');
     }
   };
 

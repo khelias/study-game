@@ -127,9 +127,8 @@ export const GameOverScreen: React.FC = () => {
               type="button"
               onClick={() => {
                 playClick();
-                // High score is already updated on each score increase
+                navigate('/', { replace: true });
                 returnToMenu();
-                void navigate('/');
               }}
               className="flex-1 inline-flex items-center justify-center px-4 py-3 rounded-xl bg-slate-100 text-slate-800 font-semibold text-sm sm:text-base border border-slate-300 hover:bg-slate-200 active:scale-95 transition-transform"
             >

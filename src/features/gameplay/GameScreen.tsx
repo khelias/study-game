@@ -310,9 +310,8 @@ export const GameScreen: React.FC = () => {
         particleActive={particleActive}
         onReturnToMenu={() => {
           playClick();
-          // High score is already updated on each score increase
+          navigate('/', { replace: true });
           returnToMenu();
-          void navigate('/');
         }}
         onSettingsClick={() => {
           setShowSettingsMenu(!showSettingsMenu);
@@ -333,9 +332,8 @@ export const GameScreen: React.FC = () => {
           }}
           onReturnToMenu={() => {
             playClick();
-            // High score is already updated on each score increase
+            navigate('/', { replace: true });
             returnToMenu();
-            void navigate('/');
           }}
           onClose={() => setShowSettingsMenu(false)}
           onShowAchievements={() => setShowAchievements(true)}
