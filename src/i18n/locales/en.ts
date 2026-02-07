@@ -159,8 +159,10 @@ export const en = {
     scoreMessage: 'You scored {score} points!',
     returnToMenu: 'Return to menu',
     retry: 'Try Again',
+    continue: 'Continue',
     levelUp: 'Level up!',
     newAchievement: 'New achievement!',
+    noHeartsLeft: 'No hearts left! Visit the shop to get more.',
     highScore: 'High Score',
     newRecord: 'New Record!',
   },
@@ -558,6 +560,7 @@ export const en = {
     cost: 'Cost',
     price: 'Price',
     free: 'FREE',
+    getMoreHearts: 'Get More Hearts',
     maxHearts: 'Maximum hearts reached',
     notEnoughStars: 'Not enough stars',
     buyStars: 'Buy Stars',
@@ -780,7 +783,7 @@ export const en = {
       desc: 'Answer and sink ships',
     },
     battlelearn_adv: {
-      title: 'BATTLELEARN PRO',
+      title: 'BATTLELEARN',
       desc: 'Master coordinates and arithmetic',
     },
   },
@@ -838,7 +841,7 @@ export const en = {
   // BattleLearn game
   battlelearn: {
     title: 'BATTLELEARN',
-    titleAdv: 'BATTLELEARN PRO',
+    titleAdv: 'BATTLELEARN',
     desc: 'Answer questions to earn shots and sink ships',
     descAdv: 'Master coordinates and arithmetic to sink the fleet',
     instructions: 'Shoot first! Hit to continue, miss to answer a question.',
@@ -895,11 +898,11 @@ export const en = {
       // Direction sequences
       directionSequence: 'Move {dir1}, then {dir2}. What direction?',
       // Advanced coordinate
-      multiMove: 'Start at ({x},{y}), move {dx} right, {dy} up. New coordinate?',
+      multiMove: 'Start at {start}, move {right} right, {up} up. New coordinate?',
       // Vector addition
-      vectorAdd: 'Ship moves ({dx1},{dy1}), then ({dx2},{dy2}). Total?',
+      vectorAdd: 'Ship moves {right1} right and {up1} up, then {right2} right and {up2} up. Total steps?',
       // Distance
-      distance: 'Ship at ({x1},{y1}), target at ({x2},{y2}). Distance?',
+      distance: 'Ship at {coord1}, target at {coord2}. Distance?',
       // Multiplication
       fleetMultiply: '{ships} destroyers × {cannons} cannons = ?',
       // Formation problems

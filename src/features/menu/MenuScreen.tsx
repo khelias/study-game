@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
   Trash2, Volume2, VolumeX, BarChart3,
-  Type, Brain, Scale, BookOpen, GraduationCap, TrainFront, Bot, Clock3, Ruler, Gamepad2, ChevronDown, ChevronUp, Languages, Menu, X, Hash, FileText, Layers, Search, Star
+  Type, Brain, Scale, BookOpen, GraduationCap, TrainFront, Bot, Clock3, Ruler, Gamepad2, ChevronDown, ChevronUp, Languages, Menu, X, Hash, FileText, Layers, Search, Star, Anchor
 } from 'lucide-react';
 import { useGameStore } from '../../stores/gameStore';
 import { useGameAudio } from '../../hooks/useGameAudio';
@@ -26,7 +26,7 @@ import type { ProfileType } from '../../types/game';
 import type { AchievementUnlock } from '../../types/achievement';
 import { gameIdToSlug } from '../../utils/gameSlug';
 
-const ICON_MAP = { Type, Brain, Scale, BookOpen, GraduationCap, TrainFront, Bot, Clock3, Ruler, Gamepad2, Hash, FileText, Layers, Search, Star };
+const ICON_MAP = { Type, Brain, Scale, BookOpen, GraduationCap, TrainFront, Bot, Clock3, Ruler, Gamepad2, Hash, FileText, Layers, Search, Star, Anchor };
 
 export const MenuScreen: React.FC = () => {
   const navigate = useNavigate();
@@ -58,6 +58,16 @@ export const MenuScreen: React.FC = () => {
   const [showFeatured, setShowFeatured] = useState(true);
   const [showSettingsMenu, setShowSettingsMenu] = useState(false);
   const settingsMenuRef = useRef<HTMLDivElement>(null);
+  
+  // Check for openShop query parameter (from GameResultScreen)
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('openShop') === 'true') {
+      setShowShop(true);
+      // Clean up URL
+      window.history.replaceState({}, '', '/');
+    }
+  }, []);
   const settingsLabel = formatText(t.menu.settings);
 
   // Close settings menu when clicking outside
@@ -353,7 +363,7 @@ export const MenuScreen: React.FC = () => {
         {showFeatured && (
           <div className="grid grid-cols-1 gap-3 sm:gap-4 mt-3 animate-fadeIn">
             {(() => {
-              const featuredGameKeys = profile === 'starter' ? ['word_cascade', 'math_snake'] : ['word_cascade_adv', 'math_snake_adv'];
+              const featuredGameKeys = profile === 'starter' ? ['battlelearn', 'word_cascade', 'math_snake'] : ['battlelearn_adv', 'word_cascade_adv', 'math_snake_adv'];
               return featuredGameKeys.map((key) => {
                 const conf = GAME_CONFIG[key];
                 if (!conf) return null;

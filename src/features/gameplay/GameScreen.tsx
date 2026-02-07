@@ -33,11 +33,15 @@ import { calculateLevelUpRequirement } from '../../engine/progression';
 import { ACHIEVEMENTS } from '../../engine/achievements';
 import { getAchievementCopy } from '../../utils/achievementCopy';
 import { useTranslation } from '../../i18n/useTranslation';
+import { useProfileText } from '../../hooks/useProfileText';
+import { GAME_CONFIG, CATEGORIES } from '../../games/data';
 import type { Direction, ProfileType } from '../../types/game';
 import type { AchievementUnlock } from '../../types/achievement';
 
 export const GameScreen: React.FC = () => {
   const navigate = useNavigate();
+  const { formatText } = useProfileText();
+  
   // Global state
   const profile = useGameStore(state => state.profile);
   const profileId = profile as ProfileType;
@@ -187,6 +191,15 @@ export const GameScreen: React.FC = () => {
     setConfetti(false);
     // Stars are now persistent (gameStore.stars), no reset needed
     // Level progress is reset automatically when level-up happens
+    
+    // For games with 'onGameWin' level-up strategy, level-up is already handled in useAnswerHandler
+    // Don't call recordLevelUp again (would cause double level-up)
+    const baseGameType = gameType.replace('_adv', '');
+    const gameConfig = GAME_CONFIG[baseGameType];
+    if (gameConfig?.levelUpStrategy === 'onGameWin') {
+      // Just dismiss notification, level-up already happened
+      return;
+    }
 
     const newLevel = (levels[profile]?.[gameType] || 1) + 1;
     // Note: recordLevelUp is now called automatically in useAnswerHandler when level-up occurs
@@ -368,6 +381,56 @@ export const GameScreen: React.FC = () => {
           <TrendingUp size={14} className="text-purple-600 w-3.5 h-3.5 sm:w-4 sm:h-4 flex-shrink-0" />
           <span className="text-xs sm:text-sm font-bold text-purple-700 whitespace-nowrap">{currentLevel}</span>
         </div>
+        
+        {/* Game Name Badge - floating in center top of game area */}
+        {gameType && (() => {
+          const baseType = gameType.replace('_adv', '');
+          const gameConfig = GAME_CONFIG[baseType];
+          
+          // Map game icon to emoji
+          const iconToEmoji: Record<string, string> = {
+            'Anchor': '⚓',
+            'Bot': '🤖',
+            'Clock3': '🕐',
+            'Gamepad2': '🎮',
+            'Scale': '⚖️',
+            'Target': '🎯',
+            'Brain': '🧠',
+            'BookOpen': '📖',
+            'TrainFront': '🚂',
+            'Type': '✏️',
+            'FileText': '📄',
+            'Layers': '📚',
+            'Search': '🔍',
+            'Star': '⭐',
+            'Ruler': '📏',
+            'Hash': '#️⃣',
+            'Shapes': '🔷',
+          };
+          
+          const gameEmoji = gameConfig?.icon ? iconToEmoji[gameConfig.icon] ?? '🎮' : '🎮';
+          const gameName = gameConfig && t.games[baseType as keyof typeof t.games]
+            ? formatText(t.games[baseType as keyof typeof t.games].title)
+            : gameType.toUpperCase();
+          
+          return (
+            <div 
+              className="absolute top-2 left-1/2 transform -translate-x-1/2 sm:top-4 z-30 flex items-center gap-1.5 bg-slate-50 border-slate-200 rounded-lg shadow-md"
+              style={{ 
+                padding: '0.375rem 0.75rem',
+                boxSizing: 'border-box',
+                border: '1px solid',
+                borderColor: 'rgb(226, 232, 240)',
+                width: 'fit-content',
+                height: 'fit-content',
+                maxWidth: '60vw'
+              }}
+            >
+              <span className="text-base sm:text-lg flex-shrink-0">{gameEmoji}</span>
+              <span className="text-xs sm:text-sm font-bold text-slate-700 whitespace-nowrap truncate">{gameName}</span>
+            </div>
+          );
+        })()}
         
         {/* Session Score Badge - floating in top right of game area */}
         <div 

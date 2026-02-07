@@ -159,8 +159,10 @@ export const et = {
     scoreMessage: 'Said {score} punkti!',
     returnToMenu: 'Tagasi menüüsse',
     retry: 'Proovi uuesti',
+    continue: 'Jätka',
     levelUp: 'Tase tõusis!',
     newAchievement: 'Uus saavutus!',
+    noHeartsLeft: 'Südamed on otsas! Külasta poodi, et saada rohkem.',
     highScore: 'Parim tulemus',
     newRecord: 'Uus rekord!',
   },
@@ -558,6 +560,7 @@ export const et = {
     cost: 'Hind',
     price: 'Hind',
     free: 'TASUTA',
+    getMoreHearts: 'Hangi südameid',
     maxHearts: 'Maksimaalne arv südameid',
     notEnoughStars: 'Pole piisavalt tähti',
     buyStars: 'Osta tähti',
@@ -780,7 +783,7 @@ export const et = {
       desc: 'Uputa laevad ja õpi matemaatikat',
     },
     battlelearn_adv: {
-      title: 'LAEVADE UPUTAMINE PRO',
+      title: 'LAEVADE UPUTAMINE',
       desc: 'Kasuta koordinaate ja loogikat laevastiku uputamiseks',
     },
   },
@@ -838,7 +841,7 @@ export const et = {
   // BattleLearn game
   battlelearn: {
     title: 'LAEVADE UPUTAMINE',
-    titleAdv: 'LAEVADE UPUTAMINE PRO',
+    titleAdv: 'LAEVADE UPUTAMINE',
     desc: 'Uputa laevad ja õpi matemaatikat',
     descAdv: 'Kasuta koordinaate ja loogikat laevastiku uputamiseks',
     instructions: 'Tulista lahtrit! Kui mööda, pead vastama.',
@@ -895,11 +898,11 @@ export const et = {
       // Direction sequences
       directionSequence: 'Liigu {dir1}, siis {dir2}. Mis suunas?',
       // Advanced coordinate
-      multiMove: 'Alusta ({x},{y}), liigu {dx} paremale, {dy} üles. Uus koordinaat?',
+      multiMove: 'Alusta {start}, liigu {right} paremale, {up} üles. Uus koordinaat?',
       // Vector addition
-      vectorAdd: 'Laev liigub ({dx1},{dy1}), siis ({dx2},{dy2}). Kokku?',
+      vectorAdd: 'Laev liigub {right1} paremale ja {up1} üles, siis {right2} paremale ja {up2} üles. Kokku mitu sammu?',
       // Distance
-      distance: 'Laev ({x1},{y1}), sihtmärk ({x2},{y2}). Kaugus?',
+      distance: 'Laev {coord1}, sihtmärk {coord2}. Kaugus?',
       // Multiplication
       fleetMultiply: '{ships} hävitajat × {cannons} kahureid = ?',
       // Formation problems

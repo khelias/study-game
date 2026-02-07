@@ -1,17 +1,27 @@
 /**
- * BattleLearnView Component
+ * BattleLearnView Component (REDESIGNED)
  * 
  * Game view for BattleLearn games (Battleship-inspired educational game).
- * Players answer questions to earn shots, then click grid cells to find and sink ships.
+ * Players click grid cells to find and sink ships. On miss, answer a question to continue.
+ * 
+ * REDESIGN GOALS:
+ * - Cleaner UI with less visual clutter
+ * - Modal for problems (focuses attention, doesn't break flow)
+ * - Simplified game stats (only essential info)
+ * - Better feedback integration
+ * - Generic victory screen (GameResultScreen)
  */
 
 import React, { useState, useEffect } from 'react';
-import { Target, Waves, Trophy } from 'lucide-react';
+import { Target } from 'lucide-react';
 import { playSound } from '../../engine/audio';
 import { useTranslation } from '../../i18n/useTranslation';
 import { applyShot, checkWinCondition, isShipSunk } from '../../engine/battlelearn';
 import { usePlaySessionStore } from '../../stores/playSessionStore';
 import type { BattleLearnProblem } from '../../types/game';
+import { GameProblemModal } from '../shared/GameProblemModal';
+import { GameStatsBar, type GameStat } from '../shared/GameStatsBar';
+import { GameResultScreen } from '../../features/gameplay/GameResultScreen';
 
 interface BattleLearnViewProps {
   problem: BattleLearnProblem;
@@ -38,8 +48,6 @@ export const BattleLearnView: React.FC<BattleLearnViewProps> = ({
   });
   const [question, setQuestion] = useState(problem.question);
   const [selectedOption, setSelectedOption] = useState<number | null>(null);
-  const [feedback, setFeedback] = useState<string>('');
-  const [showFeedback, setShowFeedback] = useState(false);
   const [gamePhase, setGamePhase] = useState<'shooting' | 'answering'>('shooting');
   const [currentUid, setCurrentUid] = useState(problem.uid);
 
@@ -62,8 +70,6 @@ export const BattleLearnView: React.FC<BattleLearnViewProps> = ({
       setQuestion(problem.question);
       setCurrentUid(problem.uid);
       setSelectedOption(null);
-      setFeedback('');
-      setShowFeedback(false);
       setGamePhase('shooting');
     } else {
       // Same game session, new question - update question and sync board state from problem
@@ -91,30 +97,19 @@ export const BattleLearnView: React.FC<BattleLearnViewProps> = ({
     const isCorrect = index === question.correctIndex;
     
     if (isCorrect) {
-      const correctFeedback = t.feedback.correct[Math.floor(Math.random() * t.feedback.correct.length)];
-      setFeedback(correctFeedback);
-      setShowFeedback(true);
-      
-      // Return to shooting phase
-      setGamePhase('shooting');
-      onAnswer(true); // No heart lost
-      
+      // Show visual feedback (button color) then close modal
       setTimeout(() => {
-        setShowFeedback(false);
+        setGamePhase('shooting'); // Close modal
         setSelectedOption(null);
-      }, 1500);
+        onAnswer(true); // This triggers general feedback system
+      }, 800); // Brief pause to see green button
     } else {
-      const wrongFeedback = t.feedback.wrong[Math.floor(Math.random() * t.feedback.wrong.length)];
-      setFeedback(wrongFeedback);
-      setShowFeedback(true);
-      
+      // Show visual feedback (button color) then allow retry
       setTimeout(() => {
-        setShowFeedback(false);
         setSelectedOption(null);
-      }, 1500);
-      
-      onAnswer(false); // Lose heart
-      // Stay in answering phase until correct
+        onAnswer(false); // This triggers general feedback system
+        // Stay in answering phase until correct
+      }, 800);
     }
   };
 
@@ -127,9 +122,7 @@ export const BattleLearnView: React.FC<BattleLearnViewProps> = ({
     const result = applyShot(gameState.ships, gameState.revealed, row, col);
     
     if (result.alreadyShot) {
-      setFeedback(t.battlelearn.alreadyShot);
-      setShowFeedback(true);
-      setTimeout(() => setShowFeedback(false), 1000);
+      // Brief feedback for already shot - no modal needed
       return;
     }
     
@@ -148,20 +141,15 @@ export const BattleLearnView: React.FC<BattleLearnViewProps> = ({
       // HIT: No problem needed, continue shooting
       if (result.sunkShipId) {
         playSound('success', soundEnabled);
-        setFeedback(t.battlelearn.shipSunk);
       } else {
         playSound('success', soundEnabled);
-        setFeedback(t.battlelearn.hit);
       }
       // Stay in shooting phase
     } else {
       // MISS: Must answer problem to continue
-      setFeedback(t.battlelearn.miss);
-      setGamePhase('answering'); // Switch to problem phase
+      playSound('wrong', soundEnabled);
+      setGamePhase('answering'); // Switch to problem phase (opens modal)
     }
-    
-    setShowFeedback(true);
-    setTimeout(() => setShowFeedback(false), 2000);
     
     // Update local state
     setGameState(prev => ({
@@ -186,15 +174,13 @@ export const BattleLearnView: React.FC<BattleLearnViewProps> = ({
     if (gameWon) {
       setTimeout(() => {
         playSound('success', soundEnabled);
-        setFeedback(t.battlelearn.victory);
-        setShowFeedback(true);
       }, 500);
     }
   };
 
   const renderGrid = () => {
     const { gridSize } = gameState;
-    const cells = [];
+    const columnLabels = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'];
     
     // Get all positions of sunk ships for special rendering
     const sunkShipPositions = new Set<string>();
@@ -206,158 +192,137 @@ export const BattleLearnView: React.FC<BattleLearnViewProps> = ({
       }
     });
     
-    for (let row = 0; row < gridSize; row++) {
-      for (let col = 0; col < gridSize; col++) {
-        const posKey = `${row},${col}`;
-        const isRevealed = gameState.revealed.some(([r, c]) => r === row && c === col);
-        const isHit = gameState.hits.some(([r, c]) => r === row && c === col);
-        const isSunkShipPosition = sunkShipPositions.has(posKey);
+    return (
+      <div className="flex gap-1">
+        {/* Row numbers */}
+        <div className="flex flex-col justify-between py-1">
+          {/* Empty corner cell */}
+          <div className="h-6 sm:h-7" />
+          {Array.from({ length: gridSize }, (_, row) => (
+            <div
+              key={`row-${row}`}
+              className="flex items-center justify-center text-xs sm:text-sm font-bold text-slate-600"
+              style={{ height: `calc((100% - 1.75rem) / ${gridSize})` }}
+            >
+              {row + 1}
+            </div>
+          ))}
+        </div>
         
-        let cellClass = 'w-full h-full border border-gray-300 rounded flex items-center justify-center text-2xl font-bold transition-all duration-200';
-        let cellContent = '';
-        
-        // Sunk ship takes priority - show entire ship
-        if (isSunkShipPosition) {
-          cellClass += ' bg-gradient-to-br from-purple-600 to-red-800 shadow-xl text-white animate-pulse';
-          cellContent = '☠️';
-        } else if (!isRevealed) {
-          cellClass += ' bg-gradient-to-br from-blue-400 to-blue-600 hover:from-blue-500 hover:to-blue-700 shadow-md hover:shadow-xl cursor-pointer transform hover:-translate-y-0.5 transition-all';
-          if (gamePhase === 'shooting' && !gameState.gameWon) {
-            cellClass += ' animate-pulse';
-          }
-        } else if (isHit) {
-          // Regular hit (not sunk yet)
-          cellClass += ' bg-gradient-to-br from-orange-400 to-red-500 shadow-lg text-white';
-          cellContent = '💥';
-        } else {
-          // Miss
-          cellClass += ' bg-gradient-to-br from-slate-200 to-slate-300 text-blue-600';
-          cellContent = '💨';
-        }
-        
-        cells.push(
-          <div
-            key={`${row}-${col}`}
-            className={cellClass}
-            onClick={() => handleCellClick(row, col)}
-            style={{ 
-              aspectRatio: '1/1',
-              cursor: gamePhase === 'shooting' && !isSunkShipPosition && !isRevealed && !gameState.gameWon ? 'pointer' : 'default'
-            }}
-          >
-            {cellContent}
+        {/* Grid with column headers */}
+        <div className="flex-1">
+          {/* Column letters */}
+          <div className="grid mb-1" style={{ gridTemplateColumns: `repeat(${gridSize}, minmax(0, 1fr))` }}>
+            {columnLabels.slice(0, gridSize).map((label) => (
+              <div
+                key={`col-${label}`}
+                className="text-center text-xs sm:text-sm font-bold text-slate-600 h-6 sm:h-7 flex items-center justify-center"
+              >
+                {label}
+              </div>
+            ))}
           </div>
-        );
-      }
-    }
-    
-    return cells;
+          
+          {/* Game cells */}
+          <div className="grid gap-2" style={{ gridTemplateColumns: `repeat(${gridSize}, minmax(0, 1fr))` }}>
+            {Array.from({ length: gridSize }, (_, row) =>
+              Array.from({ length: gridSize }, (_, col) => {
+                const posKey = `${row},${col}`;
+                const isRevealed = gameState.revealed.some(([r, c]) => r === row && c === col);
+                const isHit = gameState.hits.some(([r, c]) => r === row && c === col);
+                const isSunkShipPosition = sunkShipPositions.has(posKey);
+                
+                let cellClass = 'w-full h-full border border-gray-300 rounded flex items-center justify-center text-2xl font-bold transition-all duration-200';
+                let cellContent = '';
+                
+                // Sunk ship takes priority - show entire ship
+                if (isSunkShipPosition) {
+                  cellClass += ' bg-gradient-to-br from-purple-600 to-red-800 shadow-xl text-white animate-pulse';
+                  cellContent = '☠️';
+                } else if (!isRevealed) {
+                  cellClass += ' bg-gradient-to-br from-blue-400 to-blue-600 hover:from-blue-500 hover:to-blue-700 shadow-md hover:shadow-xl cursor-pointer transform hover:-translate-y-0.5 transition-all';
+                  if (gamePhase === 'shooting' && !gameState.gameWon) {
+                    cellClass += ' animate-pulse';
+                  }
+                } else if (isHit) {
+                  // Regular hit (not sunk yet)
+                  cellClass += ' bg-gradient-to-br from-orange-400 to-red-500 shadow-lg text-white';
+                  cellContent = '💥';
+                } else {
+                  // Miss
+                  cellClass += ' bg-gradient-to-br from-slate-200 to-slate-300 text-blue-600';
+                  cellContent = '💨';
+                }
+                
+                return (
+                  <div
+                    key={`${row}-${col}`}
+                    className={cellClass}
+                    onClick={() => handleCellClick(row, col)}
+                    style={{ 
+                      aspectRatio: '1/1',
+                      cursor: gamePhase === 'shooting' && !isSunkShipPosition && !isRevealed && !gameState.gameWon ? 'pointer' : 'default'
+                    }}
+                  >
+                    {cellContent}
+                  </div>
+                );
+              })
+            )}
+          </div>
+        </div>
+      </div>
+    );
   };
 
-  const gridCols = `grid-cols-${gameState.gridSize}`;
-  const gridClass = `grid gap-2 ${gridCols} max-w-2xl mx-auto shadow-lg rounded-lg p-2 bg-gradient-to-br from-slate-100 to-slate-200`;
+  // Prepare game stats - only essential info (ships remaining)
+  const stats: GameStat[] = [
+    {
+      id: 'ships',
+      icon: Target,
+      label: t.battlelearn.shipsRemaining,
+      value: `${gameState.ships.length - gameState.sunkShips.length}/${gameState.ships.length}`,
+      variant: gameState.ships.length - gameState.sunkShips.length === 0 ? 'success' : 'default',
+    },
+  ];
+
+  // Show victory screen if game is won
+  if (gameState.gameWon) {
+    return (
+      <GameResultScreen
+        type="victory"
+        onContinue={() => onAnswer(true)}
+        customMessage={t.battlelearn.allShipsSunk}
+      />
+    );
+  }
 
   return (
     <div className="w-full flex flex-col items-center px-4 py-6 animate-in fade-in duration-300">
-      {/* Game Status */}
-      <div className="mb-4 text-center">
-        <div className="flex items-center justify-center gap-4 text-sm flex-wrap">
-          <div className="flex items-center gap-1">
-            <Target className="w-4 h-4" />
-            <span>{t.battlelearn.shipsRemaining}: {gameState.ships.length - gameState.sunkShips.length}/{gameState.ships.length}</span>
-          </div>
-          {gamePhase === 'shooting' && !gameState.gameWon && (
-            <div className="flex items-center gap-1 px-3 py-1 bg-green-100 border-2 border-green-500 rounded-full text-green-700 font-bold animate-pulse">
-              <Target className="w-4 h-4" />
-              <span>{t.battlelearn.shotReady}</span>
-            </div>
-          )}
-          {gamePhase === 'answering' && !gameState.gameWon && (
-            <div className="flex items-center gap-1 px-3 py-1 bg-orange-100 border-2 border-orange-500 rounded-full text-orange-700 font-bold">
-              <span>❓ {t.battlelearn.answerToEarnShot}</span>
-            </div>
-          )}
-          {gameState.gameWon && (
-            <div className="flex items-center gap-1 px-4 py-2 bg-yellow-100 border-2 border-yellow-500 rounded-full text-yellow-700 font-bold animate-bounce">
-              <Trophy className="w-5 h-5" />
-              <span>{t.battlelearn.victory}</span>
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* Victory Screen */}
-      {gameState.gameWon && (
-        <div className="mb-6 w-full max-w-2xl animate-in zoom-in duration-500">
-          <div className="bg-gradient-to-br from-yellow-100 via-amber-100 to-orange-100 rounded-xl shadow-2xl p-8 border-4 border-yellow-400 text-center">
-            <div className="text-6xl mb-4 animate-bounce">🏆</div>
-            <h2 className="text-3xl font-bold text-gray-800 mb-2">{t.battlelearn.victory}</h2>
-            <p className="text-lg text-gray-600">{t.battlelearn.allShipsSunk}</p>
-          </div>
-        </div>
-      )}
-
-      {/* Instructions - Always visible to prevent layout shift */}
+      {/* Game Stats Bar - Only essential info */}
       <div className="mb-4 w-full max-w-2xl">
-        <div className="bg-gradient-to-r from-blue-50 to-cyan-50 border-2 border-blue-200 rounded-lg p-3 text-center">
-          <p className="text-sm font-medium text-gray-700">
-            {t.battlelearn.instructions}
-          </p>
-        </div>
+        <GameStatsBar stats={stats} />
       </div>
 
-      {/* Reserved Feedback Space - Fixed height to prevent layout shift on mobile */}
-      <div className="mb-4 w-full max-w-2xl min-h-12">
-        {showFeedback && (
-          <div className="px-4 py-2 bg-white border-2 border-blue-400 rounded-lg shadow-lg text-base sm:text-lg font-bold animate-in zoom-in duration-200 text-center">
-            {feedback}
-          </div>
-        )}
-      </div>
-
-      {/* Grid - Always in the same position */}
-      <div className="mb-6 w-full max-w-2xl">
-        <div className={gridClass} style={{ gridTemplateColumns: `repeat(${gameState.gridSize}, minmax(0, 1fr))` }}>
+      {/* Grid - Main focus with coordinates */}
+      <div className="w-full max-w-2xl">
+        <div className="shadow-lg rounded-lg p-3 sm:p-4 bg-gradient-to-br from-slate-100 to-slate-200">
           {renderGrid()}
         </div>
       </div>
 
-      {/* Question Card */}
-      {!gameState.gameWon && gamePhase === 'answering' && (
-        <div className="w-full max-w-2xl animate-in slide-in-from-bottom duration-300">
-          <div className="bg-gradient-to-br from-yellow-50 to-orange-50 rounded-xl shadow-lg p-6 border-2 border-orange-300">
-            <div className="flex items-center gap-2 mb-4">
-              <Target className="w-5 h-5 text-orange-600" />
-              <h3 className="text-lg font-bold text-gray-800">
-                {t.battlelearn.answerToContinue}
-              </h3>
-            </div>
-            
-            <p className="text-xl font-medium mb-4 text-center text-gray-700">
-              {question.prompt}
-            </p>
-            
-            <div className="grid grid-cols-2 gap-3">
-              {question.options.map((option, index) => (
-                <button
-                  key={index}
-                  onClick={() => handleOptionSelect(index)}
-                  disabled={selectedOption !== null}
-                  className={`px-6 py-4 rounded-lg font-bold text-lg transition-all duration-200 ${
-                    selectedOption === index
-                      ? index === question.correctIndex
-                        ? 'bg-green-500 text-white'
-                        : 'bg-red-500 text-white'
-                      : 'bg-blue-100 hover:bg-blue-200 text-gray-800 hover:scale-105 hover:shadow-md'
-                  }`}
-                >
-                  {option}
-                </button>
-              ))}
-            </div>
-          </div>
-        </div>
-      )}
+      {/* Problem Modal - Only shown when answering */}
+      <GameProblemModal
+        isOpen={gamePhase === 'answering' && !gameState.gameWon}
+        title={t.battlelearn.answerToContinue}
+        prompt={question.prompt}
+        options={question.options}
+        correctIndex={question.correctIndex}
+        selectedOption={selectedOption}
+        onOptionSelect={handleOptionSelect}
+        disabled={selectedOption !== null}
+        icon={<Target className="text-orange-600" />}
+      />
     </div>
   );
 };

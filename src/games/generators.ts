@@ -1416,9 +1416,13 @@ export const Generators: Record<string, GeneratorFunction> = {
   },
 
   battlelearn: (level: number, rng: RngFunction = Math.random, _profile: ProfileType = 'starter'): BattleLearnProblem => {
-    // Starter profile: smaller grid, simpler questions
-    const gridSize = level <= 5 ? 5 : 6;
-    const shipLengths = level <= 3 ? [3, 2] : level <= 6 ? [3, 2, 2] : [3, 3, 2];
+    // Starter profile: gradual progression from very simple to moderate
+    // Level 1: 4x4, 1 small ship - easiest start
+    // Level 2-3: 4x4, 2 small ships
+    // Level 4-6: 5x5, 2 ships
+    // Level 7+: 6x6, 3 ships
+    const gridSize = level === 1 ? 4 : level <= 3 ? 4 : level <= 6 ? 5 : 6;
+    const shipLengths = level === 1 ? [2] : level <= 3 ? [2, 2] : level <= 6 ? [3, 2] : [3, 2, 2];
     
     // Place ships on grid
     const ships = placeShips(gridSize, shipLengths, rng);
@@ -1428,8 +1432,20 @@ export const Generators: Record<string, GeneratorFunction> = {
     let options: string[];
     
     // Choose problem type based on level with variety
-    if (level <= 3) {
-      // Level 1-3: Basic counting/arithmetic (7 question types)
+    if (level === 1) {
+      // Level 1: Super simple - only counting (3 question types for easier start)
+      const questionTypes = [
+        () => generateCountShipsQuestion(level, rng),
+        () => generateSimpleAddition(level, rng),
+        () => generateCountShipsQuestion(level, rng), // Count appears twice
+      ];
+      const questionType = questionTypes[Math.floor(rng() * questionTypes.length)]!;
+      const question = questionType();
+      prompt = question.prompt;
+      correctAnswer = question.correctAnswer;
+      options = generateOptions(correctAnswer, 4, rng);
+    } else if (level <= 3) {
+      // Level 2-3: Basic counting/arithmetic (7 question types)
       const questionTypes = [
         () => generateCountShipsQuestion(level, rng),
         () => generateSimpleAddition(level, rng),
@@ -1507,9 +1523,13 @@ export const Generators: Record<string, GeneratorFunction> = {
   },
 
   battlelearn_adv: (level: number, rng: RngFunction = Math.random, _profile: ProfileType = 'advanced'): BattleLearnProblem => {
-    // Advanced profile: larger grid, coordinate + arithmetic questions
-    const gridSize = level <= 5 ? 6 : level <= 10 ? 7 : 8;
-    const shipLengths = level <= 5 ? [3, 2, 2] : level <= 10 ? [4, 3, 2] : [4, 3, 3, 2];
+    // Advanced profile: starts moderate, grows to complex
+    // Level 1-2: 5x5, 2 ships - easier start even for advanced
+    // Level 3-5: 6x6, 3 ships
+    // Level 6-10: 7x7, 3 ships
+    // Level 11+: 8x8, 4 ships
+    const gridSize = level <= 2 ? 5 : level <= 5 ? 6 : level <= 10 ? 7 : 8;
+    const shipLengths = level <= 2 ? [3, 2] : level <= 5 ? [3, 2, 2] : level <= 10 ? [4, 3, 2] : [4, 3, 3, 2];
     
     // Place ships on grid
     const ships = placeShips(gridSize, shipLengths, rng);
@@ -1800,25 +1820,32 @@ function generatePatternQuestion(level: number, rng: RngFunction): { prompt: str
 
 function generateDistanceQuestion(level: number, rng: RngFunction, gridSize: number): { prompt: string; correctAnswer: number } {
   const t = getTranslations();
+  const cols = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'];
   const useRow = rng() < 0.5;
-  const x1 = Math.floor(rng() * gridSize);
-  const y1 = Math.floor(rng() * gridSize);
+  const col1 = Math.floor(rng() * gridSize);
+  const row1 = Math.floor(rng() * gridSize) + 1;
   
   if (useRow) {
-    const y2 = y1 + Math.floor(rng() * 3) + 2;
-    const distance = Math.abs(Math.min(y2, gridSize - 1) - y1);
+    // Same column, different rows
+    const row2 = Math.min(row1 + Math.floor(rng() * 3) + 2, gridSize);
+    const distance = Math.abs(row2 - row1);
+    const coord1 = `${cols[col1]}-${row1}`;
+    const coord2 = `${cols[col1]}-${row2}`;
     return {
       prompt: formatQuestion(t.battlelearn.questions.distance, { 
-        x1, y1, x2: x1, y2: Math.min(y2, gridSize - 1) 
+        coord1, coord2
       }),
       correctAnswer: distance,
     };
   } else {
-    const x2 = x1 + Math.floor(rng() * 3) + 2;
-    const distance = Math.abs(Math.min(x2, gridSize - 1) - x1);
+    // Same row, different columns
+    const col2 = Math.min(col1 + Math.floor(rng() * 3) + 2, gridSize - 1);
+    const distance = Math.abs(col2 - col1);
+    const coord1 = `${cols[col1]}-${row1}`;
+    const coord2 = `${cols[col2]}-${row1}`;
     return {
       prompt: formatQuestion(t.battlelearn.questions.distance, { 
-        x1, y1, x2: Math.min(x2, gridSize - 1), y2: y1 
+        coord1, coord2
       }),
       correctAnswer: distance,
     };
@@ -1839,13 +1866,24 @@ function generateWordProblem3(level: number, rng: RngFunction): { prompt: string
 
 function generateMultiMoveQuestion(level: number, rng: RngFunction, gridSize: number): { prompt: string; correctAnswer: string } {
   const t = getTranslations();
-  const x = Math.floor(rng() * (gridSize - 3));
-  const y = Math.floor(rng() * (gridSize - 3));
-  const dx = Math.floor(rng() * 2) + 1;
-  const dy = Math.floor(rng() * 2) + 1;
+  const cols = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'];
+  const startCol = Math.floor(rng() * (gridSize - 3));
+  const startRow = Math.floor(rng() * (gridSize - 3)) + 2; // Start from row 2+ to allow upward movement
+  const colMoves = Math.floor(rng() * 2) + 1;
+  const rowMoves = Math.floor(rng() * 2) + 1;
+  
+  const finalCol = startCol + colMoves; // Right = column increases
+  const finalRow = startRow - rowMoves; // Up = row number DECREASES (1 is at top)
+  const startCoord = `${cols[startCol]}-${startRow}`;
+  const finalCoord = `${cols[finalCol]}-${finalRow}`;
+  
   return {
-    prompt: formatQuestion(t.battlelearn.questions.multiMove, { x, y, dx, dy }),
-    correctAnswer: `(${x + dx},${y + dy})`,
+    prompt: formatQuestion(t.battlelearn.questions.multiMove, { 
+      start: startCoord, 
+      right: colMoves, 
+      up: rowMoves 
+    }),
+    correctAnswer: finalCoord,
   };
 }
 
@@ -1872,15 +1910,19 @@ function generateFormationCount(level: number, rng: RngFunction): { prompt: stri
 
 // Advanced Profile Question Generators (Level 11+)
 
-function generateVectorAddition(level: number, rng: RngFunction): { prompt: string; correctAnswer: string } {
+function generateVectorAddition(level: number, rng: RngFunction): { prompt: string; correctAnswer: number } {
   const t = getTranslations();
-  const dx1 = Math.floor(rng() * 4) + 1;
-  const dy1 = Math.floor(rng() * 4) + 1;
-  const dx2 = Math.floor(rng() * 4) + 1;
-  const dy2 = Math.floor(rng() * 4) + 1;
+  const right1 = Math.floor(rng() * 3) + 1;
+  const up1 = Math.floor(rng() * 3) + 1;
+  const right2 = Math.floor(rng() * 3) + 1;
+  const up2 = Math.floor(rng() * 3) + 1;
+  const totalMoves = right1 + up1 + right2 + up2;
+  
   return {
-    prompt: formatQuestion(t.battlelearn.questions.vectorAdd, { dx1, dy1, dx2, dy2 }),
-    correctAnswer: `(${dx1 + dx2},${dy1 + dy2})`,
+    prompt: formatQuestion(t.battlelearn.questions.vectorAdd, { 
+      right1, up1, right2, up2 
+    }),
+    correctAnswer: totalMoves,
   };
 }
 

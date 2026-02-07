@@ -119,7 +119,23 @@ export function useAnswerHandler(): UseAnswerHandlerResult {
         };
     
     // Check if should level up (after this answer)
-    const shouldLevelUp = checkLevelUp(currentLevel, updatedProgress.correctAnswers, updatedProgress.totalAnswers);
+    // Games can have different level-up strategies:
+    // - 'standard': Level up after X correct answers (default)
+    // - 'onGameWin': Level up only when game is won (BattleLearn, etc.)
+    const gameConfig = GAME_CONFIG[baseGameType];
+    const levelUpStrategy = gameConfig?.levelUpStrategy ?? 'standard';
+    
+    let shouldLevelUp = false;
+    if (levelUpStrategy === 'onGameWin') {
+      // Level up only when game is won
+      const gameWon = problem.type === 'battlelearn' 
+        ? (problem as BattleLearnProblem).gameWon 
+        : false;
+      shouldLevelUp = gameWon && isCorrect;
+    } else {
+      // Standard: Level up after X correct answers
+      shouldLevelUp = checkLevelUp(currentLevel, updatedProgress.correctAnswers, updatedProgress.totalAnswers);
+    }
 
     // Handle level completion and level-up (Phase 3)
     if (shouldLevelUp && isCorrect) {
@@ -170,15 +186,10 @@ export function useAnswerHandler(): UseAnswerHandlerResult {
         setTimeout(() => {
           if (baseGameType !== 'math_snake') {
             setBgClass('bg-slate-50');
-            // For BattleLearn, generate new question but keep board state
-            if (baseGameType === 'battlelearn' && problem.type === 'battlelearn') {
-              const rng = getRng();
-              const newQuestion = generateBattleLearnQuestion(problem, newLevel, profile, rng);
-              setProblem(newQuestion);
-            } else {
-              const newProblem = generateUniqueProblemForGame(gameType, newLevel, profile, adaptiveDifficulty);
-              setProblem(newProblem);
-            }
+            // For BattleLearn, always generate completely new game (new grid, ships)
+            // because level-up only happens on game win
+            const newProblem = generateUniqueProblemForGame(gameType, newLevel, profile, adaptiveDifficulty);
+            setProblem(newProblem);
           }
         }, 2000); // After level-up animation completes
       }, 800);
@@ -234,11 +245,15 @@ export function useAnswerHandler(): UseAnswerHandlerResult {
         // Generate new problem for standard games (only if not leveling up)
         setTimeout(() => {
           setBgClass('bg-slate-50');
-          // For BattleLearn, generate new question but keep board state
+          // For BattleLearn, if game is won, don't generate new question (GameResultScreen handles it)
+          // If game continues (wrong answer), generate new question but keep board state
           if (baseGameType === 'battlelearn' && problem.type === 'battlelearn') {
-            const rng = getRng();
-            const newQuestion = generateBattleLearnQuestion(problem, levelForNextProblem, profile, rng);
-            setProblem(newQuestion);
+            const battleLearnProb = problem as BattleLearnProblem;
+            if (!battleLearnProb.gameWon) {
+              const rng = getRng();
+              const newQuestion = generateBattleLearnQuestion(battleLearnProb, levelForNextProblem, profile, rng);
+              setProblem(newQuestion);
+            }
           } else {
             const newProblem = generateUniqueProblemForGame(gameType, levelForNextProblem, profile, adaptiveDifficulty);
             setProblem(newProblem);

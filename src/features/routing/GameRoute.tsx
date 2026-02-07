@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { usePlaySessionStore } from '../../stores/playSessionStore';
 import { useGameStore } from '../../stores/gameStore';
 import { GameScreen } from '../gameplay/GameScreen';
-import { GameOverScreen } from '../gameplay/GameOverScreen';
+import { GameResultScreen } from '../gameplay/GameResultScreen';
 import { slugToGameId, isValidGameSlug } from '../../utils/gameSlug';
 import { GAME_CONFIG } from '../../games/data';
 
@@ -67,7 +67,7 @@ export const GameRoute: React.FC = () => {
   }
 
   if (gameState === 'game_over') {
-    return <GameOverScreen />;
+    return <GameResultScreen type="gameOver" />;
   }
 
   // While initializing, show nothing (will redirect if invalid)

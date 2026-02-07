@@ -59,7 +59,7 @@ export const GAME_CONFIG: Record<string, GameConfig> = {
   compare_sizes:   { id: 'compare_sizes', title: 'NUMBER COMPARE', theme: THEME.indigo!, icon: 'Hash', desc: 'Compare numbers', allowedProfiles: ['starter', 'advanced'], difficulty: 'easy', category: 'math' },
   star_mapper:     { id: 'star_mapper', title: 'STAR MAPPER', theme: THEME.indigo!, icon: 'Star', desc: 'Learn the constellations', allowedProfiles: ['starter', 'advanced'], difficulty: 'medium', category: 'logic' },
   shape_shift:     { id: 'shape_shift', title: 'SHAPE SHIFT', theme: THEME.teal!, icon: 'Shapes', desc: 'Build shapes from pieces', allowedProfiles: ['starter', 'advanced'], difficulty: 'easy', category: 'logic' },
-  battlelearn:     { id: 'battlelearn', title: 'BATTLELEARN', theme: THEME.blue!, icon: 'Target', desc: 'Answer and sink ships', allowedProfiles: ['starter'], difficulty: 'medium', category: 'math' },
+  battlelearn:     { id: 'battlelearn', title: 'BATTLELEARN', theme: THEME.blue!, icon: 'Anchor', desc: 'Answer and sink ships', allowedProfiles: ['starter'], difficulty: 'medium', category: 'math', levelUpStrategy: 'onGameWin' },
   
   // 8+ games - harder, logical (7 games - added letter_match_adv)
   balance_scale:   { id: 'balance_scale', title: 'SCALES', theme: THEME.blue!, icon: 'Scale', desc: 'Balance the scales', allowedProfiles: ['advanced'], difficulty: 'hard', category: 'math' },
@@ -72,7 +72,7 @@ export const GAME_CONFIG: Record<string, GameConfig> = {
   letter_match_adv: { id: 'letter_match', title: 'LETTER DETECTIVE', theme: THEME.pink!, icon: 'Search', desc: 'Find the correct letter', allowedProfiles: ['advanced'], difficulty: 'hard', category: 'language' },
   unit_conversion_adv: { id: 'unit_conversion', title: 'UNITS', theme: THEME.blue!, icon: 'Ruler', desc: 'Convert units', allowedProfiles: ['advanced'], difficulty: 'hard', category: 'math' },
   word_cascade_adv: { id: 'word_cascade', title: 'WORD CASCADE', theme: THEME.pink!, icon: 'Layers', desc: 'Catch letters and build words fast', allowedProfiles: ['advanced'], difficulty: 'hard', category: 'language' },
-  battlelearn_adv: { id: 'battlelearn_adv', title: 'BATTLELEARN PRO', theme: THEME.blue!, icon: 'Target', desc: 'Master coordinates and arithmetic', allowedProfiles: ['advanced'], difficulty: 'hard', category: 'math' },
+  battlelearn_adv: { id: 'battlelearn_adv', title: 'BATTLELEARN', theme: THEME.blue!, icon: 'Anchor', desc: 'Master coordinates and arithmetic', allowedProfiles: ['advanced'], difficulty: 'hard', category: 'math', levelUpStrategy: 'onGameWin' },
 };
 
 // Profiles are extensible with difficulty offset

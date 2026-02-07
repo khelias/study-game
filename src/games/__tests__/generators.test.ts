@@ -870,7 +870,7 @@ describe('Generators', () => {
       const problem = generator(1, rng, 'advanced');
       
       expect(problem.type).toBe('battlelearn');
-      expect(problem.gridSize).toBeGreaterThan(5); // Advanced has larger grid
+      expect(problem.gridSize).toBeGreaterThanOrEqual(5); // Advanced: Level 1-2 = 5x5, Level 3+ = 6x6+
       expect(problem.ships).toBeInstanceOf(Array);
       expect(problem.ships.length).toBeGreaterThan(0);
       expect(problem.question).toBeDefined();

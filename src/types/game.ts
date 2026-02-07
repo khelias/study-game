@@ -41,6 +41,9 @@ export const POSITION = {
 
 export type PositionType = typeof POSITION[keyof typeof POSITION];
 
+// Level-up strategy for games
+export type LevelUpStrategy = 'standard' | 'onGameWin';
+
 // Game configuration
 export interface GameConfig {
   id: string;
@@ -51,6 +54,7 @@ export interface GameConfig {
   allowedProfiles: ProfileType[];
   difficulty: Difficulty;
   category: string;
+  levelUpStrategy?: LevelUpStrategy; // Optional - defaults to 'standard'
 }
 
 // Word object for word-based games
