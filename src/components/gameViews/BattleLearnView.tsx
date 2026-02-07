@@ -244,7 +244,7 @@ export const BattleLearnView: React.FC<BattleLearnViewProps> = ({
           <div className="bg-gradient-to-br from-yellow-100 via-amber-100 to-orange-100 rounded-xl shadow-2xl p-8 border-4 border-yellow-400 text-center">
             <div className="text-6xl mb-4 animate-bounce">🏆</div>
             <h2 className="text-3xl font-bold text-gray-800 mb-2">{t.battlelearn.victory}</h2>
-            <p className="text-lg text-gray-600">{t.battlelearn.allShipsSunk || 'All ships have been destroyed!'}</p>
+            <p className="text-lg text-gray-600">{t.battlelearn.allShipsSunk}</p>
           </div>
         </div>
       )}
