@@ -455,6 +455,10 @@ export const et = {
     timeMatch: {
       selectCorrectTime: 'Vali õige kellaaeg',
       correctTimeIs: 'Õige aeg on',
+      oClock: 'kell {hour}',
+      halfPast: 'pool {hour}',
+      quarterPast: 'veerand {hour}',
+      quarterTo: 'kolmveerand {hour}',
     },
     mathSnake: {
       tagline: 'Numbrimadu',
@@ -729,6 +733,7 @@ export const et = {
     memory_math: {
       title: 'MATEMAATIKA MÄLU',
       desc: 'Leia tehe ja vastus',
+      hintRevealPairCost: 'Näita üht paari ({cost}⭐)',
     },
     robo_path: {
       title: 'ROBO-RADA',
@@ -741,14 +746,18 @@ export const et = {
     unit_conversion: {
       title: 'MÕÕTÜHIKUD',
       desc: 'Muunda ühikuid',
+      hintEliminateCost: 'Eemalda üks vale ({cost}⭐)',
     },
     balance_scale: {
       title: 'KAALUD',
       desc: 'Tasakaalusta kaalud',
+      hintEliminateCost: 'Eemalda üks vale ({cost}⭐)',
+      chooseWeight: 'Milline kaal tasakaalustab?',
     },
     time_match: {
       title: 'KELLAMÄNG',
       desc: 'Määra kellaaeg',
+      hintEliminateCost: 'Eemalda üks vale aeg ({cost}⭐)',
     },
     math_snake: {
       title: 'NUMBRIMADU',
@@ -766,6 +775,7 @@ export const et = {
       equal: 'Nad on võrdsed',
       leftItem: 'Vasak arv',
       rightItem: 'Parem arv',
+      hintEliminateCost: 'Eemalda üks vale ({cost}⭐)',
     },
     shape_shift: {
       title: 'KUJUNDAJA',

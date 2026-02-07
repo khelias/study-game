@@ -983,28 +983,29 @@ export const Generators: Record<string, GeneratorFunction> = {
   },
 
   time_match: (level: number, rng: RngFunction = Math.random, _profile: ProfileType = 'advanced'): TimeMatchProblem => {
-    // Smoother step progression
-    const step = level <= 2 ? 30 : level <= 4 ? 15 : level <= 6 ? 10 : 5; // minute step
+    // Step: 30min early, 15 then 10 then 5 for trickier "to/past" times
+    const step = level <= 2 ? 30 : level <= 4 ? 15 : level <= 6 ? 10 : 5;
+    const numOptions = level <= 2 ? 3 : level <= 5 ? 4 : 6;
     const hour24 = Math.floor(rng() * 24);
-    const minute = Math.floor(rng() * (60/step)) * step;
-    const toLabel = (h24: number, m: number) => `${h24.toString().padStart(2,'0')}:${m.toString().padStart(2,'0')}`;
+    const minute = Math.floor(rng() * (60 / step)) * step;
+    const toLabel = (h24: number, m: number) => `${h24.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`;
     const correct = toLabel(hour24, minute);
     const opts = new Set([correct]);
-    while(opts.size < 3) {
-      const delta = (Math.floor(rng()*3)+1) * step;
+    while (opts.size < numOptions) {
+      const delta = (Math.floor(rng() * 3) + 1) * step;
       const sign = rng() > 0.5 ? 1 : -1;
       const m2 = (minute + sign * delta + 60) % 60;
       const h2 = (hour24 + (minute + sign * delta < 0 ? -1 : 0) + 24) % 24;
       opts.add(toLabel(h2, m2));
     }
-    return { 
+    return {
       type: 'time_match',
       hours: hour24,
       minutes: minute,
       display: { hour: hour24 % 12 || 12, minute },
       answer: correct,
       options: Array.from(opts).sort(() => rng() - 0.5),
-      uid: uid(rng)
+      uid: uid(rng),
     };
   },
 

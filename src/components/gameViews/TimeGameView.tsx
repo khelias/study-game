@@ -1,13 +1,11 @@
 /**
  * TimeGameView Component
- * 
- * Game view for time matching games.
+ *
+ * Clock game: read the analog clock and choose the matching time. Visual feedback on clock; optional quarter/half label; paid hint to eliminate one wrong option; correct-answer sound; accessible.
  */
 
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { playSound } from '../../engine/audio';
-import { useTranslation } from '../../i18n/useTranslation';
-import { useProfileText } from '../../hooks/useProfileText';
 import { TimeDisplay } from '../shared/TimeDisplay';
 import { GAME_CONFIG } from '../../games/data';
 import { PaidHintButtons } from '../shared';
@@ -24,62 +22,99 @@ interface TimeGameViewProps {
   spendStars?: (count: number) => boolean;
 }
 
-export const TimeGameView: React.FC<TimeGameViewProps> = ({ problem, onAnswer, soundEnabled, gameType, stars = 0 }) => {
-  const t = useTranslation();
-  const { formatText } = useProfileText();
+const OPTION_CLASS =
+  'h-14 sm:h-16 rounded-xl sm:rounded-2xl border-b-4 sm:border-b-[6px] text-base sm:text-xl font-black flex items-center justify-center transition-all p-1.5 sm:p-2 shadow-sm w-[88px] sm:w-[104px] box-border shrink-0';
+
+export const TimeGameView: React.FC<TimeGameViewProps> = ({
+  problem,
+  onAnswer,
+  soundEnabled,
+  gameType,
+  stars = 0,
+  spendStars,
+}) => {
   const baseType = gameType?.replace('_adv', '') ?? 'time_match';
   const paidHints = GAME_CONFIG[baseType]?.paidHints ?? [];
   const [disabled, setDisabled] = useState<string[]>([]);
-  const [feedback, setFeedback] = useState<string | null>(null);
+  const [eliminatedIndices, setEliminatedIndices] = useState<number[]>([]);
+  const [feedback, setFeedback] = useState<'correct' | 'wrong' | null>(null);
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     setDisabled([]);
-     
+    setEliminatedIndices([]);
     setFeedback(null);
   }, [problem.uid]);
+
+  const handlePaidHint = useCallback(
+    (hintId: string) => {
+      if (hintId !== 'eliminate' || !spendStars) return;
+      const wrongIndices = problem.options
+        .map((opt, idx) => (opt !== problem.answer ? idx : -1))
+        .filter((i) => i >= 0 && !eliminatedIndices.includes(i));
+      if (wrongIndices.length === 0) return;
+      if (!spendStars(1)) return;
+      const pick = wrongIndices[Math.floor(Math.random() * wrongIndices.length)] as number;
+      setEliminatedIndices((prev) => [...prev, pick]);
+    },
+    [problem.options, problem.answer, eliminatedIndices, spendStars]
+  );
 
   const handleChoice = (opt: string): void => {
     playSound('click', soundEnabled);
     const correct = opt === problem.answer;
     if (correct) {
-      setFeedback(null);
+      playSound('correct', soundEnabled);
+      setFeedback('correct');
       onAnswer(true);
+      setTimeout(() => setFeedback(null), 500);
     } else {
-      setDisabled(prev => [...prev, opt]);
-      setFeedback(`${t.gameScreen.timeMatch.correctTimeIs} ${problem.answer}`);
+      setFeedback('wrong');
+      setDisabled((prev) => [...prev, opt]);
       onAnswer(false);
+      setTimeout(() => setFeedback(null), 600);
     }
   };
 
+  const { hour, minute } = problem.display;
+
   return (
     <div className="w-full flex flex-col items-center px-4 sm:px-6 max-w-2xl mx-auto pt-4 sm:pt-6 animate-in fade-in duration-300">
-      <TimeDisplay hour={problem.display.hour} minute={problem.display.minute} />
-      <div className="text-xs sm:text-sm font-semibold text-slate-500 mb-1 sm:mb-2">{formatText(t.gameScreen.timeMatch.selectCorrectTime)}</div>
-      {/* Feedback - always reserve space to prevent layout shift */}
-      <div className={`text-[10px] sm:text-xs font-semibold text-red-500 -mt-1 sm:-mt-2 px-2 text-center min-h-[1.25rem] transition-opacity duration-300 ${
-        feedback ? 'opacity-100' : 'opacity-0'
-      }`}>
-        {feedback && formatText(feedback)}
-      </div>
-      <div className="grid grid-cols-3 gap-2 sm:gap-3 w-full max-w-sm">
-        {problem.options.map((opt, idx) => (
-          <button
-            key={idx}
-            disabled={disabled.includes(opt)}
-            onClick={() => handleChoice(opt)}
-            className={`
-              h-14 sm:h-16 rounded-xl sm:rounded-2xl border-b-4 sm:border-b-[6px] text-base sm:text-xl font-black flex items-center justify-center transition-all p-1.5 sm:p-2 shadow-sm
-              bg-white border-blue-200 text-slate-700
-              ${disabled.includes(opt) ? 'bg-slate-100 border-slate-100 opacity-40 cursor-not-allowed scale-95' : 'hover:border-blue-400 hover:-translate-y-1 active:scale-95 active:border-b-0 active:translate-y-1'}
-            `}
-          >
-            {opt}
-          </button>
-        ))}
+      <TimeDisplay hour={hour} minute={minute} feedback={feedback} />
+      <div
+        className={`grid gap-2 sm:gap-3 w-full max-w-sm mt-4 sm:mt-5 justify-items-center ${problem.options.length === 4 ? 'grid-cols-2' : 'grid-cols-3'}`}
+      >
+        {problem.options.map((opt, idx) => {
+          const isEliminated = eliminatedIndices.includes(idx);
+          if (isEliminated) {
+            return (
+              <div
+                key={idx}
+                className={`${OPTION_CLASS} border-dashed border-slate-200 bg-slate-100/50`}
+                aria-hidden
+              />
+            );
+          }
+          const isDisabled = disabled.includes(opt);
+          return (
+            <button
+              key={idx}
+              disabled={isDisabled}
+              onClick={() => handleChoice(opt)}
+              className={`
+                ${OPTION_CLASS}
+                bg-white border-blue-200 text-slate-700
+                ${isDisabled ? 'bg-slate-100 border-slate-100 opacity-40 cursor-not-allowed scale-95' : 'hover:border-blue-400 hover:-translate-y-1 active:scale-95 active:border-b-0 active:translate-y-1'}
+              `}
+            >
+              {opt}
+            </button>
+          );
+        })}
       </div>
       {paidHints.length > 0 && (
-        <PaidHintButtons hints={paidHints} stars={stars} onHintClick={() => {}} />
+        <div className="mt-4 w-full max-w-sm flex justify-center">
+          <PaidHintButtons hints={paidHints} stars={stars} onHintClick={handlePaidHint} />
+        </div>
       )}
     </div>
   );

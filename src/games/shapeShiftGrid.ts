@@ -19,7 +19,7 @@ export interface GridPosition {
 
 /**
  * Convert board-relative pixel (rx, ry) and piece size to piece top-left in grid.
- * Used when dropping a piece onto the board. Center of drop → cell → top-left clamped.
+ * Uses round so dropping near a cell boundary snaps to the nearest cell (more leeway).
  */
 export function boardPxToGridTopLeft(
   rx: number,
@@ -29,8 +29,8 @@ export function boardPxToGridTopLeft(
   pieceSize: number
 ): GridPosition {
   const cellSizePx = boardWidthPx / gridSize;
-  const centerCellX = Math.floor(rx / cellSizePx);
-  const centerCellY = Math.floor(ry / cellSizePx);
+  const centerCellX = Math.round(rx / cellSizePx);
+  const centerCellY = Math.round(ry / cellSizePx);
   const half = Math.floor((pieceSize - 1) / 2);
   const gx = centerCellX - half;
   const gy = centerCellY - half;

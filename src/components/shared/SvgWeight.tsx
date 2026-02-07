@@ -1,7 +1,7 @@
 /**
  * SvgWeight Component
- * 
- * SVG weight component for balance scale visualization.
+ *
+ * Weight tokens for the balance scale. Clean, rounded style to match the rest of the app.
  */
 
 import React, { useMemo, useId } from 'react';
@@ -13,98 +13,109 @@ export interface SvgWeightProps {
   label?: string;
   color: 'blue' | 'red' | 'neutral';
   dashed?: boolean;
+  /** sm = compact, scale = on pans (slightly bigger), md = default */
+  size?: 'sm' | 'scale' | 'md';
 }
 
-export const SvgWeight: React.FC<SvgWeightProps> = ({ x, y, num, label, color, dashed }) => {
+const SIZE = {
+  sm: { w: 32, h: 32, rx: 8, font: 14, shadowRy: 4 },
+  scale: { w: 38, h: 38, rx: 9, font: 16, shadowRy: 5 },
+  md: { w: 40, h: 40, rx: 10, font: 20, shadowRy: 5 },
+} as const;
+
+export const SvgWeight: React.FC<SvgWeightProps> = ({ x, y, num, label, color, dashed, size: sizeProp = 'md' }) => {
   const uid = useId();
+  const displayText = label ?? String(num ?? '');
+  const s = SIZE[sizeProp];
+  const fontSize = label ? Math.round(s.font * 0.9) : s.font;
+
+  const safeId = uid.replace(/:/g, '');
+  const gradId = `swGrad-${safeId}`;
+  const shadowId = `swShadow-${safeId}`;
   const palette = useMemo(() => {
     if (color === 'blue') {
       return {
-        mainTop: '#93c5fd',
-        mainBottom: '#3b82f6',
-        sideFrom: '#2563eb',
-        sideTo: '#1e40af',
-        stroke: '#1d4ed8',
-        highlight: '#bfdbfe',
+        stroke: '#2563eb',
         textFill: '#ffffff',
-        textStroke: '#1e3a8a'
+        textStroke: '#1e40af',
+        stops: [
+          { offset: '0%', color: '#60a5fa' },
+          { offset: '100%', color: '#2563eb' },
+        ],
       };
     }
     if (color === 'red') {
       return {
-        mainTop: '#fda4af',
-        mainBottom: '#ef4444',
-        sideFrom: '#dc2626',
-        sideTo: '#b91c1c',
         stroke: '#dc2626',
-        highlight: '#fecaca',
         textFill: '#ffffff',
-        textStroke: '#7f1d1d'
+        textStroke: '#991b1b',
+        stops: [
+          { offset: '0%', color: '#f87171' },
+          { offset: '100%', color: '#dc2626' },
+        ],
       };
     }
     return {
-      mainTop: '#f3f4f6',
-      mainBottom: '#d1d5db',
-      sideFrom: '#9ca3af',
-      sideTo: '#6b7280',
-      stroke: '#9ca3af',
-      highlight: '#e5e7eb',
-      textFill: '#ef4444',
-      textStroke: '#dc2626'
+      stroke: '#94a3b8',
+      textFill: '#475569',
+      textStroke: 'transparent',
+      stops: [
+        { offset: '0%', color: '#e2e8f0' },
+        { offset: '100%', color: '#cbd5e1' },
+      ],
     };
   }, [color]);
-  const displayText = label ?? String(num ?? '');
-  const fontSize = label ? 22 : 20;
+
   return (
     <g transform={`translate(${x}, ${y})`}>
       <defs>
-        <linearGradient id={`weightGradTop-${uid}`} x1="0%" y1="0%" x2="0%" y2="100%">
-          <stop offset="0%" stopColor={palette.mainTop} stopOpacity="1" />
-          <stop offset="100%" stopColor={palette.mainBottom} stopOpacity="1" />
+        <linearGradient id={gradId} x1="0%" y1="0%" x2="0%" y2="100%">
+          {palette.stops.map((stop) => (
+            <stop key={stop.offset} offset={stop.offset} stopColor={stop.color} />
+          ))}
         </linearGradient>
-        <linearGradient id={`weightGradSide-${uid}`} x1="0%" y1="0%" x2="100%" y2="0%">
-          <stop offset="0%" stopColor={palette.sideFrom} stopOpacity="1" />
-          <stop offset="100%" stopColor={palette.sideTo} stopOpacity="1" />
-        </linearGradient>
-        <filter id={`weightShadow-${uid}`}>
-          <feDropShadow dx="2" dy="3" stdDeviation="2.5" floodOpacity="0.35"/>
+        <filter id={shadowId}>
+          <feDropShadow dx="0" dy="2" stdDeviation="2" floodOpacity="0.2" />
         </filter>
       </defs>
-      
-      {/* Shadow from bottom */}
-      <ellipse cx="0" cy="8" rx="16" ry="4" fill="black" opacity="0.18" filter={`url(#weightShadow-${uid})`} />
-      
-      {/* 3D weight - front */}
-      <rect x="-16" y="-22" width="32" height="32" rx="5" ry="5" 
-            fill={`url(#weightGradTop-${uid})`} 
-            stroke={palette.stroke} 
-            strokeWidth="2.25"
-            strokeDasharray={dashed ? '5 3' : undefined}
-            filter={`url(#weightShadow-${uid})`} />
-      
-      {/* 3D effect - right side (depth) */}
-      <path d="M 16 -22 L 20 -18 L 20 10 L 16 10 Z" 
-            fill={`url(#weightGradSide-${uid})`} 
-            opacity="0.7" />
-      
-      {/* Top curvature (3D effect) */}
-      <ellipse cx="0" cy="-22" rx="16" ry="6" fill={palette.highlight} opacity="0.65" />
-      
-      {/* Number background */}
-      <circle cx="0" cy="-5" r="10" fill="white" opacity="0.25" />
-      
-      {/* Number */}
-      <text x="0" y="2" textAnchor="middle"
-            fontSize={fontSize} fontWeight="900" fontFamily="Arial, sans-serif"
-            fill={palette.textFill}
-            stroke={palette.textStroke} strokeWidth="1"
-            style={{ textShadow: '0 1px 2px rgba(0,0,0,0.8)' }}
-            dominantBaseline="middle">
+
+      {/* Shadow on tray – just below weight base so it reads as cast on the pan */}
+      <ellipse cx="0" cy={s.h / 2 + 4} rx={s.w * 0.5} ry={s.shadowRy + 2} fill="#000" opacity="0.12" />
+
+      {/* Weight body – solid block, slight bevel for “weight” look */}
+      <rect
+        x={-s.w / 2}
+        y={-s.h / 2 - 2}
+        width={s.w}
+        height={s.h}
+        rx={s.rx}
+        ry={s.rx}
+        fill={`url(#${gradId})`}
+        stroke={palette.stroke}
+        strokeWidth="2"
+        strokeDasharray={dashed ? '6 4' : undefined}
+        filter={`url(#${shadowId})`}
+      />
+      {/* Bottom edge – suggests thickness / metal weight */}
+      <rect x={-s.w / 2 + 2} y={s.h / 2 - 6} width={s.w - 4} height="4" rx="1" fill="rgba(0,0,0,0.15)" />
+      {/* Top highlight */}
+      <rect x={-s.w / 2 + 2} y={-s.h / 2} width={s.w - 4} height={Math.round(s.h * 0.26)} rx={s.rx - 2} fill="rgba(255,255,255,0.3)" />
+
+      {/* Number or label – vertically centered in weight */}
+      <text
+        x="0"
+        y={-2}
+        textAnchor="middle"
+        fontSize={fontSize}
+        fontWeight="800"
+        fontFamily="system-ui, sans-serif"
+        fill={palette.textFill}
+        stroke={palette.textStroke}
+        strokeWidth={color === 'neutral' ? 0 : 0.5}
+        dominantBaseline="middle"
+      >
         {displayText}
       </text>
-      
-      {/* Glow effect */}
-      <ellipse cx="-8" cy="-18" rx="4" ry="3" fill="white" opacity="0.35" />
     </g>
   );
 };

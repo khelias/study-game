@@ -179,9 +179,9 @@ export const PUZZLES: Puzzle[] = [
       { id: 'blade_tip', type: 'triangle', color: 'white', correctPosition: { x: 40, y: 0 }, correctRotation: 0, size: 20 },
       // Blade (Rotated Rect) - Visual (40,20) to (60,60)
       { id: 'blade', type: 'rectangle', color: 'white', correctPosition: { x: 30, y: 20 }, correctRotation: 90, size: 40 },
-      // Guard (Rect) - Visual (20,60) to (80,80)
-      { id: 'guard', type: 'rectangle', color: 'gold', correctPosition: { x: 20, y: 50 }, correctRotation: 0, size: 60 }, // Fixed size 60 fits better
-      // Hilt (Rotated Rect) - Visual (45,80) to (55,100)
+      // Guard (crossbar) – y 40 so guard fits in grid (40+60=100)
+      { id: 'guard', type: 'rectangle', color: 'gold', correctPosition: { x: 20, y: 40 }, correctRotation: 0, size: 60 },
+      // Hilt (handle) – below guard, centered at bottom
       { id: 'hilt', type: 'rectangle', color: 'brown', correctPosition: { x: 40, y: 80 }, correctRotation: 90, size: 20 },
     ],
   },

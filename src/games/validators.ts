@@ -179,8 +179,8 @@ export const validateShapeShift: AnswerValidator = (problem: Problem, userAnswer
     const placed = placedPieces.find(p => p.id === required.id);
     if (!placed || !placed.currentPosition) return false;
 
-    // Check position: Allow ±6 units tolerance on 100x100 grid for smoother UX
-    const POSITION_TOLERANCE = 6;
+    // Check position: allow ±10 units on 100x100 grid for more leeway when placing
+    const POSITION_TOLERANCE = 10;
     const positionOk =
       Math.abs(placed.currentPosition.x - required.correctPosition.x) <= POSITION_TOLERANCE &&
       Math.abs(placed.currentPosition.y - required.correctPosition.y) <= POSITION_TOLERANCE;

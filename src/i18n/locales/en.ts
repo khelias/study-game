@@ -455,6 +455,10 @@ export const en = {
     timeMatch: {
       selectCorrectTime: 'Choose the correct time',
       correctTimeIs: 'Correct time is',
+      oClock: '{hour} o’clock',
+      halfPast: 'half past {hour}',
+      quarterPast: 'quarter past {hour}',
+      quarterTo: 'quarter to {hour}',
     },
     mathSnake: {
       tagline: 'Number Snake',
@@ -729,6 +733,7 @@ export const en = {
     memory_math: {
       title: 'MATH MEMORY',
       desc: 'Find the equation and answer',
+      hintRevealPairCost: 'Reveal one pair ({cost}⭐)',
     },
     robo_path: {
       title: 'ROBO PATH',
@@ -741,14 +746,18 @@ export const en = {
     unit_conversion: {
       title: 'UNITS',
       desc: 'Convert units',
+      hintEliminateCost: 'Remove one wrong ({cost}⭐)',
     },
     balance_scale: {
       title: 'SCALES',
       desc: 'Balance the scales',
+      hintEliminateCost: 'Remove one wrong ({cost}⭐)',
+      chooseWeight: 'Which weight balances the scale?',
     },
     time_match: {
       title: 'CLOCK GAME',
       desc: 'Set the time',
+      hintEliminateCost: 'Remove one wrong time ({cost}⭐)',
     },
     math_snake: {
       title: 'NUMBER SNAKE',
@@ -766,6 +775,7 @@ export const en = {
       equal: 'They are equal',
       leftItem: 'Left number',
       rightItem: 'Right number',
+      hintEliminateCost: 'Remove one wrong ({cost}⭐)',
     },
     shape_shift: {
       title: 'SHAPE SHIFT',

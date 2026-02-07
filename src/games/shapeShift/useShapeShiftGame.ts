@@ -169,8 +169,8 @@ export function useShapeShiftGame(
 
         // Check Board Drop
         if (boardRect) {
-            // Relaxed margin: piece must be at least somewhat inside (e.g. 50%)
-            const margin = ghostSizePx * 0.5;
+            // Leeway: accept drop if center is near or inside board (margin 70% of piece size)
+            const margin = ghostSizePx * 0.7;
             const relX = ghostCenterX - boardRect.left;
             const relY = ghostCenterY - boardRect.top;
 

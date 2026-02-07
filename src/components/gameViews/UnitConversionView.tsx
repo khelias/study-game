@@ -4,7 +4,7 @@
  * Game view for unit conversion games.
  */
 
-import React, { useEffect, useState, useMemo } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { playSound } from '../../engine/audio';
 import { useTranslation } from '../../i18n/useTranslation';
 import { useProfileText } from '../../hooks/useProfileText';
@@ -24,21 +24,36 @@ interface UnitConversionViewProps {
   spendStars?: (count: number) => boolean;
 }
 
-export const UnitConversionView: React.FC<UnitConversionViewProps> = ({ problem, onAnswer, soundEnabled, gameType, stars = 0 }) => {
+export const UnitConversionView: React.FC<UnitConversionViewProps> = ({ problem, onAnswer, soundEnabled, gameType, stars = 0, spendStars }) => {
   const t = useTranslation();
   const { formatText } = useProfileText();
   const baseType = gameType?.replace('_adv', '') ?? 'unit_conversion';
   const paidHints = GAME_CONFIG[baseType]?.paidHints ?? [];
   const [disabled, setDisabled] = useState<number[]>([]);
+  const [eliminatedIndices, setEliminatedIndices] = useState<number[]>([]);
   const questionText = useMemo(
     () => buildUnitConversionQuestion(t, problem.value, problem.fromUnit, problem.toUnit),
     [t, problem.value, problem.fromUnit, problem.toUnit]
   );
-  
-  useEffect(() => { 
-    // eslint-disable-next-line react-hooks/set-state-in-effect
+
+  useEffect(() => {
     setDisabled([]);
+    setEliminatedIndices([]);
   }, [problem.uid]);
+
+  const handlePaidHint = useCallback(
+    (hintId: string) => {
+      if (hintId !== 'eliminate' || !spendStars) return;
+      const wrongIndices = problem.options
+        .map((opt, idx) => (opt !== problem.answer ? idx : -1))
+        .filter((i) => i >= 0 && !eliminatedIndices.includes(i));
+      if (wrongIndices.length === 0) return;
+      if (!spendStars(1)) return;
+      const pick = wrongIndices[Math.floor(Math.random() * wrongIndices.length)] as number;
+      setEliminatedIndices((prev) => [...prev, pick]);
+    },
+    [problem.options, problem.answer, eliminatedIndices, spendStars]
+  );
 
   const handleChoice = (opt: number): void => {
     playSound('click', soundEnabled);
@@ -70,6 +85,16 @@ export const UnitConversionView: React.FC<UnitConversionViewProps> = ({ problem,
       {/* Options - 2x2 grid */}
       <div className="grid grid-cols-2 gap-3 sm:gap-4 w-full max-w-md">
         {problem.options.map((opt, idx) => {
+          const isEliminated = eliminatedIndices.includes(idx);
+          if (isEliminated) {
+            return (
+              <div
+                key={idx}
+                className="h-20 sm:h-24 rounded-2xl sm:rounded-3xl border-2 border-dashed border-slate-200 bg-slate-100/50 min-h-[5rem] sm:min-h-[6rem]"
+                aria-hidden
+              />
+            );
+          }
           const isDisabled = disabled.includes(opt);
           return (
             <button
@@ -80,8 +105,8 @@ export const UnitConversionView: React.FC<UnitConversionViewProps> = ({ problem,
                 h-20 sm:h-24 rounded-2xl sm:rounded-3xl border-b-6 sm:border-b-8 
                 text-2xl sm:text-3xl font-black flex items-center justify-center 
                 transition-all shadow-lg
-                ${isDisabled 
-                  ? 'bg-slate-200 border-slate-300 opacity-40 cursor-not-allowed scale-95' 
+                ${isDisabled
+                  ? 'bg-slate-200 border-slate-300 opacity-40 cursor-not-allowed scale-95'
                   : 'bg-gradient-to-br from-white to-teal-50 border-teal-300 hover:border-teal-500 hover:bg-teal-100 hover:scale-105 hover:-translate-y-1 hover:shadow-xl active:scale-95 active:border-b-2 active:translate-y-1'
                 }
               `}
@@ -94,7 +119,7 @@ export const UnitConversionView: React.FC<UnitConversionViewProps> = ({ problem,
         })}
       </div>
       {paidHints.length > 0 && (
-        <PaidHintButtons hints={paidHints} stars={stars} onHintClick={() => {}} />
+        <PaidHintButtons hints={paidHints} stars={stars} onHintClick={handlePaidHint} />
       )}
     </div>
   );

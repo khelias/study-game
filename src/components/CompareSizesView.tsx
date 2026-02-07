@@ -1,9 +1,11 @@
-import React, { useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import type { CompareSizesProblem } from '../types/game';
 import { useTranslation } from '../i18n/useTranslation';
 import { playSound } from '../engine/audio';
 import { GAME_CONFIG } from '../games/data';
 import { PaidHintButtons } from './shared';
+
+type CompareOption = 'left' | 'right' | 'equal';
 
 interface CompareSizesViewProps {
   problem: CompareSizesProblem;
@@ -49,13 +51,31 @@ export const CompareSizesView: React.FC<CompareSizesViewProps> = ({
   soundEnabled,
   gameType,
   stars = 0,
+  spendStars,
 }) => {
   const t = useTranslation();
   const baseType = gameType?.replace('_adv', '') ?? 'compare_sizes';
   const paidHints = GAME_CONFIG[baseType]?.paidHints ?? [];
-  const [selectedAnswer, setSelectedAnswer] = useState<'left' | 'right' | 'equal' | null>(null);
+  const [selectedAnswer, setSelectedAnswer] = useState<CompareOption | null>(null);
+  const [eliminatedOptions, setEliminatedOptions] = useState<CompareOption[]>([]);
 
-  const handleAnswer = (userAnswer: 'left' | 'right' | 'equal') => {
+  useEffect(() => {
+    setEliminatedOptions([]);
+  }, [problem.uid]);
+
+  const handlePaidHint = useCallback(
+    (hintId: string) => {
+      if (hintId !== 'eliminate' || !spendStars) return;
+      const wrongOptions = problem.options.filter((opt) => opt !== problem.answer && !eliminatedOptions.includes(opt));
+      if (wrongOptions.length === 0) return;
+      if (!spendStars(1)) return;
+      const pick = wrongOptions[Math.floor(Math.random() * wrongOptions.length)] as CompareOption;
+      setEliminatedOptions((prev) => [...prev, pick]);
+    },
+    [problem.options, problem.answer, eliminatedOptions, spendStars]
+  );
+
+  const handleAnswer = (userAnswer: CompareOption) => {
     setSelectedAnswer(userAnswer);
     const isCorrect = userAnswer === problem.answer;
     
@@ -69,7 +89,7 @@ export const CompareSizesView: React.FC<CompareSizesViewProps> = ({
     }, 800);
   };
 
-  const getSymbol = (option: 'left' | 'right' | 'equal') => {
+  const getSymbol = (option: CompareOption) => {
     if (option === 'left') return '>';
     if (option === 'right') return '<';
     return '=';
@@ -158,64 +178,79 @@ export const CompareSizesView: React.FC<CompareSizesViewProps> = ({
         </div>
       </div>
 
-      {/* Symbol selection buttons - ALWAYS 3 slots for consistency, improved styling */}
-      <div className="flex gap-3 sm:gap-4 lg:gap-5 justify-center max-w-2xl">
+      {/* Symbol selection – same order as above: Left | Middle | Right; colors echo the comparison boxes */}
+      <div className="flex gap-3 sm:gap-4 lg:gap-5 justify-center max-w-2xl w-full">
         {(['left', 'equal', 'right'] as const).map((option) => {
           const symbol = getSymbol(option);
+          const isEliminated = eliminatedOptions.includes(option);
           const isAvailable = problem.options.includes(option);
-          const label = option === 'left' 
-            ? `${symbol} (${t.games.compare_sizes.leftBigger})` 
-            : option === 'right' 
-            ? `${symbol} (${t.games.compare_sizes.rightBigger})` 
-            : `${symbol} (${t.games.compare_sizes.equal})`;
-          
+          const label = option === 'left'
+            ? `${symbol} (${t.games.compare_sizes.leftBigger})`
+            : option === 'right'
+              ? `${symbol} (${t.games.compare_sizes.rightBigger})`
+              : `${symbol} (${t.games.compare_sizes.equal})`;
+
+          const baseSize = 'flex flex-col items-center justify-center gap-1.5 sm:gap-2 px-4 sm:px-5 lg:px-7 py-3 sm:py-4 lg:py-5 rounded-2xl sm:rounded-3xl font-bold w-[100px] sm:w-[120px] lg:w-[140px] h-[80px] sm:h-[96px] lg:h-[112px] border-3 sm:border-4 box-border';
+
+          if (isEliminated) {
+            return (
+              <div
+                key={option}
+                className={`${baseSize} border-dashed border-slate-200 bg-slate-100/50 pointer-events-none shrink-0`}
+                aria-hidden
+              />
+            );
+          }
+
+          const optionStyles = {
+            left: {
+              idle: 'bg-gradient-to-br from-blue-400 to-blue-600 text-white border-blue-500 hover:from-blue-500 hover:to-blue-700 shadow-xl hover:shadow-2xl border-3 sm:border-4 border-blue-400',
+              correct: 'bg-gradient-to-br from-green-500 to-green-600 text-white ring-4 ring-green-300 border-green-400',
+              wrong: 'bg-gradient-to-br from-red-500 to-red-600 text-white ring-4 ring-red-300 border-red-400',
+              disabled: 'bg-gradient-to-br from-slate-200 to-slate-300 text-slate-400 border-slate-300',
+            },
+            equal: {
+              idle: 'bg-gradient-to-br from-purple-400 to-indigo-500 text-white border-purple-500 hover:from-purple-500 hover:to-indigo-600 shadow-xl hover:shadow-2xl border-3 sm:border-4 border-purple-400',
+              correct: 'bg-gradient-to-br from-green-500 to-green-600 text-white ring-4 ring-green-300 border-green-400',
+              wrong: 'bg-gradient-to-br from-red-500 to-red-600 text-white ring-4 ring-red-300 border-red-400',
+              disabled: 'bg-gradient-to-br from-slate-200 to-slate-300 text-slate-400 border-slate-300',
+            },
+            right: {
+              idle: 'bg-gradient-to-br from-green-400 to-emerald-600 text-white border-emerald-500 hover:from-green-500 hover:to-emerald-700 shadow-xl hover:shadow-2xl border-3 sm:border-4 border-green-400',
+              correct: 'bg-gradient-to-br from-green-500 to-green-600 text-white ring-4 ring-green-300 border-green-400',
+              wrong: 'bg-gradient-to-br from-red-500 to-red-600 text-white ring-4 ring-red-300 border-red-400',
+              disabled: 'bg-gradient-to-br from-slate-200 to-slate-300 text-slate-400 border-slate-300',
+            },
+          };
+          const style = optionStyles[option];
+          const stateClass = selectedAnswer === option
+            ? (selectedAnswer === problem.answer ? style.correct : style.wrong)
+            : (isAvailable ? style.idle : style.disabled);
+
           return (
             <button
               key={option}
               onClick={() => isAvailable && handleAnswer(option)}
               disabled={!isAvailable || selectedAnswer !== null}
               className={`
-                flex flex-col items-center justify-center gap-1.5 sm:gap-2 px-4 sm:px-5 lg:px-7 py-3 sm:py-4 lg:py-5 
-                rounded-2xl sm:rounded-3xl font-bold relative overflow-hidden
-                transition-all duration-300 transform ${isAvailable && selectedAnswer === null ? 'hover:scale-110 hover:-translate-y-1 active:scale-95' : ''}
-                ${selectedAnswer === option 
-                  ? selectedAnswer === problem.answer 
-                    ? 'bg-gradient-to-br from-green-500 to-green-600 text-white shadow-2xl ring-4 ring-green-300' 
-                    : 'bg-gradient-to-br from-red-500 to-red-600 text-white shadow-2xl ring-4 ring-red-300'
-                  : isAvailable
-                  ? 'bg-gradient-to-br from-purple-500 via-purple-600 to-indigo-600 text-white hover:from-purple-600 hover:via-purple-700 hover:to-indigo-700 shadow-xl hover:shadow-2xl'
-                  : 'bg-gradient-to-br from-gray-200 to-gray-300 text-gray-400 cursor-not-allowed shadow-md'
-                }
-                border-3 sm:border-4 ${
-                  selectedAnswer === option
-                    ? selectedAnswer === problem.answer
-                      ? 'border-green-400'
-                      : 'border-red-400'
-                    : isAvailable
-                    ? 'border-purple-400 hover:border-purple-500'
-                    : 'border-gray-300'
-                }
+                ${baseSize} shrink-0 relative overflow-hidden transition-all duration-300 transform
+                ${isAvailable && selectedAnswer === null ? 'hover:scale-105 hover:-translate-y-0.5 active:scale-95' : ''}
+                ${stateClass}
                 ${!isAvailable || selectedAnswer !== null ? 'opacity-60' : ''}
-                min-w-[70px] sm:min-w-[90px] lg:min-w-[110px]
               `}
               aria-label={label}
               aria-disabled={!isAvailable}
             >
-              {/* Shine effect overlay for available buttons */}
               {isAvailable && selectedAnswer === null && (
-                <div className="absolute inset-0 bg-gradient-to-br from-white/30 to-transparent pointer-events-none"></div>
+                <div className="absolute inset-0 bg-gradient-to-br from-white/25 to-transparent pointer-events-none" />
               )}
-              
-              {/* Symbol display with better styling */}
               <span className="text-2xl sm:text-3xl lg:text-4xl font-black drop-shadow-lg relative z-10">
                 {symbol}
               </span>
-              
-              {/* Text label */}
               <span className="text-[10px] sm:text-xs font-semibold text-center relative z-10 leading-tight">
-                {option === 'left' ? t.games.compare_sizes.leftBigger 
-                  : option === 'right' ? t.games.compare_sizes.rightBigger 
-                  : t.games.compare_sizes.equal}
+                {option === 'left' ? t.games.compare_sizes.leftBigger
+                  : option === 'right' ? t.games.compare_sizes.rightBigger
+                    : t.games.compare_sizes.equal}
               </span>
             </button>
           );
@@ -241,7 +276,7 @@ export const CompareSizesView: React.FC<CompareSizesViewProps> = ({
         </div>
       )}
       {paidHints.length > 0 && (
-        <PaidHintButtons hints={paidHints} stars={stars} onHintClick={() => {}} />
+        <PaidHintButtons hints={paidHints} stars={stars} onHintClick={handlePaidHint} />
       )}
     </div>
   );
