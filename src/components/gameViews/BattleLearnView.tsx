@@ -10,6 +10,7 @@ import { Target, Waves, Trophy } from 'lucide-react';
 import { playSound } from '../../engine/audio';
 import { useTranslation } from '../../i18n/useTranslation';
 import { applyShot, checkWinCondition, isShipSunk } from '../../engine/battlelearn';
+import { usePlaySessionStore } from '../../stores/playSessionStore';
 import type { BattleLearnProblem } from '../../types/game';
 
 interface BattleLearnViewProps {
@@ -24,6 +25,8 @@ export const BattleLearnView: React.FC<BattleLearnViewProps> = ({
   soundEnabled 
 }) => {
   const t = useTranslation();
+  const setProblem = usePlaySessionStore(state => state.setProblem);
+  
   // Separate game state from question state
   const [gameState, setGameState] = useState({
     gridSize: problem.gridSize,
@@ -160,6 +163,7 @@ export const BattleLearnView: React.FC<BattleLearnViewProps> = ({
     setShowFeedback(true);
     setTimeout(() => setShowFeedback(false), 2000);
     
+    // Update local state
     setGameState(prev => ({
       ...prev,
       revealed: newRevealed,
@@ -167,6 +171,15 @@ export const BattleLearnView: React.FC<BattleLearnViewProps> = ({
       sunkShips: newSunkShips,
       gameWon,
     }));
+    
+    // CRITICAL: Also update the problem in the store so parent handlers have current state
+    setProblem({
+      ...problem,
+      revealed: newRevealed,
+      hits: newHits,
+      sunkShips: newSunkShips,
+      gameWon,
+    });
     
     setSelectedOption(null);
     
