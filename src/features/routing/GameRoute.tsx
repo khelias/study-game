@@ -22,7 +22,7 @@ export const GameRoute: React.FC = () => {
   useEffect(() => {
     // Validate the game slug
     if (!gameSlug) {
-      navigate('/');
+      void navigate('/');
       return;
     }
 
@@ -31,14 +31,14 @@ export const GameRoute: React.FC = () => {
 
     if (!isValidGameSlug(gameSlug, validGameIds)) {
       // Invalid game slug, redirect to menu
-      navigate('/');
+      void navigate('/');
       return;
     }
 
     // Check if player has hearts before starting
     if (hearts <= 0) {
       // Redirect to menu where they can buy hearts
-      navigate('/');
+      void navigate('/');
       return;
     }
 
