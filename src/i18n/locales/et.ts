@@ -325,6 +325,18 @@ export const et = {
         title: 'Koske kangelane',
         desc: 'Lõpeta 10 Sõnakoske mängu',
       },
+      battlelearn_first_win: {
+        title: 'Esimene laevastik uputatud',
+        desc: 'Võida oma esimene Laevade mäng',
+      },
+      battlelearn_captain: {
+        title: 'Laevade kapten',
+        desc: 'Jõua Laevade tasemele 5',
+      },
+      battlelearn_admiral: {
+        title: 'Laevade admiral',
+        desc: 'Jõua Laevade tasemele 10',
+      },
     },
   },
 

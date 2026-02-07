@@ -325,6 +325,18 @@ export const en = {
         title: 'Cascade Champion',
         desc: 'Complete 10 Word Cascade games',
       },
+      battlelearn_first_win: {
+        title: 'First Fleet Sunk',
+        desc: 'Win your first BattleLearn game',
+      },
+      battlelearn_captain: {
+        title: 'BattleLearn Captain',
+        desc: 'Reach BattleLearn level 5',
+      },
+      battlelearn_admiral: {
+        title: 'BattleLearn Admiral',
+        desc: 'Reach BattleLearn level 10',
+      },
     },
   },
 

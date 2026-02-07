@@ -141,6 +141,7 @@ describe('checkAchievements', () => {
         math_snake: 1,
         unit_conversion: 1,
         compare_sizes: 1,
+        battlelearn: 1,
       },
     });
     const unlocked: string[] = [];
@@ -218,6 +219,27 @@ describe('checkAchievements', () => {
     expect(newUnlocks.find((a) => a.id === 'persistent')).toBeDefined();
     expect(newUnlocks.find((a) => a.id === 'perfect_5')).toBeDefined();
     expect(newUnlocks.find((a) => a.id === 'score_500')).toBeDefined();
+  });
+
+  it('should unlock battlelearn_first_win at level 2', () => {
+    const stats = createTestStats({ maxLevels: { battlelearn: 2 } });
+    const unlocked: string[] = [];
+    const newUnlocks = checkAchievements(stats, unlocked);
+    expect(newUnlocks.find((a) => a.id === 'battlelearn_first_win')).toBeDefined();
+  });
+
+  it('should unlock battlelearn_captain at level 5', () => {
+    const stats = createTestStats({ maxLevels: { battlelearn_adv: 5 } });
+    const unlocked: string[] = [];
+    const newUnlocks = checkAchievements(stats, unlocked);
+    expect(newUnlocks.find((a) => a.id === 'battlelearn_captain')).toBeDefined();
+  });
+
+  it('should unlock battlelearn_admiral at level 10', () => {
+    const stats = createTestStats({ maxLevels: { battlelearn: 10 } });
+    const unlocked: string[] = [];
+    const newUnlocks = checkAchievements(stats, unlocked);
+    expect(newUnlocks.find((a) => a.id === 'battlelearn_admiral')).toBeDefined();
   });
 
   it('should not re-unlock achievements', () => {

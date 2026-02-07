@@ -49,7 +49,9 @@ export const ACHIEVEMENTS: Record<string, Achievement> = {
     id: 'all_games',
     icon: '🎯',
     check: (stats: Stats) => {
-      const allTypes = [
+      const battlelearnPlayed =
+        (stats.gamesByType.battlelearn || 0) > 0 || (stats.gamesByType.battlelearn_adv || 0) > 0;
+      const otherTypes = [
         'word_builder', 
         'word_cascade',
         'syllable_builder', 
@@ -64,8 +66,26 @@ export const ACHIEVEMENTS: Record<string, Achievement> = {
         'balance_scale', 
         'time_match'
       ];
-      return allTypes.every(type => (stats.gamesByType[type] || 0) > 0);
+      return battlelearnPlayed && otherTypes.every(type => (stats.gamesByType[type] || 0) > 0);
     }
+  },
+  battlelearn_first_win: {
+    id: 'battlelearn_first_win',
+    icon: '⚓',
+    check: (stats: Stats) =>
+      (stats.maxLevels.battlelearn || 0) >= 2 || (stats.maxLevels.battlelearn_adv || 0) >= 2
+  },
+  battlelearn_captain: {
+    id: 'battlelearn_captain',
+    icon: '🚢',
+    check: (stats: Stats) =>
+      (stats.maxLevels.battlelearn || 0) >= 5 || (stats.maxLevels.battlelearn_adv || 0) >= 5
+  },
+  battlelearn_admiral: {
+    id: 'battlelearn_admiral',
+    icon: '🏴‍☠️',
+    check: (stats: Stats) =>
+      (stats.maxLevels.battlelearn || 0) >= 10 || (stats.maxLevels.battlelearn_adv || 0) >= 10
   },
   star_collector_50: {
     id: 'star_collector_50',
