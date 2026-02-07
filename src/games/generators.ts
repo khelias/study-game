@@ -1415,82 +1415,6 @@ export const Generators: Record<string, GeneratorFunction> = {
     };
   },
 
-  // Helper functions for BattleLearn problem generation
-};
-
-/**
- * Generate numeric options for a problem
- */
-function generateOptions(correct: number, count: number, rng: RngFunction): string[] {
-  const options = [String(correct)];
-  const attempts = new Set<number>([correct]);
-  
-  while (options.length < count && attempts.size < count * 3) {
-    const offset = Math.floor(rng() * 10) - 5; // -5 to 4
-    const wrong = correct + offset;
-    if (wrong > 0 && !attempts.has(wrong)) {
-      attempts.add(wrong);
-      options.push(String(wrong));
-    }
-  }
-  
-  // Fill remaining with random numbers if needed
-  while (options.length < count) {
-    const wrong = Math.floor(rng() * (correct * 2 + 10)) + 1;
-    if (!options.includes(String(wrong))) {
-      options.push(String(wrong));
-    }
-  }
-  
-  return options;
-}
-
-/**
- * Generate coordinate options for navigation problems
- */
-function generateCoordinateOptions(correct: string, gridSize: number, rng: RngFunction): string[] {
-  const cols = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'];
-  const options = [correct];
-  const attempts = new Set<string>([correct]);
-  
-  while (options.length < 4 && attempts.size < gridSize * gridSize) {
-    const col = cols[Math.floor(rng() * Math.min(gridSize, cols.length))];
-    const row = Math.floor(rng() * gridSize) + 1;
-    const option = `${col}-${row}`;
-    if (!attempts.has(option)) {
-      attempts.add(option);
-      options.push(option);
-    }
-  }
-  
-  return options;
-}
-
-/**
- * Shuffle options and place correct answer at specified index
- */
-function shuffleOptionsWithCorrect(options: string[], correct: number | string, correctIndex: number): string[] {
-  const shuffled = [...options];
-  
-  // Shuffle all options first
-  for (let i = shuffled.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [shuffled[i], shuffled[j]] = [shuffled[j]!, shuffled[i]!];
-  }
-  
-  // Find and move correct answer to desired index
-  const correctStr = String(correct);
-  const currentCorrectIndex = shuffled.indexOf(correctStr);
-  if (currentCorrectIndex !== -1 && currentCorrectIndex !== correctIndex) {
-    [shuffled[currentCorrectIndex], shuffled[correctIndex]] = [shuffled[correctIndex]!, shuffled[currentCorrectIndex]!];
-  }
-  
-  return shuffled;
-}
-
-const generators: Record<string, GeneratorFunction> = {
-  // ... (existing generators)
-
   battlelearn: (level: number, rng: RngFunction = Math.random, profile: ProfileType = 'starter'): BattleLearnProblem => {
     // Starter profile: smaller grid, simpler questions
     const gridSize = level <= 5 ? 5 : 6;
@@ -1625,6 +1549,76 @@ const generators: Record<string, GeneratorFunction> = {
     };
   },
 };
+
+/**
+ * Generate numeric options for a problem
+ */
+function generateOptions(correct: number, count: number, rng: RngFunction): string[] {
+  const options = [String(correct)];
+  const attempts = new Set<number>([correct]);
+  
+  while (options.length < count && attempts.size < count * 3) {
+    const offset = Math.floor(rng() * 10) - 5; // -5 to 4
+    const wrong = correct + offset;
+    if (wrong > 0 && !attempts.has(wrong)) {
+      attempts.add(wrong);
+      options.push(String(wrong));
+    }
+  }
+  
+  // Fill remaining with random numbers if needed
+  while (options.length < count) {
+    const wrong = Math.floor(rng() * (correct * 2 + 10)) + 1;
+    if (!options.includes(String(wrong))) {
+      options.push(String(wrong));
+    }
+  }
+  
+  return options;
+}
+
+/**
+ * Generate coordinate options for navigation problems
+ */
+function generateCoordinateOptions(correct: string, gridSize: number, rng: RngFunction): string[] {
+  const cols = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'];
+  const options = [correct];
+  const attempts = new Set<string>([correct]);
+  
+  while (options.length < 4 && attempts.size < gridSize * gridSize) {
+    const col = cols[Math.floor(rng() * Math.min(gridSize, cols.length))];
+    const row = Math.floor(rng() * gridSize) + 1;
+    const option = `${col}-${row}`;
+    if (!attempts.has(option)) {
+      attempts.add(option);
+      options.push(option);
+    }
+  }
+  
+  return options;
+}
+
+/**
+ * Shuffle options and place correct answer at specified index
+ */
+function shuffleOptionsWithCorrect(options: string[], correct: number | string, correctIndex: number): string[] {
+  const shuffled = [...options];
+  
+  // Shuffle all options first
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [shuffled[i], shuffled[j]] = [shuffled[j]!, shuffled[i]!];
+  }
+  
+  // Find and move correct answer to desired index
+  const correctStr = String(correct);
+  const currentCorrectIndex = shuffled.indexOf(correctStr);
+  if (currentCorrectIndex !== -1 && currentCorrectIndex !== correctIndex) {
+    [shuffled[currentCorrectIndex], shuffled[correctIndex]] = [shuffled[correctIndex]!, shuffled[currentCorrectIndex]!];
+  }
+  
+  return shuffled;
+}
 
 /**
  * Helper function to generate distractor stars for expert mode
