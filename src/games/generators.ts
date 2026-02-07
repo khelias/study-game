@@ -1982,6 +1982,17 @@ function shuffleOptionsWithCorrect(options: string[], correct: number | string, 
  * @param profile - Player profile (starter or advanced)
  * @param rng - Random number generator
  * @returns Updated problem with new question but same board state
+ * 
+ * @example
+ * // After a player clicks a cell and answers a question, generate next question:
+ * const currentProblem = {
+ *   ...problem,
+ *   revealed: [[0, 0], [1, 2]], // Previous shots
+ *   hits: [[1, 2]],              // Previous hits
+ *   sunkShips: [],
+ * };
+ * const nextQuestion = generateBattleLearnQuestion(currentProblem, 3, 'advanced', rng);
+ * // Result: New question with same board state (revealed/hits preserved)
  */
 export function generateBattleLearnQuestion(
   currentProblem: BattleLearnProblem,

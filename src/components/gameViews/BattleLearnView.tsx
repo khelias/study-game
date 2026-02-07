@@ -65,7 +65,7 @@ export const BattleLearnView: React.FC<BattleLearnViewProps> = ({
       setFeedback('');
       setShowFeedback(false);
       setGamePhase('shooting');
-    } else if (problem.uid !== currentUid) {
+    } else {
       // Same game session, new question - update question and sync board state from problem
       setQuestion(problem.question);
       setCurrentUid(problem.uid);
@@ -307,7 +307,7 @@ export const BattleLearnView: React.FC<BattleLearnViewProps> = ({
       </div>
 
       {/* Reserved Feedback Space - Fixed height to prevent layout shift on mobile */}
-      <div className="mb-4 w-full max-w-2xl" style={{ minHeight: '3rem' }}>
+      <div className="mb-4 w-full max-w-2xl min-h-12">
         {showFeedback && (
           <div className="px-4 py-2 bg-white border-2 border-blue-400 rounded-lg shadow-lg text-base sm:text-lg font-bold animate-in zoom-in duration-200 text-center">
             {feedback}
