@@ -489,6 +489,9 @@ export const en = {
         'Say the word out loud as you build it!',
       ],
       pattern: [
+        'Pattern Train',
+        'Finish the pattern',
+        'Tap the next car',
         'Look at the pattern the train follows!',
         'Think what should come next!',
         'Notice how the emojis repeat!',
@@ -690,6 +693,7 @@ export const en = {
     pattern: {
       title: 'PATTERN TRAIN',
       desc: 'Continue the pattern',
+      hintEliminateCost: 'Remove one wrong ({cost}⭐)',
     },
     sentence_logic: {
       title: 'SENTENCE DETECTIVE',

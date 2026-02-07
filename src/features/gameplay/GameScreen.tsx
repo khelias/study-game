@@ -458,15 +458,17 @@ export const GameScreen: React.FC = () => {
               onMove={isMathSnake ? handleMathSnakeMove : undefined}
               soundEnabled={soundEnabled}
               level={currentLevel}
-              stars={(gameType === 'shape_shift' || gameType === 'shape_shift_adv' || gameType === 'star_mapper' || gameType === 'star_mapper_adv') ? stars : undefined}
-              spendStars={(gameType === 'shape_shift' || gameType === 'shape_shift_adv' || gameType === 'star_mapper' || gameType === 'star_mapper_adv') ? spendStars : undefined}
+              stars={(gameType === 'shape_shift' || gameType === 'shape_shift_adv' || gameType === 'star_mapper' || gameType === 'star_mapper_adv' || gameType === 'pattern' || gameType === 'pattern_adv') ? stars : undefined}
+              spendStars={(gameType === 'shape_shift' || gameType === 'shape_shift_adv' || gameType === 'star_mapper' || gameType === 'star_mapper_adv' || gameType === 'pattern' || gameType === 'pattern_adv') ? spendStars : undefined}
             />
 
-            {showHint && 
-             gameType !== 'shape_shift' && 
-             gameType !== 'shape_shift_adv' && 
-             gameType !== 'star_mapper' && 
-             gameType !== 'star_mapper_adv' && (
+            {showHint &&
+             gameType !== 'shape_shift' &&
+             gameType !== 'shape_shift_adv' &&
+             gameType !== 'star_mapper' &&
+             gameType !== 'star_mapper_adv' &&
+             gameType !== 'pattern' &&
+             gameType !== 'pattern_adv' && (
               <HintButton onHint={handleHint} soundEnabled={soundEnabled} disabled={false} />
             )}
 

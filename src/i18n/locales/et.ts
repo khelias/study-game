@@ -489,6 +489,9 @@ export const et = {
         'Mõtle, kuidas sõna kõlab, kui loed seda!',
       ],
       pattern: [
+        'Mustri-rong',
+        'Jätka mustrit',
+        'Puuduta järgmist vagunit',
         'Vaata, mis mustrit järgib rong!',
         'Mõtle, mis järgmisena peaks tulema!',
         'Vaata, kuidas emojid korduvad!',
@@ -690,6 +693,7 @@ export const et = {
     pattern: {
       title: 'MUSTRI-RONG',
       desc: 'Jätka mustrit',
+      hintEliminateCost: 'Eemalda üks vale ({cost}⭐)',
     },
     sentence_logic: {
       title: 'LAUSE-DETEKTIIV',
