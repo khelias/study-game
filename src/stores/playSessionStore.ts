@@ -152,6 +152,16 @@ export const usePlaySessionStore = create<PlaySessionStore>((set, get) => ({
       if (problem.type === 'math_snake' && 'snake' in problem) {
         (clonedProblem as typeof problem).snake = problem.snake.map(pos => [...pos] as [number, number]);
       }
+      if (problem.type === 'battlelearn' && 'ships' in problem) {
+        // Clone BattleLearn-specific arrays
+        (clonedProblem as typeof problem).revealed = problem.revealed.map(pos => [...pos] as [number, number]);
+        (clonedProblem as typeof problem).hits = problem.hits.map(pos => [...pos] as [number, number]);
+        (clonedProblem as typeof problem).sunkShips = [...problem.sunkShips];
+        (clonedProblem as typeof problem).ships = problem.ships.map(ship => ({
+          ...ship,
+          positions: ship.positions.map(pos => [...pos] as [number, number]),
+        }));
+      }
       
       set({ problem: clonedProblem });
     } else {
