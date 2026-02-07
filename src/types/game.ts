@@ -45,6 +45,13 @@ export type PositionType = typeof POSITION[keyof typeof POSITION];
 export type LevelUpStrategy = 'standard' | 'onGameWin';
 
 // Game configuration
+export interface PaidHint {
+  id: string;
+  icon: string; // emoji
+  cost: number; // stars required
+  labelKey: string; // translation key for label (e.g., 'games.shape_shift.hintOutlineCost')
+}
+
 export interface GameConfig {
   id: string;
   title: string;
@@ -55,6 +62,7 @@ export interface GameConfig {
   difficulty: Difficulty;
   category: string;
   levelUpStrategy?: LevelUpStrategy; // Optional - defaults to 'standard'
+  paidHints?: PaidHint[]; // Optional star-based hints
 }
 
 // Word object for word-based games

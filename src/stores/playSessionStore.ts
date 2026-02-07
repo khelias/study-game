@@ -47,6 +47,7 @@ export interface PlaySessionStore {
   setProblem: (problem: Problem | null) => void;
   submitAnswer: (isCorrect: boolean) => void;
   endGame: () => void;
+  resumeGame: () => void; // Back to playing without resetting problem/score (e.g. after buying hearts)
   returnToMenu: () => void;
   
   // New notification system actions
@@ -180,7 +181,11 @@ export const usePlaySessionStore = create<PlaySessionStore>((set, get) => ({
   endGame: () => {
     set({ gameState: 'game_over' });
   },
-  
+
+  resumeGame: () => {
+    set({ gameState: 'playing' });
+  },
+
   returnToMenu: () => {
     set({
       gameState: 'menu',

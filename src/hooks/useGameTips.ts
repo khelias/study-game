@@ -55,6 +55,8 @@ export function useGameTips(
         return [...t.gameScreen.tips.compare_sizes];
       case 'shape_shift':
         return [...t.gameScreen.tips.shape_shift];
+      case 'star_mapper':
+        return [...t.gameScreen.tips.star_mapper];
       default:
         return [];
     }

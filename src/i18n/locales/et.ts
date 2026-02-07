@@ -545,6 +545,12 @@ export const et = {
         'Proovi erinevaid kombinatsioone!',
         'Mõtle, kuidas kujundid kokku sobivad',
       ],
+      star_mapper: [
+        'Puuduta tähtesid, et neid ühendada',
+        'Järgi kuju ja loo tähtkuju',
+        'Kasuta "Tagasi" nuppu, kui teed vea',
+        'Proovi järjest tähtedest joont tõmmata',
+      ],
     },
   },
 
@@ -818,6 +824,8 @@ export const et = {
     tryAgain: 'Proovi uuesti',
     linesRemaining: 'Jooni jäänud: {count}',
     complete: 'Suurepärane! 🌟',
+    hintGuideCost: 'Näita juhiseid ({cost}⭐)',
+    hintConnectCost: 'Ühenda üks joon ({cost}⭐)',
     constellations: {
       ursa_major: { name: 'Suur Vanker', folk: 'Odamus', desc: 'Põhjataeva kuulsaim tähtkuju' },
       ursa_minor: { name: 'Väike Vanker', folk: 'Väike Vanker', desc: 'Siin asub Põhjanael' },

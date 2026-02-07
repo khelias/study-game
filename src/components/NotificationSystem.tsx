@@ -192,6 +192,9 @@ const NotificationItem: React.FC<NotificationItemProps> = ({ notification, onDis
 
   const dismiss = useCallback(() => {
     if (exiting) return;
+    if (notification.type === 'levelUp' && notification.levelUpOnDismiss) {
+      notification.levelUpOnDismiss();
+    }
     setExiting(true);
 
     if (exitTimerRef.current) {
@@ -200,7 +203,7 @@ const NotificationItem: React.FC<NotificationItemProps> = ({ notification, onDis
     exitTimerRef.current = setTimeout(() => {
       onDismiss(notification.id);
     }, EXIT_DURATION_MS);
-  }, [exiting, notification.id, onDismiss]);
+  }, [exiting, notification, onDismiss]);
 
   useEffect(() => {
     const showTimer = setTimeout(() => setVisible(true), ENTER_DELAY_MS);

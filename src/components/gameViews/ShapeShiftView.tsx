@@ -10,10 +10,11 @@ import { useTranslation } from '../../i18n/useTranslation';
 import { getLocale } from '../../i18n';
 import { gridPieceToPercent, sortByDistanceFromCenter } from '../../games/shapeShiftGrid';
 import { usePlaySessionStore } from '../../stores/playSessionStore';
+import { GAME_CONFIG } from '../../games/data';
 import type { ShapeShiftProblem } from '../../types/game';
 import { useShapeShiftGame } from '../../games/shapeShift/useShapeShiftGame';
 import { PieceSvg } from '../../games/shapeShift/ShapeDefinitions';
-import { RotateCw } from 'lucide-react';
+import { PaidHintButtons } from '../shared';
 
 // ─── Constants ─────────────────────────────────────────────────────────────
 
@@ -181,29 +182,30 @@ export const ShapeShiftView: React.FC<ShapeShiftViewProps> = ({
 
   // ─── Hints ──────────────────────────────────────────────────────────────
 
-  const handleOutlineHint = () => {
-    if (!spendStars || stars < OUTLINE_BASE_COST) {
-      if (stars < OUTLINE_BASE_COST && spendStars) {
+  const handleHintClick = (hintId: string) => {
+    if (!spendStars) return;
+
+    if (hintId === 'outline') {
+      if (stars < OUTLINE_BASE_COST) {
         addNotification({ type: 'hint', message: t.shop.notEnoughStars });
+        return;
       }
-      return;
-    }
-    if (spendStars(OUTLINE_BASE_COST)) {
-      setShowOutlineOverlay(true);
+      if (spendStars(OUTLINE_BASE_COST)) {
+        setShowOutlineOverlay(true);
+      }
+    } else if (hintId === 'place') {
+      if (stars < PLACE_PIECE_BASE_COST) {
+        addNotification({ type: 'hint', message: t.shop.notEnoughStars });
+        return;
+      }
+      if (placeHintPiece()) {
+        spendStars(PLACE_PIECE_BASE_COST);
+      }
     }
   };
 
-  const handlePlacePieceHint = () => {
-    if (!spendStars || stars < PLACE_PIECE_BASE_COST) {
-      if (stars < PLACE_PIECE_BASE_COST && spendStars) {
-        addNotification({ type: 'hint', message: t.shop.notEnoughStars });
-      }
-      return;
-    }
-    if (placeHintPiece()) {
-      spendStars(PLACE_PIECE_BASE_COST);
-    }
-  };
+  // Get game config for hints
+  const gameConfig = GAME_CONFIG.shape_shift;
 
 
   // ─── Rendering Helpers ──────────────────────────────────────────────────
@@ -341,37 +343,14 @@ export const ShapeShiftView: React.FC<ShapeShiftViewProps> = ({
         </div>
       )}
 
-      {/* Hint Buttons (custom for shape_shift, styled like TipButton/HintButton) */}
-      {typeof spendStars === 'function' && status !== 'correct' && (
-        <div className="fixed bottom-4 right-4 flex flex-col gap-3" style={{ zIndex: 40 }}>
-          <button
-            onClick={handleOutlineHint}
-            disabled={stars < OUTLINE_BASE_COST}
-            className="relative p-4 rounded-full shadow-lg transition-all bg-yellow-400 hover:bg-yellow-500 text-yellow-900 hover:scale-110 active:scale-95 disabled:bg-slate-200 disabled:text-slate-400 disabled:cursor-not-allowed"
-            title={t.games.shape_shift.hintOutlineCost.replace('{cost}', String(OUTLINE_BASE_COST))}
-            aria-label={t.games.shape_shift.hintOutlineCost.replace('{cost}', String(OUTLINE_BASE_COST))}
-          >
-            <span className="text-2xl leading-none">👁️</span>
-            {/* Cost badge */}
-            <span className="absolute -top-1 -right-1 bg-amber-600 text-white text-xs font-bold rounded-full px-1.5 py-0.5 shadow-md">
-              {OUTLINE_BASE_COST}⭐
-            </span>
-          </button>
-
-          <button
-            onClick={handlePlacePieceHint}
-            disabled={stars < PLACE_PIECE_BASE_COST || trayPieces.length === 0}
-            className="relative p-4 rounded-full shadow-lg transition-all bg-yellow-400 hover:bg-yellow-500 text-yellow-900 hover:scale-110 active:scale-95 disabled:bg-slate-200 disabled:text-slate-400 disabled:cursor-not-allowed"
-            title={t.games.shape_shift.hintPlacePieceCost.replace('{cost}', String(PLACE_PIECE_BASE_COST))}
-            aria-label={t.games.shape_shift.hintPlacePieceCost.replace('{cost}', String(PLACE_PIECE_BASE_COST))}
-          >
-            <span className="text-2xl leading-none">🧩</span>
-            {/* Cost badge */}
-            <span className="absolute -top-1 -right-1 bg-amber-600 text-white text-xs font-bold rounded-full px-1.5 py-0.5 shadow-md">
-              {PLACE_PIECE_BASE_COST}⭐
-            </span>
-          </button>
-        </div>
+      {/* Paid Hint Buttons */}
+      {typeof spendStars === 'function' && status !== 'correct' && gameConfig.paidHints && (
+        <PaidHintButtons
+          hints={gameConfig.paidHints}
+          stars={stars}
+          onHintClick={handleHintClick}
+          disabled={status !== 'idle' || trayPieces.length === 0}
+        />
       )}
 
       {/* Tray */}

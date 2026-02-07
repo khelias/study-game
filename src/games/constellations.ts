@@ -1,8 +1,10 @@
 /**
  * Constellation Database
- * 
- * Accurate constellation data for Estonia (59°N latitude)
- * Star positions are normalized to 0-100 coordinate system
+ *
+ * Star positions are normalized to a 0–100 viewBox (x right, y down).
+ * Shapes follow the classic line-drawing patterns (e.g. Big Dipper bowl + handle).
+ * Difficulty: easy = 8, medium = 7 more (15 total), hard = 1 more (16 total).
+ * Visible from Estonia (59°N); mix of circumpolar and seasonal.
  */
 
 import type { Constellation } from '../types/game';
@@ -412,11 +414,11 @@ export function getConstellationsByDifficulty(difficulty: 'easy' | 'medium' | 'h
 
 /**
  * Get constellations available for a difficulty level (includes easier ones).
- * Reduces repetition: easy=7, medium=12, hard=13 constellations.
+ * easy → 8, medium → 15 (easy+medium), hard → 16 (all).
  */
 export function getConstellationsForLevel(difficulty: 'easy' | 'medium' | 'hard'): Constellation[] {
   const level = DIFFICULTY_ORDER[difficulty];
-  return CONSTELLATIONS.filter(c => DIFFICULTY_ORDER[c.difficulty] <= level);
+  return CONSTELLATIONS.filter((c) => DIFFICULTY_ORDER[c.difficulty] <= level);
 }
 
 /**

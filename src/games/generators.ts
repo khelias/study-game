@@ -1281,18 +1281,24 @@ export const Generators: Record<string, GeneratorFunction> = {
     const profileInfo = profileMeta(profile);
     const effectiveLevel = level + profileInfo.difficultyOffset;
 
-    // Select difficulty based on level
-    const difficulty = effectiveLevel <= 3 ? 'easy' 
-      : effectiveLevel <= 6 ? 'medium' 
-      : 'hard';
+    // Difficulty pool by effective level: easy (1–3) → 8 constellations, medium (4–6) → 15, hard (7+) → 16
+    const STAR_MAPPER_EASY_MAX = 3;
+    const STAR_MAPPER_MEDIUM_MAX = 6;
+    const difficulty: 'easy' | 'medium' | 'hard' =
+      effectiveLevel <= STAR_MAPPER_EASY_MAX ? 'easy'
+        : effectiveLevel <= STAR_MAPPER_MEDIUM_MAX ? 'medium'
+        : 'hard';
 
-    // Softer mode progression: trace 1-2, build 3-5, identify 6-8, expert 9+
-    const mode = effectiveLevel <= 2 ? 'trace'
-      : effectiveLevel <= 5 ? 'build'
-      : effectiveLevel <= 8 ? 'identify'
-      : 'expert';
+    // Mode by effective level: trace 1–2, build 3–5, identify 6–8, expert 9+
+    const STAR_MAPPER_TRACE_MAX = 2;
+    const STAR_MAPPER_BUILD_MAX = 5;
+    const STAR_MAPPER_IDENTIFY_MAX = 8;
+    const mode =
+      effectiveLevel <= STAR_MAPPER_TRACE_MAX ? 'trace'
+        : effectiveLevel <= STAR_MAPPER_BUILD_MAX ? 'build'
+        : effectiveLevel <= STAR_MAPPER_IDENTIFY_MAX ? 'identify'
+        : 'expert';
 
-    // Get constellation pool (includes easier difficulties to avoid repetition, e.g. hard = all 13)
     const pool = getConstellationsForLevel(difficulty);
     const constellation = getRandom(pool, rng);
 

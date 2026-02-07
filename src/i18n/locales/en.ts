@@ -545,6 +545,12 @@ export const en = {
         'Try different combinations!',
         'Think how shapes fit together',
       ],
+      star_mapper: [
+        'Tap stars to connect them',
+        'Follow the shape and create the constellation',
+        'Use "Undo" button if you make a mistake',
+        'Try connecting stars in sequence',
+      ],
     },
   },
 
@@ -818,6 +824,8 @@ export const en = {
     tryAgain: 'Not quite – try again',
     linesRemaining: 'Lines remaining: {count}',
     complete: 'Excellent! 🌟',
+    hintGuideCost: 'Show guide ({cost}⭐)',
+    hintConnectCost: 'Connect one line ({cost}⭐)',
     constellations: {
       ursa_major: { name: 'Big Dipper', folk: 'The Plough', desc: 'Most famous northern constellation' },
       ursa_minor: { name: 'Little Dipper', folk: 'Little Bear', desc: 'Home of the North Star' },

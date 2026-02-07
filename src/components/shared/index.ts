@@ -16,3 +16,4 @@ export { SmartGamesLogo } from './SmartGamesLogo';
 export { GameProblemModal } from './GameProblemModal';
 export { GameStatsBar } from './GameStatsBar';
 export type { GameStat } from './GameStatsBar';
+export { PaidHintButtons } from './PaidHintButtons';

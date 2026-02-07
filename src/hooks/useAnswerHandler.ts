@@ -159,7 +159,7 @@ export function useAnswerHandler(): UseAnswerHandlerResult {
       // Reset level progress for new level
       resetLevelProgress();
       
-      // Show level-up notification
+      // Show level-up notification; generate next problem only when user dismisses popup
       playWin();
       setEnhancedConfetti(true);
       setTimeout(() => {
@@ -170,28 +170,21 @@ export function useAnswerHandler(): UseAnswerHandlerResult {
           title: `${t.levelUp.level} ${newLevel}`,
           emoji: gameConfig.icon,
           message: formatText(t.levelUp.greatWork),
+          levelUpOnDismiss: () => {
+            setBgClass('bg-slate-50');
+            if (baseGameType !== 'math_snake') {
+              const newProblem = generateUniqueProblemForGame(gameType, newLevel, profile, adaptiveDifficulty);
+              setProblem(newProblem);
+            }
+          },
         });
-        
-        // Show stars earned notification
         setTimeout(() => {
           addNotification({
             type: 'info',
             message: `⭐ Earned ${starsEarned} ${starsEarned === 1 ? 'star' : 'stars'}!`,
           });
         }, 1000);
-        
         setEnhancedConfetti(false);
-        
-        // Generate new problem with new level after level-up animation completes
-        setTimeout(() => {
-          if (baseGameType !== 'math_snake') {
-            setBgClass('bg-slate-50');
-            // For BattleLearn, always generate completely new game (new grid, ships)
-            // because level-up only happens on game win
-            const newProblem = generateUniqueProblemForGame(gameType, newLevel, profile, adaptiveDifficulty);
-            setProblem(newProblem);
-          }
-        }, 2000); // After level-up animation completes
       }, 800);
     }
 

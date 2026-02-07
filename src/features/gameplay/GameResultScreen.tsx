@@ -9,15 +9,15 @@
  * Replaces the old GameOverScreen with a more flexible, reusable approach.
  */
 
-import React from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useGameStore } from '../../stores/gameStore';
 import { usePlaySessionStore } from '../../stores/playSessionStore';
 import { useTranslation } from '../../i18n/useTranslation';
 import { useProfileText } from '../../hooks/useProfileText';
 import { useGameAudio } from '../../hooks/useGameAudio';
+import { ShopModal } from '../modals/ShopModal';
 import { GAME_CONFIG, CATEGORIES } from '../../games/data';
-import { gameIdToSlug } from '../../utils/gameSlug';
 
 export type GameResultType = 'victory' | 'perfect' | 'gameOver';
 
@@ -41,9 +41,11 @@ export const GameResultScreen: React.FC<GameResultScreenProps> = ({
   const soundEnabled = useGameStore(state => state.soundEnabled);
   const gameType = usePlaySessionStore(state => state.gameType);
   const returnToMenu = usePlaySessionStore(state => state.returnToMenu);
+  const resumeGame = usePlaySessionStore(state => state.resumeGame);
   const getHighScore = useGameStore(state => state.getHighScore);
   const hearts = useGameStore(state => state.hearts);
   const { playClick } = useGameAudio(soundEnabled);
+  const [showShop, setShowShop] = useState(false);
 
   const highScore = gameType ? getHighScore(gameType) : 0;
   const isNewRecord = gameType && score > 0 && score >= highScore;
@@ -98,15 +100,12 @@ export const GameResultScreen: React.FC<GameResultScreenProps> = ({
       title: formatText(t.game.gameOver),
       message: customMessage || formatText(t.game.scoreMessage.replace('{score}', String(score))),
       primaryButton: hearts > 0 
-        ? formatText(t.game.retry) 
+        ? formatText(t.game.continue) 
         : formatText(t.shop?.getMoreHearts || 'Get More Hearts'),
-      primaryAction: hearts > 0 ? () => {
+      primaryAction: hearts > 0 && gameType ? () => {
         playClick();
-        if (gameType) {
-          const slug = gameIdToSlug(gameType);
-          void navigate(`/games/${slug}`);
-        }
-      } : undefined, // Will be handled separately for shop
+        resumeGame(); // Continue from same problem/score, no reset
+      } : undefined, // No hearts: open shop modal instead
       primaryGradient: hearts > 0 
         ? 'from-sky-400 via-blue-500 to-indigo-500'
         : 'from-pink-400 via-rose-500 to-red-500',
@@ -123,15 +122,13 @@ export const GameResultScreen: React.FC<GameResultScreenProps> = ({
 
   const handlePrimaryAction = () => {
     playClick();
-    
-    // Special handling for game over with no hearts
+
+    // Game over with no hearts: open shop as modal so user can buy and then retry same game
     if (type === 'gameOver' && hearts === 0) {
-      // Navigate to shop (we'll need to update this based on shop navigation pattern)
-      returnToMenu();
-      void navigate('/?openShop=true');
+      setShowShop(true);
       return;
     }
-    
+
     if (currentConfig.primaryAction) {
       currentConfig.primaryAction();
     }
@@ -150,6 +147,12 @@ export const GameResultScreen: React.FC<GameResultScreenProps> = ({
 
   return (
     <div className="min-h-screen flex items-center justify-center px-4 py-8 bg-slate-50 animate-in fade-in">
+      {showShop && (
+        <ShopModal
+          onClose={() => setShowShop(false)}
+          openedFromNoHearts={true}
+        />
+      )}
       <div className="w-full max-w-md">
         <div className={`relative rounded-3xl bg-white/95 shadow-xl border ${themeBorder} px-6 py-6 sm:px-8 sm:py-8`}>
           {/* Game title pill */}

@@ -9,10 +9,21 @@ import React, { useState, useMemo, useRef, useCallback } from 'react';
 import { playSound } from '../../engine/audio';
 import { useTranslation } from '../../i18n/useTranslation';
 import { getConstellationById } from '../../games/constellations';
+import { GAME_CONFIG } from '../../games/data';
+import { usePlaySessionStore } from '../../stores/playSessionStore';
+import { PaidHintButtons } from '../shared';
 import type { StarMapperProblem, Star, ConstellationLine } from '../../types/game';
 
 /** Minimum touch target radius in viewBox units (0–100) for comfortable tapping */
 const TOUCH_TARGET_R = 6;
+
+/** Returns true if the connection (from↔to) is already in the lines list (order-independent). */
+function lineExists(line: { from: string; to: string }, lines: ConstellationLine[]): boolean {
+  return lines.some(
+    (l) =>
+      (l.from === line.from && l.to === line.to) || (l.from === line.to && l.to === line.from)
+  );
+}
 
 type AnswerHandler = (answer: boolean) => void;
 
@@ -21,20 +32,28 @@ interface StarMapperViewProps {
   onAnswer: AnswerHandler;
   soundEnabled: boolean;
   level?: number;
+  stars?: number;
+  spendStars?: (count: number) => boolean;
 }
 
 export const StarMapperView: React.FC<StarMapperViewProps> = ({
   problem,
   onAnswer,
   soundEnabled,
+  stars = 0,
+  spendStars,
 }) => {
   const t = useTranslation();
+  const addNotification = usePlaySessionStore(state => state.addNotification);
   const svgRef = useRef<SVGSVGElement>(null);
   const [selectedStar, setSelectedStar] = useState<string | null>(null);
   const [drawnLines, setDrawnLines] = useState<ConstellationLine[]>([]);
   const [status, setStatus] = useState<'idle' | 'correct' | 'wrong'>('idle');
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
   const [dragStartStarId, setDragStartStarId] = useState<string | null>(null);
+  const [showHintGuide, setShowHintGuide] = useState(false);
+  const identifyHandlingRef = useRef(false);
+  const wrongAnswerTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Reset state when problem changes (render-time sync avoids cascading effect renders)
   const [prevUid, setPrevUid] = useState(problem.uid);
@@ -45,42 +64,65 @@ export const StarMapperView: React.FC<StarMapperViewProps> = ({
     setStatus('idle');
     setSelectedOption(null);
     setDragStartStarId(null);
+    setShowHintGuide(false);
+    identifyHandlingRef.current = false;
+    if (wrongAnswerTimeoutRef.current) {
+      clearTimeout(wrongAnswerTimeoutRef.current);
+      wrongAnswerTimeoutRef.current = null;
+    }
   }
 
-  // Star tap handler for trace/build/expert modes
+  // Hints logic
+  const handleHintClick = (hintId: string) => {
+    if (!spendStars) return;
+
+    if (hintId === 'guide') {
+      const cost = 1;
+      if (stars < cost) {
+        addNotification({ type: 'hint', message: t.shop.notEnoughStars });
+        return;
+      }
+      if (spendStars(cost)) {
+        setShowHintGuide(true);
+        setTimeout(() => setShowHintGuide(false), 5000); // Show for 5 seconds
+      }
+    } else if (hintId === 'connect') {
+      const cost = 2;
+      if (stars < cost) {
+        addNotification({ type: 'hint', message: t.shop.notEnoughStars });
+        return;
+      }
+      const requiredLines = problem.constellation.lines;
+      const nextLine = requiredLines.find((required) => !lineExists(required, drawnLines));
+      if (nextLine && spendStars(cost)) {
+        tryAddConnection(nextLine.from, nextLine.to);
+      }
+    }
+  };
+
+  const gameConfig = GAME_CONFIG.star_mapper;
+
+  // Star tap: select first star, deselect same star, or connect two stars (trace/build/expert)
   const handleStarTap = (starId: string) => {
     if (status !== 'idle') return;
 
     if (!selectedStar) {
-      // First star selected
       setSelectedStar(starId);
       playSound('tap', soundEnabled);
     } else if (selectedStar === starId) {
-      // Deselect
       setSelectedStar(null);
       playSound('tap', soundEnabled);
     } else {
-      // Draw line between selected and tapped (reject duplicate connection)
-      const newLine = { from: selectedStar, to: starId };
-      const alreadyExists = drawnLines.some(
-        l => (l.from === newLine.from && l.to === newLine.to) || (l.from === newLine.to && l.to === newLine.from)
-      );
-      if (alreadyExists) return;
-
-      const newLines = [...drawnLines, newLine];
-      setDrawnLines(newLines);
-      setSelectedStar(null);
-      playSound('connect', soundEnabled);
-
-      checkCompletion(newLines);
+      tryAddConnection(selectedStar, starId);
     }
   };
 
   // Undo last drawn line (trace/build/expert only)
   const handleUndo = useCallback(() => {
     if (status !== 'idle' || drawnLines.length === 0) return;
-    setDrawnLines(prev => prev.slice(0, -1));
+    setDrawnLines((prev) => prev.slice(0, -1));
     setSelectedStar(null);
+    setDragStartStarId(null);
     playSound('tap', soundEnabled);
   }, [status, drawnLines.length, soundEnabled]);
 
@@ -97,16 +139,12 @@ export const StarMapperView: React.FC<StarMapperViewProps> = ({
     if (allComplete) {
       setStatus('correct');
       playSound('success', soundEnabled);
-      setTimeout(() => {
-        onAnswer(true);
-      }, 2200);
+      setTimeout(() => onAnswer(true), 2200);
       return;
     }
 
-    // All lines drawn but wrong: brief feedback then hand off to global handler (toast, heart); clear state so user can retry same problem
     if (lines.length >= requiredLines.length) {
       playSound('error', soundEnabled);
-      const delay = 400;
       setTimeout(() => {
         setSelectedStar(null);
         setDrawnLines([]);
@@ -114,9 +152,25 @@ export const StarMapperView: React.FC<StarMapperViewProps> = ({
         setDragStartStarId(null);
         setStatus('idle');
         onAnswer(false);
-      }, delay);
+      }, 400);
     }
   }, [problem.constellation.lines, soundEnabled, onAnswer]);
+
+  // Single place to add a connection: clears selection, updates lines, plays sound, checks completion. Returns true if added, false if duplicate.
+  const tryAddConnection = useCallback(
+    (fromId: string, toId: string) => {
+      const newLine = { from: fromId, to: toId };
+      if (lineExists(newLine, drawnLines)) return false;
+      setSelectedStar(null);
+      setDragStartStarId(null);
+      const newLines = [...drawnLines, newLine];
+      setDrawnLines(newLines);
+      playSound('connect', soundEnabled);
+      checkCompletion(newLines);
+      return true;
+    },
+    [drawnLines, checkCompletion, soundEnabled]
+  );
 
   // Find star at viewBox position (for drag-to-connect release)
   const getStarAtPosition = useCallback((x: number, y: number): Star | null => {
@@ -141,7 +195,7 @@ export const StarMapperView: React.FC<StarMapperViewProps> = ({
     return { x: svgPt.x, y: svgPt.y };
   }, []);
 
-  // Pointer up on star field: complete drag-to-connect if we started on a star and released on another
+  // Pointer up on star field: complete drag-to-connect if started on a star and released on another
   const handleStarFieldPointerUp = (e: React.PointerEvent) => {
     if (!dragStartStarId || status !== 'idle') {
       setDragStartStarId(null);
@@ -154,51 +208,62 @@ export const StarMapperView: React.FC<StarMapperViewProps> = ({
     }
     const starAt = getStarAtPosition(pt.x, pt.y);
     if (starAt && starAt.id !== dragStartStarId) {
-      const newLine = { from: dragStartStarId, to: starAt.id };
-      const alreadyExists = drawnLines.some(
-        l => (l.from === newLine.from && l.to === newLine.to) || (l.from === newLine.to && l.to === newLine.from)
-      );
-      if (!alreadyExists) {
-        const newLines = [...drawnLines, newLine];
-        setDrawnLines(newLines);
-        setSelectedStar(null);
-        playSound('connect', soundEnabled);
-        checkCompletion(newLines);
-      }
+      tryAddConnection(dragStartStarId, starAt.id);
     }
     setDragStartStarId(null);
   };
 
-  // Handle identify mode option selection
-  const handleIdentify = (constellationId: string) => {
+  // Identify mode: handle option click. One answer per problem; cancel wrong-answer timeout if user then picks correct.
+  const handleIdentifyClick = useCallback((constellationId: string) => {
+    const correctId = problem.correctAnswer;
+    const isCorrect = constellationId === correctId;
+
+    if (status === 'correct') return;
+
+    // Second chance: was wrong, now clicking the correct option
+    if (status === 'wrong') {
+      if (!isCorrect) return;
+      if (wrongAnswerTimeoutRef.current) {
+        clearTimeout(wrongAnswerTimeoutRef.current);
+        wrongAnswerTimeoutRef.current = null;
+      }
+      setSelectedOption(constellationId);
+      setStatus('correct');
+      playSound('success', soundEnabled);
+      setTimeout(() => onAnswer(true), 2200);
+      return;
+    }
+
+    // Idle: first click
     if (status !== 'idle') return;
+    if (identifyHandlingRef.current) return;
+    identifyHandlingRef.current = true;
 
     setSelectedOption(constellationId);
-    playSound('click', soundEnabled);
-
-    const isCorrect = constellationId === problem.correctAnswer;
     setStatus(isCorrect ? 'correct' : 'wrong');
-
     if (isCorrect) {
       playSound('success', soundEnabled);
       setTimeout(() => onAnswer(true), 2200);
-    } else {
-      playSound('error', soundEnabled);
-      const wrongDelay = 400;
-      setTimeout(() => {
-        setSelectedStar(null);
-        setDrawnLines([]);
-        setSelectedOption(null);
-        setDragStartStarId(null);
-        setStatus('idle');
-        onAnswer(false);
-      }, wrongDelay);
+      return;
     }
-  };
+    playSound('error', soundEnabled);
+    const wrongDelay = 400;
+    wrongAnswerTimeoutRef.current = setTimeout(() => {
+      wrongAnswerTimeoutRef.current = null;
+      identifyHandlingRef.current = false;
+      setSelectedStar(null);
+      setDrawnLines([]);
+      setSelectedOption(null);
+      setDragStartStarId(null);
+      setStatus('idle');
+      onAnswer(false);
+    }, wrongDelay);
+  }, [status, problem.correctAnswer, soundEnabled, onAnswer]);
 
   // Calculate star size based on magnitude (brighter stars are larger)
   const getStarSize = (magnitude: number): number => {
-    return 8 - magnitude; // magnitude 0 = size 8, magnitude 6 = size 2
+    // Realistic star sizes: magnitude 0 = 8, magnitude 6 = 2
+    return 8 - magnitude;
   };
 
   // Get star color based on magnitude
@@ -245,37 +310,45 @@ export const StarMapperView: React.FC<StarMapperViewProps> = ({
 
   const isConnectMode = problem.mode === 'trace' || problem.mode === 'build' || problem.mode === 'expert';
 
+  const isIdentify = problem.mode === 'identify';
+  const hideAnswer = isIdentify && status !== 'correct';
+  const cid = problem.constellation.id;
+  const headerFromT = (t.starMapper.constellations as Record<string, { name?: string; folk?: string; desc?: string }>)[cid];
+  const headerName = headerFromT?.name ?? problem.constellation.nameEt;
+  const headerFolk = headerFromT?.folk ?? problem.constellation.folkNameEt;
+  const headerDesc = headerFromT?.desc;
+
   return (
-    <div className="w-full flex flex-col items-center px-4 sm:px-6 max-w-2xl mx-auto pt-4 sm:pt-6 animate-in fade-in duration-300">
-      {/* Header - same structure as other game views (Pattern, etc.) */}
-      <div className="w-full max-w-3xl text-center mb-3 sm:mb-4">
-        <div className="text-[10px] sm:text-xs font-bold uppercase tracking-wide text-indigo-600">
-          {t.starMapper.title}
+    <div className="w-full flex flex-col items-center px-4 sm:px-6 max-w-4xl mx-auto pt-4 sm:pt-6 animate-in fade-in duration-300">
+      {/* Header - same place in all modes; blurred in identify until correct */}
+      <div className="w-full max-w-4xl text-center mb-4 sm:mb-6 min-h-[4.5rem] flex flex-col justify-center">
+        <div
+          className={`transition-all duration-500 select-none ${hideAnswer ? 'blur-lg opacity-50' : 'blur-0 opacity-100'}`}
+          aria-hidden={hideAnswer}
+        >
+          <div className="text-xl sm:text-3xl font-black text-slate-800 mb-1">
+            {headerName}
+          </div>
+          {headerFolk && (
+            <div className="text-sm sm:text-base text-slate-500">
+              {headerFolk}
+            </div>
+          )}
+          {headerDesc && (
+            <p className="mt-1 text-sm text-slate-600 italic">
+              {headerDesc}
+            </p>
+          )}
         </div>
-        <div className="text-lg sm:text-2xl font-black text-slate-800">
-          {problem.constellation.nameEt}
-        </div>
-        <div className="text-xs sm:text-sm text-slate-500 mt-1">
-          {problem.constellation.nameEn}
-          {problem.constellation.folkNameEt && ` (${problem.constellation.folkNameEt})`}
-        </div>
-        <p className="text-xs sm:text-sm text-slate-500 mt-1">
-          {getInstructions()}
-        </p>
-        {isConnectMode && (
-          <p className="text-xs sm:text-sm text-slate-500 mt-0.5">
-            {t.starMapper.formLabel}: {problem.constellation.folkNameEt || problem.constellation.nameEt}
-          </p>
-        )}
       </div>
 
-      {/* Star Field - overflow-hidden clips selection marker inside bounds */}
+      {/* Star Field - fixed aspect ratio for consistency */}
       <div
-        className="relative w-full rounded-2xl overflow-hidden shadow-2xl"
+        className="relative w-full rounded-3xl overflow-hidden shadow-2xl border-4 border-indigo-900/50"
         style={{
-          background: 'linear-gradient(to bottom, #0a0a1a 0%, #1a1a3a 50%, #2a2a4a 100%)',
-          maxWidth: 'min(90vw, 28rem)',
-          aspectRatio: `${problem.constellation.bounds.width} / ${problem.constellation.bounds.height}`,
+          background: 'radial-gradient(ellipse at center, #1a1a3a 0%, #0a0a1a 70%, #000000 100%)',
+          maxWidth: 'min(90vw, 48rem)',
+          aspectRatio: '1',
         }}
       >
         {/* Background ambient stars */}
@@ -295,29 +368,32 @@ export const StarMapperView: React.FC<StarMapperViewProps> = ({
           ))}
         </div>
 
-        {/* SVG for lines and stars - overflow hidden keeps selection ring inside playable area */}
+        {/* SVG for lines and stars */}
         <svg
           ref={svgRef}
           className="absolute inset-0 w-full h-full touch-none"
           viewBox="0 0 100 100"
           preserveAspectRatio="xMidYMid meet"
-          style={{ overflow: 'hidden' }}
+          style={{ overflow: 'visible' }}
           onPointerUp={problem.mode !== 'identify' ? handleStarFieldPointerUp : undefined}
         >
           <defs>
-            <clipPath id="starFieldClip">
-              <rect x="0" y="0" width="100" height="100" />
-            </clipPath>
-            <filter id="glow">
-              <feGaussianBlur stdDeviation="2" result="coloredBlur" />
+            <filter id="glow" filterUnits="userSpaceOnUse" x="-50%" y="-50%" width="200%" height="200%">
+              <feGaussianBlur stdDeviation="1" result="coloredBlur" />
               <feMerge>
                 <feMergeNode in="coloredBlur" />
                 <feMergeNode in="SourceGraphic" />
               </feMerge>
             </filter>
+            {/* Radial gradient for soft star glow */}
+            <radialGradient id="starGlow">
+              <stop offset="0%" stopColor="#88ddff" stopOpacity="0.9" />
+              <stop offset="40%" stopColor="#6eb8ff" stopOpacity="0.4" />
+              <stop offset="70%" stopColor="#4a9aff" stopOpacity="0.1" />
+              <stop offset="100%" stopColor="#2a7aff" stopOpacity="0" />
+            </radialGradient>
           </defs>
-          <g clipPath="url(#starFieldClip)">
-
+          
           {/* Constellation shape: identify mode (show shape so it can be recognized) */}
           {problem.mode === 'identify' &&
             problem.constellation.lines.map((line, idx) => {
@@ -337,8 +413,8 @@ export const StarMapperView: React.FC<StarMapperViewProps> = ({
               );
             })}
 
-          {/* Guide lines (trace mode) */}
-          {problem.showGuide &&
+          {/* Guide lines (trace mode or hint) */}
+          {(problem.showGuide || showHintGuide) &&
             problem.constellation.lines.map((line, idx) => {
               const fromStar = starMap.get(line.from);
               const toStar = starMap.get(line.to);
@@ -351,9 +427,10 @@ export const StarMapperView: React.FC<StarMapperViewProps> = ({
                   y1={fromStar.y}
                   x2={toStar.x}
                   y2={toStar.y}
-                  stroke="rgba(100, 150, 255, 0.3)"
-                  strokeWidth="0.5"
-                  strokeDasharray="2,2"
+                  stroke="rgba(130, 170, 255, 0.4)"
+                  strokeWidth="0.6"
+                  strokeDasharray="3,2"
+                  className="animate-pulse"
                 />
               );
             })}
@@ -365,17 +442,29 @@ export const StarMapperView: React.FC<StarMapperViewProps> = ({
             if (!fromStar || !toStar) return null;
 
             return (
-              <line
-                key={`drawn-${idx}`}
-                x1={fromStar.x}
-                y1={fromStar.y}
-                x2={toStar.x}
-                y2={toStar.y}
-                stroke={status === 'correct' ? '#88ddff' : 'rgba(150, 200, 255, 0.8)'}
-                strokeWidth="0.8"
-                filter={status === 'correct' ? 'url(#glow)' : undefined}
-                className={status === 'correct' ? 'animate-pulse' : ''}
-              />
+              <g key={`drawn-${idx}`}>
+                {/* Glow background */}
+                <line
+                  x1={fromStar.x}
+                  y1={fromStar.y}
+                  x2={toStar.x}
+                  y2={toStar.y}
+                  stroke={status === 'correct' ? '#60d0ff' : 'rgba(100, 180, 255, 0.5)'}
+                  strokeWidth="1.5"
+                  opacity="0.6"
+                />
+                {/* Main line */}
+                <line
+                  x1={fromStar.x}
+                  y1={fromStar.y}
+                  x2={toStar.x}
+                  y2={toStar.y}
+                  stroke={status === 'correct' ? '#a0e7ff' : '#88c0ff'}
+                  strokeWidth="0.8"
+                  filter={status === 'correct' ? 'url(#glow)' : undefined}
+                  className={status === 'correct' ? 'animate-pulse' : ''}
+                />
+              </g>
             );
           })}
 
@@ -388,13 +477,13 @@ export const StarMapperView: React.FC<StarMapperViewProps> = ({
 
             return (
               <g key={star.id}>
-                {/* Large invisible hit area for touch (tap and drag-to-connect) */}
+                {/* Main star with all interactions directly on it */}
                 <circle
                   cx={star.x}
                   cy={star.y}
-                  r={TOUCH_TARGET_R}
-                  fill="transparent"
-                  className="cursor-pointer"
+                  r={size * 0.5}
+                  fill={isSelected ? '#ffffff' : color}
+                  className="cursor-pointer transition-colors duration-200"
                   onClick={() => handleStarTap(star.id)}
                   onPointerDown={(e) => {
                     e.stopPropagation();
@@ -410,31 +499,6 @@ export const StarMapperView: React.FC<StarMapperViewProps> = ({
                   role="button"
                   aria-label={`Star ${star.name || star.id}${isSelected ? ' (selected)' : ''}`}
                 />
-                {/* Visible star (no pointer events so hit area gets taps) */}
-                <circle
-                  cx={star.x}
-                  cy={star.y}
-                  r={size * 0.5}
-                  fill={color}
-                  pointerEvents="none"
-                  filter={isSelected || (status === 'correct' && isConnected) ? 'url(#glow)' : undefined}
-                  className={`transition-all ${isSelected ? 'animate-pulse' : ''} ${status === 'correct' ? 'animate-twinkle' : ''}`}
-                  style={{
-                    transform: isSelected ? 'scale(1.5)' : 'scale(1)',
-                    transformOrigin: 'center',
-                  }}
-                />
-                {isSelected && (
-                  <circle
-                    cx={star.x}
-                    cy={star.y}
-                    r={size * 0.6}
-                    fill="none"
-                    stroke="#88ddff"
-                    strokeWidth="0.6"
-                    pointerEvents="none"
-                  />
-                )}
               </g>
             );
           })}
@@ -455,79 +519,110 @@ export const StarMapperView: React.FC<StarMapperViewProps> = ({
               />
             );
           })}
-          </g>
         </svg>
 
         {/* Success animation overlay */}
         {status === 'correct' && (
-          <div className="absolute inset-0 bg-gradient-to-b from-transparent via-indigo-500/20 to-transparent animate-pulse pointer-events-none" />
+          <>
+            <div className="absolute inset-0 bg-gradient-to-b from-transparent via-cyan-400/20 to-transparent animate-pulse pointer-events-none" />
+            <div className="absolute inset-0 bg-gradient-radial from-cyan-300/10 via-transparent to-transparent pointer-events-none" />
+          </>
         )}
       </div>
 
       {/* Fixed bar below play area: lines remaining + Undo (no pop-in) */}
       {isConnectMode && (
-        <div className="w-full max-w-md mt-3 flex items-center justify-between gap-3">
-          <span className="text-xs sm:text-sm text-slate-500">
-            {t.starMapper.linesRemaining.replace('{count}', String(linesRemaining))}
-          </span>
+        <div className="w-full max-w-2xl mt-4 flex items-center justify-between gap-4 px-2">
+          <div className="flex items-center gap-2">
+            <span className="text-xs sm:text-sm font-semibold text-indigo-600">
+              {t.starMapper.linesRemaining.replace('{count}', String(linesRemaining))}
+            </span>
+            <div className="h-2 w-24 sm:w-32 bg-slate-200 rounded-full overflow-hidden">
+              <div 
+                className="h-full bg-gradient-to-r from-indigo-500 to-cyan-500 transition-all duration-300"
+                style={{ width: `${((problem.constellation.lines.length - linesRemaining) / problem.constellation.lines.length) * 100}%` }}
+              />
+            </div>
+          </div>
           <button
             type="button"
             onClick={handleUndo}
             disabled={drawnLines.length === 0 || status !== 'idle'}
-            className="px-3 py-1.5 text-xs sm:text-sm font-medium rounded-lg border border-slate-300 bg-white text-slate-700 hover:bg-slate-50 active:bg-slate-100 disabled:opacity-50 disabled:pointer-events-none"
+            className="px-4 py-2 text-xs sm:text-sm font-bold rounded-xl border-2 border-indigo-300 bg-gradient-to-br from-white to-indigo-50 text-indigo-700 hover:from-indigo-50 hover:to-indigo-100 hover:scale-105 active:scale-95 transition-all shadow-md disabled:opacity-40 disabled:pointer-events-none disabled:scale-100"
           >
-            {t.starMapper.undo}
+            ↶ {t.starMapper.undo}
           </button>
         </div>
       )}
 
-      {/* One-line fact when correct (teaches something before next problem) */}
-      {status === 'correct' && (() => {
-        const constellations = t.starMapper.constellations as Record<string, { desc?: string }>;
-        const fact = constellations[problem.constellation.id]?.desc;
-        return fact ? (
-          <p className="mt-3 text-center text-sm text-slate-600 italic animate-in fade-in duration-300">
-            {fact}
-          </p>
-        ) : null;
-      })()}
-
-      {/* Identify mode options */}
+      {/* Identify mode options - always in same place, no content between game area and options */}
       {problem.mode === 'identify' && problem.options && (
-        <div className="grid grid-cols-2 gap-3 sm:gap-4 w-full max-w-md mt-4">
+        <div className="grid grid-cols-2 gap-4 sm:gap-5 w-full max-w-2xl mt-6">
           {problem.options.map((optionId) => {
             const constellation = getConstellationById(optionId);
             if (!constellation) return null;
 
+            const nameFromT = (t.starMapper.constellations as Record<string, { name?: string }>)[optionId]?.name;
+            const displayName = nameFromT ?? constellation.nameEt;
+
             const isSelected = selectedOption === optionId;
             const isCorrect = optionId === problem.correctAnswer;
             const showResult = status !== 'idle';
+            const canClick = status === 'idle' || (status === 'wrong' && isCorrect);
 
             return (
               <button
                 key={optionId}
-                disabled={status !== 'idle'}
-                onClick={() => handleIdentify(optionId)}
+                type="button"
+                disabled={!canClick}
+                onPointerUp={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  if (e.button !== 0 && e.pointerType !== 'touch') return;
+                  handleIdentifyClick(optionId);
+                }}
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                }}
                 className={`
-                  px-4 py-3 rounded-xl sm:rounded-2xl border-b-4 sm:border-b-6
-                  text-sm sm:text-base font-bold flex items-center justify-center
-                  transition-all shadow-lg min-h-[3rem]
+                  relative px-5 py-4 rounded-2xl border-b-4
+                  text-base sm:text-lg font-bold flex items-center justify-center
+                  transition-all duration-200 shadow-xl min-h-[4rem]
                   ${
                     showResult && isCorrect
-                      ? 'bg-green-500 border-green-700 text-white scale-105'
+                      ? 'bg-gradient-to-br from-green-400 to-green-600 border-green-700 text-white scale-105 shadow-green-500/50'
                       : showResult && isSelected && !isCorrect
-                      ? 'bg-red-500 border-red-700 text-white scale-95'
+                      ? 'bg-gradient-to-br from-red-400 to-red-600 border-red-700 text-white scale-95 shadow-red-500/50'
                       : status === 'idle'
-                      ? 'bg-gradient-to-br from-white to-indigo-50 border-indigo-300 hover:border-indigo-500 hover:bg-indigo-100 hover:scale-105 hover:-translate-y-1 hover:shadow-xl active:scale-95 active:border-b-2 active:translate-y-1 text-indigo-700'
+                      ? 'bg-gradient-to-br from-white via-indigo-50 to-cyan-50 border-indigo-400 hover:border-cyan-500 hover:from-indigo-50 hover:via-cyan-50 hover:to-indigo-100 hover:scale-105 hover:-translate-y-1 hover:shadow-2xl active:scale-95 active:border-b-2 active:translate-y-1 text-indigo-900'
                       : 'bg-slate-200 border-slate-300 text-slate-400 opacity-40'
                   }
                 `}
               >
-                <span className="text-center">{constellation.nameEt}</span>
+                {/* Shimmer effect on hover - pointer-events-none so tap goes to button */}
+                {status === 'idle' && (
+                  <div className="absolute inset-0 pointer-events-none bg-gradient-to-r from-transparent via-white/30 to-transparent opacity-0 hover:opacity-100 transition-opacity rounded-2xl"
+                       style={{ transform: 'translateX(-100%)', animation: 'shimmer 2s infinite' }} />
+                )}
+                <span className="text-center relative z-10">{displayName}</span>
               </button>
             );
           })}
         </div>
+      )}
+
+      {/* Paid Hint Buttons (only for connect modes, not identify) */}
+      {typeof spendStars === 'function' && 
+       status !== 'correct' && 
+       isConnectMode && 
+       gameConfig.paidHints && (
+        <PaidHintButtons
+          hints={gameConfig.paidHints}
+          stars={stars}
+          onHintClick={handleHintClick}
+          disabled={status !== 'idle'}
+        />
       )}
 
     </div>

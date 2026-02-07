@@ -172,15 +172,13 @@ export const GameScreen: React.FC = () => {
     }
   }, [gameType, problem, levels, profile, adaptiveDifficulty, generateUniqueProblemForGame, setProblem]);
   
-  // Reset level progress when level changes (e.g., from menu or manual level-up)
+  // Reset level progress only on fresh start (no problem yet). Do not reset when resuming from game over.
   const resetLevelProgress = usePlaySessionStore(state => state.resetLevelProgress);
   useEffect(() => {
-    if (gameType) {
-      // Ensure level progress is initialized when game starts or level changes
-      // Level progress is initialized in startGame, but reset if level changes externally
+    if (gameType && !problem) {
       resetLevelProgress();
     }
-  }, [gameType, levels, profile, resetLevelProgress]);
+  }, [gameType, problem, resetLevelProgress]);
 
   // Handle next level (legacy - now handled automatically in Phase 3)
   // This is kept for backward compatibility with level-up modal
@@ -460,11 +458,15 @@ export const GameScreen: React.FC = () => {
               onMove={isMathSnake ? handleMathSnakeMove : undefined}
               soundEnabled={soundEnabled}
               level={currentLevel}
-              stars={gameType === 'shape_shift' ? stars : undefined}
-              spendStars={gameType === 'shape_shift' ? spendStars : undefined}
+              stars={(gameType === 'shape_shift' || gameType === 'shape_shift_adv' || gameType === 'star_mapper' || gameType === 'star_mapper_adv') ? stars : undefined}
+              spendStars={(gameType === 'shape_shift' || gameType === 'shape_shift_adv' || gameType === 'star_mapper' || gameType === 'star_mapper_adv') ? spendStars : undefined}
             />
 
-            {showHint && gameType !== 'shape_shift' && gameType !== 'shape_shift_adv' && (
+            {showHint && 
+             gameType !== 'shape_shift' && 
+             gameType !== 'shape_shift_adv' && 
+             gameType !== 'star_mapper' && 
+             gameType !== 'star_mapper_adv' && (
               <HintButton onHint={handleHint} soundEnabled={soundEnabled} disabled={false} />
             )}
 

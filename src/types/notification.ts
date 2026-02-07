@@ -20,6 +20,8 @@ export interface Notification {
   duration?: number;
   streakCount?: number;
   createdAt: number;
+  /** Called when levelUp popup is dismissed; use to generate next problem after user acknowledges */
+  levelUpOnDismiss?: () => void;
 }
 
 export type NotificationInput = Omit<Notification, 'id' | 'createdAt'>;
