@@ -1,9 +1,15 @@
 /**
- * ShapeDashView – Geometry Dash–inspired runner (canvas-based).
- * Space or tap to jump; obstacles on ground; checkpoints ask geometry questions.
- *
- * Refactored: single continuous game loop (started once on mount), all mutable
- * state in refs so the loop is never torn down by React re-renders.
+ * ShapeDashView V2 – Polished Geometry Dash–inspired runner with neon visuals.
+ * 
+ * Features:
+ * - Neon color theme with glow effects
+ * - Particle system (trail, explosion, landing, fireworks)
+ * - Animated player with rotation and squash/stretch
+ * - Multi-layer parallax background
+ * - Pulsing/glowing obstacles
+ * - Screen shake effects
+ * - HUD with progress bar and stats
+ * - Enhanced collision detection
  */
 
 import React, { useCallback, useEffect, useRef, useState } from 'react';
@@ -29,11 +35,429 @@ interface ShapeDashViewProps {
   gameType?: string;
 }
 
-const CANVAS_WIDTH = 560;
-const CANVAS_HEIGHT = 360;
-const GROUND_Y = CANVAS_HEIGHT - 80;
-const PLAYER_X = 120;
-const PLAYER_SIZE = 44;
+// V2 Canvas dimensions (increased from 560x360)
+const CANVAS_WIDTH = 640;
+const CANVAS_HEIGHT = 400;
+const GROUND_Y = CANVAS_HEIGHT - 90;
+const PLAYER_X = 140;
+const PLAYER_SIZE = 42;
+
+// Animation constants
+const ROTATION_SPEED = 8; // radians per second during jumps
+const SQUASH_STRETCH_DECAY = 0.15; // decay rate per frame
+const JUMP_SQUASH = 0.7; // squash amount on jump
+const LANDING_STRETCH = 1.3; // stretch amount on landing
+const SCREEN_SHAKE_INTENSITY = 8; // pixels
+const SCREEN_SHAKE_DECAY = 10; // decay rate per second
+
+// Particle system
+interface Particle {
+  x: number;
+  y: number;
+  vx: number;
+  vy: number;
+  life: number;
+  maxLife: number;
+  size: number;
+  color: string;
+  type: 'trail' | 'explosion' | 'landing' | 'firework';
+}
+
+// Game state (all mutable state in a single ref object)
+interface GameState {
+  scroll: number;
+  playerY: number;
+  playerVelY: number;
+  playerRotation: number;
+  isOnGround: boolean;
+  canDoubleJump: boolean;
+  gravityFlipped: boolean;
+  speedMultiplier: number;
+  playerScale: number;
+  squashStretch: number;
+  screenShake: number;
+  attemptCount: number;
+  score: number;
+  coinsCollected: number;
+  pulsePhase: number;
+  particles: Particle[];
+  trailPoints: Array<{ x: number; y: number }>;
+}
+
+// Particle system helpers
+function createExplosionParticles(x: number, y: number, color: string): Particle[] {
+  const particles: Particle[] = [];
+  for (let i = 0; i < 24; i++) {
+    const angle = (i / 24) * Math.PI * 2;
+    const speed = 100 + Math.random() * 150;
+    particles.push({
+      x,
+      y,
+      vx: Math.cos(angle) * speed,
+      vy: Math.sin(angle) * speed,
+      life: 1,
+      maxLife: 1,
+      size: 3 + Math.random() * 4,
+      color,
+      type: 'explosion',
+    });
+  }
+  return particles;
+}
+
+function createLandParticles(x: number, y: number): Particle[] {
+  const particles: Particle[] = [];
+  for (let i = 0; i < 6; i++) {
+    const angle = -Math.PI / 2 + (Math.random() - 0.5) * Math.PI;
+    const speed = 50 + Math.random() * 80;
+    particles.push({
+      x: x + Math.random() * PLAYER_SIZE,
+      y,
+      vx: Math.cos(angle) * speed,
+      vy: Math.sin(angle) * speed,
+      life: 0.5,
+      maxLife: 0.5,
+      size: 2 + Math.random() * 3,
+      color: '#888888',
+      type: 'landing',
+    });
+  }
+  return particles;
+}
+
+function createFireworkParticles(x: number, y: number): Particle[] {
+  const particles: Particle[] = [];
+  const colors = ['#00ff88', '#00ffcc', '#ffcc00', '#ff6600', '#cc44ff'];
+  for (let i = 0; i < 32; i++) {
+    const angle = (i / 32) * Math.PI * 2;
+    const speed = 120 + Math.random() * 100;
+    particles.push({
+      x,
+      y,
+      vx: Math.cos(angle) * speed,
+      vy: Math.sin(angle) * speed,
+      life: 1.2,
+      maxLife: 1.2,
+      size: 3 + Math.random() * 5,
+      color: colors[Math.floor(Math.random() * colors.length)]!,
+      type: 'firework',
+    });
+  }
+  return particles;
+}
+
+function updateParticles(particles: Particle[], dt: number): Particle[] {
+  return particles
+    .map((p) => {
+      const newP = { ...p };
+      newP.x += newP.vx * dt;
+      newP.y += newP.vy * dt;
+      newP.vy += 300 * dt; // Gravity on particles
+      newP.life -= dt;
+      return newP;
+    })
+    .filter((p) => p.life > 0);
+}
+
+// Rendering functions
+function drawBackground(
+  ctx: CanvasRenderingContext2D,
+  scroll: number,
+  pulsePhase: number,
+  width: number,
+  height: number,
+  groundY: number
+) {
+  // Dark background gradient
+  const skyGrad = ctx.createLinearGradient(0, 0, 0, height);
+  skyGrad.addColorStop(0, '#0a0a1a');
+  skyGrad.addColorStop(0.5, '#1a1a3a');
+  skyGrad.addColorStop(1, '#2a2a4a');
+  ctx.fillStyle = skyGrad;
+  ctx.fillRect(0, 0, width, groundY);
+
+  // Layer 1: Distant stars (0.05x scroll speed)
+  ctx.fillStyle = 'rgba(255, 255, 255, 0.6)';
+  const starOffset = (scroll * 0.05) % 100;
+  for (let i = 0; i < 30; i++) {
+    const x = ((i * 73) % width) - starOffset;
+    const y = (i * 41) % groundY;
+    ctx.fillRect(x, y, 2, 2);
+  }
+
+  // Layer 2: Geometric grid (0.15x scroll speed)
+  const gridOffset = (scroll * 0.15) % 60;
+  ctx.strokeStyle = 'rgba(0, 255, 136, 0.1)';
+  ctx.lineWidth = 1;
+  for (let x = -gridOffset; x < width + 60; x += 60) {
+    ctx.beginPath();
+    ctx.moveTo(x, 0);
+    ctx.lineTo(x, groundY);
+    ctx.stroke();
+  }
+  for (let y = 0; y < groundY; y += 60) {
+    ctx.beginPath();
+    ctx.moveTo(0, y);
+    ctx.lineTo(width, y);
+    ctx.stroke();
+  }
+
+  // Layer 3: Floating shapes (0.1x speed with rotation)
+  const shapeOffset = (scroll * 0.1) % 150;
+  ctx.strokeStyle = 'rgba(0, 255, 204, 0.15)';
+  ctx.lineWidth = 2;
+  for (let i = 0; i < 8; i++) {
+    const x = ((i * 120) % width) - shapeOffset;
+    const y = 50 + (i * 60) % (groundY - 100);
+    const rot = pulsePhase * 0.5 + i;
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.rotate(rot);
+    if (i % 3 === 0) {
+      // Triangle
+      ctx.beginPath();
+      ctx.moveTo(0, -15);
+      ctx.lineTo(13, 15);
+      ctx.lineTo(-13, 15);
+      ctx.closePath();
+      ctx.stroke();
+    } else if (i % 3 === 1) {
+      // Square
+      ctx.strokeRect(-12, -12, 24, 24);
+    } else {
+      // Circle
+      ctx.beginPath();
+      ctx.arc(0, 0, 12, 0, Math.PI * 2);
+      ctx.stroke();
+    }
+    ctx.restore();
+  }
+
+  // Ground with stripes
+  ctx.fillStyle = '#1a1a2a';
+  ctx.fillRect(0, groundY, width, height - groundY);
+  const stripeOffset = (scroll * 0.5) % 40;
+  ctx.fillStyle = 'rgba(0, 255, 136, 0.08)';
+  for (let sx = -stripeOffset; sx < width + 40; sx += 40) {
+    ctx.fillRect(sx, groundY, 20, height - groundY);
+  }
+
+  // Ground line with neon glow
+  ctx.shadowColor = '#00ff88';
+  ctx.shadowBlur = 12;
+  ctx.strokeStyle = '#00ff88';
+  ctx.lineWidth = 3;
+  ctx.beginPath();
+  ctx.moveTo(0, groundY);
+  ctx.lineTo(width, groundY);
+  ctx.stroke();
+  ctx.shadowBlur = 0;
+}
+
+function drawPlayer(
+  ctx: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  size: number,
+  rotation: number,
+  squashStretch: number,
+  _scale: number, // Reserved for future mini/mega portal modes
+  pulsePhase: number
+) {
+  ctx.save();
+  ctx.translate(x + size / 2, y + size / 2);
+  ctx.rotate(rotation);
+  ctx.scale(1, squashStretch);
+
+  // Neon glow (pulses)
+  const glowIntensity = 12 + Math.sin(pulsePhase * 4) * 4;
+  ctx.shadowColor = '#00ff88';
+  ctx.shadowBlur = glowIntensity;
+
+  // Player body
+  ctx.fillStyle = '#00ff88';
+  ctx.fillRect(-size / 2, -size / 2, size, size);
+
+  // Inner highlight
+  ctx.fillStyle = 'rgba(0, 255, 204, 0.3)';
+  ctx.fillRect(-size / 2 + 6, -size / 2 + 6, size - 12, size - 12);
+
+  // Face (eyes)
+  ctx.shadowBlur = 0;
+  ctx.fillStyle = '#0a0a1a';
+  const eyeY = -size / 4;
+  const eyeSize = 6;
+  ctx.fillRect(-size / 3, eyeY, eyeSize, eyeSize);
+  ctx.fillRect(size / 3 - eyeSize, eyeY, eyeSize, eyeSize);
+
+  // Eye highlights
+  ctx.fillStyle = '#00ff88';
+  ctx.fillRect(-size / 3 + 1, eyeY + 1, 2, 2);
+  ctx.fillRect(size / 3 - eyeSize + 1, eyeY + 1, 2, 2);
+
+  ctx.restore();
+}
+
+function drawTrail(ctx: CanvasRenderingContext2D, trail: Array<{ x: number; y: number }>, size: number) {
+  const colors = ['#ff0088', '#ff8800', '#ffff00', '#00ff88', '#0088ff', '#8800ff'];
+  for (let i = 0; i < trail.length; i++) {
+    const t = trail[i];
+    if (!t) continue;
+    const alpha = (i / trail.length) * 0.5;
+    const colorIdx = Math.floor((i / trail.length) * colors.length);
+    const hexColor = colors[colorIdx] || colors[0]!;
+    // Convert hex to rgba
+    const r = parseInt(hexColor.slice(1, 3), 16);
+    const g = parseInt(hexColor.slice(3, 5), 16);
+    const b = parseInt(hexColor.slice(5, 7), 16);
+    ctx.fillStyle = `rgba(${r}, ${g}, ${b}, ${alpha})`;
+    const trailSize = (size * (i / trail.length)) / 2;
+    ctx.fillRect(t.x + size / 2 - trailSize / 2, t.y + size / 2 - trailSize / 2, trailSize, trailSize);
+  }
+}
+
+function drawObstacle(
+  ctx: CanvasRenderingContext2D,
+  type: string,
+  screenX: number,
+  groundY: number,
+  offsetY: number,
+  height: number,
+  radius: number,
+  pulsePhase: number
+) {
+  const pulse = 1 + Math.sin(pulsePhase * 3) * 0.03;
+  const glowBlur = 12 + Math.sin(pulsePhase * 2) * 4;
+
+  if (type === 'circle') {
+    const cx = screenX + radius;
+    const cy = groundY - radius - offsetY;
+    ctx.shadowColor = '#cc44ff';
+    ctx.shadowBlur = glowBlur;
+    ctx.fillStyle = '#cc44ff';
+    ctx.beginPath();
+    ctx.arc(cx, cy, radius * pulse, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.shadowBlur = 0;
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.2)';
+    ctx.beginPath();
+    ctx.arc(cx - radius / 3, cy - radius / 3, radius / 3, 0, Math.PI * 2);
+    ctx.fill();
+  } else if (type === 'floating') {
+    const top = groundY - height - offsetY;
+    ctx.shadowColor = '#ffcc00';
+    ctx.shadowBlur = glowBlur;
+    ctx.fillStyle = '#ffcc00';
+    ctx.fillRect(screenX, top, SPIKE_WIDTH * pulse, height * pulse);
+    ctx.shadowBlur = 0;
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.2)';
+    ctx.fillRect(screenX + 4, top + 4, SPIKE_WIDTH * pulse - 8, height * pulse - 8);
+  } else if (type === 'spike') {
+    const top = groundY - height - offsetY;
+    ctx.shadowColor = '#ff3366';
+    ctx.shadowBlur = glowBlur;
+    ctx.fillStyle = '#ff3366';
+    ctx.beginPath();
+    ctx.moveTo(screenX, groundY - offsetY);
+    ctx.lineTo(screenX + (SPIKE_WIDTH * pulse) / 2, top);
+    ctx.lineTo(screenX + SPIKE_WIDTH * pulse, groundY - offsetY);
+    ctx.closePath();
+    ctx.fill();
+    ctx.shadowBlur = 0;
+  } else {
+    // block
+    const top = groundY - height - offsetY;
+    ctx.shadowColor = '#ff6600';
+    ctx.shadowBlur = glowBlur;
+    ctx.fillStyle = '#ff6600';
+    ctx.fillRect(screenX, top, SPIKE_WIDTH * pulse, height * pulse);
+    ctx.shadowBlur = 0;
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.2)';
+    ctx.fillRect(screenX + 4, top + 4, SPIKE_WIDTH * pulse - 8, height * pulse - 8);
+  }
+}
+
+function drawCheckpoint(
+  ctx: CanvasRenderingContext2D,
+  screenX: number,
+  groundY: number,
+  pulsePhase: number
+) {
+  const cx = screenX + 20;
+  const cy = groundY - 36;
+  const outerR = 22;
+  const innerR = 10;
+  const pulse = 1 + Math.sin(pulsePhase * 4) * 0.1;
+
+  ctx.shadowColor = '#fef08a';
+  ctx.shadowBlur = 16;
+  ctx.beginPath();
+  for (let k = 0; k < 5; k++) {
+    const aOut = (k * 2 * Math.PI) / 5 - Math.PI / 2;
+    const aIn = ((k + 0.5) * 2 * Math.PI) / 5 - Math.PI / 2;
+    if (k === 0) ctx.moveTo(cx + outerR * pulse * Math.cos(aOut), cy + outerR * pulse * Math.sin(aOut));
+    else ctx.lineTo(cx + outerR * pulse * Math.cos(aOut), cy + outerR * pulse * Math.sin(aOut));
+    ctx.lineTo(cx + innerR * pulse * Math.cos(aIn), cy + innerR * pulse * Math.sin(aIn));
+  }
+  ctx.closePath();
+  ctx.fillStyle = '#fef08a';
+  ctx.fill();
+  ctx.strokeStyle = '#eab308';
+  ctx.lineWidth = 2;
+  ctx.stroke();
+  ctx.shadowBlur = 0;
+}
+
+function drawParticles(ctx: CanvasRenderingContext2D, particles: Particle[]) {
+  for (const p of particles) {
+    const alpha = p.life / p.maxLife;
+    ctx.fillStyle = p.color.includes('rgba')
+      ? p.color.replace(/[\d.]+\)$/g, `${alpha})`)
+      : p.color + `${Math.floor(alpha * 255).toString(16).padStart(2, '0')}`;
+    ctx.fillRect(p.x - p.size / 2, p.y - p.size / 2, p.size, p.size);
+  }
+}
+
+function drawHUD(
+  ctx: CanvasRenderingContext2D,
+  progress: number,
+  attemptCount: number,
+  score: number,
+  width: number
+) {
+  // Progress bar
+  const barWidth = 200;
+  const barHeight = 8;
+  const barX = (width - barWidth) / 2;
+  const barY = 20;
+
+  ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
+  ctx.fillRect(barX - 2, barY - 2, barWidth + 4, barHeight + 4);
+
+  const grad = ctx.createLinearGradient(barX, 0, barX + barWidth, 0);
+  grad.addColorStop(0, '#00ff88');
+  grad.addColorStop(1, '#00ffcc');
+  ctx.fillStyle = grad;
+  ctx.fillRect(barX, barY, barWidth * progress, barHeight);
+
+  ctx.strokeStyle = '#00ff88';
+  ctx.lineWidth = 2;
+  ctx.strokeRect(barX, barY, barWidth, barHeight);
+
+  // Progress percentage
+  ctx.fillStyle = '#ffffff';
+  ctx.font = 'bold 12px Arial';
+  ctx.textAlign = 'center';
+  ctx.fillText(`${Math.floor(progress * 100)}%`, width / 2, barY + barHeight + 16);
+
+  // Attempt counter (left)
+  ctx.textAlign = 'left';
+  ctx.fillText(`Attempt ${attemptCount}`, 12, 26);
+
+  // Score (right)
+  ctx.textAlign = 'right';
+  ctx.fillText(`Score: ${score}`, width - 12, 26);
+}
 
 export const ShapeDashView: React.FC<ShapeDashViewProps> = ({
   problem,
@@ -44,21 +468,41 @@ export const ShapeDashView: React.FC<ShapeDashViewProps> = ({
   const [gameState, setGameState] = useState<'playing' | 'checkpoint' | 'crashed' | 'won'>('playing');
   const [checkpointIndex, setCheckpointIndex] = useState<number | null>(null);
   const [checkpointOption, setCheckpointOption] = useState<number | null>(null);
+  const [displayScore, setDisplayScore] = useState(0);
+  const [displayAttempt, setDisplayAttempt] = useState(1);
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const problemRef = useRef(problem);
   const onAnswerRef = useRef(onAnswer);
   const soundEnabledRef = useRef(soundEnabled);
-  const scrollRef = useRef(0);
-  const playerYRef = useRef(GROUND_Y - PLAYER_SIZE);
-  const playerVelYRef = useRef(0);
-  const jumpRequestedRef = useRef(false);
-  const passedCheckpointsRef = useRef<Set<number>>(new Set());
-  const lastTimeRef = useRef(0);
   const gameStateRef = useRef(gameState);
   const setGameStateRef = useRef(setGameState);
-  const canDoubleJumpRef = useRef(true);
+  const passedCheckpointsRef = useRef<Set<number>>(new Set());
+  const lastTimeRef = useRef(0);
+  const jumpRequestedRef = useRef(false);
+  const lastGroundedRef = useRef(false);
+
+  // V2: Single game state ref object
+  const stateRef = useRef<GameState>({
+    scroll: 0,
+    playerY: GROUND_Y - PLAYER_SIZE,
+    playerVelY: 0,
+    playerRotation: 0,
+    isOnGround: true,
+    canDoubleJump: true,
+    gravityFlipped: false,
+    speedMultiplier: 1,
+    playerScale: 1,
+    squashStretch: 1,
+    screenShake: 0,
+    attemptCount: 1,
+    score: 0,
+    coinsCollected: 0,
+    pulsePhase: 0,
+    particles: [],
+    trailPoints: [],
+  });
 
   useEffect(() => {
     problemRef.current = problem;
@@ -69,27 +513,28 @@ export const ShapeDashView: React.FC<ShapeDashViewProps> = ({
   }, [problem, onAnswer, soundEnabled, gameState]);
 
   const doRetry = useCallback(() => {
-    scrollRef.current = 0;
-    playerYRef.current = GROUND_Y - PLAYER_SIZE;
-    playerVelYRef.current = 0;
-    jumpRequestedRef.current = false;
-    canDoubleJumpRef.current = true;
+    const state = stateRef.current;
+    state.scroll = 0;
+    state.playerY = GROUND_Y - PLAYER_SIZE;
+    state.playerVelY = 0;
+    state.playerRotation = 0;
+    state.isOnGround = true;
+    state.canDoubleJump = true;
+    state.squashStretch = 1;
+    state.screenShake = 0;
+    state.score = 0;
+    state.particles = [];
+    state.trailPoints = [];
+    state.attemptCount += 1;
     passedCheckpointsRef.current = new Set();
+    jumpRequestedRef.current = false;
+    lastGroundedRef.current = false;
     setGameStateRef.current('playing');
     playSound('tap', soundEnabledRef.current);
   }, []);
 
   const requestJump = useCallback(() => {
     jumpRequestedRef.current = true;
-    const onGround = playerYRef.current + PLAYER_SIZE >= GROUND_Y - 4;
-    if (gameStateRef.current === 'playing') {
-      if (onGround) {
-        playerVelYRef.current = JUMP_VELOCITY;
-      } else if (canDoubleJumpRef.current) {
-        playerVelYRef.current = JUMP_VELOCITY;
-        canDoubleJumpRef.current = false;
-      }
-    }
   }, []);
 
   useEffect(() => {
@@ -108,12 +553,22 @@ export const ShapeDashView: React.FC<ShapeDashViewProps> = ({
   }, [requestJump, doRetry]);
 
   useEffect(() => {
-    scrollRef.current = 0;
-    playerYRef.current = GROUND_Y - PLAYER_SIZE;
-    playerVelYRef.current = 0;
-    jumpRequestedRef.current = false;
-    canDoubleJumpRef.current = true;
+    const state = stateRef.current;
+    state.scroll = 0;
+    state.playerY = GROUND_Y - PLAYER_SIZE;
+    state.playerVelY = 0;
+    state.playerRotation = 0;
+    state.isOnGround = true;
+    state.canDoubleJump = true;
+    state.squashStretch = 1;
+    state.screenShake = 0;
+    state.score = 0;
+    state.particles = [];
+    state.trailPoints = [];
+    state.attemptCount = 1;
     passedCheckpointsRef.current = new Set();
+    jumpRequestedRef.current = false;
+    lastGroundedRef.current = false;
     const id = setTimeout(() => {
       setGameState('playing');
       setCheckpointIndex(null);
@@ -149,45 +604,89 @@ export const ShapeDashView: React.FC<ShapeDashViewProps> = ({
       const dt = Math.min(0.032, (time - lastTimeRef.current) / 1000);
       lastTimeRef.current = time;
 
-      const nextScroll = scrollRef.current + prob.scrollSpeed * dt;
-      let py = playerYRef.current;
-      let pvy = playerVelYRef.current;
+      const state = stateRef.current;
+      const nextScroll = state.scroll + prob.scrollSpeed * dt;
+      let py = state.playerY;
+      let pvy = state.playerVelY;
 
+      // Jump handling
       if (jumpRequestedRef.current) {
         jumpRequestedRef.current = false;
         const onGround = py + PLAYER_SIZE >= GROUND_Y - 4;
         if (onGround) {
           pvy = JUMP_VELOCITY;
-          canDoubleJumpRef.current = true;
+          state.canDoubleJump = true;
+          state.squashStretch = JUMP_SQUASH;
           playSound('tap', soundEnabledRef.current);
-        } else if (canDoubleJumpRef.current) {
+        } else if (state.canDoubleJump) {
           pvy = JUMP_VELOCITY;
-          canDoubleJumpRef.current = false;
+          state.canDoubleJump = false;
           playSound('tap', soundEnabledRef.current);
         }
       }
-      if (py + PLAYER_SIZE >= GROUND_Y) {
-        canDoubleJumpRef.current = true;
-      }
 
+      // Physics
       pvy += GRAVITY * dt;
       py += pvy * dt;
 
+      // Ground collision
+      const wasGrounded = lastGroundedRef.current;
       if (py + PLAYER_SIZE >= GROUND_Y) {
         py = GROUND_Y - PLAYER_SIZE;
         pvy = 0;
+        state.isOnGround = true;
+        state.canDoubleJump = true;
+        // Landing detection
+        if (!wasGrounded) {
+          state.squashStretch = LANDING_STRETCH;
+          state.particles.push(...createLandParticles(PLAYER_X, GROUND_Y));
+        }
+        lastGroundedRef.current = true;
+      } else {
+        state.isOnGround = false;
+        lastGroundedRef.current = false;
       }
 
-      playerYRef.current = py;
-      playerVelYRef.current = pvy;
-      scrollRef.current = nextScroll;
+      // Update rotation
+      if (!state.isOnGround) {
+        state.playerRotation += ROTATION_SPEED * dt;
+      } else {
+        // Snap to nearest 90° on ground
+        const target = Math.round(state.playerRotation / (Math.PI / 2)) * (Math.PI / 2);
+        state.playerRotation = target;
+      }
+
+      // Squash/stretch decay
+      state.squashStretch = state.squashStretch + (1 - state.squashStretch) * SQUASH_STRETCH_DECAY;
+
+      // Screen shake decay
+      if (state.screenShake > 0) {
+        state.screenShake = Math.max(0, state.screenShake - dt * SCREEN_SHAKE_DECAY);
+      }
+
+      // Update pulse phase
+      state.pulsePhase += dt;
+
+      // Update score
+      state.score = Math.floor(nextScroll / 10);
+
+      // Update trail
+      state.trailPoints.push({ x: PLAYER_X, y: py });
+      if (state.trailPoints.length > 12) state.trailPoints.shift();
+
+      // Update particles
+      state.particles = updateParticles(state.particles, dt);
+
+      state.playerY = py;
+      state.playerVelY = pvy;
+      state.scroll = nextScroll;
 
       const playerLeft = PLAYER_X;
       const playerRight = PLAYER_X + PLAYER_SIZE;
       const playerTop = py;
       const playerBottom = py + PLAYER_SIZE;
 
-      // Only collide when falling or on ground. While moving up (pvy < 0) we give grace.
+      // Collision detection (with 6px inset margins for forgiveness)
       let collision = false;
       if (pvy >= 0) {
         for (const obs of obstacles) {
@@ -198,8 +697,8 @@ export const ShapeDashView: React.FC<ShapeDashViewProps> = ({
             const cx = obsScreenX + r;
             const cy = GROUND_Y - r - offsetY;
             if (obsScreenX + r * 2 < -20 || obsScreenX > CANVAS_WIDTH + 20) continue;
-            const closestX = Math.max(playerLeft, Math.min(cx, playerRight));
-            const closestY = Math.max(playerTop, Math.min(cy, playerBottom));
+            const closestX = Math.max(playerLeft + 6, Math.min(cx, playerRight - 6));
+            const closestY = Math.max(playerTop + 6, Math.min(cy, playerBottom - 6));
             const distSq = (closestX - cx) ** 2 + (closestY - cy) ** 2;
             if (distSq < (r + 4) ** 2) collision = true;
             if (collision) break;
@@ -211,7 +710,7 @@ export const ShapeDashView: React.FC<ShapeDashViewProps> = ({
             const obsTop = GROUND_Y - h - offsetY;
             const obsBottom = GROUND_Y - offsetY;
             if (obsScreenX + w < -20 || obsScreenX > CANVAS_WIDTH + 20) continue;
-            if (playerRight > obsLeft + 4 && playerLeft + 4 < obsRight && playerBottom > obsTop + 4 && playerTop + 4 < obsBottom) {
+            if (playerRight - 6 > obsLeft + 6 && playerLeft + 6 < obsRight - 6 && playerBottom - 6 > obsTop + 6 && playerTop + 6 < obsBottom - 6) {
               collision = true;
               break;
             }
@@ -220,12 +719,17 @@ export const ShapeDashView: React.FC<ShapeDashViewProps> = ({
       }
 
       if (collision) {
+        state.screenShake = SCREEN_SHAKE_INTENSITY;
+        state.particles.push(...createExplosionParticles(PLAYER_X + PLAYER_SIZE / 2, py + PLAYER_SIZE / 2, '#00ff88'));
+        setDisplayScore(state.score);
+        setDisplayAttempt(state.attemptCount);
         setGameState('crashed');
         playSound('wrong', soundEnabledRef.current);
         onAnswerRef.current(false);
         return;
       }
 
+      // Checkpoint detection
       const cpIdx = getReachedCheckpointIndex(PLAYER_X, checkpoints, nextScroll, passedCheckpointsRef.current);
       if (cpIdx !== null) {
         passedCheckpointsRef.current.add(cpIdx);
@@ -235,157 +739,65 @@ export const ShapeDashView: React.FC<ShapeDashViewProps> = ({
         return;
       }
 
+      // Win detection
       if (hasReachedFinish(nextScroll, prob.runLength)) {
+        // Add initial victory fireworks immediately
+        state.particles.push(...createFireworkParticles(CANVAS_WIDTH * 0.5, CANVAS_HEIGHT * 0.25));
+        setDisplayScore(state.score);
+        setDisplayAttempt(state.attemptCount);
         setGameState('won');
         playSound('win', soundEnabledRef.current);
         setTimeout(() => onAnswerRef.current(true), 800);
         return;
       }
 
+      // Rendering
       ctx.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
 
-      // Sky gradient
-      const skyGrad = ctx.createLinearGradient(0, 0, 0, CANVAS_HEIGHT);
-      skyGrad.addColorStop(0, '#0e7490');
-      skyGrad.addColorStop(0.5, '#0891b2');
-      skyGrad.addColorStop(1, '#06b6d4');
-      ctx.fillStyle = skyGrad;
-      ctx.fillRect(0, 0, CANVAS_WIDTH, GROUND_Y);
-
-      // Distant grid (parallax)
-      const gridOffset = (nextScroll * 0.2) % 48;
-      ctx.strokeStyle = 'rgba(255, 255, 255, 0.08)';
-      ctx.lineWidth = 1;
-      for (let x = -gridOffset; x < CANVAS_WIDTH + 48; x += 48) {
-        ctx.beginPath();
-        ctx.moveTo(x, 0);
-        ctx.lineTo(x, GROUND_Y);
-        ctx.stroke();
+      // Apply screen shake
+      ctx.save();
+      if (state.screenShake > 0) {
+        const shakeX = (Math.random() - 0.5) * state.screenShake * 2;
+        const shakeY = (Math.random() - 0.5) * state.screenShake * 2;
+        ctx.translate(shakeX, shakeY);
       }
 
-      // Ground: stripe + fill
-      ctx.fillStyle = 'rgba(15, 118, 110, 0.95)';
-      ctx.fillRect(0, GROUND_Y, CANVAS_WIDTH, CANVAS_HEIGHT - GROUND_Y);
-      const stripeOffset = Math.floor(nextScroll * 0.5) % 40;
-      ctx.fillStyle = 'rgba(20, 184, 166, 0.4)';
-      for (let sx = -stripeOffset; sx < CANVAS_WIDTH + 40; sx += 40) {
-        ctx.fillRect(sx, GROUND_Y, 20, CANVAS_HEIGHT - GROUND_Y);
-      }
-      ctx.beginPath();
-      ctx.moveTo(0, GROUND_Y);
-      ctx.lineTo(CANVAS_WIDTH, GROUND_Y);
-      ctx.lineWidth = 5;
-      ctx.strokeStyle = '#0f766e';
-      ctx.stroke();
-      ctx.lineWidth = 2;
-      ctx.strokeStyle = '#14b8a6';
-      ctx.stroke();
+      drawBackground(ctx, nextScroll, state.pulsePhase, CANVAS_WIDTH, CANVAS_HEIGHT, GROUND_Y);
 
-      // Checkpoint stars (visible on track so they don't appear out of nowhere)
+      // Checkpoint stars
       const passedSet = passedCheckpointsRef.current;
       for (let i = 0; i < checkpoints.length; i++) {
         if (passedSet.has(i)) continue;
         const cp = checkpoints[i]!;
         const cpScreenX = cp.x - nextScroll;
         if (cpScreenX + 40 < 0 || cpScreenX > CANVAS_WIDTH + 40) continue;
-        const cx = cpScreenX + 20;
-        const cy = GROUND_Y - 36;
-        const outerR = 22;
-        const innerR = 10;
-        ctx.beginPath();
-        for (let k = 0; k < 5; k++) {
-          const aOut = (k * 2 * Math.PI) / 5 - Math.PI / 2;
-          const aIn = ((k + 0.5) * 2 * Math.PI) / 5 - Math.PI / 2;
-          if (k === 0) ctx.moveTo(cx + outerR * Math.cos(aOut), cy + outerR * Math.sin(aOut));
-          else ctx.lineTo(cx + outerR * Math.cos(aOut), cy + outerR * Math.sin(aOut));
-          ctx.lineTo(cx + innerR * Math.cos(aIn), cy + innerR * Math.sin(aIn));
-        }
-        ctx.closePath();
-        ctx.shadowColor = 'rgba(0,0,0,0.3)';
-        ctx.shadowBlur = 6;
-        ctx.shadowOffsetY = 2;
-        ctx.fillStyle = '#fef08a';
-        ctx.fill();
-        ctx.strokeStyle = '#eab308';
-        ctx.lineWidth = 2;
-        ctx.stroke();
-        ctx.shadowBlur = 0;
-        ctx.shadowOffsetY = 0;
+        drawCheckpoint(ctx, cpScreenX, GROUND_Y, state.pulsePhase);
       }
 
-      // Obstacles with shadow (spike, block, circle, floating)
+      // Obstacles
       for (const obs of obstacles) {
         const obsScreenX = obs.x - nextScroll;
+        if (obsScreenX + 50 < -20 || obsScreenX > CANVAS_WIDTH + 20) continue;
         const offsetY = obs.offsetY ?? 0;
-        ctx.shadowColor = 'rgba(0,0,0,0.35)';
-        ctx.shadowBlur = 8;
-        ctx.shadowOffsetY = 3;
-        if (obs.type === 'circle') {
-          const r = obs.radius ?? 18;
-          const cx = obsScreenX + r;
-          const cy = GROUND_Y - r - offsetY;
-          if (obsScreenX + r * 2 < -20 || obsScreenX > CANVAS_WIDTH + 20) continue;
-          ctx.beginPath();
-          ctx.arc(cx, cy, r, 0, Math.PI * 2);
-          ctx.fillStyle = '#a855f7';
-          ctx.fill();
-          ctx.strokeStyle = '#7c3aed';
-          ctx.lineWidth = 2;
-          ctx.stroke();
-        } else if (obs.type === 'floating') {
-          const w = SPIKE_WIDTH;
-          const h = obs.height ?? BLOCK_DEFAULT_HEIGHT;
-          const top = GROUND_Y - h - offsetY;
-          if (obsScreenX + w < -20 || obsScreenX > CANVAS_WIDTH + 20) continue;
-          ctx.fillStyle = '#f59e0b';
-          ctx.fillRect(obsScreenX, top, w, h);
-          ctx.strokeStyle = '#d97706';
-          ctx.lineWidth = 2;
-          ctx.strokeRect(obsScreenX, top, w, h);
-        } else {
-          const w = SPIKE_WIDTH;
-          const h = obs.type === 'spike' ? SPIKE_HEIGHT : (obs.height ?? BLOCK_DEFAULT_HEIGHT);
-          const top = GROUND_Y - h - offsetY;
-          if (obsScreenX + w < -20 || obsScreenX > CANVAS_WIDTH + 20) continue;
-          if (obs.type === 'spike') {
-            ctx.fillStyle = '#ef4444';
-            ctx.beginPath();
-            ctx.moveTo(obsScreenX, GROUND_Y - offsetY);
-            ctx.lineTo(obsScreenX + w / 2, top);
-            ctx.lineTo(obsScreenX + w, GROUND_Y - offsetY);
-            ctx.closePath();
-            ctx.fill();
-            ctx.strokeStyle = '#b91c1c';
-            ctx.lineWidth = 2;
-            ctx.stroke();
-          } else {
-            ctx.fillStyle = '#ea580c';
-            ctx.fillRect(obsScreenX, top, w, h);
-            ctx.strokeStyle = '#c2410c';
-            ctx.lineWidth = 2;
-            ctx.strokeRect(obsScreenX, top, w, h);
-          }
-        }
-        ctx.shadowBlur = 0;
-        ctx.shadowOffsetY = 0;
+        const height = obs.type === 'spike' ? SPIKE_HEIGHT : (obs.height ?? BLOCK_DEFAULT_HEIGHT);
+        const radius = obs.radius ?? 18;
+        drawObstacle(ctx, obs.type, obsScreenX, GROUND_Y, offsetY, height, radius, state.pulsePhase);
       }
 
-      // Player with simple face
-      ctx.shadowColor = 'rgba(0,0,0,0.25)';
-      ctx.shadowBlur = 4;
-      ctx.shadowOffsetY = 2;
-      ctx.fillStyle = '#14b8a6';
-      ctx.fillRect(PLAYER_X, py, PLAYER_SIZE, PLAYER_SIZE);
-      ctx.strokeStyle = '#0f766e';
-      ctx.lineWidth = 3;
-      ctx.strokeRect(PLAYER_X, py, PLAYER_SIZE, PLAYER_SIZE);
-      ctx.fillStyle = '#0d9488';
-      ctx.fillRect(PLAYER_X + 8, py + 8, PLAYER_SIZE - 16, PLAYER_SIZE - 16);
-      ctx.fillStyle = '#134e4a';
-      ctx.fillRect(PLAYER_X + 12, py + 14, 6, 6);
-      ctx.fillRect(PLAYER_X + 26, py + 14, 6, 6);
-      ctx.shadowBlur = 0;
-      ctx.shadowOffsetY = 0;
+      // Trail
+      drawTrail(ctx, state.trailPoints, PLAYER_SIZE);
+
+      // Player
+      drawPlayer(ctx, PLAYER_X, py, PLAYER_SIZE, state.playerRotation, state.squashStretch, state.playerScale, state.pulsePhase);
+
+      // Particles
+      drawParticles(ctx, state.particles);
+
+      // HUD
+      const progress = Math.min(1, nextScroll / prob.runLength);
+      drawHUD(ctx, progress, state.attemptCount, state.score, CANVAS_WIDTH);
+
+      ctx.restore();
     };
 
     lastTimeRef.current = performance.now();
@@ -462,8 +874,12 @@ export const ShapeDashView: React.FC<ShapeDashViewProps> = ({
     <div className="flex flex-col items-center gap-3 w-full max-w-2xl">
       <div
         ref={containerRef}
-        className="relative rounded-2xl overflow-hidden border-2 border-slate-400 shadow-xl bg-slate-900 cursor-pointer focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2"
-        style={{ width: CANVAS_WIDTH, height: CANVAS_HEIGHT }}
+        className="relative rounded-2xl overflow-hidden border-2 border-emerald-400 shadow-xl bg-slate-900 cursor-pointer focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2"
+        style={{ 
+          width: CANVAS_WIDTH, 
+          height: CANVAS_HEIGHT,
+          boxShadow: '0 0 40px rgba(0, 255, 136, 0.2)'
+        }}
         onClick={handleClick}
         onPointerDown={handlePointerDown}
         onKeyDown={handleKeyDown}
@@ -479,30 +895,61 @@ export const ShapeDashView: React.FC<ShapeDashViewProps> = ({
           style={{ display: 'block' }}
         />
         {gameState === 'checkpoint' && (
-          <div className="absolute inset-0 bg-black/30 pointer-events-none" style={{ width: CANVAS_WIDTH, height: CANVAS_HEIGHT }} />
+          <div 
+            className="absolute inset-0 pointer-events-none" 
+            style={{ 
+              width: CANVAS_WIDTH, 
+              height: CANVAS_HEIGHT,
+              background: 'rgba(0, 0, 0, 0.4)',
+              backdropFilter: 'blur(4px)'
+            }} 
+          />
         )}
         {gameState === 'won' && (
-          <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-emerald-500/60 pointer-events-none rounded-2xl" style={{ width: CANVAS_WIDTH, height: CANVAS_HEIGHT }}>
-            <span className="text-4xl font-black text-white drop-shadow-lg">✓ WIN!</span>
+          <div 
+            className="absolute inset-0 flex flex-col items-center justify-center gap-3 pointer-events-none rounded-2xl" 
+            style={{ 
+              width: CANVAS_WIDTH, 
+              height: CANVAS_HEIGHT,
+              background: 'radial-gradient(circle, rgba(0, 255, 136, 0.4) 0%, rgba(0, 255, 204, 0.2) 100%)'
+            }}
+          >
+            <span className="text-5xl">🎉</span>
+            <span className="text-3xl font-black text-white drop-shadow-lg">LEVEL COMPLETE!</span>
+            <span className="text-xl font-bold text-white drop-shadow-md">
+              Score: {displayScore}
+            </span>
           </div>
         )}
         {gameState === 'crashed' && (
           <div
-            className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-red-600/70 rounded-2xl pointer-events-none"
-            style={{ width: CANVAS_WIDTH, height: CANVAS_HEIGHT }}
+            className="absolute inset-0 flex flex-col items-center justify-center gap-3 rounded-2xl pointer-events-none"
+            style={{ 
+              width: CANVAS_WIDTH, 
+              height: CANVAS_HEIGHT,
+              background: 'radial-gradient(circle, rgba(255, 51, 102, 0.5) 0%, rgba(255, 0, 0, 0.3) 100%)'
+            }}
           >
-            <span className="text-4xl font-black text-white drop-shadow-lg">💥</span>
+            <span className="text-5xl">💥</span>
             <span className="text-xl font-bold text-white drop-shadow-md text-center px-4">
               {tapToRetry}
+            </span>
+            <span className="text-lg font-semibold text-white/90 drop-shadow-md">
+              Attempt {displayAttempt}
             </span>
           </div>
         )}
       </div>
 
+      {/* Instructions hint */}
+      <div className="text-sm text-slate-400 text-center">
+        <kbd className="px-2 py-1 bg-slate-700 rounded text-xs font-semibold text-slate-200">SPACE</kbd> or tap to jump • Double-jump available!
+      </div>
+
       {checkpoint && gameState === 'checkpoint' && (() => {
         const shapeNames = (t.games as { shape_dash?: { shapeNames?: Record<string, string> } })?.shape_dash?.shapeNames;
         const translatedOptions = checkpoint.question.options.map(
-          (opt) => (shapeNames && opt in shapeNames ? shapeNames[opt] : opt)
+          (opt) => (shapeNames && opt in shapeNames ? shapeNames[opt]! : opt)
         );
         return (
           <GameProblemModal
