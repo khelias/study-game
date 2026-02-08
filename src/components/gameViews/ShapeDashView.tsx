@@ -74,8 +74,7 @@ const LANDING_STRETCH = 1.3; // stretch amount on landing
 const SCREEN_SHAKE_INTENSITY = 8; // pixels
 const SCREEN_SHAKE_DECAY = 10; // decay rate per second
 
-// V4: Gate spacing constant (already defined in engine)
-const GATE_SPACING = 20;
+
 
 // Particle system
 interface Particle {
@@ -754,7 +753,6 @@ function drawGateWarning(
   ctx: CanvasRenderingContext2D,
   prompt: string,
   width: number,
-  height: number,
   pulsePhase: number,
   consecutiveWrong: number
 ) {
@@ -1185,7 +1183,7 @@ export const ShapeDashView: React.FC<ShapeDashViewProps> = ({
       const timeScale = isSlowTime ? 0.7 : 1.0; // 30% slower during slow time
       
       // V3: Check boost zone for speed multiplier
-      const stars = prob.stars ?? [];
+      const collectibleStars = prob.stars ?? [];
       const jumpPads = prob.jumpPads ?? [];
       const boostZones = prob.boostZones ?? [];
       const inBoostZone = checkBoostZone(PLAYER_X, boostZones, state.scroll);
@@ -1266,20 +1264,20 @@ export const ShapeDashView: React.FC<ShapeDashViewProps> = ({
       state.pulsePhase += dt;
 
       // V3: Check star collection
-      const collectedStarIds = checkStarCollection(
+      const newlyCollectedStarIds = checkStarCollection(
         { x: PLAYER_X, y: py, velocityY: pvy, isOnGround: state.isOnGround },
-        stars,
+        collectibleStars,
         nextScroll,
         groundY  // Pass groundY for correct coordinate calculation
       );
-      for (const starId of collectedStarIds) {
+      for (const starId of newlyCollectedStarIds) {
         if (!state.collectedStarIds.has(starId)) {
           state.collectedStarIds.add(starId);
           state.starsCollected += 1;
           const starPoints = 100 * state.combo;
           state.score += starPoints;
           // Mark star as collected in the problem data
-          const star = stars.find(s => s.id === starId);
+          const star = collectibleStars.find(s => s.id === starId);
           if (star) {
             star.collected = true;
             // Create sparkle and score popup particles
@@ -1455,9 +1453,14 @@ export const ShapeDashView: React.FC<ShapeDashViewProps> = ({
         // ⭐⭐ Complete with 50%+ stars collected
         // ⭐⭐⭐ Complete with all stars + no hits (attemptCount === 1)
         let rating = 1;
-        const starPercentage = state.totalStars > 0 ? state.starsCollected / state.totalStars : 0;
-        if (starPercentage >= 0.5) rating = 2;
-        if (state.starsCollected === state.totalStars && state.attemptCount === 1) rating = 3;
+        if (state.totalStars === 0) {
+          // No stars in level: rate based on attempts only
+          rating = state.attemptCount === 1 ? 3 : 2;
+        } else {
+          const starPercentage = state.starsCollected / state.totalStars;
+          if (starPercentage >= 0.5) rating = 2;
+          if (state.starsCollected === state.totalStars && state.attemptCount === 1) rating = 3;
+        }
         setDisplayRating(rating);
         
         setGameState('won');
@@ -1506,7 +1509,7 @@ export const ShapeDashView: React.FC<ShapeDashViewProps> = ({
       }
 
       // V3: Draw collectible stars
-      for (const star of stars) {
+      for (const star of collectibleStars) {
         const starScreenX = star.x - nextScroll;
         const starScreenY = groundY - star.y;
         if (starScreenX + 40 < -20 || starScreenX > cw + 20) continue;
@@ -1541,7 +1544,7 @@ export const ShapeDashView: React.FC<ShapeDashViewProps> = ({
       if (approachingGateIndex !== null) {
         const gate = shapeGates[approachingGateIndex];
         if (gate) {
-          drawGateWarning(ctx, gate.prompt, cw, ch, state.pulsePhase, state.consecutiveWrongGates);
+          drawGateWarning(ctx, gate.prompt, cw, state.pulsePhase, state.consecutiveWrongGates);
         }
       }
       

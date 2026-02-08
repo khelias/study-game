@@ -300,18 +300,3 @@ export function checkShapeGatePass(
   }
   return null;
 }
-
-/**
- * Get terrain segment at a given x position
- */
-export function getTerrainAtPosition(
-  x: number,
-  terrainSegments: ShapeDashTerrainSegment[]
-): ShapeDashTerrainSegment | null {
-  for (const segment of terrainSegments) {
-    if (x >= segment.x && x < segment.x + segment.width) {
-      return segment;
-    }
-  }
-  return null;
-}
