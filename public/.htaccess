@@ -1,0 +1,11 @@
+# SPA fallback: serve index.html for client-side routes (e.g. /games/word-builder).
+# Without this, refreshing or opening a deep link returns 404 (e.g. "Lehekülge ei leitud").
+# If your app is in a subdirectory (e.g. /myapp/), set RewriteBase /myapp/ and use RewriteRule . /myapp/index.html [L]
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteBase /
+  RewriteRule ^index\.html$ - [L]
+  RewriteCond %{REQUEST_FILENAME} !-f
+  RewriteCond %{REQUEST_FILENAME} !-d
+  RewriteRule . /index.html [L]
+</IfModule>
