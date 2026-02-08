@@ -247,7 +247,7 @@ export const MenuScreen: React.FC = () => {
       <div
         className="w-full max-w-2xl mx-auto px-4 pt-4 flex flex-col items-center"
         style={{
-          paddingBottom: 'calc(2.5rem + env(safe-area-inset-bottom, 0px))',
+          paddingBottom: 'calc(4rem + env(safe-area-inset-bottom, 0px) + 1rem)',
         }}
       >
       

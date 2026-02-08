@@ -529,20 +529,16 @@ export const Generators: Record<string, GeneratorFunction> = {
     }
 
     const cards: PicturePairsCard[] = [];
+    const emojiOnly = profile === 'starter'; // Preschooler: match emoji–emoji only
     pairs.forEach((p, i) => {
       const matchId = `pair-${i}`;
-      cards.push({
-        id: `word-${i}`,
-        content: p.word,
-        matchId,
-        cardType: 'word',
-      });
-      cards.push({
-        id: `emoji-${i}`,
-        content: p.emoji,
-        matchId,
-        cardType: 'emoji',
-      });
+      if (emojiOnly) {
+        cards.push({ id: `emoji-a-${i}`, content: p.emoji, matchId, cardType: 'emoji' });
+        cards.push({ id: `emoji-b-${i}`, content: p.emoji, matchId, cardType: 'emoji' });
+      } else {
+        cards.push({ id: `word-${i}`, content: p.word, matchId, cardType: 'word' });
+        cards.push({ id: `emoji-${i}`, content: p.emoji, matchId, cardType: 'emoji' });
+      }
     });
 
     return {

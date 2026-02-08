@@ -285,19 +285,32 @@ describe('Generators', () => {
       expect(problem.pairs.length).toBeGreaterThanOrEqual(4);
     });
 
-    it('should have exactly two cards per matchId (word + emoji)', () => {
+    it('should have exactly two cards per matchId (starter: emoji+emoji, advanced: word+emoji)', () => {
       const rng = createRng(999);
       const generator = Generators.picture_pairs;
       if (!generator) throw new Error('picture_pairs generator not found');
-      const problem = generator(2, rng, 'starter') as PicturePairsProblem;
 
-      const byMatchId = problem.cards.reduce<Record<string, typeof problem.cards>>((acc, c) => {
+      const starter = generator(2, rng, 'starter') as PicturePairsProblem;
+      const byMatchIdStarter = starter.cards.reduce<Record<string, typeof starter.cards>>((acc, c) => {
         const id = c.matchId;
         if (!acc[id]) acc[id] = [];
         acc[id].push(c);
         return acc;
       }, {});
-      Object.values(byMatchId).forEach(cards => {
+      Object.values(byMatchIdStarter).forEach(cards => {
+        expect(cards).toHaveLength(2);
+        cards.forEach(c => expect(c.cardType).toBe('emoji'));
+      });
+
+      const rng2 = createRng(888);
+      const advanced = generator(2, rng2, 'advanced') as PicturePairsProblem;
+      const byMatchIdAdv = advanced.cards.reduce<Record<string, typeof advanced.cards>>((acc, c) => {
+        const id = c.matchId;
+        if (!acc[id]) acc[id] = [];
+        acc[id].push(c);
+        return acc;
+      }, {});
+      Object.values(byMatchIdAdv).forEach(cards => {
         expect(cards).toHaveLength(2);
         const types = new Set(cards.map(c => c.cardType));
         expect(types).toContain('emoji');
