@@ -1974,6 +1974,9 @@ export const Generators: Record<string, GeneratorFunction> = {
     // Define constants for gate positioning
     const GATE_MIN_DISTANCE = 200;  // Minimum distance from obstacles/checkpoints
     const MAX_REPOSITION_ATTEMPTS = 10;  // Max attempts to find valid position
+    const REPOSITION_STEP_SIZE = 50;  // Step size for repositioning attempts
+    const MIN_GATE_PADDING = 100;  // Minimum padding from run start
+    const END_GATE_PADDING = 300;  // Padding from run end
     
     for (let g = 0; g < numShapeGates && g < shuffledGateBank.length; g++) {
       const segment = (runLength - runInDistance) / (numShapeGates + 1);
@@ -1993,10 +1996,10 @@ export const Generators: Record<string, GeneratorFunction> = {
         
         // Try alternative positions: shift forward/backward
         if (attempt < MAX_REPOSITION_ATTEMPTS - 1) {
-          const offset = (attempt + 1) * 50 * (attempt % 2 === 0 ? 1 : -1);
+          const offset = (attempt + 1) * REPOSITION_STEP_SIZE * (attempt % 2 === 0 ? 1 : -1);
           x = runInDistance + (g + 1) * segment + offset;
           // Ensure x is within valid range
-          x = Math.max(runInDistance + 100, Math.min(x, runLength - 300));
+          x = Math.max(runInDistance + MIN_GATE_PADDING, Math.min(x, runLength - END_GATE_PADDING));
         }
       }
       

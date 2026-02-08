@@ -53,9 +53,14 @@ interface ShapeDashViewProps {
 }
 
 // V4: Responsive canvas with aspect ratio
-const CANVAS_ASPECT_RATIO = 16 / 10; // 1.6:1 aspect ratio
+const CANVAS_ASPECT_RATIO = 16 / 10; // 1.6:1 aspect ratio for landscape
 const CANVAS_MAX_WIDTH = 896; // 4xl max-width
 const CANVAS_HEIGHT_BASE = 400;
+
+// Portrait mode constants
+const PORTRAIT_ASPECT_RATIO = 1.2; // Slightly taller than wide for portrait
+const MAX_PORTRAIT_HEIGHT_MULTIPLIER = 1.5; // Max height multiplier for portrait
+
 const GROUND_Y = CANVAS_HEIGHT_BASE - 90;
 const PLAYER_X = 140;
 const PLAYER_SIZE = 42;
@@ -1106,7 +1111,7 @@ export const ShapeDashView: React.FC<ShapeDashViewProps> = ({
       if (windowIsPortrait) {
         // Use a more square aspect ratio for portrait (closer to 1:1)
         width = Math.min(rect.width, CANVAS_MAX_WIDTH);
-        height = Math.min(width * 1.2, CANVAS_HEIGHT_BASE * 1.5); // Slightly taller than wide
+        height = Math.min(width * PORTRAIT_ASPECT_RATIO, CANVAS_HEIGHT_BASE * MAX_PORTRAIT_HEIGHT_MULTIPLIER);
       } else {
         // Use standard 16:10 aspect ratio for landscape
         width = Math.min(rect.width, CANVAS_MAX_WIDTH);
