@@ -984,6 +984,21 @@ export const ShapeDashView: React.FC<ShapeDashViewProps> = ({
     setGameStateRef.current = setGameState;
   }, [problem, onAnswer, soundEnabled, gameState]);
 
+  // Reset game state when problem changes
+  useEffect(() => {
+    const state = stateRef.current;
+    state.passedGateIds.clear();
+    state.collectedStarIds.clear();
+    state.passedObstacleIndices.clear();
+    state.totalStars = problem.stars?.length ?? 0;
+    state.consecutiveWrongGates = 0;
+    state.revealedGateId = null;
+    state.slowTimeUntil = 0;
+    state.feedbackMessage = null;
+    state.feedbackType = null;
+    state.feedbackUntil = 0;
+  }, [problem]);
+
   const doRetry = useCallback(() => {
     const state = stateRef.current;
     const groundY = canvasHeight - 90;
