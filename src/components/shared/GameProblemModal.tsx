@@ -139,7 +139,7 @@ export const GameProblemModal: React.FC<GameProblemModalProps> = ({
                   className={`
                     ${isCompact ? 'px-4 py-3 text-base' : 'px-6 py-4 text-lg sm:text-xl'}
                     rounded-xl border-2 border-dashed border-slate-200 bg-slate-100/50
-                    min-h-[3rem] sm:min-h-[3.5rem]
+                    min-h-[3.5rem] sm:min-h-[4rem]
                   `}
                   aria-hidden
                 />
@@ -159,6 +159,7 @@ export const GameProblemModal: React.FC<GameProblemModalProps> = ({
                   ${isCompact ? 'px-4 py-3 text-base' : 'px-6 py-4 text-lg sm:text-xl'}
                   rounded-xl font-bold transition-all duration-200 
                   border-2 shadow-md
+                  min-h-[3.5rem] sm:min-h-[4rem]
                   ${
                     showResult
                       ? isCorrect

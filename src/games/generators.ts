@@ -1731,6 +1731,14 @@ export const Generators: Record<string, GeneratorFunction> = {
       rhombusSides: { et: 'Mitu külge on rombil?', en: 'How many sides does a rhombus have?' },
       ovalSides: { et: 'Mitu külge on ovaalil?', en: 'How many sides does an oval have?' },
       starPoints: { et: 'Mitu tipu on viisnurkstel tähel?', en: 'A 5-pointed star has how many points?' },
+      // V3: New question types
+      compare5and3: { et: 'Kumb on suurem: 5 või 3?', en: 'Which is bigger: 5 or 3?' },
+      compare7and4: { et: 'Kumb on suurem: 7 või 4?', en: 'Which is bigger: 7 or 4?' },
+      compare8and6: { et: 'Kumb on suurem: 8 või 6?', en: 'Which is bigger: 8 or 6?' },
+      compare10and9: { et: 'Kumb on suurem: 10 või 9?', en: 'Which is bigger: 10 or 9?' },
+      patternABAB: { et: 'Mis tuleb järgmisena: ▲ ■ ▲ ■ ?', en: 'What comes next: ▲ ■ ▲ ■ ?' },
+      patternABC: { et: 'Mis tuleb järgmisena: ● ▲ ■ ● ▲ ?', en: 'What comes next: ● ▲ ■ ● ▲ ?' },
+      patternAAB: { et: 'Mis tuleb järgmisena: ▲ ▲ ■ ▲ ▲ ?', en: 'What comes next: ▲ ▲ ■ ▲ ▲ ?' },
     };
     const questionBank: Array<{ options: string[]; correctIndex: number; key: keyof typeof fallbackPrompts }> = [
       { options: ['3', '4', '5', '6'], correctIndex: 0, key: 'triangleSides' },
@@ -1758,6 +1766,15 @@ export const Generators: Record<string, GeneratorFunction> = {
       { options: ['3', '4', '5', '6'], correctIndex: 1, key: 'rhombusSides' },
       { options: ['0', '1', '2', '4'], correctIndex: 0, key: 'ovalSides' },
       { options: ['4', '5', '6', '10'], correctIndex: 1, key: 'starPoints' },
+      // V3: Comparison questions (starter profile)
+      { options: ['3', '5', '4', '6'], correctIndex: 1, key: 'compare5and3' },
+      { options: ['4', '7', '5', '6'], correctIndex: 1, key: 'compare7and4' },
+      { options: ['6', '8', '7', '9'], correctIndex: 1, key: 'compare8and6' },
+      { options: ['9', '10', '8', '11'], correctIndex: 1, key: 'compare10and9' },
+      // V3: Pattern questions  
+      { options: ['▲', '■', '●', '◆'], correctIndex: 0, key: 'patternABAB' },
+      { options: ['■', '●', '▲', '◆'], correctIndex: 0, key: 'patternABC' },
+      { options: ['■', '▲', '●', '◆'], correctIndex: 0, key: 'patternAAB' },
     ];
 
     const obstacles: ShapeDashObstacle[] = [];
