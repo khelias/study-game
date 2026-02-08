@@ -1971,15 +1971,40 @@ export const Generators: Record<string, GeneratorFunction> = {
     const shuffledGateBank = [...shapeGateBank].sort(() => rng() - 0.5);
     const lang = locale === 'et' ? 'et' : 'en';
     
+    // Define constants for gate positioning
+    const GATE_MIN_DISTANCE = 200;  // Minimum distance from obstacles/checkpoints
+    const MAX_REPOSITION_ATTEMPTS = 10;  // Max attempts to find valid position
+    const REPOSITION_STEP_SIZE = 50;  // Step size for repositioning attempts
+    const MIN_GATE_PADDING = 100;  // Minimum padding from run start
+    const END_GATE_PADDING = 300;  // Padding from run end
+    
     for (let g = 0; g < numShapeGates && g < shuffledGateBank.length; g++) {
       const segment = (runLength - runInDistance) / (numShapeGates + 1);
-      const x = runInDistance + (g + 1) * segment;
+      let x = runInDistance + (g + 1) * segment;
       const gateData = shuffledGateBank[g]!;
       
-      // Ensure gate doesn't overlap with obstacles or checkpoints
-      const tooClose = obstacles.some(obs => Math.abs(obs.x - x) < 200) || 
-                       checkpoints.some(cp => Math.abs(cp.x - x) < 200);
-      if (tooClose) continue;
+      // Try to find a valid position for the gate
+      let validPosition = false;
+      for (let attempt = 0; attempt < MAX_REPOSITION_ATTEMPTS; attempt++) {
+        const tooClose = obstacles.some(obs => Math.abs(obs.x - x) < GATE_MIN_DISTANCE) || 
+                         checkpoints.some(cp => Math.abs(cp.x - x) < GATE_MIN_DISTANCE);
+        
+        if (!tooClose) {
+          validPosition = true;
+          break;
+        }
+        
+        // Try alternative positions: shift forward/backward
+        if (attempt < MAX_REPOSITION_ATTEMPTS - 1) {
+          const offset = (attempt + 1) * REPOSITION_STEP_SIZE * (attempt % 2 === 0 ? 1 : -1);
+          x = runInDistance + (g + 1) * segment + offset;
+          // Ensure x is within valid range
+          x = Math.max(runInDistance + MIN_GATE_PADDING, Math.min(x, runLength - END_GATE_PADDING));
+        }
+      }
+      
+      // Skip gate only if no valid position found after all attempts
+      if (!validPosition) continue;
       
       // Generate 3 shape options: correct + 2 random wrong
       const allShapes: Array<'triangle' | 'square' | 'pentagon' | 'hexagon' | 'circle'> = 
