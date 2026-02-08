@@ -41,9 +41,12 @@ export interface PlaySessionStore {
   particleActive: boolean;
   gameStartTime: number | null;
   showHint: boolean;
+  /** Set by route when entering a game for the first time (stats.gamesByType was 0); GameScreen auto-shows description then clears this */
+  autoShowGameDescription: boolean;
   
   // Actions
-  startGame: (gameType: string) => void;
+  startGame: (gameType: string, options?: { autoShowGameDescription?: boolean }) => void;
+  setAutoShowGameDescription: (value: boolean) => void;
   setProblem: (problem: Problem | null) => void;
   submitAnswer: (isCorrect: boolean) => void;
   endGame: () => void;
@@ -88,13 +91,14 @@ const initialState = {
   particleActive: false,
   gameStartTime: null,
   showHint: false,
+  autoShowGameDescription: false,
 };
 
 export const usePlaySessionStore = create<PlaySessionStore>((set, get) => ({
   ...initialState,
   
   // Actions
-  startGame: (gameType: string) => {
+  startGame: (gameType: string, options?: { autoShowGameDescription?: boolean }) => {
     set({
       gameType,
       gameState: 'playing',
@@ -102,8 +106,6 @@ export const usePlaySessionStore = create<PlaySessionStore>((set, get) => ({
       score: 0, // Reset session score
       bgClass: 'bg-slate-50',
       notifications: [],
-      // hearts removed - now using gameStore.hearts (persistent global resource)
-      // stars removed - now using gameStore.stars (persistent currency)
       showHint: false,
       currentStreak: 0,
       gameStartTime: Date.now(),
@@ -116,7 +118,11 @@ export const usePlaySessionStore = create<PlaySessionStore>((set, get) => ({
       confetti: false,
       enhancedConfetti: false,
       particleActive: false,
+      autoShowGameDescription: options?.autoShowGameDescription ?? false,
     });
+  },
+  setAutoShowGameDescription: (value: boolean) => {
+    set({ autoShowGameDescription: value });
   },
   
   setProblem: (problem: Problem | null) => {

@@ -48,6 +48,11 @@ body:has(.fixed.inset-0) {
   overflow: hidden;
 }
 
+/* Force native emoji font so emojis render on iOS (avoid blank when inheriting system font) */
+.emoji-font {
+  font-family: "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji", sans-serif;
+}
+
 /* Screen reader only */
 .sr-only {
   position: absolute;

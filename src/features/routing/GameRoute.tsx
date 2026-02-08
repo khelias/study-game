@@ -56,8 +56,11 @@ export const GameRoute: React.FC = () => {
     // Start the game only once per route visit
     if (!hasStartedRef.current && (gameState === 'menu' || gameState === 'game_over')) {
       hasStartedRef.current = true;
+      // Check "first time" before incrementing so GameScreen can auto-show description
+      const stats = useGameStore.getState().stats;
+      const isFirstTime = (stats?.gamesByType?.[gameId] ?? 0) === 0;
       recordGameStart(gameId);
-      startGame(gameId);
+      startGame(gameId, { autoShowGameDescription: isFirstTime });
     }
   }, [gameSlug, gameState, navigate, startGame, recordGameStart, hearts]);
 

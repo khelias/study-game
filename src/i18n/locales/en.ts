@@ -403,6 +403,8 @@ export const en = {
   // Game screen
   gameScreen: {
     returnToMenu: 'Return to menu',
+    tipsLabel: 'Tips',
+    gameDescriptionTitle: 'How to play',
     starProgress: {
       one: '1/5 stars! 🌟',
       two: '2/5 stars! ⭐⭐',
@@ -725,69 +727,83 @@ export const en = {
     word_builder: {
       title: 'WORD MASTER',
       desc: 'Build a word from letters',
+      gameDescription: 'You see a picture (emoji) and must choose the right letters in order to spell the word. The letters are mixed up – tap them in the correct order. Start with the first letter!',
       hintRevealNextCost: 'Reveal next letter ({cost}⭐)',
       hintEliminateCost: 'Remove one wrong letter ({cost}⭐)',
     },
     word_cascade: {
       title: 'WORD CASCADE',
       desc: 'Catch letters and build words fast',
+      gameDescription: 'Letters fall from the top – tap them in the right order to spell the target word. If a letter reaches the red line, you get a strike. Collect stars ⭐, hearts ❤️, and shields that remove a strike.',
       hintRevealNextCost: 'Reveal next letter ({cost}⭐)',
     },
     syllable_builder: {
       title: 'SYLLABLE MASTER',
       desc: 'Put syllables together into a word',
+      gameDescription: 'You see a picture and syllable parts. Syllables are parts of a word – drag them into the right order to form the full word. Saying the word out loud helps you hear if it sounds right.',
     },
     pattern: {
       title: 'PATTERN TRAIN',
       desc: 'Continue the pattern',
+      gameDescription: 'The train has carriages with emojis that follow a pattern. Choose the correct next carriage from four options. Look at how the pattern repeats (e.g. A-B-A-B or A-B-C-A-B-C).',
       hintEliminateCost: 'Remove one wrong ({cost}⭐)',
     },
     sentence_logic: {
       title: 'SENTENCE DETECTIVE',
       desc: 'Where is the object?',
+      gameDescription: 'Read the sentence and look at the scene. The sentence says where the object is (e.g. "The cat is on the sofa"). Choose the correct answer from four options. Pay attention to the grammar.',
     },
     memory_math: {
       title: 'MATH MEMORY',
       desc: 'Find the equation and answer',
+      gameDescription: 'Flip the cards and find pairs: one card is an equation (e.g. 3+4) and the other is the answer (7). Remember where each card is to find the pairs quickly.',
       hintRevealPairCost: 'Reveal one pair ({cost}⭐)',
     },
     picture_pairs: {
       title: 'PICTURE PAIRS',
       desc: 'Match pictures and words',
+      gameDescription: 'Classic memory game: flip the cards and find the picture (emoji) and word pair. Before the game starts you get a short peek – remember the positions!',
       hintRevealPairCost: 'Reveal one pair ({cost}⭐)',
     },
     robo_path: {
       title: 'ROBO PATH',
       desc: 'Program the robot',
+      gameDescription: 'Give the robot commands (up, down, left, right) so it reaches the cell with the green window. Avoid obstacles. Choose the order of commands before pressing "Run".',
     },
     letter_match: {
       title: 'LETTER DETECTIVE',
       desc: 'Find the correct letter',
+      gameDescription: 'You see a word and a picture. The question is: which letter is in a certain position (e.g. first or second)? Choose the correct letter from four options. Uppercase and lowercase count as the same.',
     },
     unit_conversion: {
       title: 'UNITS',
       desc: 'Convert units',
+      gameDescription: 'Convert from one unit to another (e.g. metres to centimetres, kilograms to grams). Read the question carefully and choose the correct answer.',
       hintEliminateCost: 'Remove one wrong ({cost}⭐)',
     },
     balance_scale: {
       title: 'SCALES',
       desc: 'Balance the scales',
+      gameDescription: 'The left side of the scale has weights. Work out the sum on the left and choose the weight that balances the right side. Pick the correct weight from four options.',
       hintEliminateCost: 'Remove one wrong ({cost}⭐)',
       chooseWeight: 'Which weight balances the scale?',
     },
     time_match: {
       title: 'CLOCK GAME',
       desc: 'Set the time',
+      gameDescription: 'You see a clock showing hours and minutes. Choose the correct time from four options (e.g. "3 o\'clock" or "half past 4"). The hour is the bigger hand, the minute the smaller.',
       hintEliminateCost: 'Remove one wrong time ({cost}⭐)',
     },
     math_snake: {
       title: 'NUMBER SNAKE',
       desc: 'Feed the snake with equations',
+      gameDescription: 'Move with the arrow keys and eat apples – the snake grows. Some apples have a math question: solve it and choose the right answer. A wrong answer shortens the snake.',
       hintEliminateCost: 'Remove one wrong ({cost}⭐)',
     },
     compare_sizes: {
       title: 'NUMBER COMPARE',
       desc: 'Compare numbers',
+      gameDescription: 'Compare two numbers or amounts. Choose the correct symbol: < (less than), = (equal), or > (greater than). Look at both sides carefully.',
       instruction: 'Which symbol is correct?',
       symbolInstruction: 'Choose the correct comparison symbol',
       selectSymbol: 'Select symbol',
@@ -801,6 +817,7 @@ export const en = {
     shape_shift: {
       title: 'SHAPE SHIFT',
       desc: 'Build shapes from pieces',
+      gameDescription: 'Drag the shape pieces onto the board and place them to match the image. Tap a piece to rotate it 90°. In some modes you build the shape yourself or find the piece that doesn\'t belong.',
       instructions: {
         match: 'Drag pieces to the correct spots',
         rotate: 'Tap to rotate, drag to place',
@@ -853,10 +870,12 @@ export const en = {
     star_mapper: {
       title: 'STAR MAPPER',
       desc: 'Learn the constellations',
+      gameDescription: 'Connect the stars with lines to form a constellation (e.g. Ursa Major). In some modes you follow a guide; in others you build from memory. Use the "Undo" button if you make a mistake.',
     },
     battlelearn: {
       title: 'BATTLELEARN',
       desc: 'Answer and sink ships',
+      gameDescription: 'Pick a cell on the grid – if a ship is there, you get a hit; if it\'s empty, you miss. Some cells ask a math or logic question. Sink all the ships to win!',
       hintRevealEmptyCost: 'Reveal one empty cell ({cost}⭐)',
       hintRevealCost: 'Reveal one ship position ({cost}⭐)',
       hintEliminateCost: 'Eliminate one wrong answer ({cost}⭐)',

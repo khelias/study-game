@@ -205,7 +205,11 @@ export const PicturePairsView: React.FC<PicturePairsViewProps> = ({
 
                 <div className={`${isFlipped ? 'flex' : 'invisible'} items-center justify-center min-w-0 max-w-full max-h-full transition-opacity duration-200 px-1`}>
                   {isEmoji ? (
-                    <span className="text-2xl sm:text-4xl md:text-5xl leading-none shrink-0" role="img" aria-label={card.content}>
+                    <span
+                      className="text-2xl sm:text-4xl md:text-5xl leading-none shrink-0 emoji-font"
+                      role="img"
+                      aria-label={card.content}
+                    >
                       {card.content}
                     </span>
                   ) : (

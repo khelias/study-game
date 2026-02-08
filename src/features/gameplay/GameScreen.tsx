@@ -33,6 +33,7 @@ import { getAchievementCopy } from '../../utils/achievementCopy';
 import { useTranslation } from '../../i18n/useTranslation';
 import { useProfileText } from '../../hooks/useProfileText';
 import { GAME_CONFIG, CATEGORIES } from '../../games/data';
+import { Z_INDEX } from '../../utils/zIndex';
 import type { Direction, ProfileType } from '../../types/game';
 import type { AchievementUnlock } from '../../types/achievement';
 
@@ -68,6 +69,8 @@ export const GameScreen: React.FC = () => {
   const adaptiveDifficulty = usePlaySessionStore(state => state.adaptiveDifficulty);
   const gameStartTime = usePlaySessionStore(state => state.gameStartTime);
   const notifications = usePlaySessionStore(state => state.notifications);
+  const autoShowGameDescription = usePlaySessionStore(state => state.autoShowGameDescription);
+  const setAutoShowGameDescription = usePlaySessionStore(state => state.setAutoShowGameDescription);
 
   // Session actions
   const setProblem = usePlaySessionStore(state => state.setProblem);
@@ -93,6 +96,8 @@ export const GameScreen: React.FC = () => {
   };
 
   const [isCompactLayout, setIsCompactLayout] = useState(false);
+  const [showGameDescription, setShowGameDescription] = useState(false);
+  const hasAutoShownDescriptionRef = useRef(false);
   const [showSettingsMenu, setShowSettingsMenu] = useState(false);
   const [showStats, setShowStats] = useState(false);
   const [showAchievements, setShowAchievements] = useState(false);
@@ -176,6 +181,30 @@ export const GameScreen: React.FC = () => {
       resetLevelProgress();
     }
   }, [gameType, problem, resetLevelProgress]);
+
+  // Auto-show game description when route set autoShowGameDescription (first time entering this game type).
+  // Defer open to next frame so modal opens after first paint (fixes iOS). Do not cancel rAF in cleanup: clearing the flag re-runs this effect and would cancel the scheduled open.
+  useEffect(() => {
+    if (!gameType || !problem || !autoShowGameDescription || hasAutoShownDescriptionRef.current) return;
+    hasAutoShownDescriptionRef.current = true;
+    setAutoShowGameDescription(false);
+    requestAnimationFrame(() => {
+      setShowGameDescription(true);
+    });
+  }, [gameType, problem, autoShowGameDescription, setAutoShowGameDescription]);
+
+  useEffect(() => {
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && showGameDescription) {
+        playClick();
+        setShowGameDescription(false);
+      }
+    };
+    if (showGameDescription) {
+      document.addEventListener('keydown', handleEscape);
+      return () => document.removeEventListener('keydown', handleEscape);
+    }
+  }, [showGameDescription]);
 
   // Handle next level (legacy - now handled automatically in Phase 3)
   // This is kept for backward compatibility with level-up modal
@@ -372,7 +401,7 @@ export const GameScreen: React.FC = () => {
           <span className="text-xs sm:text-sm font-bold text-purple-700 whitespace-nowrap">{currentLevel}</span>
         </div>
         
-        {/* Game Name Badge - floating in center top of game area */}
+        {/* Game Name Badge - clickable, opens game description */}
         {gameType && (() => {
           const baseType = gameType.replace('_adv', '');
           const gameConfig = GAME_CONFIG[baseType];
@@ -381,23 +410,28 @@ export const GameScreen: React.FC = () => {
             ? t.games[baseType as keyof typeof t.games].title
             : gameType.toUpperCase()) as string;
           const gameName = formatText(gameTitleStr);
-          
           return (
-            <div 
-              className="absolute top-2 left-1/2 transform -translate-x-1/2 sm:top-4 z-30 flex items-center gap-1.5 bg-slate-50 border-slate-200 rounded-lg shadow-md"
-              style={{ 
+            <button
+              type="button"
+              onClick={() => {
+                playClick();
+                setShowGameDescription(true);
+              }}
+              className="absolute top-2 left-1/2 transform -translate-x-1/2 sm:top-4 z-30 flex items-center gap-1.5 bg-slate-50 border-slate-200 rounded-lg shadow-md cursor-pointer hover:bg-slate-100 active:scale-[0.98] transition-colors"
+              style={{
                 padding: '0.375rem 0.75rem',
                 boxSizing: 'border-box',
                 border: '1px solid',
                 borderColor: 'rgb(226, 232, 240)',
                 width: 'fit-content',
                 height: 'fit-content',
-                maxWidth: '60vw'
+                maxWidth: '60vw',
               }}
+              aria-label={formatText(t.gameScreen.gameDescriptionTitle)}
             >
               <span className="text-base sm:text-lg flex-shrink-0">{gameEmoji}</span>
               <span className="text-xs sm:text-sm font-bold text-slate-700 whitespace-nowrap truncate">{gameName}</span>
-            </div>
+            </button>
           );
         })()}
         
@@ -475,6 +509,66 @@ export const GameScreen: React.FC = () => {
           }}
         />
       )}
+
+      {/* Game description modal (how to play) */}
+      {showGameDescription && gameType && (() => {
+        const baseType = gameType.replace('_adv', '');
+        const gameConfig = GAME_CONFIG[baseType];
+        const gameEmoji = gameConfig?.emoji ?? '🎮';
+        const gameTitleStr: string = (gameConfig && t.games[baseType as keyof typeof t.games]
+          ? t.games[baseType as keyof typeof t.games].title
+          : gameType.toUpperCase()) as string;
+        const gameName = formatText(gameTitleStr);
+        const gameDesc = (t.games[baseType as keyof typeof t.games] as { gameDescription?: string })?.gameDescription;
+        const tips = (t.gameScreen.tips as Record<string, string[] | undefined>)[baseType];
+        const tipsList = Array.isArray(tips) ? tips : [];
+        return (
+          <div
+            className="fixed inset-0 flex items-center justify-center p-4 animate-in fade-in duration-200"
+            style={{ zIndex: Z_INDEX.MODALS, backgroundColor: 'rgba(0, 0, 0, 0.5)' }}
+            onClick={(e) => {
+              if (e.target === e.currentTarget) {
+                playClick();
+                setShowGameDescription(false);
+              }
+            }}
+          >
+            <div
+              className="bg-gradient-to-br from-slate-50 via-white to-slate-50 rounded-2xl shadow-2xl border-2 border-slate-200 w-full max-w-md animate-in zoom-in duration-300 p-5 sm:p-6 max-h-[85vh] overflow-y-auto"
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="game-description-title"
+            >
+              <h2 id="game-description-title" className="text-lg sm:text-xl font-black text-slate-800 mb-2 flex items-center gap-2">
+                <span>{gameEmoji}</span>
+                {gameName}
+              </h2>
+              <p className="text-sm text-slate-700 mb-4 whitespace-pre-wrap">{gameDesc ? formatText(gameDesc) : ''}</p>
+              {tipsList.length > 0 && (
+                <>
+                  <h3 className="text-sm font-bold text-slate-700 mb-2">{formatText(t.gameScreen.tipsLabel)}</h3>
+                  <ul className="list-disc list-inside text-sm text-slate-600 space-y-1 mb-4">
+                    {tipsList.map((tip, i) => (
+                      <li key={i}>{formatText(tip)}</li>
+                    ))}
+                  </ul>
+                </>
+              )}
+              <button
+                type="button"
+                onClick={() => {
+                  playClick();
+                  setShowGameDescription(false);
+                }}
+                className="w-full py-2.5 rounded-xl font-bold border-2 border-slate-600 bg-slate-600 text-white hover:bg-slate-700 transition-colors"
+                aria-label={formatText(t.common.close)}
+              >
+                {formatText(t.common.close)}
+              </button>
+            </div>
+          </div>
+        );
+      })()}
 
       <style>{`
         .no-scrollbar::-webkit-scrollbar { display: none; }
