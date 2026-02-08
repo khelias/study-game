@@ -881,8 +881,14 @@ export const en = {
     shape_dash: {
       title: 'SHAPE DASH',
       desc: 'Jump, dodge, and answer geometry',
-      gameDescription: 'Your character runs automatically. Press Space or tap the screen to jump over spikes and blocks. At checkpoints you must answer geometry questions (e.g. how many sides does a triangle have?). Correct = continue, wrong = game over.',
+      gameDescription: 'Your character runs automatically. Press Space or tap to jump over obstacles. Pass through the correct shape gate to answer geometry questions while running! Wrong gate = lose combo/shield, but keep running. Hit 2 wrong gates in a row or crash into obstacles = game over.',
       tapToRetry: 'Tap to try again',
+      hintRevealGateCost: 'Reveal correct gate ({cost}⭐)',
+      hintSlowTimeCost: 'Slow time near gates ({cost}⭐)',
+      gateApproaching: 'Shape Gate Ahead!',
+      gateCorrect: 'Correct Gate! +200',
+      gateWrong: 'Wrong Gate! -Combo',
+      consecutiveWrongWarning: 'Warning: One more wrong gate = crash!',
       shapeNames: {
         Triangle: 'Triangle',
         Square: 'Square',

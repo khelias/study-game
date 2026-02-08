@@ -2,9 +2,10 @@
  * Shape Dash engine – pure business logic (no UI).
  * Collision detection, checkpoint detection, jump physics.
  * V3: Adds star collection, jump pads, boost zones, combo system
+ * V4: Adds shape gate detection, terrain segments
  */
 
-import type { ShapeDashObstacle, ShapeDashCheckpoint, ShapeDashStar, ShapeDashJumpPad, ShapeDashBoostZone } from '../types/game';
+import type { ShapeDashObstacle, ShapeDashCheckpoint, ShapeDashStar, ShapeDashJumpPad, ShapeDashBoostZone, ShapeDashShapeGate, ShapeDashTerrainSegment } from '../types/game';
 
 /** Player hitbox: width and height in px */
 export const PLAYER_WIDTH = 28;
@@ -235,4 +236,81 @@ export function checkBoostZone(
     }
   }
   return false;
+}
+
+// ================= V4 Features =================
+
+/** Shape gate dimensions */
+export const GATE_WIDTH = 80;
+export const GATE_HEIGHT = 120;
+export const GATE_SPACING = 20; // Space between gates
+export const GATE_ZONE_WIDTH = GATE_WIDTH * 3 + GATE_SPACING * 2; // Total width of 3 gates
+
+/**
+ * Check if player is approaching a shape gate (for visual warning)
+ */
+export function getApproachingGateIndex(
+  playerX: number,
+  shapeGates: ShapeDashShapeGate[],
+  scrollOffset: number,
+  passedGateIds: Set<string>,
+  warningDistance: number = 400
+): number | null {
+  const playerRight = playerX + PLAYER_WIDTH;
+  for (let i = 0; i < shapeGates.length; i++) {
+    const gate = shapeGates[i]!;
+    if (passedGateIds.has(gate.id)) continue;
+    const gateWorldX = gate.x - scrollOffset;
+    const distance = gateWorldX - playerRight;
+    if (distance > 0 && distance < warningDistance) return i;
+  }
+  return null;
+}
+
+/**
+ * Check if player is passing through a shape gate zone
+ * Returns: { gateIndex, gateChoice } or null
+ * gateChoice: 0=left, 1=middle, 2=right
+ */
+export function checkShapeGatePass(
+  playerState: PlayerState,
+  shapeGates: ShapeDashShapeGate[],
+  scrollOffset: number,
+  passedGateIds: Set<string>
+): { gateIndex: number; gateChoice: number } | null {
+  const playerCenterX = playerState.x + PLAYER_WIDTH / 2;
+  
+  for (let i = 0; i < shapeGates.length; i++) {
+    const gate = shapeGates[i]!;
+    if (passedGateIds.has(gate.id)) continue;
+    const gateScreenX = gate.x - scrollOffset;
+    const gateZoneLeft = gateScreenX - GATE_ZONE_WIDTH / 2;
+    const gateZoneRight = gateScreenX + GATE_ZONE_WIDTH / 2;
+    
+    // Check if player center is within gate zone horizontally
+    if (playerCenterX >= gateZoneLeft && playerCenterX <= gateZoneRight) {
+      // Determine which gate (left, middle, right) the player is passing through
+      const relativeX = playerCenterX - gateZoneLeft;
+      const gateSlot = Math.floor(relativeX / (GATE_WIDTH + GATE_SPACING));
+      const gateChoice = Math.max(0, Math.min(2, gateSlot)); // Clamp to 0-2
+      
+      return { gateIndex: i, gateChoice };
+    }
+  }
+  return null;
+}
+
+/**
+ * Get terrain segment at a given x position
+ */
+export function getTerrainAtPosition(
+  x: number,
+  terrainSegments: ShapeDashTerrainSegment[]
+): ShapeDashTerrainSegment | null {
+  for (const segment of terrainSegments) {
+    if (x >= segment.x && x < segment.x + segment.width) {
+      return segment;
+    }
+  }
+  return null;
 }

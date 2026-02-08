@@ -881,8 +881,14 @@ export const et = {
     shape_dash: {
       title: 'KUJUNDITE JOOKS',
       desc: 'Hüppa, väldi takistusi ja vasta geomeetriale',
-      gameDescription: 'Sinu tegelane jookseb ise edasi. Vajuta tühikuklahvi või puuduta ekraani, et hüpata üle okaste ja plokkide. Kontrollpunktides pead vastama geomeetria küsimustele (nt mitu külge on kolmnurgal). Õige vastus = jätkad, vale = mäng läbi.',
+      gameDescription: 'Sinu tegelane jookseb ise edasi. Vajuta tühikuklahvi või puuduta ekraani, et hüpata takistuste üle. Läbi õige kujundi värava jookstes vastame geomeetria küsimustele! Vale värav = kaotad combo/kilbi, aga jooksed edasi. Kaks valet järjest või kokkupõrge takistustega = mäng läbi.',
       tapToRetry: 'Vajuta uuesti proovimiseks',
+      hintRevealGateCost: 'Näita õiget väravat ({cost}⭐)',
+      hintSlowTimeCost: 'Aeglusta aega väravate juures ({cost}⭐)',
+      gateApproaching: 'Kujundi värav ees!',
+      gateCorrect: 'Õige värav! +200',
+      gateWrong: 'Vale värav! -Combo',
+      consecutiveWrongWarning: 'Hoiatus: Veel üks vale värav = kokkupõrge!',
       shapeNames: {
         Triangle: 'Kolmnurk',
         Square: 'Ruut',
