@@ -173,7 +173,8 @@ export const BOOST_ZONE_MULTIPLIER = 1.3;
 export function checkStarCollection(
   playerState: PlayerState,
   stars: ShapeDashStar[],
-  scrollOffset: number
+  scrollOffset: number,
+  groundY: number = GROUND_Y
 ): string[] {
   const collected: string[] = [];
   const playerCenterX = playerState.x + PLAYER_WIDTH / 2;
@@ -182,7 +183,7 @@ export function checkStarCollection(
   for (const star of stars) {
     if (star.collected) continue;
     const starScreenX = star.x - scrollOffset;
-    const starScreenY = -star.y; // Convert from ground-up to screen coordinates
+    const starScreenY = groundY - star.y; // Fixed: Use same coordinate system as rendering
     const dx = playerCenterX - starScreenX;
     const dy = playerCenterY - starScreenY;
     const distSq = dx * dx + dy * dy;

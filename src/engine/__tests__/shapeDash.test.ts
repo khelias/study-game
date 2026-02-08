@@ -11,6 +11,7 @@ import {
   getPlayerBounds,
   checkAABBOverlap,
   getMinObstacleGap,
+  checkStarCollection,
   GRAVITY,
   JUMP_VELOCITY,
   JUMP_AIR_TIME_S,
@@ -19,7 +20,7 @@ import {
   GROUND_Y,
 } from '../shapeDash';
 import type { PlayerState } from '../shapeDash';
-import type { ShapeDashObstacle, ShapeDashCheckpoint } from '../../types/game';
+import type { ShapeDashObstacle, ShapeDashCheckpoint, ShapeDashStar } from '../../types/game';
 
 describe('shapeDash engine', () => {
   it('getPlayerBounds returns AABB for player', () => {
@@ -135,5 +136,46 @@ describe('shapeDash engine', () => {
     const minExpected = scrollSpeed * JUMP_AIR_TIME_S + 24;
     expect(gap).toBeGreaterThanOrEqual(minExpected);
     expect(getMinObstacleGap(200)).toBeGreaterThan(gap);
+  });
+  
+  describe('V3: Star collection', () => {
+    it('checkStarCollection uses correct coordinate system (GROUND_Y - star.y)', () => {
+      // Star at ground level (y=0 in world coordinates)
+      const stars: ShapeDashStar[] = [
+        { id: 'star1', x: 150, y: 0, collected: false }
+      ];
+      
+      // Player at ground level, centered on star
+      const playerState: PlayerState = {
+        x: 150 - PLAYER_WIDTH / 2,  // Center player on star X
+        y: GROUND_Y,                 // Player Y at ground
+        velocityY: 0,
+        isOnGround: true
+      };
+      
+      const scrollOffset = 0;
+      const collected = checkStarCollection(playerState, stars, scrollOffset, GROUND_Y);
+      
+      // Star should be collected when coordinates match
+      expect(collected).toContain('star1');
+    });
+    
+    it('checkStarCollection does not collect distant stars', () => {
+      const stars: ShapeDashStar[] = [
+        { id: 'star1', x: 500, y: 0, collected: false }
+      ];
+      
+      const playerState: PlayerState = {
+        x: 100,
+        y: GROUND_Y,
+        velocityY: 0,
+        isOnGround: true
+      };
+      
+      const scrollOffset = 0;
+      const collected = checkStarCollection(playerState, stars, scrollOffset, GROUND_Y);
+      
+      expect(collected).toHaveLength(0);
+    });
   });
 });

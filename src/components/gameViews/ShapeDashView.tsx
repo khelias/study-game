@@ -1221,7 +1221,8 @@ export const ShapeDashView: React.FC<ShapeDashViewProps> = ({
       const collectedStarIds = checkStarCollection(
         { x: PLAYER_X, y: py, velocityY: pvy, isOnGround: state.isOnGround },
         stars,
-        nextScroll
+        nextScroll,
+        GROUND_Y  // Pass GROUND_Y for correct coordinate calculation
       );
       for (const starId of collectedStarIds) {
         if (!state.collectedStarIds.has(starId)) {
