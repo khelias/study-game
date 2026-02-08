@@ -28,6 +28,7 @@ import {
   UnitConversionView,
   StarMapperView,
   ShapeShiftView,
+  ShapeDashView,
   BattleLearnView,
 } from '../components/gameViews';
 import { MathSnakeView } from '../components/MathSnakeView';
@@ -49,6 +50,7 @@ import {
   validateRoboPath,
   validateStarMapper,
   validateShapeShift,
+  validateShapeDash,
   validateBattleLearn,
 } from './validators';
 
@@ -281,6 +283,20 @@ function registerAllGames(): void {
       config: shapeShiftConfig,
       validator: validateShapeShift,
       allowedProfiles: shapeShiftConfig.allowedProfiles,
+    });
+  }
+
+  // Shape Dash (Geometry Dash–inspired runner with geometry checkpoints)
+  const shapeDashConfig = GAME_CONFIG.shape_dash;
+  const shapeDashGenerator = Generators.shape_dash;
+  if (shapeDashConfig && shapeDashGenerator) {
+    gameRegistry.register({
+      id: 'shape_dash',
+      component: ShapeDashView,
+      generator: shapeDashGenerator,
+      config: shapeDashConfig,
+      validator: validateShapeDash,
+      allowedProfiles: shapeDashConfig.allowedProfiles,
     });
   }
 

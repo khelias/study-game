@@ -36,6 +36,7 @@ const makeKey = (prob: Problem | null): string => {
     case 'time_match': return `time:${prob.answer}`;
     case 'unit_conversion': return `unit:${prob.value}${prob.fromUnit}=${prob.answer}${prob.toUnit}`;
     case 'star_mapper': return `star:${prob.constellation.id}`;
+    case 'shape_dash': return `shapedash:${prob.runLength}:${prob.obstacles.map((o) => `${o.x}-${o.type}`).join(';')}`;
     default: {
       // TypeScript narrowing - this should never happen but satisfies type checker
       return `${String((prob as Problem).type)}:${(prob as Problem).uid}`;

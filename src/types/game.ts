@@ -382,6 +382,38 @@ export interface BattleLearnProblem extends BaseProblem {
   gameWon: boolean;         // All ships sunk
 }
 
+// Shape Dash (Geometry Dash–inspired runner with geometry checkpoints)
+export interface ShapeDashObstacle {
+  id: string;
+  x: number;           // World x position (pixels)
+  type: 'spike' | 'block' | 'circle' | 'floating';
+  height?: number;     // Block height in px (spikes use default)
+  /** Vertical offset from ground (floating obstacles hover in air) */
+  offsetY?: number;
+  /** Circle radius in px (for type 'circle') */
+  radius?: number;
+}
+
+export interface ShapeDashCheckpointQuestion {
+  prompt: string;
+  options: string[];
+  correctIndex: number;
+}
+
+export interface ShapeDashCheckpoint {
+  id: string;
+  x: number;
+  question: ShapeDashCheckpointQuestion;
+}
+
+export interface ShapeDashProblem extends BaseProblem {
+  type: 'shape_dash';
+  obstacles: ShapeDashObstacle[];
+  checkpoints: ShapeDashCheckpoint[];
+  scrollSpeed: number;   // px per second
+  runLength: number;     // Total world width in px (finish line)
+}
+
 // Answer metadata for game-specific actions
 // Union type for all problems
 export type Problem =
@@ -401,7 +433,8 @@ export type Problem =
   | CompareSizesProblem
   | StarMapperProblem
   | ShapeShiftProblem
-  | BattleLearnProblem;
+  | BattleLearnProblem
+  | ShapeDashProblem;
 
 // RNG function type
 export type RngFunction = () => number;

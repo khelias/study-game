@@ -7,6 +7,7 @@ import { getLocale, getTranslations } from '../i18n/index';
 import { generateSentence, getSceneName } from './sentenceTranslations';
 import { createMathSnakeProblem } from '../engine/mathSnake';
 import { placeShips } from '../engine/battlelearn';
+import { getMinObstacleGap, SPIKE_WIDTH } from '../engine/shapeDash';
 import type { 
   RngFunction, 
   ProfileType, 
@@ -36,7 +37,11 @@ import type {
   LetterObject,
   PatternRuleId,
   BattleLearnProblem,
-  BattleLearnCellType
+  BattleLearnCellType,
+  ShapeDashProblem,
+  ShapeDashObstacle,
+  ShapeDashCheckpoint,
+  ShapeDashCheckpointQuestion,
 } from '../types/game';
 
 const profileMeta = (profileId: ProfileType) => PROFILES[profileId] || PROFILES.starter;
@@ -1683,6 +1688,174 @@ export const Generators: Record<string, GeneratorFunction> = {
         correctIndex,
       },
       gameWon: false,
+    };
+  },
+
+  shape_dash: (level: number, rng: RngFunction = Math.random, profile: ProfileType = 'starter'): ShapeDashProblem => {
+    const meta = profileMeta(profile);
+    const effectiveLevel = Math.max(1, level + meta.difficultyOffset);
+
+    // Base scroll speed and run length scale with level
+    const baseSpeed = 120 + effectiveLevel * 18;
+    const scrollSpeed = Math.min(280, baseSpeed);
+    const runLength = 2800 + effectiveLevel * 400;
+
+    // Geometry question bank: large pool (sides, vertices, corners, shape names) – fallbacks for generator; i18n has same keys under games.shape_dash.questions
+    const locale = getLocale();
+    const fallbackPrompts: Record<string, { et: string; en: string }> = {
+      triangleSides: { et: 'Mitu külge on kolmnurgal?', en: 'How many sides does a triangle have?' },
+      squareSides: { et: 'Mitu külge on ruudul?', en: 'How many sides does a square have?' },
+      pentagonSides: { et: 'Mitu külge on viisnurgal?', en: 'How many sides does a pentagon have?' },
+      hexagonSides: { et: 'Mitu külge on kuusnurgal?', en: 'How many sides does a hexagon have?' },
+      circleSides: { et: 'Mitu külge on ringil?', en: 'How many sides does a circle have?' },
+      rectangleSides: { et: 'Mitu külge on ristkülikul?', en: 'How many sides does a rectangle have?' },
+      triangleVertices: { et: 'Mitu tippu on kolmnurgal?', en: 'How many vertices does a triangle have?' },
+      squareVertices: { et: 'Mitu tippu on ruudul?', en: 'How many vertices does a square have?' },
+      rectangleCorners: { et: 'Mitu nurka on ristkülikul?', en: 'How many corners does a rectangle have?' },
+      hexagonSidesAlt: { et: 'Mitu külge on kuusnurgal?', en: 'A hexagon has how many sides?' },
+      whichThree: { et: 'Millisel kujul on 3 külge?', en: 'Which shape has 3 sides?' },
+      whichFour: { et: 'Millisel kujul on 4 külge?', en: 'Which shape has 4 sides?' },
+      whichSix: { et: 'Millisel kujul on 6 külge?', en: 'Which shape has 6 sides?' },
+      circleEdges: { et: 'Mitu serva on ringil?', en: 'How many edges does a circle have?' },
+      whichFive: { et: 'Millisel kujul on 5 külge?', en: 'Which shape has 5 sides?' },
+      whichZero: { et: 'Millisel kujul on 0 külge?', en: 'Which shape has 0 sides?' },
+      octagonSides: { et: 'Mitu külge on kaheksanurgal?', en: 'How many sides does an octagon have?' },
+      triangleCorners: { et: 'Mitu nurka on kolmnurgal?', en: 'How many corners does a triangle have?' },
+      squareCorners: { et: 'Mitu nurka on ruudul?', en: 'How many corners does a square have?' },
+      pentagonVertices: { et: 'Mitu tippu on viisnurgal?', en: 'How many vertices does a pentagon have?' },
+      hexagonVertices: { et: 'Mitu tippu on kuusnurgal?', en: 'How many vertices does a hexagon have?' },
+      rectangleSidesCount: { et: 'Mitu külge on ristkülikul?', en: 'How many sides does a rectangle have?' },
+      rhombusSides: { et: 'Mitu külge on rombil?', en: 'How many sides does a rhombus have?' },
+      ovalSides: { et: 'Mitu külge on ovaalil?', en: 'How many sides does an oval have?' },
+      starPoints: { et: 'Mitu tipu on viisnurkstel tähel?', en: 'A 5-pointed star has how many points?' },
+    };
+    const questionBank: Array<{ options: string[]; correctIndex: number; key: keyof typeof fallbackPrompts }> = [
+      { options: ['3', '4', '5', '6'], correctIndex: 0, key: 'triangleSides' },
+      { options: ['3', '4', '5', '6'], correctIndex: 1, key: 'squareSides' },
+      { options: ['3', '4', '5', '6'], correctIndex: 2, key: 'pentagonSides' },
+      { options: ['3', '4', '5', '6'], correctIndex: 3, key: 'hexagonSides' },
+      { options: ['0', '1', '2', '3'], correctIndex: 0, key: 'circleSides' },
+      { options: ['3', '4', '5', '6'], correctIndex: 1, key: 'rectangleSides' },
+      { options: ['2', '3', '4', '5'], correctIndex: 1, key: 'triangleVertices' },
+      { options: ['2', '3', '4', '5'], correctIndex: 2, key: 'squareVertices' },
+      { options: ['2', '3', '4', '5'], correctIndex: 2, key: 'rectangleCorners' },
+      { options: ['3', '4', '5', '6'], correctIndex: 3, key: 'hexagonSidesAlt' },
+      { options: ['Square', 'Triangle', 'Pentagon', 'Circle'], correctIndex: 1, key: 'whichThree' },
+      { options: ['Triangle', 'Square', 'Hexagon', 'Circle'], correctIndex: 1, key: 'whichFour' },
+      { options: ['Triangle', 'Square', 'Hexagon', 'Pentagon'], correctIndex: 2, key: 'whichSix' },
+      { options: ['0', '1', '2', '4'], correctIndex: 0, key: 'circleEdges' },
+      { options: ['Triangle', 'Square', 'Pentagon', 'Hexagon'], correctIndex: 2, key: 'whichFive' },
+      { options: ['Triangle', 'Square', 'Circle', 'Hexagon'], correctIndex: 2, key: 'whichZero' },
+      { options: ['6', '7', '8', '9'], correctIndex: 2, key: 'octagonSides' },
+      { options: ['2', '3', '4', '5'], correctIndex: 1, key: 'triangleCorners' },
+      { options: ['2', '3', '4', '5'], correctIndex: 2, key: 'squareCorners' },
+      { options: ['3', '4', '5', '6'], correctIndex: 2, key: 'pentagonVertices' },
+      { options: ['3', '4', '5', '6'], correctIndex: 3, key: 'hexagonVertices' },
+      { options: ['3', '4', '5', '6'], correctIndex: 1, key: 'rectangleSidesCount' },
+      { options: ['3', '4', '5', '6'], correctIndex: 1, key: 'rhombusSides' },
+      { options: ['0', '1', '2', '4'], correctIndex: 0, key: 'ovalSides' },
+      { options: ['4', '5', '6', '10'], correctIndex: 1, key: 'starPoints' },
+    ];
+
+    const obstacles: ShapeDashObstacle[] = [];
+    const numObstacles = 6 + Math.floor(effectiveLevel * 1.4);
+    const numCheckpoints = Math.min(2, 1 + Math.floor(effectiveLevel / 4));
+
+    // Difficulty scales with level: fewer “easy” first obstacles, slightly tighter gaps at higher levels
+    const minGap = getMinObstacleGap(scrollSpeed);
+    const firstObstaclesCount = Math.max(3, 7 - effectiveLevel);
+    const firstLandingMargin = Math.max(120, 180 - effectiveLevel * 12);
+    const firstMinGap = getMinObstacleGap(scrollSpeed, firstLandingMargin);
+    const gapVariation = Math.max(40, 100 - effectiveLevel * 8);
+    const runInDistance = 560;
+    const clearAfterCheckpoint = 200;
+    const checkpointLeadIn = 60;
+
+    let lastX = runInDistance;
+
+    const obstacleTypes: Array<'spike' | 'block' | 'circle' | 'floating'> = ['spike', 'block', 'circle', 'floating'];
+    const harderBias = Math.min(0.5, effectiveLevel * 0.08);
+    for (let i = 0; i < numObstacles; i++) {
+      const useGenerousGap = i < firstObstaclesCount;
+      const baseGap = useGenerousGap ? firstMinGap : minGap;
+      const gap = baseGap + Math.floor(rng() * gapVariation);
+      lastX += gap;
+      let type: 'spike' | 'block' | 'circle' | 'floating';
+      if (rng() < harderBias) {
+        type = rng() > 0.5 ? 'circle' : 'floating';
+      } else {
+        type = obstacleTypes[Math.floor(rng() * obstacleTypes.length)]!;
+      }
+      if (type === 'spike') {
+        obstacles.push({ id: `obs-${uid(rng)}`, x: lastX, type: 'spike' });
+      } else if (type === 'block') {
+        obstacles.push({
+          id: `obs-${uid(rng)}`,
+          x: lastX,
+          type: 'block',
+          height: 32 + Math.floor(rng() * 24),
+        });
+      } else if (type === 'circle') {
+        obstacles.push({
+          id: `obs-${uid(rng)}`,
+          x: lastX,
+          type: 'circle',
+          radius: 16 + Math.floor(rng() * 6),
+          offsetY: rng() > 0.6 ? 20 + Math.floor(rng() * 25) : 0,
+        });
+      } else {
+        obstacles.push({
+          id: `obs-${uid(rng)}`,
+          x: lastX,
+          type: 'floating',
+          height: 28 + Math.floor(rng() * 16),
+          offsetY: 40 + Math.floor(rng() * 50),
+        });
+      }
+    }
+
+    const obstacleWidth = (o: ShapeDashObstacle) =>
+      o.type === 'circle' ? 2 * (o.radius ?? 18) : SPIKE_WIDTH;
+
+    // Place checkpoints only in safe zones: after an obstacle, with no obstacle for clearAfterCheckpoint px after the checkpoint.
+    const checkpoints: ShapeDashCheckpoint[] = [];
+    const safeZones: { start: number; end: number }[] = [];
+    for (let i = 0; i < obstacles.length - 1; i++) {
+      const gapStart = obstacles[i]!.x + obstacleWidth(obstacles[i]!) + checkpointLeadIn;
+      const nextObsX = obstacles[i + 1]!.x;
+      const gapEnd = nextObsX - clearAfterCheckpoint;
+      if (gapEnd > gapStart + 40) {
+        safeZones.push({ start: gapStart, end: gapEnd });
+      }
+    }
+    const shuffledBank = [...questionBank].sort(() => rng() - 0.5);
+    const numToPlace = Math.min(numCheckpoints, safeZones.length, shuffledBank.length);
+    const zoneOrder = safeZones.map((_, i) => i).sort((a, b) => safeZones[a]!.start - safeZones[b]!.start);
+    for (let c = 0; c < numToPlace; c++) {
+      const zoneIdx = zoneOrder[c]!;
+      const zone = safeZones[zoneIdx]!;
+      const x = Math.floor(zone.start + rng() * Math.max(0, zone.end - zone.start - 40));
+      const q = shuffledBank[c]!;
+      const lang = locale === 'et' ? 'et' : 'en';
+      const prompt = fallbackPrompts[q.key]?.[lang] ?? q.key;
+      const options = [...q.options].sort(() => rng() - 0.5);
+      const correctIndex = options.indexOf(q.options[q.correctIndex]!);
+      const safeCorrectIndex = correctIndex >= 0 ? correctIndex : 0;
+      checkpoints.push({
+        id: `cp-${uid(rng)}`,
+        x,
+        question: { prompt, options, correctIndex: safeCorrectIndex },
+      });
+    }
+    checkpoints.sort((a, b) => a.x - b.x);
+
+    return {
+      type: 'shape_dash',
+      uid: uid(rng),
+      obstacles,
+      checkpoints,
+      scrollSpeed,
+      runLength,
     };
   },
 };

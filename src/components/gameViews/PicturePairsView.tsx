@@ -46,7 +46,7 @@ const MemoCard: React.FC<{
   isFlipped: boolean;
   onFlip: (index: number) => void;
   disabled: boolean;
-}> = React.memo(({ card, index, isPeeking, isFlipped, onFlip, disabled }) => {
+}> = React.memo(({ card, index, isPeeking: _isPeeking, isFlipped, onFlip, disabled }) => {
   const isEmoji = card.cardType === 'emoji';
   return (
     <button
@@ -119,14 +119,20 @@ export const PicturePairsView: React.FC<PicturePairsViewProps> = ({
   const problemUid = problem.uid;
 
   useEffect(() => {
-    setCards(problem.cards.map(c => ({ ...c, flipped: false, solved: false })));
-    setFlipped([]);
-    setMatchedPairs(0);
-    setMoves(0);
-    setShowCelebration(false);
-    setIsPeeking(true);
-    const peekTimer = setTimeout(() => setIsPeeking(false), 1200);
-    return () => clearTimeout(peekTimer);
+    let peekTimerId: ReturnType<typeof setTimeout>;
+    const id = setTimeout(() => {
+      setCards(problem.cards.map(c => ({ ...c, flipped: false, solved: false })));
+      setFlipped([]);
+      setMatchedPairs(0);
+      setMoves(0);
+      setShowCelebration(false);
+      setIsPeeking(true);
+      peekTimerId = setTimeout(() => setIsPeeking(false), 1200);
+    }, 0);
+    return () => {
+      clearTimeout(id);
+      clearTimeout(peekTimerId!);
+    };
   }, [problemUid, problem.cards]);
 
   const handlePaidHint = useCallback(
@@ -170,8 +176,9 @@ export const PicturePairsView: React.FC<PicturePairsViewProps> = ({
     setMoves(prev => prev + 1);
 
     const newCards = [...cards];
-    if (newCards[index]) {
-      newCards[index] = { ...newCards[index]!, flipped: true };
+    const at = newCards[index];
+    if (at) {
+      newCards[index] = { ...at, flipped: true };
     }
     setCards(newCards);
     const newFlipped = [...flipped, index];

@@ -424,7 +424,7 @@ export const MenuScreen: React.FC = () => {
               {Object.values(CATEGORIES).map((category) => {
                 const categoryGames = Object.entries(GAME_CONFIG)
                   .filter(
-                    ([key, conf]) =>
+                    ([_key, conf]) =>
                       conf.category === category.id &&
                       conf.allowedProfiles?.includes(profile as ProfileType)
                   );
@@ -438,7 +438,7 @@ export const MenuScreen: React.FC = () => {
                     </div>
                     {categoryGames.map(([key, conf]) => {
                       const isChecked = editFavouritesDraft.includes(key);
-                      const gameName = t.games[key as keyof typeof t.games]?.title ?? conf.title;
+                      const gameName: string = (t.games[key as keyof typeof t.games]?.title ?? conf.title) as string;
                       const gameEmoji = conf.emoji ?? CATEGORIES[conf.category]?.emoji ?? '🎮';
                       return (
                         <label
@@ -497,7 +497,7 @@ export const MenuScreen: React.FC = () => {
         {Object.values(CATEGORIES).map(category => {
           // All games appear in their category; favourites also appear in Favourites section
           const categoryGames = Object.entries(GAME_CONFIG)
-            .filter(([key, conf]) => 
+            .filter(([_key, conf]) => 
               conf.category === category.id && 
               (!conf.allowedProfiles || conf.allowedProfiles.includes(profile as ProfileType))
             );

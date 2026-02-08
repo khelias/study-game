@@ -204,7 +204,7 @@ export const GameScreen: React.FC = () => {
       document.addEventListener('keydown', handleEscape);
       return () => document.removeEventListener('keydown', handleEscape);
     }
-  }, [showGameDescription]);
+  }, [showGameDescription, playClick]);
 
   // Handle next level (legacy - now handled automatically in Phase 3)
   // This is kept for backward compatibility with level-up modal
@@ -340,8 +340,8 @@ export const GameScreen: React.FC = () => {
         particleActive={particleActive}
         onReturnToMenu={() => {
           playClick();
-          navigate('/', { replace: true });
-          returnToMenu();
+          void navigate('/', { replace: true });
+          void returnToMenu();
         }}
         onSettingsClick={() => {
           setShowSettingsMenu(!showSettingsMenu);
@@ -362,8 +362,8 @@ export const GameScreen: React.FC = () => {
           }}
           onReturnToMenu={() => {
             playClick();
-            navigate('/', { replace: true });
-            returnToMenu();
+            void navigate('/', { replace: true });
+            void returnToMenu();
           }}
           onClose={() => setShowSettingsMenu(false)}
           onShowAchievements={() => setShowAchievements(true)}

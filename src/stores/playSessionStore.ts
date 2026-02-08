@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { createAdaptiveDifficulty, updateAdaptiveDifficulty as updateDifficulty } from '../engine/adaptiveDifficulty';
-import type { Problem } from '../types/game';
+import type { Problem, PicturePairsCard } from '../types/game';
 import type { Notification, NotificationInput } from '../types/notification';
 
 type GameState = 'menu' | 'playing' | 'game_over';
@@ -141,7 +141,7 @@ export const usePlaySessionStore = create<PlaySessionStore>((set, get) => ({
         (clonedProblem as typeof problem).cards = [...(problem.cards || [])];
       }
       if (problem.type === 'picture_pairs' && 'cards' in problem) {
-        (clonedProblem as typeof problem).cards = (problem as { cards: unknown[] }).cards.map(c => ({ ...c }));
+        (clonedProblem as typeof problem).cards = (problem as { cards: PicturePairsCard[] }).cards.map(c => ({ ...c }));
       }
       if (problem.type === 'pattern' && 'sequence' in problem) {
         (clonedProblem as typeof problem).sequence = [...(problem.sequence || [])];

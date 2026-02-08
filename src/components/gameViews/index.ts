@@ -17,4 +17,5 @@ export { TimeGameView } from './TimeGameView';
 export { UnitConversionView } from './UnitConversionView';
 export { StarMapperView } from './StarMapperView';
 export { ShapeShiftView } from './ShapeShiftView';
+export { ShapeDashView } from './ShapeDashView';
 export { BattleLearnView } from './BattleLearnView';

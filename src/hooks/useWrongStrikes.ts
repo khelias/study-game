@@ -29,9 +29,9 @@ export function useWrongStrikes(
   const [strikes, setStrikes] = useState(0);
 
   useEffect(() => {
-    if (resetDeps !== undefined) {
-      setStrikes(0);
-    }
+    if (resetDeps === undefined) return;
+    const id = setTimeout(() => setStrikes(0), 0);
+    return () => clearTimeout(id);
   }, [resetDeps]);
 
   const addStrike = useCallback(() => {

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { validateStarMapper, validateBattleLearn } from '../validators';
+import { validateStarMapper, validateBattleLearn, validateShapeDash } from '../validators';
 import type { StarMapperProblem } from '../../types/game';
 
 describe('validateStarMapper', () => {
@@ -270,5 +270,34 @@ describe('validateBattleLearn', () => {
     };
     
     expect(validateBattleLearn(problem, 1)).toBe(false);
+  });
+});
+
+describe('validateShapeDash', () => {
+  const shapeDashProblem = {
+    type: 'shape_dash' as const,
+    uid: 'test-1',
+    obstacles: [{ id: 'o1', x: 100, type: 'spike' as const }],
+    checkpoints: [
+      {
+        id: 'c1',
+        x: 500,
+        question: { prompt: '?', options: ['3', '4'], correctIndex: 0 },
+      },
+    ],
+    scrollSpeed: 150,
+    runLength: 3000,
+  };
+
+  it('should return true when userAnswer is true (run completed)', () => {
+    expect(validateShapeDash(shapeDashProblem, true)).toBe(true);
+  });
+
+  it('should return false when userAnswer is false (crashed or wrong checkpoint)', () => {
+    expect(validateShapeDash(shapeDashProblem, false)).toBe(false);
+  });
+
+  it('should return false for wrong problem type', () => {
+    expect(validateShapeDash({ type: 'word_builder', uid: 'x', target: 'x', emoji: 'x', shuffled: [] }, true)).toBe(false);
   });
 });

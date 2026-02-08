@@ -254,7 +254,7 @@ export const BattleLearnView: React.FC<BattleLearnViewProps> = ({
     playSound('click', soundEnabled);
     
     const cellType = gameState.cellGrid[row]?.[col] ?? 'empty';
-    let newRevealed: Array<[number, number]> = [...gameState.revealed, [row, col] as [number, number]];
+    const newRevealed: Array<[number, number]> = [...gameState.revealed, [row, col] as [number, number]];
     let newHits = gameState.hits;
     let newSunkShips = gameState.sunkShips;
     let gameWon = gameState.gameWon;

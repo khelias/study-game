@@ -134,10 +134,10 @@ export const GameResultScreen: React.FC<GameResultScreenProps> = ({
   const handleSecondaryAction = () => {
     playClick();
     const secAction: ActionFn | undefined = currentConfig.secondaryAction as ActionFn | undefined;
-    if (secAction) secAction();
+    if (secAction) void secAction();
     else {
-      navigate('/', { replace: true });
-      returnToMenu();
+      void navigate('/', { replace: true });
+      void returnToMenu();
     }
   };
 
