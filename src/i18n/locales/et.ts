@@ -888,7 +888,7 @@ export const et = {
       cepheus: { name: 'Kefeusus', desc: 'Kuningas põhjataevas' },
       taurus: { name: 'Sõnn', desc: 'Talvine härg Aldebaraniga' },
       gemini: { name: 'Kaksikud', desc: 'Castor ja Pollux' },
-      auriga: { name: 'Vankri', desc: 'Vankur Capella tähega' },
+      auriga: { name: 'Veomees', desc: 'Veomees Capella tähega' },
       andromeda: { name: 'Andromeda', desc: 'Tähekea, mis viib galaktikani' },
       corona_borealis: { name: 'Põhjakroon', desc: 'Põhja krooni poolring' },
     },

@@ -332,7 +332,7 @@ export const CONSTELLATIONS: Constellation[] = [
   {
     id: 'auriga',
     nameEn: 'Auriga',
-    nameEt: 'Vankri',
+    nameEt: 'Veomees', // Estonian: charioteer (Auriga)
     descriptionKey: 'starMapper.constellations.auriga.desc',
     season: 'winter',
     difficulty: 'medium',

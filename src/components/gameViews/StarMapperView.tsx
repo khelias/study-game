@@ -14,8 +14,15 @@ import { usePlaySessionStore } from '../../stores/playSessionStore';
 import { PaidHintButtons } from '../shared';
 import type { StarMapperProblem, Star, ConstellationLine } from '../../types/game';
 
-/** Minimum touch target radius in viewBox units (0–100) for comfortable tapping */
-const TOUCH_TARGET_R = 6;
+/** Viewport width below which we use larger touch targets and star visuals (small screens only). */
+const SMALL_SCREEN_BREAKPOINT_PX = 520;
+/** Touch target radius in viewBox (0–100): comfortable on small screens (~44px min), smaller on desktop. */
+const TOUCH_TARGET_R_SMALL = 10;  // ~56px diameter on 280px SVG
+const TOUCH_TARGET_R_DEFAULT = 6;
+/** @deprecated Use touchTargetR (component) or TOUCH_TARGET_R_DEFAULT / TOUCH_TARGET_R_SMALL. Kept so no ReferenceError if cached code still references it. */
+const TOUCH_TARGET_R = TOUCH_TARGET_R_DEFAULT;
+/** Min visible star radius in viewBox on small screen (smaller than before; touch target stays large). */
+const MIN_STAR_VISUAL_R_SMALL = 3.5;
 
 /** Returns true if the connection (from↔to) is already in the lines list (order-independent). */
 function lineExists(line: { from: string; to: string }, lines: ConstellationLine[]): boolean {
@@ -54,6 +61,19 @@ export const StarMapperView: React.FC<StarMapperViewProps> = ({
   const [showHintGuide, setShowHintGuide] = useState(false);
   const identifyHandlingRef = useRef(false);
   const wrongAnswerTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Responsive: larger touch targets and star visuals only on very small viewports
+  const [isSmallScreen, setIsSmallScreen] = useState(() =>
+    typeof window !== 'undefined' && window.matchMedia(`(max-width: ${SMALL_SCREEN_BREAKPOINT_PX}px)`).matches
+  );
+  useEffect(() => {
+    const mq = window.matchMedia(`(max-width: ${SMALL_SCREEN_BREAKPOINT_PX}px)`);
+    const handler = () => setIsSmallScreen(mq.matches);
+    mq.addEventListener('change', handler);
+    return () => mq.removeEventListener('change', handler);
+  }, []);
+
+  const touchTargetR = isSmallScreen ? TOUCH_TARGET_R_SMALL : TOUCH_TARGET_R_DEFAULT;
 
   // Reset state when problem changes
   /* eslint-disable react-hooks/set-state-in-effect -- reset all state when problem.uid changes */
@@ -172,15 +192,16 @@ export const StarMapperView: React.FC<StarMapperViewProps> = ({
     [drawnLines, checkCompletion, soundEnabled]
   );
 
-  // Find star at viewBox position (for drag-to-connect release)
+  // Find star at viewBox position (for drag-to-connect release); uses same R as tap target
   const getStarAtPosition = useCallback((x: number, y: number): Star | null => {
+    const r2 = touchTargetR * touchTargetR;
     for (const star of problem.constellation.stars) {
       const dx = star.x - x;
       const dy = star.y - y;
-      if (dx * dx + dy * dy <= TOUCH_TARGET_R * TOUCH_TARGET_R) return star;
+      if (dx * dx + dy * dy <= r2) return star;
     }
     return null;
-  }, [problem.constellation.stars]);
+  }, [problem.constellation.stars, touchTargetR]);
 
   // Convert client coords to viewBox (0–100)
   const clientToViewBox = useCallback((clientX: number, clientY: number): { x: number; y: number } | null => {
@@ -260,11 +281,12 @@ export const StarMapperView: React.FC<StarMapperViewProps> = ({
     }, wrongDelay);
   }, [status, problem.correctAnswer, soundEnabled, onAnswer]);
 
-  // Calculate star size based on magnitude (brighter stars are larger)
-  const getStarSize = (magnitude: number): number => {
-    // Realistic star sizes: magnitude 0 = 8, magnitude 6 = 2
-    return 8 - magnitude;
-  };
+  // Visible star radius in viewBox: proportional to magnitude; on small screens enforce minimum so stars stay tappable
+  const getStarVisualRadius = useCallback((magnitude: number): number => {
+    const base = 8 - magnitude; // magnitude 0 → 8, 6 → 2
+    if (isSmallScreen) return Math.max(base * 0.6, MIN_STAR_VISUAL_R_SMALL);
+    return base * 0.5; // original sizing on larger screens
+  }, [isSmallScreen]);
 
   // Get star color based on magnitude
   const getStarColor = (magnitude: number, isDistractor = false): string => {
@@ -342,13 +364,14 @@ export const StarMapperView: React.FC<StarMapperViewProps> = ({
         </div>
       </div>
 
-      {/* Star Field - fixed aspect ratio for consistency */}
+      {/* Star Field - fixed aspect ratio; min size only on small screens so touch targets stay usable */}
       <div
         className="relative w-full rounded-3xl overflow-hidden shadow-2xl border-4 border-indigo-900/50"
         style={{
           background: 'radial-gradient(ellipse at center, #1a1a3a 0%, #0a0a1a 70%, #000000 100%)',
-          maxWidth: 'min(90vw, 48rem)',
+          maxWidth: 'min(92vw, 48rem)',
           aspectRatio: '1',
+          ...(isSmallScreen ? { minWidth: 280, minHeight: 280 } : {}),
         }}
       >
         {/* Background ambient stars */}
@@ -468,22 +491,22 @@ export const StarMapperView: React.FC<StarMapperViewProps> = ({
             );
           })}
 
-          {/* Constellation stars: large touch target (r=TOUCH_TARGET_R) + visible star */}
+          {/* Constellation stars: large invisible hit area + visible star */}
           {problem.constellation.stars.map(star => {
             const isSelected = selectedStar === star.id;
             const _isConnected = drawnLines.some(l => l.from === star.id || l.to === star.id);
-            const size = getStarSize(star.magnitude);
+            const visualR = getStarVisualRadius(star.magnitude);
             const color = getStarColor(star.magnitude);
 
             return (
               <g key={star.id}>
-                {/* Main star with all interactions directly on it */}
+                {/* Invisible touch target (larger on small screens only) */}
                 <circle
                   cx={star.x}
                   cy={star.y}
-                  r={size * 0.5}
-                  fill={isSelected ? '#ffffff' : color}
-                  className="cursor-pointer transition-colors duration-200"
+                  r={touchTargetR}
+                  fill="transparent"
+                  className="cursor-pointer"
                   onClick={() => handleStarTap(star.id)}
                   onPointerDown={(e) => {
                     e.stopPropagation();
@@ -499,13 +522,22 @@ export const StarMapperView: React.FC<StarMapperViewProps> = ({
                   role="button"
                   aria-label={`Star ${star.name || star.id}${isSelected ? ' (selected)' : ''}`}
                 />
+                {/* Visible star (drawn on top so hit area doesn’t show) */}
+                <circle
+                  cx={star.x}
+                  cy={star.y}
+                  r={visualR}
+                  fill={isSelected ? '#ffffff' : color}
+                  className="pointer-events-none transition-colors duration-200"
+                />
               </g>
             );
           })}
 
-          {/* Distractor stars (expert mode) */}
+          {/* Distractor stars (expert mode) - smaller visual, no tap target */}
           {problem.distractorStars.map(star => {
-            const size = getStarSize(star.magnitude);
+            const baseR = getStarVisualRadius(star.magnitude);
+            const visualR = isSmallScreen ? Math.max(baseR * 0.6, 3) : baseR * 0.4;
             const color = getStarColor(star.magnitude, true);
 
             return (
@@ -513,7 +545,7 @@ export const StarMapperView: React.FC<StarMapperViewProps> = ({
                 key={star.id}
                 cx={star.x}
                 cy={star.y}
-                r={size * 0.4}
+                r={visualR}
                 fill={color}
                 opacity="0.6"
               />
