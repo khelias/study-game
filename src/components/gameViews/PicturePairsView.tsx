@@ -26,6 +26,76 @@ interface PicturePairsViewProps {
 
 type CardState = PicturePairsCard & { flipped?: boolean; solved?: boolean };
 
+/** Emoji face: separate component so iOS always gets a fresh mount when card flips (avoids blank after peek). */
+const EmojiFace: React.FC<{ content: string }> = ({ content }) => (
+  <span
+    className="emoji-font text-2xl sm:text-4xl md:text-5xl leading-none shrink-0 min-w-[1.5rem] min-h-[1.5rem] inline-block"
+    style={{ fontFamily: 'Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol, sans-serif' }}
+    role="img"
+    aria-label={content}
+  >
+    {content}
+  </span>
+);
+
+/** Single card: key includes flipped so iOS remounts and repaints emoji when flipping after peek. */
+const MemoCard: React.FC<{
+  card: CardState;
+  index: number;
+  isPeeking: boolean;
+  isFlipped: boolean;
+  onFlip: (index: number) => void;
+  disabled: boolean;
+}> = React.memo(({ card, index, isPeeking, isFlipped, onFlip, disabled }) => {
+  const isEmoji = card.cardType === 'emoji';
+  return (
+    <button
+      type="button"
+      onClick={() => onFlip(index)}
+      disabled={disabled}
+      className={`
+        relative w-full h-full min-w-0 min-h-0 rounded-xl sm:rounded-2xl flex items-center justify-center
+        text-sm sm:text-base font-bold transition-all duration-200
+        border-2 shadow-md overflow-hidden
+        ${card.solved
+          ? 'opacity-40 scale-[0.96] pointer-events-none bg-slate-100/80 border-slate-200'
+          : isFlipped
+            ? 'bg-white border-pink-400 text-slate-800 shadow-lg'
+            : 'bg-gradient-to-br from-pink-400 to-amber-500 border-pink-600/80 text-transparent hover:from-pink-500 hover:to-amber-600 hover:scale-[1.02] active:scale-[0.98]'
+        }
+      `}
+    >
+      {!isFlipped && (
+        <div className="absolute inset-0 flex items-center justify-center rounded-xl sm:rounded-2xl">
+          <span className="text-2xl sm:text-3xl opacity-90 drop-shadow-sm" aria-hidden>
+            🖼️
+          </span>
+        </div>
+      )}
+
+      {isFlipped && (
+        <div className="flex items-center justify-center min-w-0 max-w-full max-h-full px-1">
+          {isEmoji ? (
+            <EmojiFace content={card.content} />
+          ) : (
+            <span className="font-bold text-pink-900 break-all leading-tight text-center line-clamp-3">
+              {card.content}
+            </span>
+          )}
+        </div>
+      )}
+
+      {card.solved && (
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+          <span className="text-xl sm:text-2xl animate-pulse opacity-80">✨</span>
+        </div>
+      )}
+    </button>
+  );
+});
+
+MemoCard.displayName = 'MemoCard';
+
 export const PicturePairsView: React.FC<PicturePairsViewProps> = ({
   problem,
   onAnswer,
@@ -175,60 +245,16 @@ export const PicturePairsView: React.FC<PicturePairsViewProps> = ({
 
           {cards.map((card, i) => {
             const isFlipped = isPeeking || card.flipped || card.solved;
-            const isEmoji = card.cardType === 'emoji';
-
             return (
-              <button
-                key={`${card.id}-${i}`}
-                type="button"
-                onClick={() => handleCard(i)}
+              <MemoCard
+                key={`${card.id}-${i}-${card.flipped ?? false}-${card.solved ?? false}`}
+                card={card}
+                index={i}
+                isPeeking={isPeeking}
+                isFlipped={isFlipped}
+                onFlip={handleCard}
                 disabled={card.solved || isPeeking}
-                className={`
-                  relative w-full h-full min-w-0 min-h-0 rounded-xl sm:rounded-2xl flex items-center justify-center
-                  text-sm sm:text-base font-bold transition-all duration-200
-                  border-2 shadow-md overflow-hidden
-                  ${card.solved
-                    ? 'opacity-40 scale-[0.96] pointer-events-none bg-slate-100/80 border-slate-200'
-                    : isFlipped
-                      ? 'bg-white border-pink-400 text-slate-800 shadow-lg'
-                      : 'bg-gradient-to-br from-pink-400 to-amber-500 border-pink-600/80 text-transparent hover:from-pink-500 hover:to-amber-600 hover:scale-[1.02] active:scale-[0.98]'
-                  }
-                `}
-              >
-                {!isFlipped && (
-                  <div className="absolute inset-0 flex items-center justify-center rounded-xl sm:rounded-2xl">
-                    <span className="text-2xl sm:text-3xl opacity-90 drop-shadow-sm" aria-hidden>
-                      🖼️
-                    </span>
-                  </div>
-                )}
-
-                {/* Render face only when flipped so iOS repaints emoji (no invisible→visible toggle) */}
-                {isFlipped && (
-                  <div className="flex items-center justify-center min-w-0 max-w-full max-h-full px-1">
-                    {isEmoji ? (
-                      <span
-                        className="text-2xl sm:text-4xl md:text-5xl leading-none shrink-0 min-w-[1.5rem] min-h-[1.5rem] inline-block emoji-font"
-                        style={{ fontFamily: 'Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol, sans-serif' }}
-                        role="img"
-                        aria-label={card.content}
-                      >
-                        {card.content}
-                      </span>
-                    ) : (
-                      <span className="font-bold text-pink-900 break-all leading-tight text-center line-clamp-3">
-                        {card.content}
-                      </span>
-                    )}
-                  </div>
-                )}
-
-                {card.solved && (
-                  <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                    <span className="text-xl sm:text-2xl animate-pulse opacity-80">✨</span>
-                  </div>
-                )}
-              </button>
+              />
             );
           })}
         </div>
