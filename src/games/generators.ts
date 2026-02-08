@@ -42,6 +42,9 @@ import type {
   ShapeDashObstacle,
   ShapeDashCheckpoint,
   ShapeDashCheckpointQuestion,
+  ShapeDashStar,
+  ShapeDashJumpPad,
+  ShapeDashBoostZone,
 } from '../types/game';
 
 const profileMeta = (profileId: ProfileType) => PROFILES[profileId] || PROFILES.starter;
@@ -1849,6 +1852,57 @@ export const Generators: Record<string, GeneratorFunction> = {
     }
     checkpoints.sort((a, b) => a.x - b.x);
 
+    // V3: Generate stars (3-5 per run, scaling with level)
+    const stars: ShapeDashStar[] = [];
+    const numStars = 3 + Math.floor(effectiveLevel * 0.3);
+    const starHeights = [0, 60, 100, 140]; // ground, low jump, high jump, double-jump height
+    for (let s = 0; s < numStars; s++) {
+      // Place stars between obstacles, avoiding collision with obstacles and checkpoints
+      const segment = Math.floor((runLength - runInDistance) / numStars);
+      const xRange = runInDistance + s * segment;
+      const x = xRange + Math.floor(rng() * Math.max(100, segment - 100));
+      const y = starHeights[Math.floor(rng() * starHeights.length)]!;
+      // Ensure star doesn't overlap with obstacles or checkpoints
+      const tooClose = obstacles.some(obs => Math.abs(obs.x - x) < 80) || 
+                       checkpoints.some(cp => Math.abs(cp.x - x) < 80);
+      if (!tooClose) {
+        stars.push({ id: `star-${uid(rng)}`, x, y });
+      }
+    }
+
+    // V3: Generate jump pads (1-2 per run at higher levels)
+    const jumpPads: ShapeDashJumpPad[] = [];
+    if (effectiveLevel >= 4) {
+      const numJumpPads = effectiveLevel >= 8 ? 2 : 1;
+      for (let j = 0; j < numJumpPads; j++) {
+        const segment = (runLength - runInDistance) / (numJumpPads + 1);
+        const x = runInDistance + (j + 1) * segment + Math.floor((rng() - 0.5) * segment * 0.3);
+        // Ensure jump pad doesn't overlap with obstacles or checkpoints
+        const tooClose = obstacles.some(obs => Math.abs(obs.x - x) < 120) || 
+                         checkpoints.some(cp => Math.abs(cp.x - x) < 150);
+        if (!tooClose) {
+          jumpPads.push({ id: `pad-${uid(rng)}`, x });
+        }
+      }
+    }
+
+    // V3: Generate boost zones (brief speed boosts)
+    const boostZones: ShapeDashBoostZone[] = [];
+    if (effectiveLevel >= 3) {
+      const numBoosts = 1 + Math.floor(effectiveLevel / 5);
+      for (let b = 0; b < numBoosts; b++) {
+        const segment = (runLength - runInDistance) / (numBoosts + 1);
+        const x = runInDistance + (b + 1) * segment + Math.floor((rng() - 0.5) * segment * 0.4);
+        const width = 180 + Math.floor(rng() * 40);
+        // Ensure boost zone doesn't overlap with obstacles or checkpoints
+        const tooClose = obstacles.some(obs => obs.x >= x && obs.x <= x + width) || 
+                         checkpoints.some(cp => cp.x >= x && cp.x <= x + width);
+        if (!tooClose) {
+          boostZones.push({ id: `boost-${uid(rng)}`, x, width });
+        }
+      }
+    }
+
     return {
       type: 'shape_dash',
       uid: uid(rng),
@@ -1856,6 +1910,9 @@ export const Generators: Record<string, GeneratorFunction> = {
       checkpoints,
       scrollSpeed,
       runLength,
+      stars,
+      jumpPads,
+      boostZones,
     };
   },
 };
