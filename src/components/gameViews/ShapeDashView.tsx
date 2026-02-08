@@ -20,6 +20,13 @@ import {
   SPIKE_WIDTH,
   SPIKE_HEIGHT,
   BLOCK_DEFAULT_HEIGHT,
+  JUMP_PAD_BOOST_VELOCITY,
+  JUMP_PAD_WIDTH,
+  BOOST_ZONE_MULTIPLIER,
+  STAR_COLLECT_RADIUS,
+  checkStarCollection,
+  checkJumpPadContact,
+  checkBoostZone,
 } from '../../engine/shapeDash';
 import { getReachedCheckpointIndex, hasReachedFinish } from '../../engine/shapeDash';
 import { useTranslation } from '../../i18n/useTranslation';
@@ -60,7 +67,8 @@ interface Particle {
   maxLife: number;
   size: number;
   color: string;
-  type: 'trail' | 'explosion' | 'landing' | 'firework';
+  type: 'trail' | 'explosion' | 'landing' | 'firework' | 'sparkle' | 'score';
+  text?: string; // For score popups
 }
 
 // Game state (all mutable state in a single ref object)
@@ -82,6 +90,16 @@ interface GameState {
   pulsePhase: number;
   particles: Particle[];
   trailPoints: Array<{ x: number; y: number }>;
+  // V3 additions
+  combo: number;              // Current combo multiplier (1, 2, 3)
+  comboCount: number;         // Number of obstacles cleared without hit
+  starsCollected: number;     // Stars collected this run
+  correctAnswerStreak: number; // Consecutive correct checkpoint answers
+  hasShield: boolean;         // Shield power-up active
+  questionTimer: number;      // Current question timer (seconds)
+  collectedStarIds: Set<string>; // Track which stars collected
+  bestScore: number;          // Best score achieved
+  totalStars: number;         // Total stars in the run
 }
 
 // Particle system helpers
@@ -144,6 +162,44 @@ function createFireworkParticles(x: number, y: number): Particle[] {
     });
   }
   return particles;
+}
+
+// V3: Sparkle particles for star collection
+function createSparkleParticles(x: number, y: number): Particle[] {
+  const particles: Particle[] = [];
+  const colors = ['#fef08a', '#facc15', '#eab308', '#fbbf24'];
+  for (let i = 0; i < 16; i++) {
+    const angle = (i / 16) * Math.PI * 2;
+    const speed = 80 + Math.random() * 60;
+    particles.push({
+      x,
+      y,
+      vx: Math.cos(angle) * speed,
+      vy: Math.sin(angle) * speed,
+      life: 0.8,
+      maxLife: 0.8,
+      size: 2 + Math.random() * 4,
+      color: colors[Math.floor(Math.random() * colors.length)]!,
+      type: 'sparkle',
+    });
+  }
+  return particles;
+}
+
+// V3: Score popup particle
+function createScorePopup(x: number, y: number, score: number, combo: number): Particle[] {
+  return [{
+    x,
+    y,
+    vx: 0,
+    vy: -60, // Float upward
+    life: 1.5,
+    maxLife: 1.5,
+    size: 16,
+    color: combo > 1 ? '#fef08a' : '#ffffff',
+    type: 'score',
+    text: `+${score}${combo > 1 ? ` (${combo}x)` : ''}`,
+  }];
 }
 
 function updateParticles(particles: Particle[], dt: number): Particle[] {
@@ -262,12 +318,22 @@ function drawPlayer(
   rotation: number,
   squashStretch: number,
   _scale: number, // Reserved for future mini/mega portal modes
-  pulsePhase: number
+  pulsePhase: number,
+  hasShield: boolean = false
 ) {
   ctx.save();
   ctx.translate(x + size / 2, y + size / 2);
   ctx.rotate(rotation);
   ctx.scale(1, squashStretch);
+
+  // V3: Shield glow effect
+  if (hasShield) {
+    ctx.shadowColor = '#00ffcc';
+    ctx.shadowBlur = 24 + Math.sin(pulsePhase * 6) * 8;
+    ctx.strokeStyle = '#00ffcc';
+    ctx.lineWidth = 4;
+    ctx.strokeRect(-size / 2 - 8, -size / 2 - 8, size + 16, size + 16);
+  }
 
   // Neon glow (pulses)
   const glowIntensity = 12 + Math.sin(pulsePhase * 4) * 4;
@@ -408,13 +474,147 @@ function drawCheckpoint(
   ctx.shadowBlur = 0;
 }
 
+// V3: Draw collectible star
+function drawStar(
+  ctx: CanvasRenderingContext2D,
+  screenX: number,
+  screenY: number,
+  pulsePhase: number,
+  collected: boolean
+) {
+  if (collected) return;
+  
+  const STAR_SIZE = 16;
+  const STAR_POINTS = 5;
+  const STAR_ROTATION_OFFSET = -Math.PI / 2; // Point star upward
+  const STAR_INNER_RADIUS_RATIO = 0.4;
+  
+  const pulse = 1 + Math.sin(pulsePhase * 5) * 0.15;
+  const rotation = pulsePhase * 2;
+  
+  ctx.save();
+  ctx.translate(screenX, screenY);
+  ctx.rotate(rotation);
+  ctx.scale(pulse, pulse);
+  
+  // Glow
+  ctx.shadowColor = '#fef08a';
+  ctx.shadowBlur = 16;
+  
+  // Draw 5-pointed star
+  ctx.fillStyle = '#fef08a';
+  ctx.beginPath();
+  for (let i = 0; i < STAR_POINTS; i++) {
+    const angle = (i * 2 * Math.PI) / STAR_POINTS + STAR_ROTATION_OFFSET;
+    const r = i % 2 === 0 ? STAR_SIZE : STAR_SIZE * STAR_INNER_RADIUS_RATIO;
+    const x = Math.cos(angle) * r;
+    const y = Math.sin(angle) * r;
+    if (i === 0) ctx.moveTo(x, y);
+    else ctx.lineTo(x, y);
+  }
+  ctx.closePath();
+  ctx.fill();
+  
+  // Inner highlight
+  ctx.shadowBlur = 0;
+  ctx.fillStyle = '#ffffff';
+  ctx.beginPath();
+  ctx.arc(-3, -3, 3, 0, Math.PI * 2);
+  ctx.fill();
+  
+  ctx.restore();
+}
+
+// V3: Draw jump pad
+function drawJumpPad(
+  ctx: CanvasRenderingContext2D,
+  screenX: number,
+  groundY: number,
+  pulsePhase: number
+) {
+  const width = JUMP_PAD_WIDTH;
+  const height = 12;
+  const pulse = 1 + Math.sin(pulsePhase * 4) * 0.08;
+  
+  // Glow
+  ctx.shadowColor = '#00ffcc';
+  ctx.shadowBlur = 20;
+  
+  // Platform
+  ctx.fillStyle = '#00ffcc';
+  ctx.fillRect(screenX, groundY - height * pulse, width, height * pulse);
+  
+  ctx.shadowBlur = 0;
+  
+  // Upward arrows
+  ctx.strokeStyle = '#0a0a1a';
+  ctx.lineWidth = 2;
+  const arrowSpacing = width / 3;
+  for (let i = 0; i < 3; i++) {
+    const ax = screenX + arrowSpacing / 2 + i * arrowSpacing;
+    const ay = groundY - height - 8;
+    ctx.beginPath();
+    ctx.moveTo(ax - 4, ay + 4);
+    ctx.lineTo(ax, ay);
+    ctx.lineTo(ax + 4, ay + 4);
+    ctx.stroke();
+  }
+}
+
+// V3: Draw boost zone
+function drawBoostZone(
+  ctx: CanvasRenderingContext2D,
+  screenX: number,
+  groundY: number,
+  width: number,
+  pulsePhase: number
+) {
+  const height = 4;
+  
+  // Neon streak effect
+  const gradient = ctx.createLinearGradient(screenX, 0, screenX + width, 0);
+  gradient.addColorStop(0, 'rgba(255, 102, 0, 0)');
+  gradient.addColorStop(0.5, 'rgba(255, 102, 0, 0.6)');
+  gradient.addColorStop(1, 'rgba(255, 102, 0, 0)');
+  
+  ctx.fillStyle = gradient;
+  ctx.fillRect(screenX, groundY, width, height);
+  
+  // Moving streak lines
+  const streakOffset = (pulsePhase * 200) % 30;
+  ctx.strokeStyle = 'rgba(255, 204, 0, 0.8)';
+  ctx.lineWidth = 2;
+  for (let x = screenX - streakOffset; x < screenX + width; x += 30) {
+    ctx.beginPath();
+    ctx.moveTo(x, groundY);
+    ctx.lineTo(x + 20, groundY);
+    ctx.stroke();
+  }
+}
+
 function drawParticles(ctx: CanvasRenderingContext2D, particles: Particle[]) {
   for (const p of particles) {
     const alpha = p.life / p.maxLife;
-    ctx.fillStyle = p.color.includes('rgba')
-      ? p.color.replace(/[\d.]+\)$/g, `${alpha})`)
-      : p.color + `${Math.floor(alpha * 255).toString(16).padStart(2, '0')}`;
-    ctx.fillRect(p.x - p.size / 2, p.y - p.size / 2, p.size, p.size);
+    
+    // V3: Handle score popup text particles differently
+    if (p.type === 'score' && p.text) {
+      ctx.save();
+      ctx.globalAlpha = alpha;
+      ctx.fillStyle = p.color;
+      ctx.font = 'bold 18px Arial';
+      ctx.textAlign = 'center';
+      ctx.strokeStyle = '#000000';
+      ctx.lineWidth = 3;
+      ctx.strokeText(p.text, p.x, p.y);
+      ctx.fillText(p.text, p.x, p.y);
+      ctx.restore();
+    } else {
+      // Regular particle rendering
+      ctx.fillStyle = p.color.includes('rgba')
+        ? p.color.replace(/[\d.]+\)$/g, `${alpha})`)
+        : p.color + `${Math.floor(alpha * 255).toString(16).padStart(2, '0')}`;
+      ctx.fillRect(p.x - p.size / 2, p.y - p.size / 2, p.size, p.size);
+    }
   }
 }
 
@@ -423,7 +623,12 @@ function drawHUD(
   progress: number,
   attemptCount: number,
   score: number,
-  width: number
+  width: number,
+  combo: number,
+  starsCollected: number,
+  totalStars: number,
+  hasShield: boolean,
+  questionTimer?: number
 ) {
   // Progress bar
   const barWidth = 200;
@@ -457,6 +662,44 @@ function drawHUD(
   // Score (right)
   ctx.textAlign = 'right';
   ctx.fillText(`Score: ${score}`, width - 12, 26);
+  
+  // V3: Combo multiplier (center-right)
+  if (combo > 1) {
+    ctx.save();
+    ctx.textAlign = 'center';
+    ctx.font = 'bold 20px Arial';
+    ctx.fillStyle = '#fef08a';
+    ctx.strokeStyle = '#000000';
+    ctx.lineWidth = 3;
+    ctx.strokeText(`${combo}x!`, width / 2 + 100, 50);
+    ctx.fillText(`${combo}x!`, width / 2 + 100, 50);
+    ctx.restore();
+  }
+  
+  // V3: Stars collected (left below attempt)
+  ctx.textAlign = 'left';
+  ctx.fillStyle = '#fef08a';
+  ctx.fillText(`⭐ ${starsCollected}/${totalStars}`, 12, 44);
+  
+  // V3: Shield indicator (left below stars)
+  if (hasShield) {
+    ctx.fillStyle = '#00ffcc';
+    ctx.fillText(`🛡️ Shield`, 12, 62);
+  }
+  
+  // V3: Question timer (if active)
+  if (questionTimer !== undefined && questionTimer >= 0) {
+    ctx.save();
+    ctx.textAlign = 'center';
+    ctx.font = 'bold 24px Arial';
+    const timerColor = questionTimer <= 2 ? '#ff3366' : '#ffffff';
+    ctx.fillStyle = timerColor;
+    ctx.strokeStyle = '#000000';
+    ctx.lineWidth = 4;
+    ctx.strokeText(`${Math.ceil(questionTimer)}`, width / 2, 100);
+    ctx.fillText(`${Math.ceil(questionTimer)}`, width / 2, 100);
+    ctx.restore();
+  }
 }
 
 export const ShapeDashView: React.FC<ShapeDashViewProps> = ({
@@ -470,6 +713,9 @@ export const ShapeDashView: React.FC<ShapeDashViewProps> = ({
   const [checkpointOption, setCheckpointOption] = useState<number | null>(null);
   const [displayScore, setDisplayScore] = useState(0);
   const [displayAttempt, setDisplayAttempt] = useState(1);
+  const [displayStarsCollected, setDisplayStarsCollected] = useState(0);
+  const [displayTotalStars, setDisplayTotalStars] = useState(0);
+  const [displayRating, setDisplayRating] = useState(0);
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -502,6 +748,16 @@ export const ShapeDashView: React.FC<ShapeDashViewProps> = ({
     pulsePhase: 0,
     particles: [],
     trailPoints: [],
+    // V3 additions
+    combo: 1,
+    comboCount: 0,
+    starsCollected: 0,
+    correctAnswerStreak: 0,
+    hasShield: false,
+    questionTimer: -1,
+    collectedStarIds: new Set(),
+    bestScore: 0,
+    totalStars: problem.stars?.length ?? 0,
   });
 
   useEffect(() => {
@@ -526,6 +782,12 @@ export const ShapeDashView: React.FC<ShapeDashViewProps> = ({
     state.particles = [];
     state.trailPoints = [];
     state.attemptCount += 1;
+    // V3: Reset combo and stars but keep streak and shield
+    state.combo = 1;
+    state.comboCount = 0;
+    state.starsCollected = 0;
+    state.collectedStarIds = new Set();
+    state.totalStars = problemRef.current.stars?.length ?? 0;
     passedCheckpointsRef.current = new Set();
     jumpRequestedRef.current = false;
     lastGroundedRef.current = false;
@@ -605,9 +867,29 @@ export const ShapeDashView: React.FC<ShapeDashViewProps> = ({
       lastTimeRef.current = time;
 
       const state = stateRef.current;
-      const nextScroll = state.scroll + prob.scrollSpeed * dt;
+      
+      // V3: Check boost zone for speed multiplier
+      const stars = prob.stars ?? [];
+      const jumpPads = prob.jumpPads ?? [];
+      const boostZones = prob.boostZones ?? [];
+      const inBoostZone = checkBoostZone(PLAYER_X, boostZones, state.scroll);
+      const speedMultiplier = inBoostZone ? BOOST_ZONE_MULTIPLIER : 1;
+      
+      const nextScroll = state.scroll + prob.scrollSpeed * speedMultiplier * dt;
       let py = state.playerY;
       let pvy = state.playerVelY;
+
+      // V3: Check jump pad contact (auto-bounce when landing on pad)
+      const jumpPadId = checkJumpPadContact(
+        { x: PLAYER_X, y: py, velocityY: pvy, isOnGround: state.isOnGround },
+        jumpPads,
+        nextScroll
+      );
+      if (jumpPadId && state.isOnGround) {
+        pvy = JUMP_PAD_BOOST_VELOCITY;
+        state.canDoubleJump = true;
+        playSound('tap', soundEnabledRef.current);
+      }
 
       // Jump handling
       if (jumpRequestedRef.current) {
@@ -667,8 +949,37 @@ export const ShapeDashView: React.FC<ShapeDashViewProps> = ({
       // Update pulse phase
       state.pulsePhase += dt;
 
-      // Update score
-      state.score = Math.floor(nextScroll / 10);
+      // V3: Check star collection
+      const collectedStarIds = checkStarCollection(
+        { x: PLAYER_X, y: py, velocityY: pvy, isOnGround: state.isOnGround },
+        stars,
+        nextScroll
+      );
+      for (const starId of collectedStarIds) {
+        if (!state.collectedStarIds.has(starId)) {
+          state.collectedStarIds.add(starId);
+          state.starsCollected += 1;
+          const starPoints = 100 * state.combo;
+          state.score += starPoints;
+          // Mark star as collected in the problem data
+          const star = stars.find(s => s.id === starId);
+          if (star) {
+            star.collected = true;
+            // Create sparkle and score popup particles
+            const starScreenX = star.x - nextScroll;
+            const starScreenY = GROUND_Y - star.y;
+            state.particles.push(...createSparkleParticles(starScreenX, starScreenY));
+            state.particles.push(...createScorePopup(starScreenX, starScreenY, starPoints, state.combo));
+            playSound('correct', soundEnabledRef.current);
+          }
+        }
+      }
+
+      // Update base score from distance
+      const baseScore = Math.floor(nextScroll / 10);
+      if (baseScore > state.score) {
+        state.score = baseScore;
+      }
 
       // Update trail
       state.trailPoints.push({ x: PLAYER_X, y: py });
@@ -719,14 +1030,31 @@ export const ShapeDashView: React.FC<ShapeDashViewProps> = ({
       }
 
       if (collision) {
-        state.screenShake = SCREEN_SHAKE_INTENSITY;
-        state.particles.push(...createExplosionParticles(PLAYER_X + PLAYER_SIZE / 2, py + PLAYER_SIZE / 2, '#00ff88'));
-        setDisplayScore(state.score);
-        setDisplayAttempt(state.attemptCount);
-        setGameState('crashed');
-        playSound('wrong', soundEnabledRef.current);
-        onAnswerRef.current(false);
-        return;
+        // V3: Shield absorbs one hit
+        if (state.hasShield) {
+          state.hasShield = false;
+          state.particles.push(...createExplosionParticles(PLAYER_X + PLAYER_SIZE / 2, py + PLAYER_SIZE / 2, '#00ffcc'));
+          playSound('tap', soundEnabledRef.current);
+          // Reset combo but don't crash
+          state.combo = 1;
+          state.comboCount = 0;
+        } else {
+          state.screenShake = SCREEN_SHAKE_INTENSITY;
+          state.particles.push(...createExplosionParticles(PLAYER_X + PLAYER_SIZE / 2, py + PLAYER_SIZE / 2, '#00ff88'));
+          setDisplayScore(state.score);
+          setDisplayAttempt(state.attemptCount);
+          setGameState('crashed');
+          playSound('wrong', soundEnabledRef.current);
+          onAnswerRef.current(false);
+          return;
+        }
+      } else {
+        // V3: Build combo when clearing obstacles without being hit
+        state.comboCount += 1;
+        if (state.comboCount >= 3 && state.combo < 3) {
+          state.combo = Math.min(3, state.combo + 1);
+          state.comboCount = 0;
+        }
       }
 
       // Checkpoint detection
@@ -745,6 +1073,19 @@ export const ShapeDashView: React.FC<ShapeDashViewProps> = ({
         state.particles.push(...createFireworkParticles(CANVAS_WIDTH * 0.5, CANVAS_HEIGHT * 0.25));
         setDisplayScore(state.score);
         setDisplayAttempt(state.attemptCount);
+        setDisplayStarsCollected(state.starsCollected);
+        setDisplayTotalStars(state.totalStars);
+        
+        // V3: Calculate three-star rating
+        // ⭐ Complete the run
+        // ⭐⭐ Complete with 50%+ stars collected
+        // ⭐⭐⭐ Complete with all stars + no hits (attemptCount === 1)
+        let rating = 1;
+        const starPercentage = state.totalStars > 0 ? state.starsCollected / state.totalStars : 0;
+        if (starPercentage >= 0.5) rating = 2;
+        if (state.starsCollected === state.totalStars && state.attemptCount === 1) rating = 3;
+        setDisplayRating(rating);
+        
         setGameState('won');
         playSound('win', soundEnabledRef.current);
         setTimeout(() => onAnswerRef.current(true), 800);
@@ -764,6 +1105,20 @@ export const ShapeDashView: React.FC<ShapeDashViewProps> = ({
 
       drawBackground(ctx, nextScroll, state.pulsePhase, CANVAS_WIDTH, CANVAS_HEIGHT, GROUND_Y);
 
+      // V3: Draw boost zones (under everything)
+      for (const zone of boostZones) {
+        const zoneScreenX = zone.x - nextScroll;
+        if (zoneScreenX + zone.width < -20 || zoneScreenX > CANVAS_WIDTH + 20) continue;
+        drawBoostZone(ctx, zoneScreenX, GROUND_Y, zone.width, state.pulsePhase);
+      }
+
+      // V3: Draw jump pads
+      for (const pad of jumpPads) {
+        const padScreenX = pad.x - nextScroll;
+        if (padScreenX + JUMP_PAD_WIDTH < -20 || padScreenX > CANVAS_WIDTH + 20) continue;
+        drawJumpPad(ctx, padScreenX, GROUND_Y, state.pulsePhase);
+      }
+
       // Checkpoint stars
       const passedSet = passedCheckpointsRef.current;
       for (let i = 0; i < checkpoints.length; i++) {
@@ -772,6 +1127,14 @@ export const ShapeDashView: React.FC<ShapeDashViewProps> = ({
         const cpScreenX = cp.x - nextScroll;
         if (cpScreenX + 40 < 0 || cpScreenX > CANVAS_WIDTH + 40) continue;
         drawCheckpoint(ctx, cpScreenX, GROUND_Y, state.pulsePhase);
+      }
+
+      // V3: Draw collectible stars
+      for (const star of stars) {
+        const starScreenX = star.x - nextScroll;
+        const starScreenY = GROUND_Y - star.y;
+        if (starScreenX + 40 < -20 || starScreenX > CANVAS_WIDTH + 20) continue;
+        drawStar(ctx, starScreenX, starScreenY, state.pulsePhase, star.collected ?? false);
       }
 
       // Obstacles
@@ -788,14 +1151,14 @@ export const ShapeDashView: React.FC<ShapeDashViewProps> = ({
       drawTrail(ctx, state.trailPoints, PLAYER_SIZE);
 
       // Player
-      drawPlayer(ctx, PLAYER_X, py, PLAYER_SIZE, state.playerRotation, state.squashStretch, state.playerScale, state.pulsePhase);
+      drawPlayer(ctx, PLAYER_X, py, PLAYER_SIZE, state.playerRotation, state.squashStretch, state.playerScale, state.pulsePhase, state.hasShield);
 
       // Particles
       drawParticles(ctx, state.particles);
 
       // HUD
       const progress = Math.min(1, nextScroll / prob.runLength);
-      drawHUD(ctx, progress, state.attemptCount, state.score, CANVAS_WIDTH);
+      drawHUD(ctx, progress, state.attemptCount, state.score, CANVAS_WIDTH, state.combo, state.starsCollected, state.totalStars, state.hasShield);
 
       ctx.restore();
     };
@@ -814,13 +1177,26 @@ export const ShapeDashView: React.FC<ShapeDashViewProps> = ({
       setCheckpointOption(index);
       const correct = index === q.correctIndex;
       playSound(correct ? 'correct' : 'wrong', soundEnabled);
+      
+      const state = stateRef.current;
       if (correct) {
+        // V3: Increment streak and award shield after 3 correct answers
+        state.correctAnswerStreak += 1;
+        if (state.correctAnswerStreak >= 3) {
+          state.hasShield = true;
+          state.correctAnswerStreak = 0; // Reset streak after awarding shield
+        }
+        
         setTimeout(() => {
           setGameState('playing');
           setCheckpointIndex(null);
           setCheckpointOption(null);
         }, 400);
       } else {
+        // V3: Wrong answer resets streak and combo
+        state.correctAnswerStreak = 0;
+        state.combo = 1;
+        state.comboCount = 0;
         setGameState('crashed');
         onAnswer(false);
       }
@@ -916,8 +1292,14 @@ export const ShapeDashView: React.FC<ShapeDashViewProps> = ({
           >
             <span className="text-5xl">🎉</span>
             <span className="text-3xl font-black text-white drop-shadow-lg">LEVEL COMPLETE!</span>
+            <div className="text-4xl">
+              {'⭐'.repeat(displayRating)}
+            </div>
             <span className="text-xl font-bold text-white drop-shadow-md">
               Score: {displayScore}
+            </span>
+            <span className="text-lg font-semibold text-white/90 drop-shadow-md">
+              Stars: {displayStarsCollected}/{displayTotalStars}
             </span>
           </div>
         )}

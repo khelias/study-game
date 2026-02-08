@@ -406,12 +406,36 @@ export interface ShapeDashCheckpoint {
   question: ShapeDashCheckpointQuestion;
 }
 
+/** Collectible star for V3 scoring system */
+export interface ShapeDashStar {
+  id: string;
+  x: number;           // World x position (pixels)
+  y: number;           // World y position (pixels from ground)
+  collected?: boolean; // Whether the star has been collected
+}
+
+/** Jump pad that auto-bounces the player higher */
+export interface ShapeDashJumpPad {
+  id: string;
+  x: number;           // World x position (pixels)
+}
+
+/** Speed boost zone that briefly accelerates the player */
+export interface ShapeDashBoostZone {
+  id: string;
+  x: number;           // World x position (pixels)
+  width: number;       // Zone width in pixels
+}
+
 export interface ShapeDashProblem extends BaseProblem {
   type: 'shape_dash';
   obstacles: ShapeDashObstacle[];
   checkpoints: ShapeDashCheckpoint[];
   scrollSpeed: number;   // px per second
   runLength: number;     // Total world width in px (finish line)
+  stars?: ShapeDashStar[];           // V3: Collectible stars
+  jumpPads?: ShapeDashJumpPad[];     // V3: Jump pads
+  boostZones?: ShapeDashBoostZone[]; // V3: Speed boost zones
 }
 
 // Answer metadata for game-specific actions

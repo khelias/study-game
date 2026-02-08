@@ -1,9 +1,10 @@
 /**
  * Shape Dash engine – pure business logic (no UI).
  * Collision detection, checkpoint detection, jump physics.
+ * V3: Adds star collection, jump pads, boost zones, combo system
  */
 
-import type { ShapeDashObstacle, ShapeDashCheckpoint } from '../types/game';
+import type { ShapeDashObstacle, ShapeDashCheckpoint, ShapeDashStar, ShapeDashJumpPad, ShapeDashBoostZone } from '../types/game';
 
 /** Player hitbox: width and height in px */
 export const PLAYER_WIDTH = 28;
@@ -151,4 +152,87 @@ export function getMinObstacleGap(
 ): number {
   const distanceDuringJump = scrollSpeed * JUMP_AIR_TIME_S;
   return distanceDuringJump + SPIKE_WIDTH + landingMarginPx;
+}
+
+// ================= V3 Features =================
+
+/** Star collection radius in px */
+export const STAR_COLLECT_RADIUS = 20;
+
+/** Jump pad dimensions */
+export const JUMP_PAD_WIDTH = 40;
+export const JUMP_PAD_BOOST_VELOCITY = -800; // Higher jump than normal
+
+/** Boost zone speed multiplier */
+export const BOOST_ZONE_MULTIPLIER = 1.3;
+
+/**
+ * Check if player is touching a star (for collection)
+ */
+export function checkStarCollection(
+  playerState: PlayerState,
+  stars: ShapeDashStar[],
+  scrollOffset: number
+): string[] {
+  const collected: string[] = [];
+  const playerCenterX = playerState.x + PLAYER_WIDTH / 2;
+  const playerCenterY = playerState.y - PLAYER_HEIGHT / 2;
+
+  for (const star of stars) {
+    if (star.collected) continue;
+    const starScreenX = star.x - scrollOffset;
+    const starScreenY = -star.y; // Convert from ground-up to screen coordinates
+    const dx = playerCenterX - starScreenX;
+    const dy = playerCenterY - starScreenY;
+    const distSq = dx * dx + dy * dy;
+    if (distSq < STAR_COLLECT_RADIUS * STAR_COLLECT_RADIUS) {
+      collected.push(star.id);
+    }
+  }
+  return collected;
+}
+
+/**
+ * Check if player is touching a jump pad (for auto-bounce)
+ */
+export function checkJumpPadContact(
+  playerState: PlayerState,
+  jumpPads: ShapeDashJumpPad[],
+  scrollOffset: number
+): string | null {
+  if (!playerState.isOnGround) return null;
+  
+  const playerLeft = playerState.x;
+  const playerRight = playerState.x + PLAYER_WIDTH;
+
+  for (const pad of jumpPads) {
+    const padScreenX = pad.x - scrollOffset;
+    const padLeft = padScreenX;
+    const padRight = padScreenX + JUMP_PAD_WIDTH;
+    
+    // Check if player is overlapping with jump pad horizontally
+    if (playerRight > padLeft && playerLeft < padRight) {
+      return pad.id;
+    }
+  }
+  return null;
+}
+
+/**
+ * Check if player is in a boost zone
+ */
+export function checkBoostZone(
+  playerX: number,
+  boostZones: ShapeDashBoostZone[],
+  scrollOffset: number
+): boolean {
+  const playerCenter = playerX + PLAYER_WIDTH / 2;
+  
+  for (const zone of boostZones) {
+    const zoneScreenX = zone.x - scrollOffset;
+    if (playerCenter >= zoneScreenX && playerCenter <= zoneScreenX + zone.width) {
+      return true;
+    }
+  }
+  return false;
 }
