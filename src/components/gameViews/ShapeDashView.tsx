@@ -1016,7 +1016,7 @@ export const ShapeDashView: React.FC<ShapeDashViewProps> = ({
     const currentTime = performance.now();
     
     if (hintId === 'reveal_gate') {
-      // Find next unpasssed gate
+      // Find next unpassed gate
       const shapeGates = problemRef.current.shapeGates ?? [];
       const nextGate = shapeGates.find(g => !state.passedGateIds.has(g.id));
       if (nextGate) {

@@ -253,13 +253,14 @@ export function getApproachingGateIndex(
   playerX: number,
   shapeGates: ShapeDashShapeGate[],
   scrollOffset: number,
-  passedGateIndices: Set<number>,
+  passedGateIds: Set<string>,
   warningDistance: number = 400
 ): number | null {
   const playerRight = playerX + PLAYER_WIDTH;
   for (let i = 0; i < shapeGates.length; i++) {
-    if (passedGateIndices.has(i)) continue;
-    const gateWorldX = shapeGates[i]!.x - scrollOffset;
+    const gate = shapeGates[i]!;
+    if (passedGateIds.has(gate.id)) continue;
+    const gateWorldX = gate.x - scrollOffset;
     const distance = gateWorldX - playerRight;
     if (distance > 0 && distance < warningDistance) return i;
   }
@@ -275,14 +276,13 @@ export function checkShapeGatePass(
   playerState: PlayerState,
   shapeGates: ShapeDashShapeGate[],
   scrollOffset: number,
-  passedGateIndices: Set<number>
+  passedGateIds: Set<string>
 ): { gateIndex: number; gateChoice: number } | null {
   const playerCenterX = playerState.x + PLAYER_WIDTH / 2;
   
   for (let i = 0; i < shapeGates.length; i++) {
-    if (passedGateIndices.has(i)) continue;
-    
     const gate = shapeGates[i]!;
+    if (passedGateIds.has(gate.id)) continue;
     const gateScreenX = gate.x - scrollOffset;
     const gateZoneLeft = gateScreenX - GATE_ZONE_WIDTH / 2;
     const gateZoneRight = gateScreenX + GATE_ZONE_WIDTH / 2;
