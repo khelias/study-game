@@ -427,15 +427,41 @@ export interface ShapeDashBoostZone {
   width: number;       // Zone width in pixels
 }
 
+/** V4: Shape gate for inline geometry questions (replaces checkpoint modals) */
+export interface ShapeDashShapeGate {
+  id: string;
+  x: number;           // World x position (pixels) - center of gate zone
+  prompt: string;      // Question text (e.g., "4 sides?" or "Which is a triangle?")
+  shapes: Array<{      // 3 shape options displayed as gates
+    type: 'triangle' | 'square' | 'pentagon' | 'hexagon' | 'circle';
+    label: string;     // Display label (e.g., "Triangle", "Square")
+    isCorrect: boolean;
+  }>;
+  passed?: boolean;    // Whether player has passed through this gate zone
+  correctChoice?: boolean; // Whether player chose correctly (if passed)
+}
+
+/** V4: Terrain segment for multi-level platforms */
+export interface ShapeDashTerrainSegment {
+  id: string;
+  x: number;           // World x position (start of segment)
+  width: number;       // Segment width in pixels
+  height: number;      // Platform height (0 = ground level, positive = raised)
+  type: 'flat' | 'raised' | 'gap' | 'ramp';
+  theme?: 'cave' | 'sky' | 'neon' | 'default'; // Visual theme
+}
+
 export interface ShapeDashProblem extends BaseProblem {
   type: 'shape_dash';
   obstacles: ShapeDashObstacle[];
-  checkpoints: ShapeDashCheckpoint[];
+  checkpoints: ShapeDashCheckpoint[]; // V3: Legacy - will be replaced by shapeGates in V4
   scrollSpeed: number;   // px per second
   runLength: number;     // Total world width in px (finish line)
   stars?: ShapeDashStar[];           // V3: Collectible stars
   jumpPads?: ShapeDashJumpPad[];     // V3: Jump pads
   boostZones?: ShapeDashBoostZone[]; // V3: Speed boost zones
+  shapeGates?: ShapeDashShapeGate[]; // V4: Shape gates for inline questions
+  terrainSegments?: ShapeDashTerrainSegment[]; // V4: Multi-level terrain
 }
 
 // Answer metadata for game-specific actions

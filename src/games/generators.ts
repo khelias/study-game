@@ -45,6 +45,8 @@ import type {
   ShapeDashStar,
   ShapeDashJumpPad,
   ShapeDashBoostZone,
+  ShapeDashShapeGate,
+  ShapeDashTerrainSegment,
 } from '../types/game';
 
 const profileMeta = (profileId: ProfileType) => PROFILES[profileId] || PROFILES.starter;
@@ -1921,6 +1923,114 @@ export const Generators: Record<string, GeneratorFunction> = {
       }
     }
 
+    // V4: Generate shape gates (3 per run, ~every 30% of run length)
+    const shapeGates: ShapeDashShapeGate[] = [];
+    const numShapeGates = 3;
+    const shapeGateBank: Array<{
+      prompt: { et: string; en: string };
+      correctShape: 'triangle' | 'square' | 'pentagon' | 'hexagon' | 'circle';
+      correctLabel: { et: string; en: string };
+    }> = [
+      { 
+        prompt: { et: '3 külge?', en: '3 sides?' }, 
+        correctShape: 'triangle', 
+        correctLabel: { et: 'Kolmnurk', en: 'Triangle' } 
+      },
+      { 
+        prompt: { et: '4 külge?', en: '4 sides?' }, 
+        correctShape: 'square', 
+        correctLabel: { et: 'Ruut', en: 'Square' } 
+      },
+      { 
+        prompt: { et: '5 külge?', en: '5 sides?' }, 
+        correctShape: 'pentagon', 
+        correctLabel: { et: 'Viisnurk', en: 'Pentagon' } 
+      },
+      { 
+        prompt: { et: '6 külge?', en: '6 sides?' }, 
+        correctShape: 'hexagon', 
+        correctLabel: { et: 'Kuusnurk', en: 'Hexagon' } 
+      },
+      { 
+        prompt: { et: '0 külge?', en: '0 sides?' }, 
+        correctShape: 'circle', 
+        correctLabel: { et: 'Ring', en: 'Circle' } 
+      },
+      { 
+        prompt: { et: 'Milline on kolmnurk?', en: 'Which is a triangle?' }, 
+        correctShape: 'triangle', 
+        correctLabel: { et: 'Kolmnurk', en: 'Triangle' } 
+      },
+      { 
+        prompt: { et: 'Milline on ring?', en: 'Which is a circle?' }, 
+        correctShape: 'circle', 
+        correctLabel: { et: 'Ring', en: 'Circle' } 
+      },
+    ];
+    
+    const shuffledGateBank = [...shapeGateBank].sort(() => rng() - 0.5);
+    const lang = locale === 'et' ? 'et' : 'en';
+    
+    for (let g = 0; g < numShapeGates && g < shuffledGateBank.length; g++) {
+      const segment = (runLength - runInDistance) / (numShapeGates + 1);
+      const x = runInDistance + (g + 1) * segment;
+      const gateData = shuffledGateBank[g]!;
+      
+      // Ensure gate doesn't overlap with obstacles or checkpoints
+      const tooClose = obstacles.some(obs => Math.abs(obs.x - x) < 200) || 
+                       checkpoints.some(cp => Math.abs(cp.x - x) < 200);
+      if (tooClose) continue;
+      
+      // Generate 3 shape options: correct + 2 random wrong
+      const allShapes: Array<'triangle' | 'square' | 'pentagon' | 'hexagon' | 'circle'> = 
+        ['triangle', 'square', 'pentagon', 'hexagon', 'circle'];
+      const wrongShapes = allShapes.filter(s => s !== gateData.correctShape);
+      const shuffledWrong = [...wrongShapes].sort(() => rng() - 0.5);
+      const shapeLabels: Record<string, { et: string; en: string }> = {
+        triangle: { et: 'Kolmnurk', en: 'Triangle' },
+        square: { et: 'Ruut', en: 'Square' },
+        pentagon: { et: 'Viisnurk', en: 'Pentagon' },
+        hexagon: { et: 'Kuusnurk', en: 'Hexagon' },
+        circle: { et: 'Ring', en: 'Circle' },
+      };
+      
+      const shapes = [
+        { type: gateData.correctShape, label: gateData.correctLabel[lang], isCorrect: true },
+        { type: shuffledWrong[0]!, label: shapeLabels[shuffledWrong[0]!]![lang], isCorrect: false },
+        { type: shuffledWrong[1]!, label: shapeLabels[shuffledWrong[1]!]![lang], isCorrect: false },
+      ].sort(() => rng() - 0.5); // Randomize gate positions
+      
+      shapeGates.push({
+        id: `gate-${uid(rng)}`,
+        x,
+        prompt: gateData.prompt[lang],
+        shapes,
+      });
+    }
+
+    // V4: Generate terrain segments (varied heights for visual interest)
+    const terrainSegments: ShapeDashTerrainSegment[] = [];
+    const numSegments = 8 + Math.floor(effectiveLevel * 0.5);
+    const segmentWidth = runLength / numSegments;
+    const themes: Array<'cave' | 'sky' | 'neon' | 'default'> = ['cave', 'sky', 'neon', 'default'];
+    
+    for (let s = 0; s < numSegments; s++) {
+      const x = s * segmentWidth;
+      const types: Array<'flat' | 'raised' | 'gap' | 'ramp'> = ['flat', 'flat', 'raised', 'ramp']; // Bias toward flat
+      const type = types[Math.floor(rng() * types.length)]!;
+      const height = type === 'raised' ? 20 + Math.floor(rng() * 30) : 0;
+      const theme = themes[Math.floor(s / 3) % themes.length]!; // Change theme every 3 segments
+      
+      terrainSegments.push({
+        id: `terrain-${uid(rng)}`,
+        x,
+        width: segmentWidth,
+        height,
+        type,
+        theme,
+      });
+    }
+
     return {
       type: 'shape_dash',
       uid: uid(rng),
@@ -1931,6 +2041,8 @@ export const Generators: Record<string, GeneratorFunction> = {
       stars,
       jumpPads,
       boostZones,
+      shapeGates,
+      terrainSegments,
     };
   },
 };
