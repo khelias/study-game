@@ -292,7 +292,16 @@ export function checkShapeGatePass(
     if (playerCenterX >= gateZoneLeft && playerCenterX <= gateZoneRight) {
       // Determine which gate (left, middle, right) the player is passing through
       const relativeX = playerCenterX - gateZoneLeft;
-      const gateSlot = Math.floor(relativeX / (GATE_WIDTH + GATE_SPACING));
+      const gateSlotWidth = GATE_WIDTH + GATE_SPACING;
+      const gateSlot = Math.floor(relativeX / gateSlotWidth);
+      const posWithinSlot = relativeX % gateSlotWidth;
+      
+      // Check if player is actually within a gate (not in the spacing)
+      if (posWithinSlot > GATE_WIDTH) {
+        // Player is in the spacing between gates - don't register as a pass yet
+        continue;
+      }
+      
       const gateChoice = Math.max(0, Math.min(2, gateSlot)); // Clamp to 0-2
       
       return { gateIndex: i, gateChoice };
