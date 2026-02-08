@@ -42,6 +42,14 @@ const GROUND_Y = CANVAS_HEIGHT - 90;
 const PLAYER_X = 140;
 const PLAYER_SIZE = 42;
 
+// Animation constants
+const ROTATION_SPEED = 8; // radians per second during jumps
+const SQUASH_STRETCH_DECAY = 0.15; // decay rate per frame
+const JUMP_SQUASH = 0.7; // squash amount on jump
+const LANDING_STRETCH = 1.3; // stretch amount on landing
+const SCREEN_SHAKE_INTENSITY = 8; // pixels
+const SCREEN_SHAKE_DECAY = 10; // decay rate per second
+
 // Particle system
 interface Particle {
   x: number;
@@ -253,7 +261,7 @@ function drawPlayer(
   size: number,
   rotation: number,
   squashStretch: number,
-  _scale: number,
+  _scale: number, // Reserved for future mini/mega portal modes
   pulsePhase: number
 ) {
   ctx.save();
@@ -297,8 +305,12 @@ function drawTrail(ctx: CanvasRenderingContext2D, trail: Array<{ x: number; y: n
     if (!t) continue;
     const alpha = (i / trail.length) * 0.5;
     const colorIdx = Math.floor((i / trail.length) * colors.length);
-    const color = colors[colorIdx] || colors[0]!;
-    ctx.fillStyle = color.replace(')', `, ${alpha})`).replace('rgb', 'rgba').replace('#', 'rgba(') + `, ${alpha})`;
+    const hexColor = colors[colorIdx] || colors[0]!;
+    // Convert hex to rgba
+    const r = parseInt(hexColor.slice(1, 3), 16);
+    const g = parseInt(hexColor.slice(3, 5), 16);
+    const b = parseInt(hexColor.slice(5, 7), 16);
+    ctx.fillStyle = `rgba(${r}, ${g}, ${b}, ${alpha})`;
     const trailSize = (size * (i / trail.length)) / 2;
     ctx.fillRect(t.x + size / 2 - trailSize / 2, t.y + size / 2 - trailSize / 2, trailSize, trailSize);
   }
@@ -456,6 +468,8 @@ export const ShapeDashView: React.FC<ShapeDashViewProps> = ({
   const [gameState, setGameState] = useState<'playing' | 'checkpoint' | 'crashed' | 'won'>('playing');
   const [checkpointIndex, setCheckpointIndex] = useState<number | null>(null);
   const [checkpointOption, setCheckpointOption] = useState<number | null>(null);
+  const [displayScore, setDisplayScore] = useState(0);
+  const [displayAttempt, setDisplayAttempt] = useState(1);
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -602,7 +616,7 @@ export const ShapeDashView: React.FC<ShapeDashViewProps> = ({
         if (onGround) {
           pvy = JUMP_VELOCITY;
           state.canDoubleJump = true;
-          state.squashStretch = 0.7; // Jump squash
+          state.squashStretch = JUMP_SQUASH;
           playSound('tap', soundEnabledRef.current);
         } else if (state.canDoubleJump) {
           pvy = JUMP_VELOCITY;
@@ -624,7 +638,7 @@ export const ShapeDashView: React.FC<ShapeDashViewProps> = ({
         state.canDoubleJump = true;
         // Landing detection
         if (!wasGrounded) {
-          state.squashStretch = 1.3; // Landing stretch
+          state.squashStretch = LANDING_STRETCH;
           state.particles.push(...createLandParticles(PLAYER_X, GROUND_Y));
         }
         lastGroundedRef.current = true;
@@ -633,9 +647,9 @@ export const ShapeDashView: React.FC<ShapeDashViewProps> = ({
         lastGroundedRef.current = false;
       }
 
-      // Update rotation (8 rad/s during jumps)
+      // Update rotation
       if (!state.isOnGround) {
-        state.playerRotation += 8 * dt;
+        state.playerRotation += ROTATION_SPEED * dt;
       } else {
         // Snap to nearest 90° on ground
         const target = Math.round(state.playerRotation / (Math.PI / 2)) * (Math.PI / 2);
@@ -643,11 +657,11 @@ export const ShapeDashView: React.FC<ShapeDashViewProps> = ({
       }
 
       // Squash/stretch decay
-      state.squashStretch = state.squashStretch + (1 - state.squashStretch) * 0.15;
+      state.squashStretch = state.squashStretch + (1 - state.squashStretch) * SQUASH_STRETCH_DECAY;
 
       // Screen shake decay
       if (state.screenShake > 0) {
-        state.screenShake = Math.max(0, state.screenShake - dt * 10);
+        state.screenShake = Math.max(0, state.screenShake - dt * SCREEN_SHAKE_DECAY);
       }
 
       // Update pulse phase
@@ -705,8 +719,10 @@ export const ShapeDashView: React.FC<ShapeDashViewProps> = ({
       }
 
       if (collision) {
-        state.screenShake = 8;
+        state.screenShake = SCREEN_SHAKE_INTENSITY;
         state.particles.push(...createExplosionParticles(PLAYER_X + PLAYER_SIZE / 2, py + PLAYER_SIZE / 2, '#00ff88'));
+        setDisplayScore(state.score);
+        setDisplayAttempt(state.attemptCount);
         setGameState('crashed');
         playSound('wrong', soundEnabledRef.current);
         onAnswerRef.current(false);
@@ -725,16 +741,10 @@ export const ShapeDashView: React.FC<ShapeDashViewProps> = ({
 
       // Win detection
       if (hasReachedFinish(nextScroll, prob.runLength)) {
-        // Victory fireworks (3 bursts staggered)
-        setTimeout(() => {
-          state.particles.push(...createFireworkParticles(CANVAS_WIDTH * 0.25, CANVAS_HEIGHT * 0.3));
-        }, 0);
-        setTimeout(() => {
-          state.particles.push(...createFireworkParticles(CANVAS_WIDTH * 0.5, CANVAS_HEIGHT * 0.2));
-        }, 200);
-        setTimeout(() => {
-          state.particles.push(...createFireworkParticles(CANVAS_WIDTH * 0.75, CANVAS_HEIGHT * 0.35));
-        }, 400);
+        // Add initial victory fireworks immediately
+        state.particles.push(...createFireworkParticles(CANVAS_WIDTH * 0.5, CANVAS_HEIGHT * 0.25));
+        setDisplayScore(state.score);
+        setDisplayAttempt(state.attemptCount);
         setGameState('won');
         playSound('win', soundEnabledRef.current);
         setTimeout(() => onAnswerRef.current(true), 800);
@@ -907,7 +917,7 @@ export const ShapeDashView: React.FC<ShapeDashViewProps> = ({
             <span className="text-5xl">🎉</span>
             <span className="text-3xl font-black text-white drop-shadow-lg">LEVEL COMPLETE!</span>
             <span className="text-xl font-bold text-white drop-shadow-md">
-              Score: {stateRef.current.score}
+              Score: {displayScore}
             </span>
           </div>
         )}
@@ -925,7 +935,7 @@ export const ShapeDashView: React.FC<ShapeDashViewProps> = ({
               {tapToRetry}
             </span>
             <span className="text-lg font-semibold text-white/90 drop-shadow-md">
-              Attempt {stateRef.current.attemptCount}
+              Attempt {displayAttempt}
             </span>
           </div>
         )}
