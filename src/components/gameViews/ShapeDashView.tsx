@@ -484,7 +484,11 @@ function drawStar(
 ) {
   if (collected) return;
   
-  const size = 16;
+  const STAR_SIZE = 16;
+  const STAR_POINTS = 5;
+  const STAR_ROTATION_OFFSET = -Math.PI / 2; // Point star upward
+  const STAR_INNER_RADIUS_RATIO = 0.4;
+  
   const pulse = 1 + Math.sin(pulsePhase * 5) * 0.15;
   const rotation = pulsePhase * 2;
   
@@ -500,9 +504,9 @@ function drawStar(
   // Draw 5-pointed star
   ctx.fillStyle = '#fef08a';
   ctx.beginPath();
-  for (let i = 0; i < 5; i++) {
-    const angle = (i * 2 * Math.PI) / 5 - Math.PI / 2;
-    const r = i % 2 === 0 ? size : size * 0.4;
+  for (let i = 0; i < STAR_POINTS; i++) {
+    const angle = (i * 2 * Math.PI) / STAR_POINTS + STAR_ROTATION_OFFSET;
+    const r = i % 2 === 0 ? STAR_SIZE : STAR_SIZE * STAR_INNER_RADIUS_RATIO;
     const x = Math.cos(angle) * r;
     const y = Math.sin(angle) * r;
     if (i === 0) ctx.moveTo(x, y);
@@ -959,13 +963,15 @@ export const ShapeDashView: React.FC<ShapeDashViewProps> = ({
           state.score += starPoints;
           // Mark star as collected in the problem data
           const star = stars.find(s => s.id === starId);
-          if (star) star.collected = true;
-          // Create sparkle and score popup particles
-          const starScreenX = star!.x - nextScroll;
-          const starScreenY = GROUND_Y - star!.y;
-          state.particles.push(...createSparkleParticles(starScreenX, starScreenY));
-          state.particles.push(...createScorePopup(starScreenX, starScreenY, starPoints, state.combo));
-          playSound('correct', soundEnabledRef.current);
+          if (star) {
+            star.collected = true;
+            // Create sparkle and score popup particles
+            const starScreenX = star.x - nextScroll;
+            const starScreenY = GROUND_Y - star.y;
+            state.particles.push(...createSparkleParticles(starScreenX, starScreenY));
+            state.particles.push(...createScorePopup(starScreenX, starScreenY, starPoints, state.combo));
+            playSound('correct', soundEnabledRef.current);
+          }
         }
       }
 

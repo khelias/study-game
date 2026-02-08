@@ -1871,7 +1871,8 @@ export const Generators: Record<string, GeneratorFunction> = {
 
     // V3: Generate stars (3-5 per run, scaling with level)
     const stars: ShapeDashStar[] = [];
-    const numStars = 3 + Math.floor(effectiveLevel * 0.3);
+    const STARS_PER_LEVEL_SCALING = 0.3; // Additional stars per level (0.3 = 1 star every ~3 levels)
+    const numStars = 3 + Math.floor(effectiveLevel * STARS_PER_LEVEL_SCALING);
     const starHeights = [0, 60, 100, 140]; // ground, low jump, high jump, double-jump height
     for (let s = 0; s < numStars; s++) {
       // Place stars between obstacles, avoiding collision with obstacles and checkpoints
