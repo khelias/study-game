@@ -57,6 +57,7 @@ export const GameScreen: React.FC = () => {
   const problem = usePlaySessionStore(state => state.problem);
   const stars = useGameStore(state => state.stars); // Persistent currency (for display in menu)
   const spendStars = useGameStore(state => state.spendStars); // For shape_shift star hints
+  const spendHeart = useGameStore(state => state.spendHeart);
   const hearts = useGameStore(state => state.hearts); // Persistent global resource
   const score = usePlaySessionStore(state => state.score);
   const levelProgress = usePlaySessionStore(state => state.levelProgress);
@@ -86,9 +87,9 @@ export const GameScreen: React.FC = () => {
   const { playClick } = useGameAudio(soundEnabled);
   const { handleAnswer: handleAnswerBase } = useAnswerHandler();
   
-  // Wrap handleAnswer to check achievement state
-  const handleAnswer = (isCorrect: boolean) => {
-    handleAnswerBase(isCorrect, () => !achievementShown);
+  // Wrap handleAnswer to check achievement state and pass through options (e.g. skipHeartDeduction)
+  const handleAnswer = (isCorrect: boolean, shouldShowAchievement?: () => boolean, options?: { skipHeartDeduction?: boolean }) => {
+    handleAnswerBase(isCorrect, shouldShowAchievement ?? (() => !achievementShown), options);
   };
 
   const [isCompactLayout, setIsCompactLayout] = useState(false);
@@ -452,6 +453,8 @@ export const GameScreen: React.FC = () => {
               level={currentLevel}
               stars={stars}
               spendStars={spendStars}
+              spendHeart={spendHeart}
+              endGame={endGame}
             />
 
             <TipButton onTip={handleTipReplay} soundEnabled={soundEnabled} disabled={!canReopenTip} />

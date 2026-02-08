@@ -8,6 +8,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { playSound } from '../../engine/audio';
 import { useTranslation } from '../../i18n/useTranslation';
+import { useWrongStrikes } from '../../hooks/useWrongStrikes';
 import { ALPHABET, GAME_CONFIG } from '../../games/data';
 import { PaidHintButtons } from '../shared';
 import type { WordCascadeProblem } from '../../types/game';
@@ -27,7 +28,6 @@ const FALL_DURATION_VARIANCE = 0.6;
 const TARGET_LETTER_PROB_BASE = 0.4;
 const TARGET_LETTER_PROB_MIN = 0.25;
 
-const MAX_STRIKES = 3;
 const WRONG_FEEDBACK_MS = 500;
 const GAME_OVER_DELAY_MS = 900;
 
@@ -128,7 +128,10 @@ export const WordCascadeView: React.FC<WordCascadeViewProps> = ({
 
   const [progress, setProgress] = useState('');
   const [status, setStatus] = useState<'idle' | 'correct' | 'wrong'>('idle');
-  const [strikes, setStrikes] = useState(0);
+  const { strikes, addStrike, resetStrikes, isAtMax: strikesAtMax, triesLeft } = useWrongStrikes({
+    maxStrikes: 3,
+    resetDeps: `${problem.uid}-${problem.target}`,
+  });
   const [revealedNextLetter, setRevealedNextLetter] = useState(false);
   const [gameEnded, setGameEnded] = useState(false);
 
@@ -144,10 +147,10 @@ export const WordCascadeView: React.FC<WordCascadeViewProps> = ({
     // eslint-disable-next-line react-hooks/set-state-in-effect -- reset UI when problem changes
     setProgress('');
     setStatus('idle');
-    setStrikes(0);
+    resetStrikes();
     setRevealedNextLetter(false);
     setGameEnded(false);
-  }, [problem.uid, problem.target]);
+  }, [problem.uid, problem.target, resetStrikes]);
 
   const handlePaidHint = useCallback(
     (hintId: string) => {
@@ -165,11 +168,11 @@ export const WordCascadeView: React.FC<WordCascadeViewProps> = ({
       if (gameEnded || status === 'correct') return;
       if (colIndex !== nextIdx || !need) return;
       if (char.toLowerCase() !== need.toLowerCase()) {
-        const nextStrikes = Math.min(MAX_STRIKES, strikes + 1);
-        setStrikes(nextStrikes);
+        const willBeAtMax = strikes + 1 >= 3;
+        addStrike();
         setStatus('wrong');
         playSound('wrong', soundEnabled);
-        if (nextStrikes >= MAX_STRIKES) {
+        if (willBeAtMax) {
           setGameEnded(true);
           window.setTimeout(() => onAnswer(false), GAME_OVER_DELAY_MS);
         } else {
@@ -177,7 +180,7 @@ export const WordCascadeView: React.FC<WordCascadeViewProps> = ({
         }
         return;
       }
-      setStrikes(0);
+      resetStrikes();
       playSound('correct', soundEnabled);
       setRevealedNextLetter(false);
       const nextProgress = progress + char;
@@ -188,16 +191,15 @@ export const WordCascadeView: React.FC<WordCascadeViewProps> = ({
         window.setTimeout(() => onAnswer(true), 400);
       }
     },
-    [need, progress, target, status, gameEnded, soundEnabled, onAnswer, nextIdx, strikes]
+    [need, progress, target, status, gameEnded, soundEnabled, onAnswer, nextIdx, strikes, addStrike, resetStrikes]
   );
 
   const gameTitle = (t.games['word_cascade' as keyof typeof t.games]?.title ?? 'Word Cascade') as string;
   const stripHeightPx = LETTERS_PER_CYCLE * LETTER_TILE_PX * CYCLE_COPIES;
 
-  const triesLeft = MAX_STRIKES - strikes;
   const feedbackMessage =
     status === 'wrong'
-      ? strikes >= MAX_STRIKES
+      ? strikesAtMax
         ? t.gameScreen.wordCascade.outOfTries
         : (t.gameScreen.wordCascade.triesLeft as string)?.replace('{count}', String(triesLeft)) ?? `${triesLeft} tries left`
       : null;
@@ -210,7 +212,7 @@ export const WordCascadeView: React.FC<WordCascadeViewProps> = ({
 
       {!gameEnded && (
         <div className="flex items-center gap-1 mb-2" aria-label={`${triesLeft} tries left`}>
-          {Array.from({ length: MAX_STRIKES }).map((_, i) => (
+          {Array.from({ length: 3 }).map((_, i) => (
             <span
               key={i}
               className={[

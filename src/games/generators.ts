@@ -33,7 +33,8 @@ import type {
   SceneSubject,
   LetterObject,
   PatternRuleId,
-  BattleLearnProblem
+  BattleLearnProblem,
+  BattleLearnCellType
 } from '../types/game';
 
 const profileMeta = (profileId: ProfileType) => PROFILES[profileId] || PROFILES.starter;
@@ -1431,6 +1432,47 @@ export const Generators: Record<string, GeneratorFunction> = {
     let gridSize: number;
     let shipLengths: number[];
 
+    function buildBattleLearnCellGrid(
+      size: number,
+      shipList: { positions: Array<[number, number]> }[],
+      rngFn: RngFunction
+    ): BattleLearnCellType[][] {
+      const grid: BattleLearnCellType[][] = Array.from({ length: size }, () =>
+        Array.from({ length: size }, (): BattleLearnCellType => 'empty')
+      );
+      const shipSet = new Set<string>();
+      for (const ship of shipList) {
+        for (const [r, c] of ship.positions) {
+          shipSet.add(`${r},${c}`);
+        }
+      }
+      const nonShipCells: [number, number][] = [];
+      for (let r = 0; r < size; r++) {
+        for (let c = 0; c < size; c++) {
+          if (shipSet.has(`${r},${c}`)) {
+            grid[r]![c] = 'ship';
+          } else {
+            nonShipCells.push([r, c]);
+          }
+        }
+      }
+      // Weights: mostly empty, fewer challenges, fewer hearts
+      const weights = [0.72, 0.15, 0.10, 0.03];
+      const types: Exclude<BattleLearnCellType, 'ship'>[] = ['empty', 'problem', 'star', 'heart'];
+      for (const [r, c] of nonShipCells) {
+        const roll = rngFn();
+        let sum = 0;
+        for (let i = 0; i < weights.length; i++) {
+          sum += weights[i]!;
+          if (roll < sum) {
+            grid[r]![c] = types[i]!;
+            break;
+          }
+        }
+      }
+      return grid;
+    }
+
     if (isAdvanced) {
       // Advanced profile: starts moderate, grows to complex
       gridSize = level <= 2 ? 5 : level <= 5 ? 6 : level <= 10 ? 7 : 8;
@@ -1442,6 +1484,7 @@ export const Generators: Record<string, GeneratorFunction> = {
     }
 
     const ships = placeShips(gridSize, shipLengths, rng);
+    const cellGrid = buildBattleLearnCellGrid(gridSize, ships, rng);
     let prompt: string;
     let correctAnswer: number | string;
     let options: string[];
@@ -1581,6 +1624,7 @@ export const Generators: Record<string, GeneratorFunction> = {
       type: 'battlelearn',
       uid: uid(rng),
       gridSize,
+      cellGrid,
       ships,
       revealed: [],
       hits: [],
@@ -2226,17 +2270,17 @@ export function generateBattleLearnQuestion(
   const correctIndex = Math.floor(rng() * numOptions);
   const shuffledOptions = shuffleOptionsWithCorrect(options, correctAnswer, correctIndex, rng);
   
-  // Return updated problem with new question but SAME board state
+  // Return updated problem with new question but SAME board state (keep same uid so view does not remount and lose answeredProblemCells)
   return {
     ...currentProblem,
-    // Generate new UID to trigger React update
-    uid: uid(rng),
+    uid: currentProblem.uid,
     question: {
       prompt,
       options: shuffledOptions,
       correctIndex,
     },
-    // Preserve board state
+    // Preserve board state and cell grid
+    cellGrid: currentProblem.cellGrid,
     revealed: currentProblem.revealed,
     hits: currentProblem.hits,
     sunkShips: currentProblem.sunkShips,

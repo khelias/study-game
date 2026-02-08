@@ -22,8 +22,13 @@ import {
 import { generateBattleLearnQuestion } from '../games/generators';
 import type { BattleLearnProblem } from '../types/game';
 
+export interface AnswerOptions {
+  /** When true, do not decrement a heart for this wrong answer. */
+  skipHeartDeduction?: boolean;
+}
+
 export interface UseAnswerHandlerResult {
-  handleAnswer: (isCorrect: boolean, shouldShowAchievement?: () => boolean) => void;
+  handleAnswer: (isCorrect: boolean, shouldShowAchievement?: () => boolean, options?: AnswerOptions) => void;
 }
 
 export function useAnswerHandler(): UseAnswerHandlerResult {
@@ -67,7 +72,7 @@ export function useAnswerHandler(): UseAnswerHandlerResult {
   const addNotification = usePlaySessionStore(state => state.addNotification);
   const score = usePlaySessionStore(state => state.score);
 
-  const handleAnswer = useCallback((isCorrect: boolean, shouldShowAchievement: () => boolean = () => true) => {
+  const handleAnswer = useCallback((isCorrect: boolean, shouldShowAchievement: () => boolean = () => true, options?: AnswerOptions) => {
     if (!gameType || !problem) return;
 
     const answerStartTime = Date.now();
@@ -312,38 +317,35 @@ export function useAnswerHandler(): UseAnswerHandlerResult {
       setBgClass('bg-red-50');
       setShowHint(baseGameType !== 'math_snake'); // Show hint for non-math-snake games
 
-      if (result.shouldDecrementHearts) {
+      const didSpendHeart = result.shouldDecrementHearts && !options?.skipHeartDeduction;
+      if (didSpendHeart) {
         spendHeart();
-        
-        // Update problem for math snake before ending
-        if (result.updatedProblem) {
+      }
+
+      // Check if game should end (no hearts left) – either we just spent, or the game spent (e.g. BattleLearn 5 strikes)
+      const currentHearts = useGameStore.getState().hearts;
+      if (currentHearts <= 0 || result.shouldEndGame) {
+        if (didSpendHeart && result.updatedProblem) {
           setProblem(result.updatedProblem);
         }
-
-        // Check if game should end (no hearts left)
-        const currentHearts = useGameStore.getState().hearts;
-        if (currentHearts <= 0 || result.shouldEndGame) {
-          // Record max snake length before game ends
-          if (baseGameType === 'math_snake' && problem.type === 'math_snake') {
-            const finalSnakeLength = problem.snake.length;
+        if (baseGameType === 'math_snake' && problem.type === 'math_snake') {
+          const finalSnakeLength = problem.snake.length;
+          updateStats(stats => ({
+            ...stats,
+            maxSnakeLength: Math.max(stats.maxSnakeLength || 0, finalSnakeLength),
+          }));
+        }
+        setTimeout(() => {
+          endGame();
+          if (gameStartTime) {
+            const playTime = Math.floor((Date.now() - gameStartTime) / 1000);
             updateStats(stats => ({
               ...stats,
-              maxSnakeLength: Math.max(stats.maxSnakeLength || 0, finalSnakeLength),
+              totalTimePlayed: stats.totalTimePlayed + playTime,
             }));
           }
-
-          setTimeout(() => {
-            endGame();
-            if (gameStartTime) {
-              const playTime = Math.floor((Date.now() - gameStartTime) / 1000);
-              updateStats(stats => ({
-                ...stats,
-                totalTimePlayed: stats.totalTimePlayed + playTime,
-              }));
-            }
-          }, 800);
-          return;
-        }
+        }, 800);
+        return;
       }
 
       setTimeout(() => {

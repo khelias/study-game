@@ -6,16 +6,24 @@ import { useTranslation } from '../../i18n/useTranslation';
 // Import registrations to ensure games are registered
 import '../../games/registrations';
 
+export interface AnswerOptions {
+  skipHeartDeduction?: boolean;
+}
+
 interface GameRendererProps {
   gameType: string;
   problem: Problem;
-  onAnswer: (isCorrect: boolean) => void;
+  onAnswer: (isCorrect: boolean, shouldShowAchievement?: () => boolean, options?: AnswerOptions) => void;
   onMove?: (direction: Direction) => void;
   soundEnabled: boolean;
   level?: number;
   /** Passed to Shape Shift for star-based hints (outline / place one piece) */
   stars?: number;
   spendStars?: (count: number) => boolean;
+  /** Passed to BattleLearn for strike-based heart deduction (e.g. 5 misses = 1 heart) */
+  spendHeart?: () => void;
+  /** Passed to BattleLearn to end game when hearts hit 0 after spending from 5 misses */
+  endGame?: () => void;
 }
 
 export const GameRenderer: React.FC<GameRendererProps> = ({ 
@@ -27,6 +35,8 @@ export const GameRenderer: React.FC<GameRendererProps> = ({
   level,
   stars,
   spendStars,
+  spendHeart,
+  endGame,
 }) => {
   const t = useTranslation();
   
@@ -56,6 +66,8 @@ export const GameRenderer: React.FC<GameRendererProps> = ({
       gameType={gameType}
       stars={stars}
       spendStars={spendStars}
+      spendHeart={spendHeart}
+      endGame={endGame}
     />
   );
 };

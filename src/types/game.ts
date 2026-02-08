@@ -334,6 +334,9 @@ export interface PieceState extends ShapePiece {
 }
 
 // BattleLearn problem (Battleship-inspired educational game)
+/** Cell types: only 'problem' cells open the question modal; others are gameplay-only */
+export type BattleLearnCellType = 'empty' | 'problem' | 'ship' | 'star' | 'heart';
+
 export interface Ship {
   id: string;
   length: number;
@@ -350,6 +353,8 @@ export interface BattleLearnQuestion {
 export interface BattleLearnProblem extends BaseProblem {
   type: 'battlelearn';
   gridSize: number;         // Grid dimensions (e.g., 5 for 5x5)
+  /** Per-cell type: only 'problem' cells open the question modal */
+  cellGrid: BattleLearnCellType[][];
   ships: Ship[];            // Ship placements (hidden from UI initially)
   revealed: Array<[number, number]>;  // Cells that have been shot
   hits: Array<[number, number]>;      // Cells that were hits

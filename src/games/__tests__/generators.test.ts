@@ -807,6 +807,9 @@ describe('Generators', () => {
       
       expect(problem.type).toBe('battlelearn');
       expect(problem.gridSize).toBeGreaterThan(0);
+      expect(problem.cellGrid).toBeDefined();
+      expect(problem.cellGrid).toHaveLength(problem.gridSize);
+      expect(problem.cellGrid[0]).toHaveLength(problem.gridSize);
       expect(problem.ships).toBeInstanceOf(Array);
       expect(problem.ships.length).toBeGreaterThan(0);
       expect(problem.revealed).toEqual([]);
@@ -842,6 +845,7 @@ describe('Generators', () => {
       const problem2 = generator(1, rng2, 'starter');
       
       expect(problem1.ships).toEqual(problem2.ships);
+      expect(problem1.cellGrid).toEqual(problem2.cellGrid);
       expect(problem1.question).toEqual(problem2.question);
     });
 

@@ -154,7 +154,8 @@ export const usePlaySessionStore = create<PlaySessionStore>((set, get) => ({
         (clonedProblem as typeof problem).snake = problem.snake.map(pos => [...pos] as [number, number]);
       }
       if (problem.type === 'battlelearn' && 'ships' in problem) {
-        // Clone BattleLearn-specific arrays
+        // Clone BattleLearn-specific arrays and cell grid
+        (clonedProblem as typeof problem).cellGrid = problem.cellGrid.map(row => [...row]);
         (clonedProblem as typeof problem).revealed = problem.revealed.map(pos => [...pos] as [number, number]);
         (clonedProblem as typeof problem).hits = problem.hits.map(pos => [...pos] as [number, number]);
         (clonedProblem as typeof problem).sunkShips = [...problem.sunkShips];
