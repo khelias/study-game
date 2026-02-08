@@ -29,7 +29,7 @@ export const GameOverScreen: React.FC = () => {
   const gameConfig = baseType ? GAME_CONFIG[baseType] : undefined;
   const category = gameConfig ? CATEGORIES[gameConfig.category] : undefined;
 
-  const headerEmoji = category?.emoji ?? '🎮';
+  const headerEmoji = gameConfig?.emoji ?? category?.emoji ?? '🎮';
   const headerTitle: string =
     baseType && t.games[baseType as keyof typeof t.games]
       ? (t.games[baseType as keyof typeof t.games].title as string)

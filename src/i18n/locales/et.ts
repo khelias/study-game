@@ -142,6 +142,7 @@ export const et = {
     score: 'Skoor',
     stars: 'Tähed',
     featured: 'Soovitatud',
+    favourites: 'Lemmikud',
   },
 
   // Game
@@ -362,6 +363,9 @@ export const et = {
     newGame: 'UUS!',
     language: 'Keel',
     selectLanguage: 'Vali keel',
+    editFavourites: 'Muuda lemmikuid',
+    editFavouritesTitle: 'Vali mängud lemmikute sektsiooni',
+    save: 'Salvesta',
   },
 
   // Tutorial

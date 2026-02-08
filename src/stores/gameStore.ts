@@ -29,6 +29,8 @@ const buildDefaultLevels = () => {
 const MAX_HEARTS = 5;
 const DEFAULT_HEARTS = 3;
 
+const DEFAULT_FAVOURITE_GAME_IDS = ['battlelearn', 'word_cascade', 'math_snake'];
+
 export interface GameStore {
   // State
   profile: string;
@@ -41,9 +43,11 @@ export interface GameStore {
   hearts: number; // Persistent global resource (replaces session hearts)
   hasSeenTutorial: boolean;
   highScores: Record<string, number>; // High score per game type
-  
+  favouriteGameIds: string[]; // User-chosen games shown in Favourites section
+
   // Actions
   setProfile: (profile: string) => void;
+  setFavouriteGameIds: (ids: string[]) => void;
   updateStats: (updater: (stats: ReturnType<typeof createStats>) => ReturnType<typeof createStats>) => void;
   recordAnswer: (isCorrect: boolean, points?: number) => { newAchievements: AchievementData[] };
   recordGameStart: (gameType: string) => { newAchievements: AchievementData[] };
@@ -80,8 +84,9 @@ export const useGameStore = create<GameStore>()(
       stars: 0, // Persistent currency
       hearts: DEFAULT_HEARTS, // Persistent global resource
       hasSeenTutorial: false,
-      highScores: {}, // High scores per game type
-      
+      highScores: {},
+      favouriteGameIds: DEFAULT_FAVOURITE_GAME_IDS,
+
       // Actions
       setProfile: (profile: string) => {
         if (profile in PROFILES) {
@@ -218,6 +223,7 @@ export const useGameStore = create<GameStore>()(
             hearts: DEFAULT_HEARTS,
             hasSeenTutorial: false,
             highScores: {},
+            favouriteGameIds: DEFAULT_FAVOURITE_GAME_IDS,
           });
         }
       },
@@ -353,6 +359,10 @@ export const useGameStore = create<GameStore>()(
         const baseType = gameType.replace('_adv', '');
         return state.highScores[baseType] || 0;
       },
+
+      setFavouriteGameIds: (ids: string[]) => {
+        set({ favouriteGameIds: ids });
+      },
     }),
     {
       name: APP_KEY,
@@ -367,6 +377,7 @@ export const useGameStore = create<GameStore>()(
         hearts: state.hearts,
         hasSeenTutorial: state.hasSeenTutorial,
         highScores: state.highScores,
+        favouriteGameIds: state.favouriteGameIds,
       }),
       // Handle migration from old localStorage format
       migrate: (persistedState: unknown) => {
@@ -421,7 +432,14 @@ export const useGameStore = create<GameStore>()(
           if (typeof stateObj.hearts === 'number' && stateObj.hearts > MAX_HEARTS) {
             stateObj.hearts = MAX_HEARTS;
           }
-          
+          // Migrate featuredGameIds → favouriteGameIds; default if missing
+          if (Array.isArray(stateObj.featuredGameIds)) {
+            stateObj.favouriteGameIds = stateObj.featuredGameIds;
+            delete stateObj.featuredGameIds;
+          }
+          if (!Array.isArray(stateObj.favouriteGameIds)) {
+            stateObj.favouriteGameIds = DEFAULT_FAVOURITE_GAME_IDS;
+          }
           return { ...defaults, ...stateObj };
         }
         return persistedState;

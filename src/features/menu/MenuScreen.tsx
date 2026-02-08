@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
   Trash2, Volume2, VolumeX, BarChart3,
-  Type, Brain, Scale, BookOpen, GraduationCap, TrainFront, Bot, Clock3, Ruler, Gamepad2, ChevronDown, ChevronUp, Languages, Menu, X, Hash, FileText, Layers, Search, Star, Anchor
+  Type, Brain, Scale, BookOpen, GraduationCap, TrainFront, Bot, Clock3, Ruler, Gamepad2, ChevronDown, ChevronUp, Languages, Menu, X, Hash, FileText, Layers, Search, Star, Anchor, Pencil
 } from 'lucide-react';
 import { useGameStore } from '../../stores/gameStore';
 import { useGameAudio } from '../../hooks/useGameAudio';
@@ -41,6 +41,8 @@ export const MenuScreen: React.FC = () => {
   const hasSeenTutorial = useGameStore(state => state.hasSeenTutorial);
   const levels = useGameStore(state => state.levels);
   const getHighScore = useGameStore(state => state.getHighScore);
+  const favouriteGameIds = useGameStore(state => state.favouriteGameIds);
+  const setFavouriteGameIds = useGameStore(state => state.setFavouriteGameIds);
   
   const setProfile = useGameStore(state => state.setProfile);
   const toggleSound = useGameStore(state => state.toggleSound);
@@ -55,8 +57,10 @@ export const MenuScreen: React.FC = () => {
   const [showShop, setShowShop] = useState(false);
   const [showTutorial, setShowTutorial] = useState(!hasSeenTutorial);
   const [expandedCategories, setExpandedCategories] = useState<Record<string, boolean>>({});
-  const [showFeatured, setShowFeatured] = useState(true);
+  const [showFavourites, setShowFavourites] = useState(() => favouriteGameIds.length > 0);
   const [showSettingsMenu, setShowSettingsMenu] = useState(false);
+  const [showEditFavourites, setShowEditFavourites] = useState(false);
+  const [editFavouritesDraft, setEditFavouritesDraft] = useState<string[]>([]);
   const settingsMenuRef = useRef<HTMLDivElement>(null);
   
   // Check for openShop query parameter (from GameResultScreen)
@@ -128,7 +132,7 @@ export const MenuScreen: React.FC = () => {
                 playClick();
                 // Reset menu to default state
                 setExpandedCategories({});
-                setShowFeatured(true);
+                setShowFavourites(favouriteGameIds.length > 0);
                 setShowStats(false);
                 setShowAchievements(false);
                 setShowShop(false);
@@ -337,36 +341,48 @@ export const MenuScreen: React.FC = () => {
         </div>
       </div>
       
-      {/* Featured Games Section - Refined */}
+      {/* Favourites Section */}
       <div className="w-full mb-4 sm:mb-5">
-        <button
-          onClick={() => {
-            playClick();
-            setShowFeatured(!showFeatured);
-          }}
-          className="w-full flex items-center justify-between bg-white border-2 border-slate-200 hover:border-emerald-300 px-4 py-3 rounded-xl shadow-sm hover:shadow-md transition-all"
-        >
-          <div className="flex items-center gap-2 sm:gap-3">
-            <span className="text-xl sm:text-2xl">⭐</span>
-            <span className="font-bold text-sm sm:text-base text-slate-700">
-              {formatText(t.menu.featured)}
-            </span>
-          </div>
-          {showFeatured ? (
-            <ChevronUp className="w-4 h-4 sm:w-5 sm:h-5 text-slate-600" />
-          ) : (
-            <ChevronDown className="w-4 h-4 sm:w-5 sm:h-5 text-slate-600" />
-          )}
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => {
+              playClick();
+              setShowFavourites(!showFavourites);
+            }}
+            className="flex-1 flex items-center justify-between bg-white border-2 border-slate-200 hover:border-emerald-300 px-4 py-3 rounded-xl shadow-sm hover:shadow-md transition-all"
+          >
+            <div className="flex items-center gap-2 sm:gap-3">
+              <span className="text-xl sm:text-2xl">❤️</span>
+              <span className="font-bold text-sm sm:text-base text-slate-700">
+                {formatText(t.menu.favourites)}
+              </span>
+            </div>
+            {showFavourites ? (
+              <ChevronUp className="w-4 h-4 sm:w-5 sm:h-5 text-slate-600" />
+            ) : (
+              <ChevronDown className="w-4 h-4 sm:w-5 sm:h-5 text-slate-600" />
+            )}
+          </button>
+          <button
+            onClick={() => {
+              playClick();
+              setEditFavouritesDraft([...favouriteGameIds]);
+              setShowEditFavourites(true);
+            }}
+            className="p-2.5 rounded-xl bg-white border-2 border-slate-200 hover:border-emerald-300 shadow-sm hover:shadow-md transition-all"
+            aria-label={formatText(t.menuSpecific.editFavourites)}
+            title={formatText(t.menuSpecific.editFavourites)}
+          >
+            <Pencil className="w-4 h-4 sm:w-5 sm:h-5 text-slate-600" />
+          </button>
+        </div>
         
-        {/* Featured games grid */}
-        {showFeatured && (
+        {/* Favourites games grid */}
+        {showFavourites && (
           <div className="grid grid-cols-1 gap-3 sm:gap-4 mt-3 animate-fadeIn">
-            {(() => {
-              const featuredGameKeys = ['battlelearn', 'word_cascade', 'math_snake'].filter(
-                (key) => GAME_CONFIG[key]?.allowedProfiles?.includes(profile as ProfileType)
-              );
-              return featuredGameKeys.map((key) => {
+            {favouriteGameIds
+              .filter((key) => GAME_CONFIG[key]?.allowedProfiles?.includes(profile as ProfileType))
+              .map((key) => {
                 const conf = GAME_CONFIG[key];
                 if (!conf) return null;
                 const Icon = ICON_MAP[conf.icon as keyof typeof ICON_MAP] || Type;
@@ -384,22 +400,98 @@ export const MenuScreen: React.FC = () => {
                     highScore={getHighScore(key)}
                   />
                 );
-              }).filter(Boolean);
-            })()}
+              })}
           </div>
         )}
       </div>
+
+      {/* Edit Favourites modal */}
+      {showEditFavourites && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 animate-in fade-in duration-200">
+          <div className="bg-white rounded-2xl shadow-xl max-w-md w-full max-h-[85vh] flex flex-col border-2 border-slate-200 animate-in zoom-in-95 duration-200">
+            <div className="p-4 border-b border-slate-200">
+              <h2 className="text-lg font-bold text-slate-800">{formatText(t.menuSpecific.editFavouritesTitle)}</h2>
+            </div>
+            <div className="p-4 overflow-y-auto flex-1">
+              {Object.values(CATEGORIES).map((category) => {
+                const categoryGames = Object.entries(GAME_CONFIG)
+                  .filter(
+                    ([key, conf]) =>
+                      conf.category === category.id &&
+                      conf.allowedProfiles?.includes(profile as ProfileType)
+                  );
+                if (categoryGames.length === 0) return null;
+                const categoryName = formatText(t.categories[category.id as keyof typeof t.categories]?.name ?? category.name);
+                return (
+                  <div key={category.id} className="mb-4">
+                    <div className="flex items-center gap-2 mb-2 px-1 text-slate-500 text-sm font-semibold">
+                      <span className="text-lg" aria-hidden>{category.emoji}</span>
+                      <span>{categoryName}</span>
+                    </div>
+                    {categoryGames.map(([key, conf]) => {
+                      const isChecked = editFavouritesDraft.includes(key);
+                      const gameName = t.games[key as keyof typeof t.games]?.title ?? conf.title;
+                      const gameEmoji = conf.emoji ?? CATEGORIES[conf.category]?.emoji ?? '🎮';
+                      return (
+                        <label
+                          key={key}
+                          className="flex items-center gap-3 py-2.5 px-3 rounded-xl hover:bg-slate-50 cursor-pointer"
+                        >
+                          <input
+                            type="checkbox"
+                            checked={isChecked}
+                            onChange={() => {
+                              if (isChecked) {
+                                setEditFavouritesDraft((prev) => prev.filter((id) => id !== key));
+                              } else {
+                                setEditFavouritesDraft((prev) => [...prev, key]);
+                              }
+                            }}
+                            className="w-5 h-5 rounded border-2 border-slate-300 text-emerald-600 focus:ring-emerald-500"
+                          />
+                          <span className="text-xl sm:text-2xl shrink-0" aria-hidden>{gameEmoji}</span>
+                          <span className="font-semibold text-slate-800">{formatText(gameName)}</span>
+                        </label>
+                      );
+                    })}
+                  </div>
+                );
+              })}
+            </div>
+            <div className="p-4 border-t border-slate-200 flex gap-2 justify-end">
+              <button
+                onClick={() => {
+                  playClick();
+                  setShowEditFavourites(false);
+                }}
+                className="px-4 py-2 rounded-xl border-2 border-slate-200 font-semibold text-slate-700 hover:bg-slate-50"
+              >
+                {formatText(t.common.cancel)}
+              </button>
+              <button
+                onClick={() => {
+                  playClick();
+                  setFavouriteGameIds(editFavouritesDraft);
+                  setShowEditFavourites(false);
+                  if (editFavouritesDraft.length === 0) setShowFavourites(false);
+                }}
+                className="px-4 py-2 rounded-xl bg-emerald-500 text-white font-semibold hover:bg-emerald-600"
+              >
+                {formatText(t.menuSpecific.save)}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
       
       {/* Games by category - Refined */}
       <div className="w-full pb-6 sm:pb-10">
         {Object.values(CATEGORIES).map(category => {
-          // Featured games are shown separately, exclude them from categories
-          const featuredGameIds = ['word_cascade', 'math_snake'];
+          // All games appear in their category; favourites also appear in Favourites section
           const categoryGames = Object.entries(GAME_CONFIG)
             .filter(([key, conf]) => 
               conf.category === category.id && 
-              (!conf.allowedProfiles || conf.allowedProfiles.includes(profile as ProfileType)) &&
-              !featuredGameIds.includes(key)
+              (!conf.allowedProfiles || conf.allowedProfiles.includes(profile as ProfileType))
             );
           
           if (categoryGames.length === 0) return null;

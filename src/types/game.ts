@@ -58,6 +58,7 @@ export interface GameConfig {
   title: string;
   theme: Theme;
   icon: string;
+  emoji?: string; // Game emoji used in menu/favourites (e.g. 🧠, 🐍)
   desc: string;
   allowedProfiles: ProfileType[];
   difficulty: Difficulty;

@@ -142,6 +142,7 @@ export const en = {
     score: 'Score',
     stars: 'Stars',
     featured: 'Featured',
+    favourites: 'Favourites',
   },
 
   // Game
@@ -362,6 +363,9 @@ export const en = {
     newGame: 'NEW!',
     language: 'Language',
     selectLanguage: 'Select language',
+    editFavourites: 'Edit favourites',
+    editFavouritesTitle: 'Choose games for Favourites section',
+    save: 'Save',
   },
 
   // Tutorial

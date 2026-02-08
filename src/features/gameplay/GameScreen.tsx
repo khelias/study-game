@@ -376,29 +376,7 @@ export const GameScreen: React.FC = () => {
         {gameType && (() => {
           const baseType = gameType.replace('_adv', '');
           const gameConfig = GAME_CONFIG[baseType];
-          
-          // Map game icon to emoji
-          const iconToEmoji: Record<string, string> = {
-            'Anchor': '⚓',
-            'Bot': '🤖',
-            'Clock3': '🕐',
-            'Gamepad2': '🎮',
-            'Scale': '⚖️',
-            'Target': '🎯',
-            'Brain': '🧠',
-            'BookOpen': '📖',
-            'TrainFront': '🚂',
-            'Type': '✏️',
-            'FileText': '📄',
-            'Layers': '📚',
-            'Search': '🔍',
-            'Star': '⭐',
-            'Ruler': '📏',
-            'Hash': '#️⃣',
-            'Shapes': '🔷',
-          };
-          
-          const gameEmoji = gameConfig?.icon ? iconToEmoji[gameConfig.icon] ?? '🎮' : '🎮';
+          const gameEmoji = gameConfig?.emoji ?? '🎮';
           const gameTitleStr: string = (gameConfig && t.games[baseType as keyof typeof t.games]
             ? t.games[baseType as keyof typeof t.games].title
             : gameType.toUpperCase()) as string;
