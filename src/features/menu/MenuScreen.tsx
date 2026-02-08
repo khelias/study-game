@@ -62,6 +62,7 @@ export const MenuScreen: React.FC = () => {
   const [showEditFavourites, setShowEditFavourites] = useState(false);
   const [editFavouritesDraft, setEditFavouritesDraft] = useState<string[]>([]);
   const settingsMenuRef = useRef<HTMLDivElement>(null);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
   
   // Check for openShop query parameter (from GameResultScreen)
   useEffect(() => {
@@ -121,9 +122,11 @@ export const MenuScreen: React.FC = () => {
 
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 font-sans flex flex-col items-center animate-in fade-in">
+    <div className="h-dvh min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 font-sans flex flex-col items-center overflow-hidden animate-in fade-in">
+      {/* Scrollable area so viewport resize (e.g. mobile URL bar) doesn't reset scroll */}
+      <div ref={scrollContainerRef} className="flex-1 min-h-0 w-full overflow-y-auto overflow-x-hidden overscroll-contain">
       {/* Header - Matches GameHeader exactly, starts from top */}
-      <div className="w-full bg-white/90 backdrop-blur-md border-b-2 sm:border-b-4 border-slate-200 sticky top-0 z-40 shadow-sm">
+      <div className="w-full bg-white/90 backdrop-blur-md border-b-2 sm:border-b-4 border-slate-200 sticky top-0 z-40 shadow-sm flex-shrink-0">
         <div className="w-full max-w-2xl mx-auto flex items-center justify-between gap-2 sm:gap-3 px-2 sm:px-4 p-2 sm:p-2.5 min-h-[56px] sm:min-h-[64px]">
           {/* Left: App Icon + Stars */}
           <div className="flex items-center gap-2 flex-shrink-0">
@@ -137,8 +140,8 @@ export const MenuScreen: React.FC = () => {
                 setShowAchievements(false);
                 setShowShop(false);
                 setShowSettingsMenu(false);
-                // Scroll to top
-                window.scrollTo({ top: 0, behavior: 'smooth' });
+                // Scroll menu content to top
+                scrollContainerRef.current?.scrollTo({ top: 0, behavior: 'smooth' });
               }}
               className="bg-slate-100 hover:bg-slate-200 p-2 rounded-lg transition-colors active:scale-90 flex items-center justify-center"
               aria-label="Smart Games"
@@ -548,6 +551,7 @@ export const MenuScreen: React.FC = () => {
             </div>
           );
         })}
+      </div>
       </div>
       </div>
     </div>

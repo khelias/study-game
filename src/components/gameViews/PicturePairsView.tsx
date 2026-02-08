@@ -203,21 +203,25 @@ export const PicturePairsView: React.FC<PicturePairsViewProps> = ({
                   </div>
                 )}
 
-                <div className={`${isFlipped ? 'flex' : 'invisible'} items-center justify-center min-w-0 max-w-full max-h-full transition-opacity duration-200 px-1`}>
-                  {isEmoji ? (
-                    <span
-                      className="text-2xl sm:text-4xl md:text-5xl leading-none shrink-0 emoji-font"
-                      role="img"
-                      aria-label={card.content}
-                    >
-                      {card.content}
-                    </span>
-                  ) : (
-                    <span className="font-bold text-pink-900 break-all leading-tight text-center line-clamp-3">
-                      {card.content}
-                    </span>
-                  )}
-                </div>
+                {/* Render face only when flipped so iOS repaints emoji (no invisible→visible toggle) */}
+                {isFlipped && (
+                  <div className="flex items-center justify-center min-w-0 max-w-full max-h-full px-1">
+                    {isEmoji ? (
+                      <span
+                        className="text-2xl sm:text-4xl md:text-5xl leading-none shrink-0 min-w-[1.5rem] min-h-[1.5rem] inline-block emoji-font"
+                        style={{ fontFamily: 'Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol, sans-serif' }}
+                        role="img"
+                        aria-label={card.content}
+                      >
+                        {card.content}
+                      </span>
+                    ) : (
+                      <span className="font-bold text-pink-900 break-all leading-tight text-center line-clamp-3">
+                        {card.content}
+                      </span>
+                    )}
+                  </div>
+                )}
 
                 {card.solved && (
                   <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
