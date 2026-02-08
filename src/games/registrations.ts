@@ -21,6 +21,7 @@ import {
   WordCascadeView,
   PatternTrainView,
   MemoryGameView,
+  PicturePairsView,
   RoboPathView,
   SyllableGameView,
   TimeGameView,
@@ -44,6 +45,7 @@ import {
   validateCompareSizes,
   validateMathSnake,
   validateMemoryMath,
+  validatePicturePairs,
   validateRoboPath,
   validateStarMapper,
   validateShapeShift,
@@ -139,6 +141,20 @@ function registerAllGames(): void {
       config: memoryMathConfig,
       validator: validateMemoryMath,
       allowedProfiles: memoryMathConfig.allowedProfiles,
+    });
+  }
+
+  // Picture Pairs (emoji–word memory)
+  const picturePairsConfig = GAME_CONFIG.picture_pairs;
+  const picturePairsGenerator = Generators.picture_pairs;
+  if (picturePairsConfig && picturePairsGenerator) {
+    gameRegistry.register({
+      id: 'picture_pairs',
+      component: PicturePairsView,
+      generator: picturePairsGenerator,
+      config: picturePairsConfig,
+      validator: validatePicturePairs,
+      allowedProfiles: picturePairsConfig.allowedProfiles,
     });
   }
 

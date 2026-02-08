@@ -113,6 +113,14 @@ export const validateMemoryMath: AnswerValidator = (_problem: Problem, _userAnsw
 };
 
 /**
+ * Validator for picture pairs (emoji–word memory game).
+ * Component calls onAnswer(true) when all pairs are matched.
+ */
+export const validatePicturePairs: AnswerValidator = (_problem: Problem, userAnswer: unknown): boolean => {
+  return userAnswer === true;
+};
+
+/**
  * Validator for robo path games
  * Note: Robo path doesn't have simple answer validation - it's handled in the component
  */

@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { Generators } from '../generators';
 import { createRng } from '../../engine/rng';
-import type { BalanceScaleProblem, WordBuilderProblem, PatternProblem, MathSnakeProblem, CompareSizesProblem } from '../../types/game';
+import type { BalanceScaleProblem, WordBuilderProblem, PatternProblem, MathSnakeProblem, CompareSizesProblem, PicturePairsProblem } from '../../types/game';
 
 describe('Generators', () => {
   describe('balance_scale', () => {
@@ -268,6 +268,51 @@ describe('Generators', () => {
       const problem5 = generator(5, rng2, 'starter') as PatternProblem;
       
       expect(problem5.sequence.length).toBeGreaterThanOrEqual(problem1.sequence.length);
+    });
+  });
+
+  describe('picture_pairs', () => {
+    it('should generate valid picture pairs problem', () => {
+      const rng = createRng(12345);
+      const generator = Generators.picture_pairs;
+      if (!generator) throw new Error('picture_pairs generator not found');
+      const problem = generator(1, rng, 'starter') as PicturePairsProblem;
+
+      expect(problem.type).toBe('picture_pairs');
+      expect(problem.cards).toBeInstanceOf(Array);
+      expect(problem.pairs).toBeInstanceOf(Array);
+      expect(problem.cards.length).toBe(problem.pairs.length * 2);
+      expect(problem.pairs.length).toBeGreaterThanOrEqual(4);
+    });
+
+    it('should have exactly two cards per matchId (word + emoji)', () => {
+      const rng = createRng(999);
+      const generator = Generators.picture_pairs;
+      if (!generator) throw new Error('picture_pairs generator not found');
+      const problem = generator(2, rng, 'starter') as PicturePairsProblem;
+
+      const byMatchId = problem.cards.reduce<Record<string, typeof problem.cards>>((acc, c) => {
+        const id = c.matchId;
+        if (!acc[id]) acc[id] = [];
+        acc[id].push(c);
+        return acc;
+      }, {});
+      Object.values(byMatchId).forEach(cards => {
+        expect(cards).toHaveLength(2);
+        const types = new Set(cards.map(c => c.cardType));
+        expect(types).toContain('emoji');
+        expect(types).toContain('word');
+      });
+    });
+
+    it('should increase pair count with level for advanced profile', () => {
+      const rng = createRng(111);
+      const generator = Generators.picture_pairs;
+      if (!generator) throw new Error('picture_pairs generator not found');
+      const low = generator(1, rng, 'advanced') as PicturePairsProblem;
+      const rng2 = createRng(222);
+      const high = generator(10, rng2, 'advanced') as PicturePairsProblem;
+      expect(high.pairs.length).toBeGreaterThanOrEqual(low.pairs.length);
     });
   });
 

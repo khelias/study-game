@@ -134,6 +134,9 @@ export const usePlaySessionStore = create<PlaySessionStore>((set, get) => ({
       if (problem.type === 'memory_math' && 'cards' in problem) {
         (clonedProblem as typeof problem).cards = [...(problem.cards || [])];
       }
+      if (problem.type === 'picture_pairs' && 'cards' in problem) {
+        (clonedProblem as typeof problem).cards = (problem as { cards: unknown[] }).cards.map(c => ({ ...c }));
+      }
       if (problem.type === 'pattern' && 'sequence' in problem) {
         (clonedProblem as typeof problem).sequence = [...(problem.sequence || [])];
         (clonedProblem as typeof problem).options = [...(problem.options || [])];

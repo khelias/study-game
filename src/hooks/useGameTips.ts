@@ -39,6 +39,8 @@ export function useGameTips(
         return [...t.gameScreen.tips.sentence_logic];
       case 'memory_math':
         return [...t.gameScreen.tips.memory_math];
+      case 'picture_pairs':
+        return [...t.gameScreen.tips.picture_pairs];
       case 'balance_scale':
         return [...t.gameScreen.tips.balance_scale];
       case 'robo_path':

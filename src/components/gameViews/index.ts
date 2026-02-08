@@ -10,6 +10,7 @@ export { WordGameView } from './WordGameView';
 export { WordCascadeView } from './WordCascadeView';
 export { PatternTrainView } from './PatternTrainView';
 export { MemoryGameView } from './MemoryGameView';
+export { PicturePairsView } from './PicturePairsView';
 export { RoboPathView } from './RoboPathView';
 export { SyllableGameView } from './SyllableGameView';
 export { TimeGameView } from './TimeGameView';

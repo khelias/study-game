@@ -47,6 +47,8 @@ export function useGameHints(
         return t.gameScreen.hints.pattern;
       case 'memory_math':
         return t.gameScreen.hints.memoryMath;
+      case 'picture_pairs':
+        return t.gameScreen.hints.picturePairs;
       case 'sentence_logic':
         if (problem.type === 'sentence_logic') {
           const firstWord = problem.sentence.split(' ')[0];

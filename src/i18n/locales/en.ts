@@ -208,6 +208,7 @@ export const en = {
       reading: 'Reading',
       math: 'Math',
       logic: 'Logic',
+      memory: 'Memory',
     },
     skillSummary: '{games} games • Level {level}',
   },
@@ -452,6 +453,11 @@ export const en = {
     memoryMath: {
       pairsLabel: 'Pairs',
     },
+    picturePairs: {
+      pairsLabel: 'Pairs',
+      movesLabel: 'Moves',
+      peekLabel: 'Memorize!',
+    },
     timeMatch: {
       selectCorrectTime: 'Choose the correct time',
       correctTimeIs: 'Correct time is',
@@ -480,6 +486,7 @@ export const en = {
       balanceScaleRight: 'right side is',
       pattern: 'Look at the pattern the train follows!',
       memoryMath: 'Flip the cards and find pairs!',
+      picturePairs: 'Match the picture and the word!',
       sentenceLogic: 'Look where',
       sentenceLogicScene: 'is in the scene!',
       roboPath: 'Robot must reach the cell with green window!',
@@ -525,6 +532,11 @@ export const en = {
         'Flip the cards and find pairs!',
         'Think which numbers make the equation!',
         'Try to remember where each card is!',
+      ],
+      picture_pairs: [
+        'Flip the cards and find the picture–word pair!',
+        'Remember where each emoji or word was!',
+        'Start with fewer pairs, then add more!',
       ],
       balance_scale: [
         'Add up what is on the left!',
@@ -733,6 +745,11 @@ export const en = {
     memory_math: {
       title: 'MATH MEMORY',
       desc: 'Find the equation and answer',
+      hintRevealPairCost: 'Reveal one pair ({cost}⭐)',
+    },
+    picture_pairs: {
+      title: 'PICTURE PAIRS',
+      desc: 'Match pictures and words',
       hintRevealPairCost: 'Reveal one pair ({cost}⭐)',
     },
     robo_path: {

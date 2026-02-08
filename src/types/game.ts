@@ -168,6 +168,23 @@ export interface MemoryMathProblem extends BaseProblem {
   pairs: Array<{ eq: string; ans: number }>;
 }
 
+// Picture Pairs problem (emoji–word matching memory game)
+export interface PicturePairsCard {
+  id: string;
+  content: string;
+  matchId: string;
+  cardType: 'emoji' | 'word';
+  matched?: boolean;
+  flipped?: boolean;
+  solved?: boolean;
+}
+
+export interface PicturePairsProblem extends BaseProblem {
+  type: 'picture_pairs';
+  cards: PicturePairsCard[];
+  pairs: Array<{ word: string; emoji: string }>;
+}
+
 // Robo path problem
 export interface RoboPathProblem extends BaseProblem {
   type: 'robo_path';
@@ -373,6 +390,7 @@ export type Problem =
   | PatternProblem
   | SentenceLogicProblem
   | MemoryMathProblem
+  | PicturePairsProblem
   | RoboPathProblem
   | MathSnakeProblem
   | TimeMatchProblem

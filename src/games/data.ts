@@ -54,6 +54,7 @@ export const GAME_CONFIG: Record<string, GameConfig> = {
   pattern:         { id: 'pattern', title: 'PATTERN TRAIN', theme: THEME.teal!, icon: 'TrainFront', desc: 'Continue the pattern', allowedProfiles: ['starter', 'advanced'], difficulty: 'easy', category: 'logic', paidHints: [{ id: 'eliminate', icon: '❌', cost: 1, labelKey: 'games.pattern.hintEliminateCost' }] },
   sentence_logic:  { id: 'sentence_logic', title: 'SENTENCE DETECTIVE', theme: THEME.green!, icon: 'BookOpen', desc: 'Where is the object?', allowedProfiles: ['starter', 'advanced'], difficulty: 'medium', category: 'language' },
   memory_math:     { id: 'memory_math', title: 'MATH MEMORY', theme: THEME.green!, icon: 'Brain', desc: 'Find the equation and answer', allowedProfiles: ['starter', 'advanced'], difficulty: 'medium', category: 'memory', paidHints: [{ id: 'reveal_pair', icon: '👁️', cost: 1, labelKey: 'games.memory_math.hintRevealPairCost' }] },
+  picture_pairs:   { id: 'picture_pairs', title: 'PICTURE PAIRS', theme: THEME.pink!, icon: 'Layers', desc: 'Match pictures and words', allowedProfiles: ['starter', 'advanced'], difficulty: 'easy', category: 'memory', paidHints: [{ id: 'reveal_pair', icon: '👁️', cost: 1, labelKey: 'games.picture_pairs.hintRevealPairCost' }] },
   robo_path:       { id: 'robo_path', title: 'ROBO PATH', theme: THEME.indigo!, icon: 'Bot', desc: 'Program the robot', allowedProfiles: ['starter', 'advanced'], difficulty: 'medium', category: 'logic' },
   math_snake:      { id: 'math_snake', title: 'NUMBER SNAKE', theme: THEME.purple!, icon: 'Gamepad2', desc: 'Move and collect apples', allowedProfiles: ['starter', 'advanced'], difficulty: 'medium', category: 'math', paidHints: [{ id: 'eliminate', icon: '❌', cost: 1, labelKey: 'games.math_snake.hintEliminateCost' }] },
   letter_match:    { id: 'letter_match', title: 'LETTER DETECTIVE', theme: THEME.pink!, icon: 'Search', desc: 'Find the correct letter', allowedProfiles: ['starter', 'advanced'], difficulty: 'easy', category: 'language' },
@@ -141,7 +142,7 @@ const BASE_WORDS: WordObject[] = [
   { w: 'KAPP', e: '🗄️' }, { w: 'RAAMAT', e: '📖' }, { w: 'PLIIATS', e: '✏️' }, { w: 'VÄRV', e: '🎨' },
   { w: 'KÄÄRID', e: '✂️' }, { w: 'ARVUTI', e: '💻' }, { w: 'TELEFON', e: '📱' }, { w: 'EKRAAN', e: '🖥️' },
   { w: 'KOHVER', e: '🧳' }, { w: 'PRILLID', e: '👓' }, { w: 'KINDAD', e: '🧤' }, { w: 'MÜTS', e: '🧢' },
-  { w: 'KELL', e: '⌚' }, { w: 'STOPP', e: '⏱️' }, { w: 'ÕHUPALL', e: '🎈' }, { w: 'PUSLE', e: '🧩' },
+  { w: 'KELL', e: '⌚' }, { w: 'STOPPER', e: '⏱️' }, { w: 'ÕHUPALL', e: '🎈' }, { w: 'PUSLE', e: '🧩' },
   { w: 'KLOTSID', e: '🧱' }, { w: 'LUSIKAS', e: '🥄' }, { w: 'NUGA', e: '🔪' },
   { w: 'KORK', e: '🍾' }, // cork/bottle cap
   { w: 'KÄRU', e: '🛒' }, // cart

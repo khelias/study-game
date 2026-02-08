@@ -208,6 +208,7 @@ export const et = {
       reading: 'Lugemine',
       math: 'Matemaatika',
       logic: 'Loogika',
+      memory: 'Mälu',
     },
     skillSummary: '{games} mängu • Tase {level}',
   },
@@ -452,6 +453,11 @@ export const et = {
     memoryMath: {
       pairsLabel: 'Paarid',
     },
+    picturePairs: {
+      pairsLabel: 'Paarid',
+      movesLabel: 'Käigud',
+      peekLabel: 'Jäta meelde!',
+    },
     timeMatch: {
       selectCorrectTime: 'Vali õige kellaaeg',
       correctTimeIs: 'Õige aeg on',
@@ -480,6 +486,7 @@ export const et = {
       balanceScaleRight: 'parem pool on',
       pattern: 'Vaata, mis mustrit järgib rong!',
       memoryMath: 'Pööra kaardid ümber ja leia paarid!',
+      picturePairs: 'Leia pildi ja sõna paar!',
       sentenceLogic: 'Vaata, kus asub',
       sentenceLogicScene: 'stseenis!',
       roboPath: 'Robot peab jõudma rohelise aknaga lahtrisse!',
@@ -525,6 +532,11 @@ export const et = {
         'Pööra kaardid ümber ja leia paarid!',
         'Mõtle, mis arvud kokku annavad tehte vastuse!',
         'Proovi meelde jätta, kus mis kaart on!',
+      ],
+      picture_pairs: [
+        'Pööra kaardid ümber ja leia pildi ning sõna paar!',
+        'Meenuta, kus emoji või sõna olid!',
+        'Vähe paaridega alusta, siis lisa juurde!',
       ],
       balance_scale: [
         'Arvuta, kui palju on vasakul pool!',
@@ -733,6 +745,11 @@ export const et = {
     memory_math: {
       title: 'MATEMAATIKA MÄLU',
       desc: 'Leia tehe ja vastus',
+      hintRevealPairCost: 'Näita üht paari ({cost}⭐)',
+    },
+    picture_pairs: {
+      title: 'PILDIPAARID',
+      desc: 'Leia pildi ja sõna paar',
       hintRevealPairCost: 'Näita üht paari ({cost}⭐)',
     },
     robo_path: {

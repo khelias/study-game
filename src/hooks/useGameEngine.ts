@@ -26,6 +26,7 @@ const makeKey = (prob: Problem | null): string => {
     case 'balance_scale': return `bal:${prob.display.left.join(',')}|${prob.display.right.join(',')}`;
     case 'pattern': return `pat:${prob.sequence.join('')}:${prob.answer}`;
     case 'memory_math': return `mem:${prob.cards.map((c) => c.content).join('|')}`;
+    case 'picture_pairs': return `pairs:${prob.cards.map((c) => c.content).join('|')}`;
     case 'robo_path': return `robo:${prob.grid.length}:${prob.goal[0]},${prob.goal[1]}:${prob.obstacles.map((o) => `${o[0]},${o[1]}`).join(';')}`;
     case 'math_snake': {
       const apple = prob.apple;

@@ -16,6 +16,8 @@ import type {
   PatternProblem,
   SentenceLogicProblem,
   MemoryMathProblem,
+  PicturePairsProblem,
+  PicturePairsCard,
   RoboPathProblem,
   TimeMatchProblem,
   SyllableBuilderProblem,
@@ -500,6 +502,55 @@ export const Generators: Record<string, GeneratorFunction> = {
       cards.push({ id: `a-${id}`, content: `${sum}`, type: 'answer', matchId } as MemoryMathProblem['cards'][0]);
     }
     return { type: 'memory_math', cards: cards.sort(() => rng() - 0.5), pairs, uid: uid(rng) };
+  },
+
+  picture_pairs: (level: number, rng: RngFunction = Math.random, profile: ProfileType = 'starter'): PicturePairsProblem => {
+    const meta = profileMeta(profile);
+    const harder = meta.difficultyOffset > 0;
+    const locale = getLocale();
+    const wordDb = locale === 'en' ? WORD_DB_EN : WORD_DB;
+    const allWords: Array<{ w: string; e: string }> = Object.values(wordDb).flat();
+    if (allWords.length < 4) throw new Error('Not enough words for picture_pairs');
+
+    // Pair count: scales with level; cap at 12 pairs (4×6) so grid fits on small screens
+    const basePairs = harder ? 6 : 4;
+    const pairGrowth = Math.floor(level / 2);
+    const pairCount = Math.min(basePairs + pairGrowth, 12);
+    const needPairs = Math.min(pairCount, Math.floor(allWords.length / 2));
+
+    const pairs: Array<{ word: string; emoji: string }> = [];
+    const used = new Set<string>();
+    while (pairs.length < needPairs) {
+      const idx = Math.floor(rng() * allWords.length);
+      const item = allWords[idx];
+      if (!item || used.has(item.w)) continue;
+      used.add(item.w);
+      pairs.push({ word: item.w, emoji: item.e });
+    }
+
+    const cards: PicturePairsCard[] = [];
+    pairs.forEach((p, i) => {
+      const matchId = `pair-${i}`;
+      cards.push({
+        id: `word-${i}`,
+        content: p.word,
+        matchId,
+        cardType: 'word',
+      });
+      cards.push({
+        id: `emoji-${i}`,
+        content: p.emoji,
+        matchId,
+        cardType: 'emoji',
+      });
+    });
+
+    return {
+      type: 'picture_pairs',
+      cards: cards.sort(() => rng() - 0.5),
+      pairs,
+      uid: uid(rng),
+    };
   },
 
   math_snake: (level: number, rng: RngFunction = Math.random, profile: ProfileType = 'starter') => {

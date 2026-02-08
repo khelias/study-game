@@ -130,8 +130,13 @@ export const SkillBreakdown: React.FC<SkillBreakdownProps> = ({ stats }) => {
     },
     {
       name: t.learningProgress.skills.math,
-      games: ['memory_math', 'balance_scale', 'time_match'],
+      games: ['compare_sizes', 'balance_scale', 'time_match', 'math_snake'],
       icon: '🔢',
+    },
+    {
+      name: t.learningProgress.skills.memory,
+      games: ['memory_math', 'picture_pairs'],
+      icon: '🧠',
     },
     {
       name: t.learningProgress.skills.logic,
