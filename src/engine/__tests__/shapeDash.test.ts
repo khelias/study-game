@@ -190,9 +190,9 @@ describe('shapeDash engine', () => {
           x: 500,
           prompt: 'Test',
           shapes: [
-            { shape: 'circle', isCorrect: true },
-            { shape: 'square', isCorrect: false },
-            { shape: 'triangle', isCorrect: false }
+            { type: 'circle', label: 'Circle', isCorrect: true },
+            { type: 'square', label: 'Square', isCorrect: false },
+            { type: 'triangle', label: 'Triangle', isCorrect: false }
           ]
         }
       ];
@@ -221,9 +221,9 @@ describe('shapeDash engine', () => {
           x: 500,
           prompt: 'Test',
           shapes: [
-            { shape: 'circle', isCorrect: false },
-            { shape: 'square', isCorrect: true },
-            { shape: 'triangle', isCorrect: false }
+            { type: 'circle', label: 'Circle', isCorrect: false },
+            { type: 'square', label: 'Square', isCorrect: true },
+            { type: 'triangle', label: 'Triangle', isCorrect: false }
           ]
         }
       ];
@@ -252,9 +252,9 @@ describe('shapeDash engine', () => {
           x: 500,
           prompt: 'Test',
           shapes: [
-            { shape: 'circle', isCorrect: true },
-            { shape: 'square', isCorrect: false },
-            { shape: 'triangle', isCorrect: false }
+            { type: 'circle', label: 'Circle', isCorrect: true },
+            { type: 'square', label: 'Square', isCorrect: false },
+            { type: 'triangle', label: 'Triangle', isCorrect: false }
           ]
         }
       ];
@@ -282,9 +282,9 @@ describe('shapeDash engine', () => {
           x: 500,
           prompt: 'Test',
           shapes: [
-            { shape: 'circle', isCorrect: true },
-            { shape: 'square', isCorrect: false },
-            { shape: 'triangle', isCorrect: false }
+            { type: 'circle', label: 'Circle', isCorrect: true },
+            { type: 'square', label: 'Square', isCorrect: false },
+            { type: 'triangle', label: 'Triangle', isCorrect: false }
           ]
         }
       ];
@@ -311,9 +311,9 @@ describe('shapeDash engine', () => {
           x: 500,
           prompt: 'Test',
           shapes: [
-            { shape: 'circle', isCorrect: true },
-            { shape: 'square', isCorrect: false },
-            { shape: 'triangle', isCorrect: false }
+            { type: 'circle', label: 'Circle', isCorrect: true },
+            { type: 'square', label: 'Square', isCorrect: false },
+            { type: 'triangle', label: 'Triangle', isCorrect: false }
           ]
         }
       ];
