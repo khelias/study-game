@@ -16,7 +16,7 @@
  * - V3: Enhanced collision detection
  */
 
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { playSound } from '../../engine/audio';
 import {
   GRAVITY,
@@ -27,7 +27,6 @@ import {
   JUMP_PAD_BOOST_VELOCITY,
   JUMP_PAD_WIDTH,
   BOOST_ZONE_MULTIPLIER,
-  STAR_COLLECT_RADIUS,
   checkStarCollection,
   checkJumpPadContact,
   checkBoostZone,
@@ -50,6 +49,8 @@ interface ShapeDashViewProps {
   onAnswer: AnswerHandler;
   soundEnabled: boolean;
   gameType?: string;
+  stars?: number;
+  spendStars?: (count: number) => boolean;
 }
 
 // V4: Responsive canvas with aspect ratio
@@ -121,6 +122,7 @@ interface GameState {
   totalStars: number;         // Total stars in the run
   // V4 additions
   passedGateIds: Set<string>; // Track which gates have been passed
+  passedObstacleIndices: Set<number>; // Track which obstacles have been passed (for combo)
   consecutiveWrongGates: number; // Track consecutive wrong gates for crash mechanic
   revealedGateId: string | null; // ID of gate revealed by hint
   slowTimeUntil: number;      // Timestamp when slow time effect ends
@@ -481,7 +483,7 @@ function drawStar(
   if (collected) return;
   
   const STAR_SIZE = 16;
-  const STAR_POINTS = 5;
+  const STAR_POINTS = 10; // 5 outer points + 5 inner points
   const STAR_ROTATION_OFFSET = -Math.PI / 2; // Point star upward
   const STAR_INNER_RADIUS_RATIO = 0.4;
   
@@ -497,11 +499,11 @@ function drawStar(
   ctx.shadowColor = '#fef08a';
   ctx.shadowBlur = 16;
   
-  // Draw 5-pointed star
+  // Draw 5-pointed star (10 points total: alternating outer and inner)
   ctx.fillStyle = '#fef08a';
   ctx.beginPath();
   for (let i = 0; i < STAR_POINTS; i++) {
-    const angle = (i * 2 * Math.PI) / STAR_POINTS + STAR_ROTATION_OFFSET;
+    const angle = (i * Math.PI) / 5 + STAR_ROTATION_OFFSET; // 10 points = 2π/10 = π/5
     const r = i % 2 === 0 ? STAR_SIZE : STAR_SIZE * STAR_INNER_RADIUS_RATIO;
     const x = Math.cos(angle) * r;
     const y = Math.sin(angle) * r;
@@ -911,6 +913,8 @@ export const ShapeDashView: React.FC<ShapeDashViewProps> = ({
   problem,
   onAnswer,
   soundEnabled,
+  stars = 0,
+  spendStars,
 }) => {
   const t = useTranslation();
   const [gameState, setGameState] = useState<'playing' | 'crashed' | 'won'>('playing');
@@ -921,7 +925,6 @@ export const ShapeDashView: React.FC<ShapeDashViewProps> = ({
   const [displayRating, setDisplayRating] = useState(0);
   const [canvasWidth, setCanvasWidth] = useState(CANVAS_MAX_WIDTH);
   const [canvasHeight, setCanvasHeight] = useState(CANVAS_HEIGHT_BASE);
-  const [currentStars, setCurrentStars] = useState(0); // V4: Track stars for hint buttons
   const [isPortrait, setIsPortrait] = useState(false); // V4: Track portrait orientation
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -966,6 +969,7 @@ export const ShapeDashView: React.FC<ShapeDashViewProps> = ({
     totalStars: problem.stars?.length ?? 0,
     // V4 additions
     passedGateIds: new Set(),
+    passedObstacleIndices: new Set(),
     consecutiveWrongGates: 0,
     revealedGateId: null,
     slowTimeUntil: 0,
@@ -984,8 +988,9 @@ export const ShapeDashView: React.FC<ShapeDashViewProps> = ({
 
   const doRetry = useCallback(() => {
     const state = stateRef.current;
+    const groundY = canvasHeight - 90;
     state.scroll = 0;
-    state.playerY = GROUND_Y - PLAYER_SIZE;
+    state.playerY = groundY - PLAYER_SIZE;
     state.playerVelY = 0;
     state.playerRotation = 0;
     state.isOnGround = true;
@@ -1004,6 +1009,7 @@ export const ShapeDashView: React.FC<ShapeDashViewProps> = ({
     state.totalStars = problemRef.current.stars?.length ?? 0;
     // V4: Reset gate state
     state.passedGateIds = new Set();
+    state.passedObstacleIndices = new Set();
     state.consecutiveWrongGates = 0;
     state.revealedGateId = null;
     state.slowTimeUntil = 0;
@@ -1014,12 +1020,24 @@ export const ShapeDashView: React.FC<ShapeDashViewProps> = ({
     lastGroundedRef.current = false;
     setGameStateRef.current('playing');
     playSound('tap', soundEnabledRef.current);
-  }, []);
+  }, [canvasHeight]);
+
+  // V4: Get paid hints from config (memoized to prevent dependency issues)
+  const hints = useMemo(() => GAME_CONFIG.shape_dash?.paidHints ?? [], []);
 
   // V4: Paid hint handler
   const handlePaidHint = useCallback((hintId: string) => {
+    if (!spendStars) return;
+    
     const state = stateRef.current;
     const currentTime = performance.now();
+    
+    // Find the hint configuration
+    const hint = hints.find(h => h.id === hintId);
+    if (!hint) return;
+    
+    // Spend stars before activating hint
+    if (!spendStars(hint.cost)) return;
     
     if (hintId === 'reveal_gate') {
       // Find next unpassed gate
@@ -1040,7 +1058,7 @@ export const ShapeDashView: React.FC<ShapeDashViewProps> = ({
       state.slowTimeUntil = currentTime + 3000;
       playSound('tap', soundEnabledRef.current);
     }
-  }, []);
+  }, [spendStars, hints]);
 
   const requestJump = useCallback(() => {
     jumpRequestedRef.current = true;
@@ -1063,8 +1081,9 @@ export const ShapeDashView: React.FC<ShapeDashViewProps> = ({
 
   useEffect(() => {
     const state = stateRef.current;
+    const groundY = canvasHeight - 90;
     state.scroll = 0;
-    state.playerY = GROUND_Y - PLAYER_SIZE;
+    state.playerY = groundY - PLAYER_SIZE;
     state.playerVelY = 0;
     state.playerRotation = 0;
     state.isOnGround = true;
@@ -1077,6 +1096,7 @@ export const ShapeDashView: React.FC<ShapeDashViewProps> = ({
     state.attemptCount = 1;
     // V4: Reset gate state
     state.passedGateIds = new Set();
+    state.passedObstacleIndices = new Set();
     state.consecutiveWrongGates = 0;
     state.revealedGateId = null;
     state.slowTimeUntil = 0;
@@ -1089,7 +1109,7 @@ export const ShapeDashView: React.FC<ShapeDashViewProps> = ({
       setGameState('playing');
     }, 0);
     return () => clearTimeout(id);
-  }, [problem.uid]);
+  }, [problem.uid, canvasHeight]);
 
   useEffect(() => {
     containerRef.current?.focus({ preventScroll: true });
@@ -1157,6 +1177,9 @@ export const ShapeDashView: React.FC<ShapeDashViewProps> = ({
 
       const state = stateRef.current;
       
+      // V4: Calculate dynamic ground Y based on canvas height (for portrait mode support)
+      const groundY = canvasHeight - 90;
+      
       // V4: Check for slow time effect
       const isSlowTime = time < state.slowTimeUntil;
       const timeScale = isSlowTime ? 0.7 : 1.0; // 30% slower during slow time
@@ -1187,7 +1210,7 @@ export const ShapeDashView: React.FC<ShapeDashViewProps> = ({
       // Jump handling
       if (jumpRequestedRef.current) {
         jumpRequestedRef.current = false;
-        const onGround = py + PLAYER_SIZE >= GROUND_Y - 4;
+        const onGround = py + PLAYER_SIZE >= groundY - 4;
         if (onGround) {
           pvy = JUMP_VELOCITY;
           state.canDoubleJump = true;
@@ -1206,15 +1229,15 @@ export const ShapeDashView: React.FC<ShapeDashViewProps> = ({
 
       // Ground collision
       const wasGrounded = lastGroundedRef.current;
-      if (py + PLAYER_SIZE >= GROUND_Y) {
-        py = GROUND_Y - PLAYER_SIZE;
+      if (py + PLAYER_SIZE >= groundY) {
+        py = groundY - PLAYER_SIZE;
         pvy = 0;
         state.isOnGround = true;
         state.canDoubleJump = true;
         // Landing detection
         if (!wasGrounded) {
           state.squashStretch = LANDING_STRETCH;
-          state.particles.push(...createLandParticles(PLAYER_X, GROUND_Y));
+          state.particles.push(...createLandParticles(PLAYER_X, groundY));
         }
         lastGroundedRef.current = true;
       } else {
@@ -1247,7 +1270,7 @@ export const ShapeDashView: React.FC<ShapeDashViewProps> = ({
         { x: PLAYER_X, y: py, velocityY: pvy, isOnGround: state.isOnGround },
         stars,
         nextScroll,
-        GROUND_Y  // Pass GROUND_Y for correct coordinate calculation
+        groundY  // Pass groundY for correct coordinate calculation
       );
       for (const starId of collectedStarIds) {
         if (!state.collectedStarIds.has(starId)) {
@@ -1261,7 +1284,7 @@ export const ShapeDashView: React.FC<ShapeDashViewProps> = ({
             star.collected = true;
             // Create sparkle and score popup particles
             const starScreenX = star.x - nextScroll;
-            const starScreenY = GROUND_Y - star.y;
+            const starScreenY = groundY - star.y;
             state.particles.push(...createSparkleParticles(starScreenX, starScreenY));
             state.particles.push(...createScorePopup(starScreenX, starScreenY, starPoints, state.combo));
             playSound('correct', soundEnabledRef.current);
@@ -1285,9 +1308,6 @@ export const ShapeDashView: React.FC<ShapeDashViewProps> = ({
       state.playerY = py;
       state.playerVelY = pvy;
       state.scroll = nextScroll;
-      
-      // V4: Update current stars state for hint buttons (every frame is fine since render is fast)
-      setCurrentStars(state.starsCollected);
 
       const playerLeft = PLAYER_X;
       const playerRight = PLAYER_X + PLAYER_SIZE;
@@ -1296,32 +1316,30 @@ export const ShapeDashView: React.FC<ShapeDashViewProps> = ({
 
       // Collision detection (with 6px inset margins for forgiveness)
       let collision = false;
-      if (pvy >= 0) {
-        for (const obs of obstacles) {
-          const obsScreenX = obs.x - nextScroll;
-          const offsetY = obs.offsetY ?? 0;
-          if (obs.type === 'circle') {
-            const r = obs.radius ?? 18;
-            const cx = obsScreenX + r;
-            const cy = GROUND_Y - r - offsetY;
-            if (obsScreenX + r * 2 < -20 || obsScreenX > canvasWidth + 20) continue;
-            const closestX = Math.max(playerLeft + 6, Math.min(cx, playerRight - 6));
-            const closestY = Math.max(playerTop + 6, Math.min(cy, playerBottom - 6));
-            const distSq = (closestX - cx) ** 2 + (closestY - cy) ** 2;
-            if (distSq < (r + 4) ** 2) collision = true;
-            if (collision) break;
-          } else {
-            const w = SPIKE_WIDTH;
-            const h = obs.type === 'spike' ? SPIKE_HEIGHT : (obs.height ?? BLOCK_DEFAULT_HEIGHT);
-            const obsLeft = obsScreenX;
-            const obsRight = obsScreenX + w;
-            const obsTop = GROUND_Y - h - offsetY;
-            const obsBottom = GROUND_Y - offsetY;
-            if (obsScreenX + w < -20 || obsScreenX > canvasWidth + 20) continue;
-            if (playerRight - 6 > obsLeft + 6 && playerLeft + 6 < obsRight - 6 && playerBottom - 6 > obsTop + 6 && playerTop + 6 < obsBottom - 6) {
-              collision = true;
-              break;
-            }
+      for (const obs of obstacles) {
+        const obsScreenX = obs.x - nextScroll;
+        const offsetY = obs.offsetY ?? 0;
+        if (obs.type === 'circle') {
+          const r = obs.radius ?? 18;
+          const cx = obsScreenX + r;
+          const cy = groundY - r - offsetY;
+          if (obsScreenX + r * 2 < -20 || obsScreenX > canvasWidth + 20) continue;
+          const closestX = Math.max(playerLeft + 6, Math.min(cx, playerRight - 6));
+          const closestY = Math.max(playerTop + 6, Math.min(cy, playerBottom - 6));
+          const distSq = (closestX - cx) ** 2 + (closestY - cy) ** 2;
+          if (distSq < (r + 4) ** 2) collision = true;
+          if (collision) break;
+        } else {
+          const w = SPIKE_WIDTH;
+          const h = obs.type === 'spike' ? SPIKE_HEIGHT : (obs.height ?? BLOCK_DEFAULT_HEIGHT);
+          const obsLeft = obsScreenX;
+          const obsRight = obsScreenX + w;
+          const obsTop = groundY - h - offsetY;
+          const obsBottom = groundY - offsetY;
+          if (obsScreenX + w < -20 || obsScreenX > canvasWidth + 20) continue;
+          if (playerRight - 6 > obsLeft + 6 && playerLeft + 6 < obsRight - 6 && playerBottom - 6 > obsTop + 6 && playerTop + 6 < obsBottom - 6) {
+            collision = true;
+            break;
           }
         }
       }
@@ -1345,12 +1363,22 @@ export const ShapeDashView: React.FC<ShapeDashViewProps> = ({
           onAnswerRef.current(false);
           return;
         }
-      } else {
-        // V3: Build combo when clearing obstacles without being hit
-        state.comboCount += 1;
-        if (state.comboCount >= 3 && state.combo < 3) {
-          state.combo = Math.min(3, state.combo + 1);
-          state.comboCount = 0;
+      }
+
+      // V3: Build combo when passing obstacles (not every frame)
+      // Check if player has passed any obstacles
+      for (let i = 0; i < obstacles.length; i++) {
+        const obs = obstacles[i];
+        if (!obs) continue;
+        const obsScreenX = obs.x - nextScroll;
+        // If obstacle is behind player and not yet counted as passed
+        if (obsScreenX + SPIKE_WIDTH < PLAYER_X && !state.passedObstacleIndices.has(i)) {
+          state.passedObstacleIndices.add(i);
+          state.comboCount += 1;
+          if (state.comboCount >= 3 && state.combo < 3) {
+            state.combo = Math.min(3, state.combo + 1);
+            state.comboCount = 0;
+          }
         }
       }
 
@@ -1451,20 +1479,20 @@ export const ShapeDashView: React.FC<ShapeDashViewProps> = ({
         ctx.translate(shakeX, shakeY);
       }
 
-      drawBackground(ctx, nextScroll, state.pulsePhase, cw, ch, GROUND_Y);
+      drawBackground(ctx, nextScroll, state.pulsePhase, cw, ch, groundY);
 
       // V3: Draw boost zones (under everything)
       for (const zone of boostZones) {
         const zoneScreenX = zone.x - nextScroll;
         if (zoneScreenX + zone.width < -20 || zoneScreenX > cw + 20) continue;
-        drawBoostZone(ctx, zoneScreenX, GROUND_Y, zone.width, state.pulsePhase);
+        drawBoostZone(ctx, zoneScreenX, groundY, zone.width, state.pulsePhase);
       }
 
       // V3: Draw jump pads
       for (const pad of jumpPads) {
         const padScreenX = pad.x - nextScroll;
         if (padScreenX + JUMP_PAD_WIDTH < -20 || padScreenX > cw + 20) continue;
-        drawJumpPad(ctx, padScreenX, GROUND_Y, state.pulsePhase);
+        drawJumpPad(ctx, padScreenX, groundY, state.pulsePhase);
       }
 
       // V4: Draw shape gates (replaces checkpoint stars)
@@ -1474,13 +1502,13 @@ export const ShapeDashView: React.FC<ShapeDashViewProps> = ({
         // Only draw if gate zone is visible
         if (gateScreenX + GATE_ZONE_WIDTH / 2 < -20 || gateScreenX - GATE_ZONE_WIDTH / 2 > cw + 20) continue;
         const revealed = state.revealedGateId === gate.id;
-        drawShapeGates(ctx, gate, nextScroll, GROUND_Y, state.pulsePhase, revealed);
+        drawShapeGates(ctx, gate, nextScroll, groundY, state.pulsePhase, revealed);
       }
 
       // V3: Draw collectible stars
       for (const star of stars) {
         const starScreenX = star.x - nextScroll;
-        const starScreenY = GROUND_Y - star.y;
+        const starScreenY = groundY - star.y;
         if (starScreenX + 40 < -20 || starScreenX > cw + 20) continue;
         drawStar(ctx, starScreenX, starScreenY, state.pulsePhase, star.collected ?? false);
       }
@@ -1492,7 +1520,7 @@ export const ShapeDashView: React.FC<ShapeDashViewProps> = ({
         const offsetY = obs.offsetY ?? 0;
         const height = obs.type === 'spike' ? SPIKE_HEIGHT : (obs.height ?? BLOCK_DEFAULT_HEIGHT);
         const radius = obs.radius ?? 18;
-        drawObstacle(ctx, obs.type, obsScreenX, GROUND_Y, offsetY, height, radius, state.pulsePhase);
+        drawObstacle(ctx, obs.type, obsScreenX, groundY, offsetY, height, radius, state.pulsePhase);
       }
 
       // Trail
@@ -1570,9 +1598,6 @@ export const ShapeDashView: React.FC<ShapeDashViewProps> = ({
   );
 
   const tapToRetry = (t.games as Record<string, { tapToRetry?: string }>)?.['shape_dash']?.tapToRetry ?? (t.game as { retry?: string })?.retry ?? 'Tap to try again';
-  
-  // V4: Get paid hints from config
-  const hints = GAME_CONFIG.shape_dash?.paidHints ?? [];
 
   return (
     <div className="flex flex-col items-center gap-3 w-full max-w-4xl relative">
@@ -1653,7 +1678,7 @@ export const ShapeDashView: React.FC<ShapeDashViewProps> = ({
       {/* V4: Paid hint buttons */}
       <PaidHintButtons
         hints={hints}
-        stars={currentStars}
+        stars={stars}
         onHintClick={handlePaidHint}
         disabled={gameState !== 'playing'}
       />
