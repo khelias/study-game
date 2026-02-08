@@ -243,8 +243,13 @@ export const MenuScreen: React.FC = () => {
         </div>
       </div>
       
-      {/* Content area with padding */}
-      <div className="w-full max-w-2xl mx-auto px-4 pt-4 pb-6 sm:pb-10 flex flex-col items-center">
+      {/* Content area with padding; extra bottom for iOS safe area / browser chrome */}
+      <div
+        className="w-full max-w-2xl mx-auto px-4 pt-4 flex flex-col items-center"
+        style={{
+          paddingBottom: 'calc(2.5rem + env(safe-area-inset-bottom, 0px))',
+        }}
+      >
       
       {/* Modals */}
       {showStats && (
