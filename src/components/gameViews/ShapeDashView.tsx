@@ -35,6 +35,7 @@ import {
   GATE_WIDTH,
   GATE_HEIGHT,
   GATE_ZONE_WIDTH,
+  GATE_SPACING,
   hasReachedFinish,
 } from '../../engine/shapeDash';
 import { useTranslation } from '../../i18n/useTranslation';
