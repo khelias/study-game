@@ -917,6 +917,7 @@ export const ShapeDashView: React.FC<ShapeDashViewProps> = ({
   const [canvasWidth, setCanvasWidth] = useState(CANVAS_MAX_WIDTH);
   const [canvasHeight, setCanvasHeight] = useState(CANVAS_HEIGHT_BASE);
   const [currentStars, setCurrentStars] = useState(0); // V4: Track stars for hint buttons
+  const [isPortrait, setIsPortrait] = useState(false); // V4: Track portrait orientation
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -1089,22 +1090,41 @@ export const ShapeDashView: React.FC<ShapeDashViewProps> = ({
     containerRef.current?.focus({ preventScroll: true });
   }, []);
 
-  // V4: Responsive canvas sizing
+  // V4: Responsive canvas sizing with portrait mode detection
   useEffect(() => {
     const updateCanvasSize = () => {
       if (!containerRef.current) return;
       const container = containerRef.current;
       const rect = container.getBoundingClientRect();
-      const width = Math.min(rect.width, CANVAS_MAX_WIDTH);
-      const height = width / CANVAS_ASPECT_RATIO;
+      
+      // Detect portrait orientation (height > width)
+      const windowIsPortrait = window.innerHeight > window.innerWidth;
+      setIsPortrait(windowIsPortrait);
+      
+      // In portrait mode, adjust aspect ratio to fit better
+      let width, height;
+      if (windowIsPortrait) {
+        // Use a more square aspect ratio for portrait (closer to 1:1)
+        width = Math.min(rect.width, CANVAS_MAX_WIDTH);
+        height = Math.min(width * 1.2, CANVAS_HEIGHT_BASE * 1.5); // Slightly taller than wide
+      } else {
+        // Use standard 16:10 aspect ratio for landscape
+        width = Math.min(rect.width, CANVAS_MAX_WIDTH);
+        height = width / CANVAS_ASPECT_RATIO;
+      }
+      
       setCanvasWidth(Math.floor(width));
       setCanvasHeight(Math.floor(height));
     };
     
     updateCanvasSize();
     window.addEventListener('resize', updateCanvasSize);
-    return () => window.removeEventListener('resize', updateCanvasSize);
-  }, [setCanvasWidth, setCanvasHeight]);
+    window.addEventListener('orientationchange', updateCanvasSize);
+    return () => {
+      window.removeEventListener('resize', updateCanvasSize);
+      window.removeEventListener('orientationchange', updateCanvasSize);
+    };
+  }, []);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -1555,9 +1575,10 @@ export const ShapeDashView: React.FC<ShapeDashViewProps> = ({
         ref={containerRef}
         className="relative rounded-2xl overflow-hidden border-2 border-emerald-400 shadow-xl bg-slate-900 cursor-pointer focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 w-full"
         style={{ 
-          aspectRatio: CANVAS_ASPECT_RATIO,
+          aspectRatio: isPortrait ? undefined : CANVAS_ASPECT_RATIO,
           maxWidth: '100%',
-          boxShadow: '0 0 40px rgba(0, 255, 136, 0.2)'
+          boxShadow: '0 0 40px rgba(0, 255, 136, 0.2)',
+          height: isPortrait ? `${canvasHeight}px` : undefined
         }}
         onClick={handleClick}
         onPointerDown={handlePointerDown}
@@ -1610,6 +1631,14 @@ export const ShapeDashView: React.FC<ShapeDashViewProps> = ({
           </div>
         )}
       </div>
+
+      {/* Portrait mode hint */}
+      {isPortrait && (
+        <div className="text-xs text-amber-400 text-center px-4 py-2 bg-amber-950/30 rounded-lg border border-amber-700/30">
+          <span className="inline-block mr-2">📱</span>
+          For best experience, rotate your device to landscape
+        </div>
+      )}
 
       {/* Instructions hint */}
       <div className="text-sm text-slate-400 text-center">
