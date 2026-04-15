@@ -1,51 +1,32 @@
-name: Build and Deploy to FTP
+name: Deploy to Homelab
 
 on:
   push:
-    branches:
-      - main
-  workflow_dispatch: # Allows manual triggering
+    branches: [main]
+  workflow_dispatch:
 
 jobs:
   build-and-deploy:
-    runs-on: ubuntu-latest
-    
+    runs-on: [self-hosted, linux, homelab]
+
     steps:
-      - name: Checkout code
+      - name: Checkout
         uses: actions/checkout@v4
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 'lts/*'
+          node-version: '24'
           cache: 'npm'
 
       - name: Install dependencies
         run: npm ci
 
-      - name: Run linter
-        run: npm run lint
-        continue-on-error: true
-
-      - name: Build application
+      - name: Build
         run: npm run build
 
-      - name: Install lftp
-        run: sudo apt-get update && sudo apt-get install -y lftp
-
-      - name: Deploy to FTP using lftp
+      - name: Deploy to nginx serve directory
         run: |
-          lftp -c "
-          set ftp:ssl-force true
-          set ftp:ssl-protect-data true
-          set ftp:ssl-protect-list true
-          set ssl:verify-certificate false
-          set ftp:passive-mode true
-          set net:timeout 60
-          set net:max-retries 3
-          set ftp:use-feat false
-          set ftp:use-mdtm false
-          open -u ${{ secrets.FTP_USERNAME }},${{ secrets.FTP_PASSWORD }} -p 21 ${{ secrets.FTP_SERVER }}
-          mirror --reverse --delete --verbose --exclude-glob .git* --exclude-glob node_modules* ./dist/ .
-          quit
-          "
+          rm -rf /srv/data/study-game/dist/*
+          cp -r dist/* /srv/data/study-game/dist/
+          echo "Deployed at $(date)"
