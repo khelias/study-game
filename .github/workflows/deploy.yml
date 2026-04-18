@@ -27,6 +27,11 @@ jobs:
 
       - name: Deploy to nginx serve directory
         run: |
-          rm -rf /srv/data/study-game/dist/*
-          cp -r dist/* /srv/data/study-game/dist/
+          if [ ! -f dist/index.html ]; then
+            echo "ERROR: dist/index.html missing — build produced no output" >&2
+            exit 1
+          fi
+          mkdir -p /srv/data/games/study
+          rm -rf /srv/data/games/study/*
+          cp -r dist/* /srv/data/games/study/
           echo "Deployed at $(date)"
