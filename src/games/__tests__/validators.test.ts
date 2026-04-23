@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { validateStarMapper, validateBattleLearn, validateShapeDash } from '../validators';
-import type { StarMapperProblem } from '../../types/game';
+import type { StarMapperProblem, BattleLearnProblem } from '../../types/game';
 
 describe('validateStarMapper', () => {
   const baseConstellation = {
@@ -191,10 +191,11 @@ describe('validateStarMapper', () => {
 
 describe('validateBattleLearn', () => {
   it('should return true for correct answer index', () => {
-    const problem = {
-      type: 'battlelearn' as const,
+    const problem: BattleLearnProblem = {
+      type: 'battlelearn',
       uid: 'test-1',
       gridSize: 5,
+      cellGrid: [],
       ships: [],
       revealed: [],
       hits: [],
@@ -212,10 +213,11 @@ describe('validateBattleLearn', () => {
   });
 
   it('should return false for incorrect answer index', () => {
-    const problem = {
-      type: 'battlelearn' as const,
+    const problem: BattleLearnProblem = {
+      type: 'battlelearn',
       uid: 'test-2',
       gridSize: 5,
+      cellGrid: [],
       ships: [],
       revealed: [],
       hits: [],
@@ -235,10 +237,11 @@ describe('validateBattleLearn', () => {
   });
 
   it('should return false for non-number answer', () => {
-    const problem = {
-      type: 'battlelearn' as const,
+    const problem: BattleLearnProblem = {
+      type: 'battlelearn',
       uid: 'test-3',
       gridSize: 5,
+      cellGrid: [],
       ships: [],
       revealed: [],
       hits: [],

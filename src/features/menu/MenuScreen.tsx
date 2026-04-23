@@ -1,10 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
-  Trash2,
-  Volume2,
-  VolumeX,
-  BarChart3,
   Type,
   Brain,
   Scale,
@@ -17,7 +13,6 @@ import {
   Gamepad2,
   ChevronDown,
   ChevronUp,
-  Languages,
   Menu,
   X,
   Hash,
@@ -41,7 +36,6 @@ import { ACHIEVEMENTS } from '../../engine/achievements';
 const TOTAL_ACHIEVEMENTS = Object.keys(ACHIEVEMENTS).length;
 import { useTranslation } from '../../i18n/useTranslation';
 import { useProfileText } from '../../hooks/useProfileText';
-import { type SupportedLocale } from '../../i18n';
 import { getAchievementCopy } from '../../utils/achievementCopy';
 import { ResourceBadge } from '../../components/shared/ResourceBadge';
 import { SmartGamesLogo } from '../../components/shared/SmartGamesLogo';
@@ -92,6 +86,21 @@ export const MenuScreen: React.FC = () => {
   // Game start logic is handled by GameRoute when navigating to /games/:slug
 
   const { playClick } = useGameAudio(soundEnabled);
+
+  // Hoisted so SettingsMenu + StatsModal share the same converted list
+  const unlockedAchievementObjects: AchievementUnlock[] = unlockedAchievements
+    .map((id) => {
+      const achievement = ACHIEVEMENTS[id];
+      if (!achievement) return null;
+      const copy = getAchievementCopy(t, achievement.id);
+      return {
+        id: achievement.id,
+        title: copy.title,
+        desc: copy.desc,
+        icon: achievement.icon,
+      };
+    })
+    .filter((a): a is AchievementUnlock => a !== null);
 
   const [showStats, setShowStats] = useState(false);
   const [showAchievements, setShowAchievements] = useState(false);
@@ -279,7 +288,7 @@ export const MenuScreen: React.FC = () => {
                       setShowShop(true);
                       setShowSettingsMenu(false);
                     }}
-                    unlockedAchievements={unlockedAchievements}
+                    unlockedAchievements={unlockedAchievementObjects}
                     isGameScreen={false}
                     onDeleteProgress={() => {
                       resetGame();
@@ -304,19 +313,7 @@ export const MenuScreen: React.FC = () => {
             <StatsModal
               key="stats-modal"
               stats={stats}
-              unlockedAchievements={unlockedAchievements
-                .map((id) => {
-                  const achievement = ACHIEVEMENTS[id];
-                  if (!achievement) return null;
-                  const copy = getAchievementCopy(t, achievement.id);
-                  return {
-                    id: achievement.id,
-                    title: copy.title,
-                    desc: copy.desc,
-                    icon: achievement.icon,
-                  };
-                })
-                .filter((a): a is AchievementUnlock => a !== null)}
+              unlockedAchievements={unlockedAchievementObjects}
               onClose={() => setShowStats(false)}
             />
           )}

@@ -41,7 +41,6 @@ import type {
   ShapeDashProblem,
   ShapeDashObstacle,
   ShapeDashCheckpoint,
-  ShapeDashCheckpointQuestion,
   ShapeDashStar,
   ShapeDashJumpPad,
   ShapeDashBoostZone,
@@ -396,7 +395,10 @@ export const Generators: Record<string, GeneratorFunction> = {
     }
 
     const bucket = db[desiredLen] ?? db[desiredLen - 1] ?? db[desiredLen + 1] ?? db[3] ?? [];
-    const chosen = bucket.length > 0 ? getRandom(bucket, rng) : { w: 'KASS', e: '🐱' };
+    const chosen = (bucket.length > 0 ? getRandom(bucket, rng) : null) ?? {
+      w: 'KASS',
+      e: '🐱',
+    };
 
     // Keep casing aligned with the existing word builder logic
     const target = applyLetterCase(chosen.w, level, rng);
@@ -1549,7 +1551,11 @@ export const Generators: Record<string, GeneratorFunction> = {
    * Shape Shift Generator
    * Generates geometric puzzle problems with different modes based on level
    */
-  shape_shift: (level: number, rng: RngFunction, _profile: ProfileType): ShapeShiftProblem => {
+  shape_shift: (
+    level: number,
+    rng: RngFunction = Math.random,
+    _profile: ProfileType = 'starter',
+  ): ShapeShiftProblem => {
     // Select mode based on level
     const mode = level <= 3 ? 'match' : level <= 6 ? 'rotate' : level <= 10 ? 'build' : 'expert';
 
@@ -1576,7 +1582,7 @@ export const Generators: Record<string, GeneratorFunction> = {
     }
 
     const puzzleIndex = Math.floor(rng() * pool.length);
-    const puzzle = pool[puzzleIndex] || PUZZLES[0];
+    const puzzle = (pool[puzzleIndex] ?? PUZZLES[0])!;
 
     // Add to history
     history.push(puzzle.id);
@@ -1592,7 +1598,7 @@ export const Generators: Record<string, GeneratorFunction> = {
       const result = [...array];
       for (let i = result.length - 1; i > 0; i--) {
         const j = Math.floor(rng() * (i + 1));
-        [result[i], result[j]] = [result[j], result[i]];
+        [result[i], result[j]] = [result[j]!, result[i]!];
       }
       return result;
     };
@@ -2915,7 +2921,7 @@ export function generateBattleLearnQuestion(
   const gridSize = currentProblem.gridSize;
   let prompt: string;
   let correctAnswer: number | string;
-  let options: string[];
+  let options: string[] = [];
 
   // Helper to set options and return correctIndex for next step
   const setOptionsForAnswer = (): number => {
@@ -3068,7 +3074,7 @@ export function generateBattleLearnQuestion(
  * @returns Array of distractor stars with magnitude 4-6 (dimmer than constellation stars)
  */
 function generateDistractorStars(
-  constellation: Constellation,
+  _constellation: Constellation,
   rng: RngFunction,
   level: number,
 ): Star[] {
@@ -3099,24 +3105,26 @@ function generateIdentifyOptions(correct: Constellation, rng: RngFunction): stri
   const shuffled = [...allConstellations];
   for (let i = shuffled.length - 1; i > 0; i--) {
     const j = Math.floor(rng() * (i + 1));
-    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    [shuffled[i], shuffled[j]] = [shuffled[j]!, shuffled[i]!];
   }
 
   // Pick 3 wrong options
   const options: string[] = [correct.id];
   for (let i = 0; i < Math.min(3, shuffled.length); i++) {
-    options.push(shuffled[i].id);
+    options.push(shuffled[i]!.id);
   }
 
   // Ensure we have 4 options - if not enough constellations, repeat some
   while (options.length < 4 && allConstellations.length > 0) {
-    options.push(getRandom(allConstellations, rng).id);
+    const extra = getRandom(allConstellations, rng);
+    if (extra) options.push(extra.id);
+    else break;
   }
 
   // Fisher-Yates shuffle final options
   for (let i = options.length - 1; i > 0; i--) {
     const j = Math.floor(rng() * (i + 1));
-    [options[i], options[j]] = [options[j], options[i]];
+    [options[i], options[j]] = [options[j]!, options[i]!];
   }
 
   return options;

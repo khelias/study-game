@@ -7,7 +7,6 @@
 
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from '../../i18n/useTranslation';
-import { getLocale } from '../../i18n';
 import { gridPieceToPercent, sortByDistanceFromCenter } from '../../games/shapeShiftGrid';
 import { usePlaySessionStore } from '../../stores/playSessionStore';
 import { GAME_CONFIG } from '../../games/data';
@@ -43,7 +42,6 @@ export const ShapeShiftView: React.FC<ShapeShiftViewProps> = ({
   spendStars,
 }) => {
   const t = useTranslation();
-  const locale = getLocale();
   const addNotification = usePlaySessionStore((state) => state.addNotification);
 
   const boardRef = useRef<HTMLDivElement>(null);
@@ -214,7 +212,6 @@ export const ShapeShiftView: React.FC<ShapeShiftViewProps> = ({
   // ─── Rendering Helpers ──────────────────────────────────────────────────
 
   const gs = problem.puzzle.gridSize;
-  const _puzzleName = locale === 'et' ? problem.puzzle.nameEt : problem.puzzle.nameEn;
 
   // Sort pieces for z-index (center pieces on top)
   const placedPieces = pieces.filter((p) => p.currentPosition !== null);
@@ -357,7 +354,7 @@ export const ShapeShiftView: React.FC<ShapeShiftViewProps> = ({
       )}
 
       {/* Paid Hint Buttons */}
-      {typeof spendStars === 'function' && status !== 'correct' && gameConfig.paidHints && (
+      {typeof spendStars === 'function' && status !== 'correct' && gameConfig?.paidHints && (
         <PaidHintButtons
           hints={gameConfig.paidHints}
           stars={stars}

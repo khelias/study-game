@@ -655,6 +655,8 @@ export const en = {
 
   // Robo path game
   roboPath: {
+    perfect: 'Perfect!',
+    perfectMessage: 'You found the optimal solution!',
     addCommandUp: 'Add command: up',
     addCommandDown: 'Add command: down',
     addCommandLeft: 'Add command: left',
@@ -725,9 +727,6 @@ export const en = {
 
   // Game names and descriptions
   games: {
-    hint: {
-      genericCost: 'Hint ({cost}⭐)',
-    },
     word_builder: {
       title: 'WORD MASTER',
       desc: 'Build a word from letters',

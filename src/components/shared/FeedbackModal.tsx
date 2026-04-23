@@ -74,6 +74,7 @@ export const FeedbackModal: React.FC<FeedbackModalProps> = ({
       document.addEventListener('keydown', handleEscape);
       return () => document.removeEventListener('keydown', handleEscape);
     }
+    return undefined;
   }, [isOpen, onClose]);
 
   if (!isOpen) return null;

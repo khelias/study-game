@@ -254,7 +254,7 @@ export const PicturePairsView: React.FC<PicturePairsViewProps> = ({
           )}
 
           {cards.map((card, i) => {
-            const isFlipped = isPeeking || card.flipped || card.solved;
+            const isFlipped = Boolean(isPeeking || card.flipped || card.solved);
             return (
               <MemoCard
                 key={`${card.id}-${i}-${card.flipped ?? false}-${card.solved ?? false}`}

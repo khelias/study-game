@@ -19,13 +19,13 @@ describe('gameStore', () => {
         gamesByType: {},
         totalTimePlayed: 0,
         lastPlayed: null,
-        stars: 0,
+        collectedStars: 0,
         maxSnakeLength: 0,
       },
       unlockedAchievements: [],
       soundEnabled: true,
       score: 0,
-      collectedStars: 0,
+      stars: 0,
       hasSeenTutorial: false,
     });
   });

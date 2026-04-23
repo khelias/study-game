@@ -19,8 +19,6 @@ const SMALL_SCREEN_BREAKPOINT_PX = 520;
 /** Touch target radius in viewBox (0–100): comfortable on small screens (~44px min), smaller on desktop. */
 const TOUCH_TARGET_R_SMALL = 10; // ~56px diameter on 280px SVG
 const TOUCH_TARGET_R_DEFAULT = 6;
-/** @deprecated Use touchTargetR (component) or TOUCH_TARGET_R_DEFAULT / TOUCH_TARGET_R_SMALL. Kept so no ReferenceError if cached code still references it. */
-const TOUCH_TARGET_R = TOUCH_TARGET_R_DEFAULT;
 /** Min visible star radius in viewBox on small screen (smaller than before; touch target stays large). */
 const MIN_STAR_VISUAL_R_SMALL = 3.5;
 
@@ -313,11 +311,6 @@ export const StarMapperView: React.FC<StarMapperViewProps> = ({
     return '#8888aa';
   };
 
-  // Render mode instructions
-  const _getInstructions = (): string => {
-    return t.starMapper.instructions[problem.mode];
-  };
-
   // Calculate remaining lines for trace/build modes
   const linesRemaining = problem.constellation.lines.length - drawnLines.length;
 
@@ -511,7 +504,6 @@ export const StarMapperView: React.FC<StarMapperViewProps> = ({
           {/* Constellation stars: large invisible hit area + visible star */}
           {problem.constellation.stars.map((star) => {
             const isSelected = selectedStar === star.id;
-            const _isConnected = drawnLines.some((l) => l.from === star.id || l.to === star.id);
             const visualR = getStarVisualRadius(star.magnitude);
             const color = getStarColor(star.magnitude);
 
@@ -671,7 +663,7 @@ export const StarMapperView: React.FC<StarMapperViewProps> = ({
       {typeof spendStars === 'function' &&
         status !== 'correct' &&
         isConnectMode &&
-        gameConfig.paidHints && (
+        gameConfig?.paidHints && (
           <PaidHintButtons
             hints={gameConfig.paidHints}
             stars={stars}

@@ -67,7 +67,15 @@ export const BattleLearnView: React.FC<BattleLearnViewProps> = ({
   });
 
   // Separate game state from question state
-  const [gameState, setGameState] = useState({
+  const [gameState, setGameState] = useState<{
+    gridSize: number;
+    cellGrid: BattleLearnCellType[][];
+    ships: Ship[];
+    revealed: Array<[number, number]>;
+    hits: Array<[number, number]>;
+    sunkShips: string[];
+    gameWon: boolean;
+  }>({
     gridSize: problem.gridSize,
     cellGrid: problem.cellGrid,
     ships: problem.ships,
@@ -191,8 +199,10 @@ export const BattleLearnView: React.FC<BattleLearnViewProps> = ({
           unrevealedShipPositions[Math.floor(Math.random() * unrevealedShipPositions.length)]!;
         const shipsCopy = JSON.parse(JSON.stringify(ships)) as Ship[];
         const result = applyShot(shipsCopy, revealed, row, col);
-        const newRevealed = [...revealed, [row, col]];
-        const newHits = result.hit ? [...hits, [row, col]] : hits;
+        const newRevealed: Array<[number, number]> = [...revealed, [row, col] as [number, number]];
+        const newHits: Array<[number, number]> = result.hit
+          ? [...hits, [row, col] as [number, number]]
+          : hits;
         const newSunkShips = result.sunkShipId ? [...sunkShips, result.sunkShipId] : sunkShips;
         const gameWon = checkWinCondition(shipsCopy);
         setGameState((prev) => ({
@@ -272,9 +282,9 @@ export const BattleLearnView: React.FC<BattleLearnViewProps> = ({
       ...gameState.revealed,
       [row, col] as [number, number],
     ];
-    let newHits = gameState.hits;
-    let newSunkShips = gameState.sunkShips;
-    let gameWon = gameState.gameWon;
+    let newHits: Array<[number, number]> = gameState.hits;
+    let newSunkShips: string[] = gameState.sunkShips;
+    let gameWon: boolean = gameState.gameWon;
     const shipsCopy = JSON.parse(JSON.stringify(gameState.ships)) as typeof gameState.ships;
 
     if (cellType === 'ship') {

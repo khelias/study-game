@@ -17,7 +17,7 @@ import { GAME_CONFIG } from '../games/data';
 import { useTranslation } from '../i18n/useTranslation';
 import { checkLevelUp, calculateStarReward } from '../engine/progression';
 import { generateBattleLearnQuestion } from '../games/generators';
-import type { BattleLearnProblem } from '../types/game';
+import type { ProfileType } from '../types/game';
 
 export interface AnswerOptions {
   /** When true, do not decrement a heart for this wrong answer. */
@@ -39,7 +39,7 @@ export function useAnswerHandler(): UseAnswerHandlerResult {
   const { playWin } = useGameAudio(useGameStore((state) => state.soundEnabled));
 
   // Global state
-  const profile = useGameStore((state) => state.profile);
+  const profile = useGameStore((state) => state.profile) as ProfileType;
   const levels = useGameStore((state) => state.levels);
   const recordAnswer = useGameStore((state) => state.recordAnswer);
   const earnStars = useGameStore((state) => state.earnStars);

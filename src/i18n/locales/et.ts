@@ -655,6 +655,8 @@ export const et = {
 
   // Robo path game
   roboPath: {
+    perfect: 'Täiuslik!',
+    perfectMessage: 'Leidsid optimaalse lahenduse!',
     addCommandUp: 'Lisa käsk: üles',
     addCommandDown: 'Lisa käsk: alla',
     addCommandLeft: 'Lisa käsk: vasakule',
@@ -725,9 +727,6 @@ export const et = {
 
   // Game names and descriptions
   games: {
-    hint: {
-      genericCost: 'Vihje ({cost}⭐)',
-    },
     word_builder: {
       title: 'SÕNAMEISTER',
       desc: 'Lao tähtedest sõna kokku',

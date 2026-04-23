@@ -4,7 +4,7 @@
  * Tests for pure BattleLearn game logic functions.
  */
 
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, beforeEach } from 'vitest';
 import {
   placeShips,
   applyShot,

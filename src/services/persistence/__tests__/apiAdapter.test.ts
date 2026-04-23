@@ -25,9 +25,9 @@ describe('ApiAdapter', () => {
     deleteFn = vi.fn();
 
     mockApiClient = {
-      get: getFn,
-      put: putFn,
-      delete: deleteFn,
+      get: getFn as unknown as MockApiClient['get'],
+      put: putFn as unknown as MockApiClient['put'],
+      delete: deleteFn as unknown as MockApiClient['delete'],
     };
     adapter = new ApiAdapter(mockApiClient);
   });
@@ -89,7 +89,7 @@ describe('ApiAdapter', () => {
 
   describe('delete', () => {
     it('should delete data via API client', async () => {
-      vi.mocked(deleteFn).mockResolvedValue();
+      vi.mocked(deleteFn).mockResolvedValue(undefined);
 
       await adapter.delete(testKey);
 

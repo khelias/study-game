@@ -69,6 +69,7 @@ export const GameProblemModal: React.FC<GameProblemModalProps> = ({
       document.addEventListener('keydown', handleEscape);
       return () => document.removeEventListener('keydown', handleEscape);
     }
+    return undefined;
   }, [isOpen, onClose]);
 
   if (!isOpen) return null;

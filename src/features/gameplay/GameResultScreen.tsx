@@ -143,7 +143,10 @@ export const GameResultScreen: React.FC<GameResultScreenProps> = ({
 
   const handleSecondaryAction = () => {
     playClick();
-    const secAction: ActionFn | undefined = currentConfig.secondaryAction as ActionFn | undefined;
+    const secAction: ActionFn | undefined =
+      'secondaryAction' in currentConfig
+        ? (currentConfig.secondaryAction as ActionFn | undefined)
+        : undefined;
     if (secAction) void secAction();
     else {
       void navigate('/', { replace: true });
@@ -180,7 +183,7 @@ export const GameResultScreen: React.FC<GameResultScreenProps> = ({
           </div>
 
           {/* Heart warning for game over with no hearts */}
-          {currentConfig.showHeartWarning && (
+          {'showHeartWarning' in currentConfig && currentConfig.showHeartWarning && (
             <div className="mb-4 p-3 bg-rose-50 border border-rose-200 rounded-xl">
               <p className="text-sm text-rose-700 text-center font-medium">
                 {formatText(t.game.noHeartsLeft || 'No hearts left! Visit the shop to get more.')}

@@ -6,7 +6,6 @@ import type { ShapeShiftProblem, PieceState } from '../../types/game';
 
 // Constants for interaction
 const TAP_THRESHOLD_PX = 10;
-const TAP_ON_BOARD_THRESHOLD_PX = 20;
 
 export function useShapeShiftGame(
   problem: ShapeShiftProblem,
@@ -92,6 +91,7 @@ export function useShapeShiftGame(
 
       return () => clearTimeout(checkTimeout);
     }
+    return undefined;
   }, [pieces, status, problem, onAnswer, soundEnabled]);
 
   const handleStartDrag = useCallback(
@@ -224,9 +224,9 @@ export function useShapeShiftGame(
 
   const placeHintPiece = useCallback(() => {
     const unplaced = pieces.filter((p) => !p.isDecoy && p.currentPosition === null);
-    if (unplaced.length === 0) return false;
-
     const target = unplaced[0];
+    if (!target) return false;
+
     const template = problem.puzzle.pieces.find((p) => p.id === target.id);
 
     if (template) {

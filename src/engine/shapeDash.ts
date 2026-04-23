@@ -12,7 +12,6 @@ import type {
   ShapeDashJumpPad,
   ShapeDashBoostZone,
   ShapeDashShapeGate,
-  ShapeDashTerrainSegment,
 } from '../types/game';
 
 /** Player hitbox: width and height in px */

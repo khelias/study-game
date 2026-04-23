@@ -60,7 +60,7 @@ describe('useShapeShiftGame', () => {
     const { result } = renderHook(() => useShapeShiftGame(mockProblem, mockOnAnswer, true, 500));
 
     expect(result.current.pieces).toHaveLength(1);
-    expect(result.current.pieces[0].currentPosition).toBeNull();
+    expect(result.current.pieces[0]!.currentPosition).toBeNull();
     expect(result.current.status).toBe('idle');
   });
 
@@ -87,7 +87,7 @@ describe('useShapeShiftGame', () => {
       result.current.handleDragEnd(100, 100, null, null);
     });
 
-    expect(result.current.pieces[0].currentRotation).toBe(90); // 0 + 90
+    expect(result.current.pieces[0]!.currentRotation).toBe(90); // 0 + 90
     expect(result.current.isDragging).toBe(false);
   });
 
@@ -99,7 +99,7 @@ describe('useShapeShiftGame', () => {
       expect(placed).toBe(true);
     });
 
-    expect(result.current.pieces[0].currentPosition).toEqual({ x: 0, y: 0 });
+    expect(result.current.pieces[0]!.currentPosition).toEqual({ x: 0, y: 0 });
     // Should trigger completion logic if it was the last piece, but that involves timeouts
   });
 });

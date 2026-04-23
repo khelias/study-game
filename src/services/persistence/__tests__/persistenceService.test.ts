@@ -34,7 +34,7 @@ describe('PersistenceService', () => {
     unlockedAchievements: ['first_win'],
     soundEnabled: true,
     score: 100,
-    collectedStars: 5,
+    stars: 5,
     hasSeenTutorial: true,
   };
 

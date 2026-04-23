@@ -10,7 +10,8 @@
  * between different storage backends without changing application code.
  */
 
-export { PersistenceAdapter, PersistenceError } from './types';
+export type { PersistenceAdapter } from './types';
+export { PersistenceError } from './types';
 export { LocalStorageAdapter } from './localStorageAdapter';
 export { ApiAdapter } from './apiAdapter';
 export { PersistenceService } from './persistenceService';

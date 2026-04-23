@@ -32,7 +32,7 @@ import { ACHIEVEMENTS } from '../../engine/achievements';
 import { getAchievementCopy } from '../../utils/achievementCopy';
 import { useTranslation } from '../../i18n/useTranslation';
 import { useProfileText } from '../../hooks/useProfileText';
-import { GAME_CONFIG, CATEGORIES } from '../../games/data';
+import { GAME_CONFIG } from '../../games/data';
 import { Z_INDEX } from '../../utils/zIndex';
 import type { Direction, ProfileType } from '../../types/game';
 import type { AchievementUnlock } from '../../types/achievement';
@@ -47,7 +47,6 @@ export const GameScreen: React.FC = () => {
   const levels = useGameStore((state) => state.levels);
   const soundEnabled = useGameStore((state) => state.soundEnabled);
   const toggleSound = useGameStore((state) => state.toggleSound);
-  const recordLevelUp = useGameStore((state) => state.recordLevelUp);
   const setLevel = useGameStore((state) => state.setLevel);
   const addGlobalScore = useGameStore((state) => state.addScore);
   const updateStats = useGameStore((state) => state.updateStats);
@@ -77,15 +76,12 @@ export const GameScreen: React.FC = () => {
   // Session actions
   const setProblem = usePlaySessionStore((state) => state.setProblem);
   const returnToMenu = usePlaySessionStore((state) => state.returnToMenu);
-  const setBgClass = usePlaySessionStore((state) => state.setBgClass);
-  const setConfetti = usePlaySessionStore((state) => state.setConfetti);
   const setEnhancedConfetti = usePlaySessionStore((state) => state.setEnhancedConfetti);
   // Stars are now persistent (gameStore.stars), no reset needed
   const endGame = usePlaySessionStore((state) => state.endGame);
   const addScore = usePlaySessionStore((state) => state.addScore);
   const addNotification = usePlaySessionStore((state) => state.addNotification);
   const removeNotification = usePlaySessionStore((state) => state.removeNotification);
-  const clearNotifications = usePlaySessionStore((state) => state.clearNotifications);
 
   // Hooks
   const { generateUniqueProblemForGame, getRng } = useGameEngine();
@@ -224,58 +220,8 @@ export const GameScreen: React.FC = () => {
       document.addEventListener('keydown', handleEscape);
       return () => document.removeEventListener('keydown', handleEscape);
     }
+    return undefined;
   }, [showGameDescription, playClick]);
-
-  // Handle next level (legacy - now handled automatically in Phase 3)
-  // This is kept for backward compatibility with level-up modal
-  const _handleNextLevel = () => {
-    if (!gameType) return;
-
-    clearNotifications();
-    setConfetti(false);
-    // Stars are now persistent (gameStore.stars), no reset needed
-    // Level progress is reset automatically when level-up happens
-
-    // For games with 'onGameWin' level-up strategy, level-up is already handled in useAnswerHandler
-    // Don't call recordLevelUp again (would cause double level-up)
-    const baseGameType = gameType.replace('_adv', '');
-    const gameConfig = GAME_CONFIG[baseGameType];
-    if (gameConfig?.levelUpStrategy === 'onGameWin') {
-      // Just dismiss notification, level-up already happened
-      return;
-    }
-
-    const newLevel = (levels[profile]?.[gameType] || 1) + 1;
-    // Note: recordLevelUp is now called automatically in useAnswerHandler when level-up occurs
-    // This is only for manual level-up (if needed)
-    const { newAchievements } = recordLevelUp(gameType, newLevel);
-
-    if (newAchievements.length > 0) {
-      const achievement = newAchievements[0];
-      if (achievement) {
-        addNotification({
-          type: 'achievement',
-          achievement: achievement,
-        });
-      }
-    }
-
-    const baseType = gameType.replace('_adv', '');
-    const isMathSnake = baseType === 'math_snake';
-
-    setTimeout(() => {
-      if (!isMathSnake) {
-        const newProblem = generateUniqueProblemForGame(
-          gameType,
-          newLevel,
-          profile,
-          adaptiveDifficulty,
-        );
-        setProblem(newProblem);
-      }
-      setBgClass('bg-slate-50');
-    }, 100);
-  };
 
   // Handle math snake movement
   const handleMathSnakeMove = (direction: Direction) => {
@@ -445,7 +391,7 @@ export const GameScreen: React.FC = () => {
               gameConfig && t.games[baseType as keyof typeof t.games]
                 ? t.games[baseType as keyof typeof t.games].title
                 : gameType.toUpperCase()
-            ) as string;
+            );
             const gameName = formatText(gameTitleStr);
             return (
               <button
@@ -572,12 +518,14 @@ export const GameScreen: React.FC = () => {
             gameConfig && t.games[baseType as keyof typeof t.games]
               ? t.games[baseType as keyof typeof t.games].title
               : gameType.toUpperCase()
-          ) as string;
+          );
           const gameName = formatText(gameTitleStr);
           const gameDesc = (
             t.games[baseType as keyof typeof t.games] as { gameDescription?: string }
           )?.gameDescription;
-          const tips = (t.gameScreen.tips as Record<string, string[] | undefined>)[baseType];
+          const tips = (t.gameScreen.tips as unknown as Record<string, string[] | undefined>)[
+            baseType
+          ];
           const tipsList = Array.isArray(tips) ? tips : [];
           return (
             <div

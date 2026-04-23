@@ -79,7 +79,7 @@ function getDistractorLetter(targetWord: string, neededLetter: string | null): s
   const hasLower = targetChars.some((c) => c !== c.toUpperCase());
   const isTitleCase =
     targetChars.length > 0 &&
-    targetChars[0] === targetChars[0].toUpperCase() &&
+    targetChars[0]! === targetChars[0]!.toUpperCase() &&
     targetChars.slice(1).every((c) => c === c.toLowerCase());
   const caseStyle: 'upper' | 'lower' | 'title' | 'mixed' = !hasLower
     ? 'upper'
