@@ -4,6 +4,8 @@
 
 **Smart Games** is an educational web game built with extensible, testable, and well-structured architecture. This document describes the project architecture, design principles, and best practices.
 
+For architecturally significant decisions — including the target bounded-context decomposition that supersedes parts of this document as Phase 1 work lands — see [`docs/adr/`](docs/adr/README.md). The product and technical roadmap lives in [`ROADMAP.md`](ROADMAP.md).
+
 ## Technology Stack
 
 ### Core Technologies
