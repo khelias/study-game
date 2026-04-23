@@ -7,3 +7,7 @@ package-lock.json
 public/
 scripts/object-hasown-shim.cjs
 .github/
+test-results/
+playwright-report/
+blob-report/
+playwright/.cache/

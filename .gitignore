@@ -29,3 +29,9 @@ coverage
 # Setup scripts (temporary files for initial setup)
 setup-github.sh
 GITHUB_SETUP.md
+
+# Playwright
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/

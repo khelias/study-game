@@ -387,11 +387,10 @@ export const GameScreen: React.FC = () => {
             const baseType = gameType.replace('_adv', '');
             const gameConfig = GAME_CONFIG[baseType];
             const gameEmoji = gameConfig?.emoji ?? '🎮';
-            const gameTitleStr: string = (
+            const gameTitleStr: string =
               gameConfig && t.games[baseType as keyof typeof t.games]
                 ? t.games[baseType as keyof typeof t.games].title
-                : gameType.toUpperCase()
-            );
+                : gameType.toUpperCase();
             const gameName = formatText(gameTitleStr);
             return (
               <button
@@ -514,11 +513,10 @@ export const GameScreen: React.FC = () => {
           const baseType = gameType.replace('_adv', '');
           const gameConfig = GAME_CONFIG[baseType];
           const gameEmoji = gameConfig?.emoji ?? '🎮';
-          const gameTitleStr: string = (
+          const gameTitleStr: string =
             gameConfig && t.games[baseType as keyof typeof t.games]
               ? t.games[baseType as keyof typeof t.games].title
-              : gameType.toUpperCase()
-          );
+              : gameType.toUpperCase();
           const gameName = formatText(gameTitleStr);
           const gameDesc = (
             t.games[baseType as keyof typeof t.games] as { gameDescription?: string }
