@@ -70,4 +70,39 @@ test.describe('smart games — smoke', () => {
     // A game-screen chrome element is present (level badge has a stable aria-label).
     await expect(page.getByRole('button', { name: /change level/i })).toBeVisible();
   });
+
+  test('balance_scale: clicking an answer records the attempt in stats', async ({ page }) => {
+    await page.goto('/study/games/balance-scale');
+
+    // Wait for the 3-column answer grid to render an active option.
+    // Disabled options render as <div aria-hidden>, so :not([disabled]) selects live ones.
+    const answerBtn = page.locator('div.grid.grid-cols-3 > button:not([disabled])').first();
+    await expect(answerBtn).toBeVisible({ timeout: 10_000 });
+
+    // Click any answer. Whether correct or wrong, the engine calls recordAnswer
+    // which increments stats.correctAnswers or stats.wrongAnswers. We only care
+    // that the answer-handling path runs end-to-end.
+    await answerBtn.click();
+
+    // Poll persisted zustand state for the stat increment. Keeps the assertion
+    // independent of RNG (we don't know whether the click was correct) and
+    // independent of transient UI animations.
+    await page.waitForFunction(
+      (storeKey) => {
+        const raw = window.localStorage.getItem(storeKey);
+        if (!raw) return false;
+        try {
+          const parsed = JSON.parse(raw) as {
+            state?: { stats?: { correctAnswers?: number; wrongAnswers?: number } };
+          };
+          const stats = parsed.state?.stats;
+          return (stats?.correctAnswers ?? 0) + (stats?.wrongAnswers ?? 0) > 0;
+        } catch {
+          return false;
+        }
+      },
+      GAME_STORE_KEY,
+      { timeout: 10_000 },
+    );
+  });
 });
