@@ -13,7 +13,11 @@ export interface AnswerOptions {
 interface GameRendererProps {
   gameType: string;
   problem: Problem;
-  onAnswer: (isCorrect: boolean, shouldShowAchievement?: () => boolean, options?: AnswerOptions) => void;
+  onAnswer: (
+    isCorrect: boolean,
+    shouldShowAchievement?: () => boolean,
+    options?: AnswerOptions,
+  ) => void;
   onMove?: (direction: Direction) => void;
   soundEnabled: boolean;
   level?: number;
@@ -26,12 +30,12 @@ interface GameRendererProps {
   endGame?: () => void;
 }
 
-export const GameRenderer: React.FC<GameRendererProps> = ({ 
-  gameType, 
-  problem, 
-  onAnswer, 
-  onMove, 
-  soundEnabled, 
+export const GameRenderer: React.FC<GameRendererProps> = ({
+  gameType,
+  problem,
+  onAnswer,
+  onMove,
+  soundEnabled,
   level,
   stars,
   spendStars,
@@ -39,13 +43,13 @@ export const GameRenderer: React.FC<GameRendererProps> = ({
   endGame,
 }) => {
   const t = useTranslation();
-  
+
   // Handle advanced versions by removing '_adv' suffix
   const baseGameType = gameType.replace('_adv', '');
-  
+
   // Get game from registry
   const gameEntry = gameRegistry.get(baseGameType);
-  
+
   if (!gameEntry) {
     return (
       <div className="text-center p-8 text-red-600">
@@ -53,7 +57,7 @@ export const GameRenderer: React.FC<GameRendererProps> = ({
       </div>
     );
   }
-  
+
   // Render the game component
   const Component = gameEntry.component;
   return (

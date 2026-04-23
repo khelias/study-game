@@ -1,6 +1,6 @@
 /**
  * Monetization system types
- * 
+ *
  * This module defines the types and interfaces for the monetization system.
  * The actual implementation can be added later when needed.
  */

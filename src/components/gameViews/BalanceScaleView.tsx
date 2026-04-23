@@ -73,7 +73,7 @@ export const BalanceScaleView: React.FC<BalanceScaleViewProps> = ({
       const pick = wrongIndices[Math.floor(Math.random() * wrongIndices.length)] as number;
       setEliminatedIndices((prev) => [...prev, pick]);
     },
-    [problem.options, problem.answer, eliminatedIndices, spendStars]
+    [problem.options, problem.answer, eliminatedIndices, spendStars],
   );
 
   const handleChoice = (weight: number): void => {
@@ -104,7 +104,12 @@ export const BalanceScaleView: React.FC<BalanceScaleViewProps> = ({
     translateX: number;
     fill: string;
     stroke: string;
-    weights: Array<{ num?: number; label?: string; color: 'red' | 'blue' | 'neutral'; dashed?: boolean }>;
+    weights: Array<{
+      num?: number;
+      label?: string;
+      color: 'red' | 'blue' | 'neutral';
+      dashed?: boolean;
+    }>;
   }> = [
     {
       translateX: SCALE.panCenterX.left,
@@ -175,10 +180,38 @@ export const BalanceScaleView: React.FC<BalanceScaleViewProps> = ({
               </linearGradient>
             </defs>
 
-            <ellipse cx={SCALE.base.cx} cy={SCALE.base.cy} rx={SCALE.base.rx} ry={SCALE.base.ry} fill="#e2e8f0" opacity="0.9" />
-            <path d="M 108 278 Q 108 252 132 232 L 268 232 Q 292 252 292 278 Z" fill="url(#bsBase)" stroke="#94a3b8" strokeWidth="2" filter="url(#bsShadow)" />
-            <rect x={SCALE.pole.x} y={SCALE.pole.y} width={SCALE.pole.width} height={SCALE.pole.height} rx="4" fill="url(#bsPole)" filter="url(#bsShadow)" />
-            <rect x={SCALE.pivot.x - 9} y={SCALE.pivot.y - 6} width="18" height="7" rx="3.5" fill="#64748b" />
+            <ellipse
+              cx={SCALE.base.cx}
+              cy={SCALE.base.cy}
+              rx={SCALE.base.rx}
+              ry={SCALE.base.ry}
+              fill="#e2e8f0"
+              opacity="0.9"
+            />
+            <path
+              d="M 108 278 Q 108 252 132 232 L 268 232 Q 292 252 292 278 Z"
+              fill="url(#bsBase)"
+              stroke="#94a3b8"
+              strokeWidth="2"
+              filter="url(#bsShadow)"
+            />
+            <rect
+              x={SCALE.pole.x}
+              y={SCALE.pole.y}
+              width={SCALE.pole.width}
+              height={SCALE.pole.height}
+              rx="4"
+              fill="url(#bsPole)"
+              filter="url(#bsShadow)"
+            />
+            <rect
+              x={SCALE.pivot.x - 9}
+              y={SCALE.pivot.y - 6}
+              width="18"
+              height="7"
+              rx="3.5"
+              fill="#64748b"
+            />
 
             <g
               style={{
@@ -187,19 +220,87 @@ export const BalanceScaleView: React.FC<BalanceScaleViewProps> = ({
                 transition: 'transform 1s cubic-bezier(0.34, 1.56, 0.64, 1)',
               }}
             >
-              <rect x={SCALE.beam.x} y={SCALE.pivot.y - 6} width={SCALE.beam.width} height={SCALE.beam.height} rx="6" fill="url(#bsBeam)" stroke="#64748b" strokeWidth="1.5" filter="url(#bsShadow)" />
-              <rect x={SCALE.beam.x} y={SCALE.pivot.y - 6} width={SCALE.beam.width} height="5" rx="6" fill="url(#bsBeamTop)" opacity="0.9" />
-              <circle cx={SCALE.pivot.x} cy={SCALE.pivot.y} r="9" fill="#3b82f6" stroke="#2563eb" strokeWidth="2" filter="url(#bsShadow)" />
+              <rect
+                x={SCALE.beam.x}
+                y={SCALE.pivot.y - 6}
+                width={SCALE.beam.width}
+                height={SCALE.beam.height}
+                rx="6"
+                fill="url(#bsBeam)"
+                stroke="#64748b"
+                strokeWidth="1.5"
+                filter="url(#bsShadow)"
+              />
+              <rect
+                x={SCALE.beam.x}
+                y={SCALE.pivot.y - 6}
+                width={SCALE.beam.width}
+                height="5"
+                rx="6"
+                fill="url(#bsBeamTop)"
+                opacity="0.9"
+              />
+              <circle
+                cx={SCALE.pivot.x}
+                cy={SCALE.pivot.y}
+                r="9"
+                fill="#3b82f6"
+                stroke="#2563eb"
+                strokeWidth="2"
+                filter="url(#bsShadow)"
+              />
               <circle cx={SCALE.pivot.x} cy={SCALE.pivot.y} r="5" fill="#93c5fd" opacity="0.8" />
 
               {panConfigs.map((pan, i) => (
                 <g key={i} transform={`translate(${pan.translateX}, ${SCALE.pivot.y})`}>
-                  <g style={{ transform: `rotate(${-tilt}deg)`, transformOrigin: '0 0', transition: 'transform 1s' }}>
-                    <line x1="0" y1="0" x2={-SCALE.pan.chainSpread} y2={SCALE.pan.chainEndY} stroke="#64748b" strokeWidth="3" strokeLinecap="round" />
-                    <line x1="0" y1="0" x2={SCALE.pan.chainSpread} y2={SCALE.pan.chainEndY} stroke="#64748b" strokeWidth="3" strokeLinecap="round" />
-                    <rect x={-SCALE.pan.width / 2} y={SCALE.pan.topY} width={SCALE.pan.width} height={SCALE.pan.height} rx={SCALE.pan.rx} ry={SCALE.pan.rx} fill={pan.fill} stroke={pan.stroke} strokeWidth="2" filter="url(#bsShadowSoft)" />
+                  <g
+                    style={{
+                      transform: `rotate(${-tilt}deg)`,
+                      transformOrigin: '0 0',
+                      transition: 'transform 1s',
+                    }}
+                  >
+                    <line
+                      x1="0"
+                      y1="0"
+                      x2={-SCALE.pan.chainSpread}
+                      y2={SCALE.pan.chainEndY}
+                      stroke="#64748b"
+                      strokeWidth="3"
+                      strokeLinecap="round"
+                    />
+                    <line
+                      x1="0"
+                      y1="0"
+                      x2={SCALE.pan.chainSpread}
+                      y2={SCALE.pan.chainEndY}
+                      stroke="#64748b"
+                      strokeWidth="3"
+                      strokeLinecap="round"
+                    />
+                    <rect
+                      x={-SCALE.pan.width / 2}
+                      y={SCALE.pan.topY}
+                      width={SCALE.pan.width}
+                      height={SCALE.pan.height}
+                      rx={SCALE.pan.rx}
+                      ry={SCALE.pan.rx}
+                      fill={pan.fill}
+                      stroke={pan.stroke}
+                      strokeWidth="2"
+                      filter="url(#bsShadowSoft)"
+                    />
                     {pan.weights.map((w, j) => (
-                      <SvgWeight key={j} x={j === 0 ? -SCALE.pan.weightX : SCALE.pan.weightX} y={SCALE.pan.weightY} num={w.num} label={w.label} color={w.color} dashed={w.dashed} size="scale" />
+                      <SvgWeight
+                        key={j}
+                        x={j === 0 ? -SCALE.pan.weightX : SCALE.pan.weightX}
+                        y={SCALE.pan.weightY}
+                        num={w.num}
+                        label={w.label}
+                        color={w.color}
+                        dashed={w.dashed}
+                        size="scale"
+                      />
                     ))}
                   </g>
                 </g>
@@ -212,7 +313,8 @@ export const BalanceScaleView: React.FC<BalanceScaleViewProps> = ({
       <div className="grid grid-cols-3 gap-3 sm:gap-4 w-full max-w-md mt-4 sm:mt-5">
         {problem.options.map((opt, idx) => {
           const isEliminated = eliminatedIndices.includes(idx);
-          const slotSize = 'flex items-center justify-center rounded-2xl sm:rounded-3xl border-2 font-black text-xl sm:text-2xl w-[88px] sm:w-[104px] lg:w-[120px] h-[72px] sm:h-[88px] lg:h-[96px] box-border shrink-0';
+          const slotSize =
+            'flex items-center justify-center rounded-2xl sm:rounded-3xl border-2 font-black text-xl sm:text-2xl w-[88px] sm:w-[104px] lg:w-[120px] h-[72px] sm:h-[88px] lg:h-[96px] box-border shrink-0';
           if (isEliminated) {
             return (
               <div
@@ -230,9 +332,10 @@ export const BalanceScaleView: React.FC<BalanceScaleViewProps> = ({
               onClick={() => handleChoice(opt)}
               className={`
                 ${slotSize} transition-all duration-200
-                ${isDisabled
-                  ? 'bg-slate-200 border-slate-300 text-slate-400 cursor-not-allowed opacity-60'
-                  : 'bg-gradient-to-br from-white to-blue-50 border-blue-300 text-blue-800 hover:border-blue-500 hover:from-blue-50 hover:to-blue-100 hover:scale-105 active:scale-95 shadow-md'
+                ${
+                  isDisabled
+                    ? 'bg-slate-200 border-slate-300 text-slate-400 cursor-not-allowed opacity-60'
+                    : 'bg-gradient-to-br from-white to-blue-50 border-blue-300 text-blue-800 hover:border-blue-500 hover:from-blue-50 hover:to-blue-100 hover:scale-105 active:scale-95 shadow-md'
                 }
               `}
             >

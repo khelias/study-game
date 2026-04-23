@@ -22,9 +22,7 @@ export interface UseWrongStrikesResult {
   triesLeft: number;
 }
 
-export function useWrongStrikes(
-  options: UseWrongStrikesOptions
-): UseWrongStrikesResult {
+export function useWrongStrikes(options: UseWrongStrikesOptions): UseWrongStrikesResult {
   const { maxStrikes, resetDeps } = options;
   const [strikes, setStrikes] = useState(0);
 

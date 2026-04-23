@@ -1,6 +1,6 @@
 /**
  * Game Views Index
- * 
+ *
  * Central export point for all game view components.
  */
 

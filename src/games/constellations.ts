@@ -408,8 +408,10 @@ const DIFFICULTY_ORDER: Record<'easy' | 'medium' | 'hard', number> = {
 /**
  * Get constellations by exact difficulty (for tests / identify options).
  */
-export function getConstellationsByDifficulty(difficulty: 'easy' | 'medium' | 'hard'): Constellation[] {
-  return CONSTELLATIONS.filter(c => c.difficulty === difficulty);
+export function getConstellationsByDifficulty(
+  difficulty: 'easy' | 'medium' | 'hard',
+): Constellation[] {
+  return CONSTELLATIONS.filter((c) => c.difficulty === difficulty);
 }
 
 /**
@@ -425,5 +427,5 @@ export function getConstellationsForLevel(difficulty: 'easy' | 'medium' | 'hard'
  * Get constellation by ID
  */
 export function getConstellationById(id: string): Constellation | undefined {
-  return CONSTELLATIONS.find(c => c.id === id);
+  return CONSTELLATIONS.find((c) => c.id === id);
 }

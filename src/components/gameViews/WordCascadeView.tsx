@@ -48,34 +48,60 @@ interface WordCascadeViewProps {
 // Distractor helpers (Estonian-aware)
 // -----------------------------------------------------------------------------
 const SIMILAR_LETTERS: Record<string, string[]> = {
-  'A': ['Ä', 'E', 'O'], 'Ä': ['A', 'E', 'Ö'], 'E': ['A', 'Ä', 'I'], 'I': ['E', 'L', 'J'],
-  'O': ['Ö', 'A', 'Q'], 'Ö': ['O', 'Ü', 'Õ'], 'U': ['Ü', 'V', 'Y'], 'Ü': ['U', 'Ö', 'Y'],
-  'Õ': ['O', 'Ö', 'A'], 'K': ['G', 'H', 'R'], 'G': ['K', 'Q', 'C'], 'P': ['B', 'R', 'D'],
-  'B': ['P', 'D', 'R'], 'T': ['D', 'L', 'F'], 'D': ['T', 'B', 'P'], 'S': ['Z', 'Š', 'C'],
-  'Š': ['S', 'Z', 'Ž'], 'Z': ['S', 'Ž', 'Š'], 'Ž': ['Z', 'Š', 'S'], 'L': ['I', 'T', 'J'],
-  'R': ['K', 'P', 'N'], 'M': ['N', 'W', 'H'], 'N': ['M', 'R', 'H'],
+  A: ['Ä', 'E', 'O'],
+  Ä: ['A', 'E', 'Ö'],
+  E: ['A', 'Ä', 'I'],
+  I: ['E', 'L', 'J'],
+  O: ['Ö', 'A', 'Q'],
+  Ö: ['O', 'Ü', 'Õ'],
+  U: ['Ü', 'V', 'Y'],
+  Ü: ['U', 'Ö', 'Y'],
+  Õ: ['O', 'Ö', 'A'],
+  K: ['G', 'H', 'R'],
+  G: ['K', 'Q', 'C'],
+  P: ['B', 'R', 'D'],
+  B: ['P', 'D', 'R'],
+  T: ['D', 'L', 'F'],
+  D: ['T', 'B', 'P'],
+  S: ['Z', 'Š', 'C'],
+  Š: ['S', 'Z', 'Ž'],
+  Z: ['S', 'Ž', 'Š'],
+  Ž: ['Z', 'Š', 'S'],
+  L: ['I', 'T', 'J'],
+  R: ['K', 'P', 'N'],
+  M: ['N', 'W', 'H'],
+  N: ['M', 'R', 'H'],
 };
 
 function getDistractorLetter(targetWord: string, neededLetter: string | null): string {
   const targetChars = targetWord.split('');
-  const hasUpper = targetChars.some(c => c !== c.toLowerCase());
-  const hasLower = targetChars.some(c => c !== c.toUpperCase());
-  const isTitleCase = targetChars.length > 0 &&
+  const hasUpper = targetChars.some((c) => c !== c.toLowerCase());
+  const hasLower = targetChars.some((c) => c !== c.toUpperCase());
+  const isTitleCase =
+    targetChars.length > 0 &&
     targetChars[0] === targetChars[0].toUpperCase() &&
-    targetChars.slice(1).every(c => c === c.toLowerCase());
-  const caseStyle: 'upper' | 'lower' | 'title' | 'mixed' =
-    !hasLower ? 'upper' : !hasUpper ? 'lower' : isTitleCase ? 'title' : 'mixed';
+    targetChars.slice(1).every((c) => c === c.toLowerCase());
+  const caseStyle: 'upper' | 'lower' | 'title' | 'mixed' = !hasLower
+    ? 'upper'
+    : !hasUpper
+      ? 'lower'
+      : isTitleCase
+        ? 'title'
+        : 'mixed';
   const targetCharsUpper = targetWord.toUpperCase().split('');
-  const availableLetters = ALPHABET.filter(letter => !targetCharsUpper.includes(letter));
+  const availableLetters = ALPHABET.filter((letter) => !targetCharsUpper.includes(letter));
   if (availableLetters.length === 0) {
     const fallback = ALPHABET[Math.floor(Math.random() * ALPHABET.length)] ?? 'A';
     return caseStyle === 'upper' ? fallback : fallback.toLowerCase();
   }
-  const referenceLetter = neededLetter?.toUpperCase() ?? targetCharsUpper[Math.floor(Math.random() * targetCharsUpper.length)] ?? 'A';
+  const referenceLetter =
+    neededLetter?.toUpperCase() ??
+    targetCharsUpper[Math.floor(Math.random() * targetCharsUpper.length)] ??
+    'A';
   const similar = SIMILAR_LETTERS[referenceLetter];
   const distractor = similar?.length
     ? (() => {
-        const valid = similar.filter(l => availableLetters.includes(l));
+        const valid = similar.filter((l) => availableLetters.includes(l));
         return valid.length > 0
           ? (valid[Math.floor(Math.random() * valid.length)] ?? availableLetters[0] ?? 'A')
           : (availableLetters[Math.floor(Math.random() * availableLetters.length)] ?? 'A');
@@ -105,7 +131,7 @@ function buildStreamLetters(target: string, colIndex: number, level: number): st
   if (!need) return [];
   const prob = targetProbForLevel(level);
   return Array.from({ length: LETTERS_PER_CYCLE }, () =>
-    Math.random() < prob ? need : getDistractorLetter(target, need)
+    Math.random() < prob ? need : getDistractorLetter(target, need),
   );
 }
 
@@ -128,7 +154,13 @@ export const WordCascadeView: React.FC<WordCascadeViewProps> = ({
 
   const [progress, setProgress] = useState('');
   const [status, setStatus] = useState<'idle' | 'correct' | 'wrong'>('idle');
-  const { strikes, addStrike, resetStrikes, isAtMax: strikesAtMax, triesLeft } = useWrongStrikes({
+  const {
+    strikes,
+    addStrike,
+    resetStrikes,
+    isAtMax: strikesAtMax,
+    triesLeft,
+  } = useWrongStrikes({
     maxStrikes: 3,
     resetDeps: `${problem.uid}-${problem.target}`,
   });
@@ -140,7 +172,7 @@ export const WordCascadeView: React.FC<WordCascadeViewProps> = ({
 
   const streamPerColumn = useMemo(
     () => target.split('').map((_, i) => buildStreamLetters(target, i, level)),
-    [target, level]
+    [target, level],
   );
 
   useEffect(() => {
@@ -160,7 +192,7 @@ export const WordCascadeView: React.FC<WordCascadeViewProps> = ({
       if (!spendStars(1)) return;
       setRevealedNextLetter(true);
     },
-    [spendStars, nextIdx, target.length, revealedNextLetter]
+    [spendStars, nextIdx, target.length, revealedNextLetter],
   );
 
   const handleLetterTap = useCallback(
@@ -191,17 +223,31 @@ export const WordCascadeView: React.FC<WordCascadeViewProps> = ({
         window.setTimeout(() => onAnswer(true), 400);
       }
     },
-    [need, progress, target, status, gameEnded, soundEnabled, onAnswer, nextIdx, strikes, addStrike, resetStrikes]
+    [
+      need,
+      progress,
+      target,
+      status,
+      gameEnded,
+      soundEnabled,
+      onAnswer,
+      nextIdx,
+      strikes,
+      addStrike,
+      resetStrikes,
+    ],
   );
 
-  const gameTitle = (t.games['word_cascade' as keyof typeof t.games]?.title ?? 'Word Cascade') as string;
+  const gameTitle = (t.games['word_cascade' as keyof typeof t.games]?.title ??
+    'Word Cascade') as string;
   const stripHeightPx = LETTERS_PER_CYCLE * LETTER_TILE_PX * CYCLE_COPIES;
 
   const feedbackMessage =
     status === 'wrong'
       ? strikesAtMax
         ? t.gameScreen.wordCascade.outOfTries
-        : (t.gameScreen.wordCascade.triesLeft as string)?.replace('{count}', String(triesLeft)) ?? `${triesLeft} tries left`
+        : ((t.gameScreen.wordCascade.triesLeft as string)?.replace('{count}', String(triesLeft)) ??
+          `${triesLeft} tries left`)
       : null;
 
   return (
@@ -246,8 +292,8 @@ export const WordCascadeView: React.FC<WordCascadeViewProps> = ({
                     ? 'border-red-400 bg-red-50 shadow-md wc-col-wrong'
                     : 'border-purple-400 bg-white shadow-md'
                   : isDone
-                  ? 'border-pink-300 bg-pink-50'
-                  : 'border-slate-200 bg-slate-100/80 opacity-60',
+                    ? 'border-pink-300 bg-pink-50'
+                    : 'border-slate-200 bg-slate-100/80 opacity-60',
               ].join(' ')}
               style={{ maxWidth: 72 }}
             >
@@ -273,28 +319,32 @@ export const WordCascadeView: React.FC<WordCascadeViewProps> = ({
                       animationDelay: `-${fallDuration * 0.3}s`,
                     }}
                   >
-                    {Array.from({ length: CYCLE_COPIES }, () => letters).flat().map((letter, i) => {
-                      const isTarget = need && letter.toLowerCase() === need.toLowerCase();
-                      const highlight = revealedNextLetter && isActive && isTarget;
-                      return (
-                        <button
-                          key={i}
-                          type="button"
-                          disabled={!isActive || status === 'correct'}
-                          onClick={() => handleLetterTap(colIndex, letter)}
-                          className={[
-                            'wc-stream-letter shrink-0 flex items-center justify-center rounded-lg border-2 text-xl font-black touch-manipulation',
-                            highlight
-                              ? 'bg-amber-200 border-amber-500 text-amber-900 ring-2 ring-amber-400 z-10'
-                              : 'bg-white/95 border-purple-200 text-purple-800 shadow-sm',
-                          ].join(' ')}
-                          style={{ height: LETTER_TILE_PX, minHeight: LETTER_TILE_PX }}
-                          aria-label={highlight ? `Letter ${letter} — tap this one` : `Letter ${letter}`}
-                        >
-                          {letter}
-                        </button>
-                      );
-                    })}
+                    {Array.from({ length: CYCLE_COPIES }, () => letters)
+                      .flat()
+                      .map((letter, i) => {
+                        const isTarget = need && letter.toLowerCase() === need.toLowerCase();
+                        const highlight = revealedNextLetter && isActive && isTarget;
+                        return (
+                          <button
+                            key={i}
+                            type="button"
+                            disabled={!isActive || status === 'correct'}
+                            onClick={() => handleLetterTap(colIndex, letter)}
+                            className={[
+                              'wc-stream-letter shrink-0 flex items-center justify-center rounded-lg border-2 text-xl font-black touch-manipulation',
+                              highlight
+                                ? 'bg-amber-200 border-amber-500 text-amber-900 ring-2 ring-amber-400 z-10'
+                                : 'bg-white/95 border-purple-200 text-purple-800 shadow-sm',
+                            ].join(' ')}
+                            style={{ height: LETTER_TILE_PX, minHeight: LETTER_TILE_PX }}
+                            aria-label={
+                              highlight ? `Letter ${letter} — tap this one` : `Letter ${letter}`
+                            }
+                          >
+                            {letter}
+                          </button>
+                        );
+                      })}
                   </div>
                 </div>
               )}
@@ -334,7 +384,11 @@ export const WordCascadeView: React.FC<WordCascadeViewProps> = ({
         }
       `}</style>
 
-      <div className="mt-3 min-h-[2rem] flex items-center justify-center text-sm font-bold text-slate-600" role="status" aria-live="polite">
+      <div
+        className="mt-3 min-h-[2rem] flex items-center justify-center text-sm font-bold text-slate-600"
+        role="status"
+        aria-live="polite"
+      >
         {feedbackMessage && (
           <span className="text-red-600 animate-in fade-in duration-150">{feedbackMessage}</span>
         )}

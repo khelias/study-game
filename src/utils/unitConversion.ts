@@ -9,7 +9,7 @@ export const buildUnitConversionQuestion = (
   t: Translations,
   value: number,
   fromUnit: string,
-  toUnit: string
+  toUnit: string,
 ): string => {
   const fromLabel = resolveUnitLabel(t, fromUnit);
   const toLabel = resolveUnitLabel(t, toUnit);

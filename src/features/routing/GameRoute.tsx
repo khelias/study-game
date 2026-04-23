@@ -14,10 +14,10 @@ import { GAME_CONFIG } from '../../games/data';
 export const GameRoute: React.FC = () => {
   const { gameSlug } = useParams<{ gameSlug: string }>();
   const navigate = useNavigate();
-  const gameState = usePlaySessionStore(state => state.gameState);
-  const startGame = usePlaySessionStore(state => state.startGame);
-  const recordGameStart = useGameStore(state => state.recordGameStart);
-  const hearts = useGameStore(state => state.hearts);
+  const gameState = usePlaySessionStore((state) => state.gameState);
+  const startGame = usePlaySessionStore((state) => state.startGame);
+  const recordGameStart = useGameStore((state) => state.recordGameStart);
+  const hearts = useGameStore((state) => state.hearts);
 
   // Guard: only start the game once per route visit.
   // Without this, returnToMenu() sets gameState back to 'menu', which

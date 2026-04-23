@@ -1,6 +1,6 @@
 /**
  * WordGameView Component
- * 
+ *
  * Game view for word builder games.
  */
 
@@ -42,7 +42,14 @@ function getDistractorIds(target: string, pool: LetterObject[]): string[] {
   return ids;
 }
 
-export const WordGameView: React.FC<WordGameViewProps> = ({ problem, onAnswer, soundEnabled, gameType, stars = 0, spendStars }) => {
+export const WordGameView: React.FC<WordGameViewProps> = ({
+  problem,
+  onAnswer,
+  soundEnabled,
+  gameType,
+  stars = 0,
+  spendStars,
+}) => {
   const t = useTranslation();
   const baseType = gameType?.replace('_adv', '') ?? 'word_builder';
   const paidHints = GAME_CONFIG[baseType]?.paidHints ?? [];
@@ -68,14 +75,14 @@ export const WordGameView: React.FC<WordGameViewProps> = ({ problem, onAnswer, s
         next[i] = null;
       }
     }
-    
+
     // Build initial pool (remaining letters after pre-filled)
     const remainingPool = [...(problem.shuffled || [])];
-    problem.preFilledPositions?.forEach(idx => {
+    problem.preFilledPositions?.forEach((idx) => {
       const char = problem.target[idx];
       if (char) {
         const indexInPool = remainingPool.findIndex(
-          l => l.char.toUpperCase() === char.toUpperCase()
+          (l) => l.char.toUpperCase() === char.toUpperCase(),
         );
         if (indexInPool !== -1) {
           remainingPool.splice(indexInPool, 1);
@@ -88,29 +95,29 @@ export const WordGameView: React.FC<WordGameViewProps> = ({ problem, onAnswer, s
 
   const isPreFilled = useCallback(
     (index: number): boolean => problem.preFilledPositions?.includes(index) ?? false,
-    [problem.preFilledPositions]
+    [problem.preFilledPositions],
   );
 
   const handleSelect = (letter: LetterObject): void => {
     playSound('click', soundEnabled);
-    
+
     // Use functional updates to avoid stale state
-    setUserWord(prevWord => {
+    setUserWord((prevWord) => {
       // Find first empty (non-prefilled) slot
       const emptyIndex = prevWord.findIndex((l, idx) => !isPreFilled(idx) && l === null);
       if (emptyIndex === -1) return prevWord; // All non-prefilled slots are full
-      
+
       const newWord = [...prevWord];
       newWord[emptyIndex] = letter;
-      
+
       // Check if all positions are filled (defer onAnswer to avoid setState-during-render)
-      if (newWord.every(l => l !== null)) {
-        const userString = newWord.map(l => (l as LetterObject).char).join('');
+      if (newWord.every((l) => l !== null)) {
+        const userString = newWord.map((l) => (l as LetterObject).char).join('');
         const isCorrect = userString.toLowerCase() === problem.target.toLowerCase();
         if (isCorrect) {
           setTimeout(() => onAnswer(true), 0);
         } else {
-          setTimeout(() => { 
+          setTimeout(() => {
             onAnswer(false);
             const resetWord: Array<{ char: string; id: string } | null> = [];
             for (let i = 0; i < problem.target.length; i++) {
@@ -122,11 +129,11 @@ export const WordGameView: React.FC<WordGameViewProps> = ({ problem, onAnswer, s
               }
             }
             const resetPool = [...(problem.shuffled || [])];
-            problem.preFilledPositions?.forEach(idx => {
+            problem.preFilledPositions?.forEach((idx) => {
               const char = problem.target[idx];
               if (char) {
                 const indexInPool = resetPool.findIndex(
-                  l => l.char.toUpperCase() === char.toUpperCase()
+                  (l) => l.char.toUpperCase() === char.toUpperCase(),
                 );
                 if (indexInPool !== -1) {
                   resetPool.splice(indexInPool, 1);
@@ -138,16 +145,16 @@ export const WordGameView: React.FC<WordGameViewProps> = ({ problem, onAnswer, s
           }, 500);
         }
       }
-      
+
       return newWord;
     });
-    
-    setPool(prev => prev.filter(l => l.id !== letter.id));
+
+    setPool((prev) => prev.filter((l) => l.id !== letter.id));
   };
 
   const visiblePool = useMemo(
-    () => pool.filter(l => !eliminatedLetterIds.includes(l.id)),
-    [pool, eliminatedLetterIds]
+    () => pool.filter((l) => !eliminatedLetterIds.includes(l.id)),
+    [pool, eliminatedLetterIds],
   );
 
   const getResetState = useCallback(() => {
@@ -161,12 +168,10 @@ export const WordGameView: React.FC<WordGameViewProps> = ({ problem, onAnswer, s
       }
     }
     const resetPool = [...(problem.shuffled || [])];
-    problem.preFilledPositions?.forEach(idx => {
+    problem.preFilledPositions?.forEach((idx) => {
       const char = problem.target[idx];
       if (char) {
-        const indexInPool = resetPool.findIndex(
-          l => l.char.toUpperCase() === char.toUpperCase()
-        );
+        const indexInPool = resetPool.findIndex((l) => l.char.toUpperCase() === char.toUpperCase());
         if (indexInPool !== -1) resetPool.splice(indexInPool, 1);
       }
     });
@@ -182,16 +187,18 @@ export const WordGameView: React.FC<WordGameViewProps> = ({ problem, onAnswer, s
         const neededChar = problem.target[firstEmpty];
         if (!neededChar) return;
         const letterInPool = pool.find(
-          l => l.char.toUpperCase() === neededChar.toUpperCase() && !eliminatedLetterIds.includes(l.id)
+          (l) =>
+            l.char.toUpperCase() === neededChar.toUpperCase() &&
+            !eliminatedLetterIds.includes(l.id),
         );
         if (!letterInPool) return;
         if (!spendStars(1)) return;
         const nextWord: Array<{ char: string; id: string } | null> = [...userWord];
         nextWord[firstEmpty] = letterInPool;
         setUserWord(nextWord);
-        setPool(prev => prev.filter(l => l.id !== letterInPool.id));
-        if (nextWord.every(l => l !== null)) {
-          const userString = nextWord.map(l => (l as LetterObject).char).join('');
+        setPool((prev) => prev.filter((l) => l.id !== letterInPool.id));
+        if (nextWord.every((l) => l !== null)) {
+          const userString = nextWord.map((l) => (l as LetterObject).char).join('');
           const isCorrect = userString.toLowerCase() === problem.target.toLowerCase();
           const { resetWord, resetPool } = getResetState();
           const delay = isCorrect ? 0 : 500;
@@ -207,54 +214,69 @@ export const WordGameView: React.FC<WordGameViewProps> = ({ problem, onAnswer, s
       }
       if (hintId === 'eliminate') {
         const distractorIds = getDistractorIds(problem.target, pool);
-        const stillPresent = distractorIds.filter(id => !eliminatedLetterIds.includes(id));
+        const stillPresent = distractorIds.filter((id) => !eliminatedLetterIds.includes(id));
         if (stillPresent.length === 0) return;
         if (!spendStars(1)) return;
         const pick = stillPresent[Math.floor(Math.random() * stillPresent.length)]!;
-        setEliminatedLetterIds(prev => [...prev, pick]);
+        setEliminatedLetterIds((prev) => [...prev, pick]);
       }
     },
-    [problem.target, pool, userWord, eliminatedLetterIds, spendStars, onAnswer, getResetState, isPreFilled]
+    [
+      problem.target,
+      pool,
+      userWord,
+      eliminatedLetterIds,
+      spendStars,
+      onAnswer,
+      getResetState,
+      isPreFilled,
+    ],
   );
 
   const handleRemove = (letter: LetterObject, idx: number): void => {
     // Cannot remove pre-filled letters
     if (isPreFilled(idx)) return;
-    
+
     playSound('click', soundEnabled);
-    
+
     // Use functional updates to avoid stale state
-    setUserWord(prev => {
-      const newUserWord = [...prev]; 
+    setUserWord((prev) => {
+      const newUserWord = [...prev];
       newUserWord[idx] = null;
       return newUserWord;
-    }); 
-    
-    setPool(prev => [...prev, letter]);
+    });
+
+    setPool((prev) => [...prev, letter]);
   };
 
   return (
     <div className="w-full flex flex-col items-center px-4 sm:px-6 max-w-2xl mx-auto pt-4 sm:pt-6 animate-in fade-in duration-300">
-      <div className="text-6xl sm:text-9xl mb-4 sm:mb-8 animate-bounce filter drop-shadow-xl">{problem.emoji}</div>
-      
+      <div className="text-6xl sm:text-9xl mb-4 sm:mb-8 animate-bounce filter drop-shadow-xl">
+        {problem.emoji}
+      </div>
+
       {/* Hint - always reserve space to prevent layout shift */}
-      <div className={`mb-2 text-sm sm:text-base text-orange-600 font-bold min-h-[1.5rem] transition-opacity duration-300 ${
-        problem.preFilledPositions && problem.preFilledPositions.length > 0 ? 'opacity-100' : 'opacity-0'
-      }`}>
+      <div
+        className={`mb-2 text-sm sm:text-base text-orange-600 font-bold min-h-[1.5rem] transition-opacity duration-300 ${
+          problem.preFilledPositions && problem.preFilledPositions.length > 0
+            ? 'opacity-100'
+            : 'opacity-0'
+        }`}
+      >
         {problem.preFilledPositions && problem.preFilledPositions.length > 0 && (
           <>💡 {t.gameScreen.wordBuilder.preFilled}</>
         )}
       </div>
-      
+
       {/* Silhouette positions */}
       <div className="flex gap-1.5 sm:gap-2 mb-4 sm:mb-8 min-h-[3.5rem] sm:min-h-[4.5rem] flex-wrap justify-center">
         {Array.from({ length: problem.target.length }).map((_, i) => {
           const isPrefilled = isPreFilled(i);
           const letter = userWord[i];
-          
+
           return (
-            <button 
-              key={i} 
+            <button
+              key={i}
               onPointerDown={(e) => {
                 if (letter && !isPrefilled) {
                   e.preventDefault();
@@ -264,10 +286,10 @@ export const WordGameView: React.FC<WordGameViewProps> = ({ problem, onAnswer, s
               type="button"
               disabled={isPrefilled}
               className={`w-12 h-14 sm:w-14 sm:h-16 rounded-xl sm:rounded-2xl border-b-3 sm:border-b-4 flex items-center justify-center text-2xl sm:text-3xl font-black transition-all ${
-                isPrefilled 
+                isPrefilled
                   ? 'bg-gradient-to-br from-green-100 to-green-200 border-green-500 text-green-700 cursor-not-allowed'
-                  : letter 
-                    ? 'bg-orange-100 border-orange-400 text-orange-600 scale-100 cursor-pointer hover:bg-orange-200' 
+                  : letter
+                    ? 'bg-orange-100 border-orange-400 text-orange-600 scale-100 cursor-pointer hover:bg-orange-200'
                     : 'bg-slate-100 border-slate-200 border-dashed scale-95'
               }`}
               style={{ touchAction: 'manipulation' }}
@@ -277,12 +299,12 @@ export const WordGameView: React.FC<WordGameViewProps> = ({ problem, onAnswer, s
           );
         })}
       </div>
-      
+
       {/* Letter pool */}
       <div className="flex flex-wrap gap-2 sm:gap-3 justify-center">
-        {visiblePool.map(l => (
-          <button 
-            key={l.id} 
+        {visiblePool.map((l) => (
+          <button
+            key={l.id}
             onPointerDown={(e) => {
               e.preventDefault();
               handleSelect(l);

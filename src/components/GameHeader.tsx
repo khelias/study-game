@@ -1,6 +1,6 @@
 /**
  * GameHeader Component
- * 
+ *
  * Header bar for the game screen showing score, level, hearts, and stars.
  */
 
@@ -47,7 +47,7 @@ export const GameHeader: React.FC<GameHeaderProps> = ({
 }) => {
   const t = useTranslation();
   const { formatText } = useProfileText();
-  
+
   // Calculate progress toward next level
   const progressCount = levelProgress?.correctAnswers || 0;
   const progressTotal = levelUpRequirement;
@@ -87,7 +87,13 @@ export const GameHeader: React.FC<GameHeaderProps> = ({
 
         {/* Right: Hearts + Menu */}
         <div className="flex items-center gap-2 flex-shrink-0">
-          <ResourceBadge type="hearts" value={hearts} maxValue={MAX_HEARTS} compact={true} onClick={onShopClick} />
+          <ResourceBadge
+            type="hearts"
+            value={hearts}
+            maxValue={MAX_HEARTS}
+            compact={true}
+            onClick={onShopClick}
+          />
           <div className="relative" ref={settingsMenuRef}>
             <button
               onClick={onSettingsClick}

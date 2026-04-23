@@ -8,9 +8,9 @@ import { generateSentence, getSceneName } from './sentenceTranslations';
 import { createMathSnakeProblem } from '../engine/mathSnake';
 import { placeShips } from '../engine/battlelearn';
 import { getMinObstacleGap, SPIKE_WIDTH } from '../engine/shapeDash';
-import type { 
-  RngFunction, 
-  ProfileType, 
+import type {
+  RngFunction,
+  ProfileType,
   BalanceScaleProblem,
   WordBuilderProblem,
   WordCascadeProblem,
@@ -71,103 +71,108 @@ function applyLetterCase(word: string, level: number, rng: RngFunction): string 
     return word.toLowerCase();
   }
   // Level 10+: Mixed case (KaSs, KoEr)
-  return word.split('').map((char, idx) => {
-    // First letter is always uppercase
-    if (idx === 0) return char.toUpperCase();
-    // Random case for other letters
-    return rng() > 0.5 ? char.toUpperCase() : char.toLowerCase();
-  }).join('');
+  return word
+    .split('')
+    .map((char, idx) => {
+      // First letter is always uppercase
+      if (idx === 0) return char.toUpperCase();
+      // Random case for other letters
+      return rng() > 0.5 ? char.toUpperCase() : char.toLowerCase();
+    })
+    .join('');
 }
 
 // Helper function to add distractor letters
 function addDistractorLetters(
-  correctLetters: LetterObject[], 
-  count: number, 
-  language: string, 
-  rng: RngFunction
+  correctLetters: LetterObject[],
+  count: number,
+  language: string,
+  rng: RngFunction,
 ): LetterObject[] {
   if (count === 0) return correctLetters;
-  
+
   const distractors: LetterObject[] = [];
   const correctCharsRaw = correctLetters.map((l) => l.char);
   const hasUpper = correctCharsRaw.some((c) => c !== c.toLowerCase());
   const hasLower = correctCharsRaw.some((c) => c !== c.toUpperCase());
-  const isTitleCase = correctCharsRaw.length > 0
-    && correctCharsRaw[0] !== undefined
-    && correctCharsRaw[0] === correctCharsRaw[0].toUpperCase()
-    && correctCharsRaw.slice(1).every((c) => c === c.toLowerCase());
+  const isTitleCase =
+    correctCharsRaw.length > 0 &&
+    correctCharsRaw[0] !== undefined &&
+    correctCharsRaw[0] === correctCharsRaw[0].toUpperCase() &&
+    correctCharsRaw.slice(1).every((c) => c === c.toLowerCase());
   const caseStyle: 'upper' | 'lower' | 'title' | 'mixed' = !hasLower
     ? 'upper'
     : !hasUpper
-    ? 'lower'
-    : isTitleCase
-    ? 'title'
-    : 'mixed';
-  
+      ? 'lower'
+      : isTitleCase
+        ? 'title'
+        : 'mixed';
+
   // Define visually and phonetically similar letters
-  const similarLetters: Record<string, string[]> = language === 'en' ? {
-    // English similar letters
-    'A': ['E', 'O', 'H'],
-    'B': ['D', 'P', 'R'],
-    'C': ['G', 'O', 'Q'],
-    'D': ['B', 'O', 'P'],
-    'E': ['F', 'A', 'B'],
-    'F': ['E', 'T', 'P'],
-    'G': ['C', 'O', 'Q'],
-    'H': ['N', 'K', 'A'],
-    'I': ['L', 'J', 'T'],
-    'J': ['I', 'L', 'T'],
-    'K': ['H', 'R', 'X'],
-    'L': ['I', 'T', 'J'],
-    'M': ['N', 'W', 'H'],
-    'N': ['M', 'H', 'R'],
-    'O': ['Q', 'C', 'G'],
-    'P': ['B', 'D', 'R'],
-    'Q': ['O', 'C', 'G'],
-    'R': ['P', 'B', 'K'],
-    'S': ['Z', 'C', 'G'],
-    'T': ['F', 'I', 'L'],
-    'U': ['V', 'W', 'Y'],
-    'V': ['U', 'Y', 'W'],
-    'W': ['M', 'V', 'U'],
-    'X': ['K', 'Y', 'Z'],
-    'Y': ['V', 'U', 'T'],
-    'Z': ['S', 'X', 'N']
-  } : {
-    // Estonian similar letters
-    'A': ['Ä', 'E', 'O'],
-    'Ä': ['A', 'E', 'Ö'],
-    'E': ['A', 'Ä', 'I'],
-    'I': ['E', 'L', 'J'],
-    'O': ['Ö', 'A', 'Q'],
-    'Ö': ['O', 'Ü', 'Õ'],
-    'U': ['Ü', 'V', 'Y'],
-    'Ü': ['U', 'Ö', 'Y'],
-    'Õ': ['O', 'Ö', 'A'],
-    'K': ['G', 'H', 'R'],
-    'G': ['K', 'Q', 'C'],
-    'P': ['B', 'R', 'D'],
-    'B': ['P', 'D', 'R'],
-    'T': ['D', 'L', 'F'],
-    'D': ['T', 'B', 'P'],
-    'S': ['Z', 'Š', 'C'],
-    'Š': ['S', 'Z', 'Ž'],
-    'Z': ['S', 'Ž', 'Š'],
-    'Ž': ['Z', 'Š', 'S'],
-    'L': ['I', 'T', 'J'],
-    'R': ['K', 'P', 'N'],
-    'M': ['N', 'W', 'H'],
-    'N': ['M', 'R', 'H']
-  };
-  
+  const similarLetters: Record<string, string[]> =
+    language === 'en'
+      ? {
+          // English similar letters
+          A: ['E', 'O', 'H'],
+          B: ['D', 'P', 'R'],
+          C: ['G', 'O', 'Q'],
+          D: ['B', 'O', 'P'],
+          E: ['F', 'A', 'B'],
+          F: ['E', 'T', 'P'],
+          G: ['C', 'O', 'Q'],
+          H: ['N', 'K', 'A'],
+          I: ['L', 'J', 'T'],
+          J: ['I', 'L', 'T'],
+          K: ['H', 'R', 'X'],
+          L: ['I', 'T', 'J'],
+          M: ['N', 'W', 'H'],
+          N: ['M', 'H', 'R'],
+          O: ['Q', 'C', 'G'],
+          P: ['B', 'D', 'R'],
+          Q: ['O', 'C', 'G'],
+          R: ['P', 'B', 'K'],
+          S: ['Z', 'C', 'G'],
+          T: ['F', 'I', 'L'],
+          U: ['V', 'W', 'Y'],
+          V: ['U', 'Y', 'W'],
+          W: ['M', 'V', 'U'],
+          X: ['K', 'Y', 'Z'],
+          Y: ['V', 'U', 'T'],
+          Z: ['S', 'X', 'N'],
+        }
+      : {
+          // Estonian similar letters
+          A: ['Ä', 'E', 'O'],
+          Ä: ['A', 'E', 'Ö'],
+          E: ['A', 'Ä', 'I'],
+          I: ['E', 'L', 'J'],
+          O: ['Ö', 'A', 'Q'],
+          Ö: ['O', 'Ü', 'Õ'],
+          U: ['Ü', 'V', 'Y'],
+          Ü: ['U', 'Ö', 'Y'],
+          Õ: ['O', 'Ö', 'A'],
+          K: ['G', 'H', 'R'],
+          G: ['K', 'Q', 'C'],
+          P: ['B', 'R', 'D'],
+          B: ['P', 'D', 'R'],
+          T: ['D', 'L', 'F'],
+          D: ['T', 'B', 'P'],
+          S: ['Z', 'Š', 'C'],
+          Š: ['S', 'Z', 'Ž'],
+          Z: ['S', 'Ž', 'Š'],
+          Ž: ['Z', 'Š', 'S'],
+          L: ['I', 'T', 'J'],
+          R: ['K', 'P', 'N'],
+          M: ['N', 'W', 'H'],
+          N: ['M', 'R', 'H'],
+        };
+
   const correctChars = correctCharsRaw.map((c) => c.toUpperCase());
-  const availableLetters = language === 'en' 
-    ? 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('')
-    : ALPHABET;
-  
+  const availableLetters = language === 'en' ? 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('') : ALPHABET;
+
   for (let i = 0; i < count; i++) {
     let distractor: string = availableLetters[0] ?? 'A';
-    
+
     // Try to find a visually/phonetically similar letter
     if (correctChars.length > 0 && rng() > 0.3) {
       const targetChar = correctChars[Math.floor(rng() * correctChars.length)];
@@ -196,7 +201,7 @@ function addDistractorLetters(
         distractor = randomLetter;
       }
     }
-    
+
     // Ensure we don't add a letter that's already in the correct set
     let attempts = 0;
     while (distractor && correctChars.includes(distractor.toUpperCase()) && attempts < 20) {
@@ -209,7 +214,7 @@ function addDistractorLetters(
     if (!distractor) {
       distractor = availableLetters[0] ?? 'A';
     }
-    
+
     let displayChar = distractor;
     if (caseStyle === 'upper') {
       displayChar = distractor.toUpperCase();
@@ -221,15 +226,19 @@ function addDistractorLetters(
 
     distractors.push({
       char: displayChar,
-      id: `distractor-${i}-${uid(rng)}`
+      id: `distractor-${i}-${uid(rng)}`,
     });
   }
-  
+
   return [...correctLetters, ...distractors];
 }
 
 export const Generators: Record<string, GeneratorFunction> = {
-  balance_scale: (level: number, rng: RngFunction = Math.random, profile: ProfileType = 'starter'): BalanceScaleProblem => {
+  balance_scale: (
+    level: number,
+    rng: RngFunction = Math.random,
+    profile: ProfileType = 'starter',
+  ): BalanceScaleProblem => {
     const meta = profileMeta(profile);
     // Improved progression: Level 1 = 4-7, Level 5 = 10-15, Level 10 = 15-22
     // Start easier
@@ -240,39 +249,43 @@ export const Generators: Record<string, GeneratorFunction> = {
     const minSum = baseMin + levelGrowth + profileBoost;
     const maxSum = baseMax + Math.floor(level * 0.9) + profileBoost;
     const total = Math.floor(rng() * (maxSum - minSum + 1)) + minSum;
-    
-    const l1 = Math.floor(rng() * (total - 3)) + 2; 
+
+    const l1 = Math.floor(rng() * (total - 3)) + 2;
     const l2 = total - l1;
-    
-    let r1 = Math.floor(rng() * (total - 3)) + 2; 
+
+    let r1 = Math.floor(rng() * (total - 3)) + 2;
     if (r1 === l1 && level > 2) {
-       r1 = Math.floor(rng() * (total - 3)) + 2;
+      r1 = Math.floor(rng() * (total - 3)) + 2;
     }
-    const rHidden = total - r1; 
-    
+    const rHidden = total - r1;
+
     const opts = new Set([rHidden]);
-    let safety = 0; 
-    while(opts.size < 3 && safety < 50) { 
-      safety++; 
+    let safety = 0;
+    while (opts.size < 3 && safety < 50) {
+      safety++;
       const offset = Math.floor(rng() * 5) - 2; // -2 kuni +2
       const r = rHidden + offset;
-      if(r > 0 && r !== rHidden) opts.add(r); 
+      if (r > 0 && r !== rHidden) opts.add(r);
     }
-    while(opts.size < 3) opts.add(Math.floor(rng() * 10) + 1);
+    while (opts.size < 3) opts.add(Math.floor(rng() * 10) + 1);
 
-    return { 
-      type: 'balance_scale', 
-      display: { left: [l1, l2], right: [r1] }, 
-      answer: rHidden, 
-      options: Array.from(opts).sort((a,b)=>a-b), 
-      uid: uid(rng) 
+    return {
+      type: 'balance_scale',
+      display: { left: [l1, l2], right: [r1] },
+      answer: rHidden,
+      options: Array.from(opts).sort((a, b) => a - b),
+      uid: uid(rng),
     };
   },
-  
-  word_builder: (level: number, rng: RngFunction = Math.random, profile: ProfileType = 'starter'): WordBuilderProblem => {
+
+  word_builder: (
+    level: number,
+    rng: RngFunction = Math.random,
+    profile: ProfileType = 'starter',
+  ): WordBuilderProblem => {
     const meta = profileMeta(profile);
     const locale = getLocale();
-    
+
     // Word length selection based on level
     let len: number;
     if (level <= 2) len = 3;
@@ -280,25 +293,25 @@ export const Generators: Record<string, GeneratorFunction> = {
     else if (level <= 7) len = 5;
     else if (level <= 9) len = 6;
     else len = 7;
-    
+
     // Profile boost - advanced gets slightly longer words
     if (meta.difficultyOffset > 0) {
       len = Math.min(len + 1, 7);
     }
-    
+
     // Select appropriate word database
     const wordDb = locale === 'en' ? WORD_DB_EN : WORD_DB;
-    
+
     // Filter words by diacritics for levels 1-2 (Estonian only)
     let availableWords = wordDb[len] || wordDb[4] || [];
     if (locale !== 'en' && level <= 2) {
       // For levels 1-2, prefer words without diacritics
-      const simpleWords = availableWords.filter(w => !hasDiacritics(w.w));
+      const simpleWords = availableWords.filter((w) => !hasDiacritics(w.w));
       if (simpleWords.length > 0) {
         availableWords = simpleWords;
       }
     }
-    
+
     // Fallback if no words available
     if (!availableWords || availableWords.length === 0) {
       for (let i = len - 1; i >= 3 && (!availableWords || availableWords.length === 0); i--) {
@@ -308,30 +321,30 @@ export const Generators: Record<string, GeneratorFunction> = {
         availableWords = wordDb[4] || [];
       }
     }
-    
+
     const wordObj = getRandom(availableWords, rng);
     if (!wordObj) {
       throw new Error('No word found for word_builder game');
     }
-    
+
     // Apply letter case transformation based on level
     const displayWord = applyLetterCase(wordObj.w, level, rng);
-    
+
     // Generate letter objects
-    let letters: LetterObject[] = displayWord.split('').map((c, i) => ({ 
-      char: c, 
-      id: `char-${i}-${uid(rng)}` 
+    let letters: LetterObject[] = displayWord.split('').map((c, i) => ({
+      char: c,
+      id: `char-${i}-${uid(rng)}`,
     }));
-    
+
     // Add distractor letters based on level
     const distractorCount = level <= 2 ? 0 : level <= 4 ? 1 : level <= 7 ? 2 : 3;
     if (distractorCount > 0) {
       letters = addDistractorLetters(letters, distractorCount, locale, rng);
     }
-    
+
     // Shuffle all letters
     const shuffled = [...letters].sort(() => rng() - 0.5);
-    
+
     // Pre-filled positions for longer words
     let preFilledPositions: number[] | undefined;
     if (displayWord.length >= 6) {
@@ -346,18 +359,22 @@ export const Generators: Record<string, GeneratorFunction> = {
         preFilledPositions.push(displayWord.length - 1);
       }
     }
-    
-    return { 
-      type: 'word_builder', 
-      target: displayWord, 
-      emoji: wordObj.e, 
+
+    return {
+      type: 'word_builder',
+      target: displayWord,
+      emoji: wordObj.e,
       shuffled,
       preFilledPositions,
-      uid: uid(rng) 
+      uid: uid(rng),
     };
   },
 
-  word_cascade: (level: number, rng: RngFunction = Math.random, _profile: ProfileType = 'starter'): WordCascadeProblem => {
+  word_cascade: (
+    level: number,
+    rng: RngFunction = Math.random,
+    _profile: ProfileType = 'starter',
+  ): WordCascadeProblem => {
     const locale = getLocale();
     const db = locale === 'en' ? WORD_DB_EN : WORD_DB;
 
@@ -377,7 +394,7 @@ export const Generators: Record<string, GeneratorFunction> = {
       // Level 5+: normal progression
       desiredLen = Math.max(3, Math.min(7, 3 + Math.floor(level / 2)));
     }
-    
+
     const bucket = db[desiredLen] ?? db[desiredLen - 1] ?? db[desiredLen + 1] ?? db[3] ?? [];
     const chosen = bucket.length > 0 ? getRandom(bucket, rng) : { w: 'KASS', e: '🐱' };
 
@@ -393,19 +410,23 @@ export const Generators: Record<string, GeneratorFunction> = {
     };
   },
 
-  pattern: (level: number, rng: RngFunction = Math.random, profile: ProfileType = 'starter'): PatternProblem => {
-    const THEMES = [ 
-      ['🔴','🔵','🟢','🟡'], 
-      ['🐶','🐱','🐸','🦁'], 
-      ['🍎','🍌','🍇','🍉'], 
-      ['⚽','🏀','🎾','🎱'],
-      ['🚗','🚕','🚙','🚌']
+  pattern: (
+    level: number,
+    rng: RngFunction = Math.random,
+    profile: ProfileType = 'starter',
+  ): PatternProblem => {
+    const THEMES = [
+      ['🔴', '🔵', '🟢', '🟡'],
+      ['🐶', '🐱', '🐸', '🦁'],
+      ['🍎', '🍌', '🍇', '🍉'],
+      ['⚽', '🏀', '🎾', '🎱'],
+      ['🚗', '🚕', '🚙', '🚌'],
     ];
     const items = getRandom(THEMES, rng);
     if (!items) {
       throw new Error('No theme found for pattern game');
-    } 
-    const pool = [...items].sort(() => rng() - 0.5); 
+    }
+    const pool = [...items].sort(() => rng() - 0.5);
     const A = pool[0];
     const B = pool[1];
     const C = pool[2];
@@ -439,7 +460,12 @@ export const Generators: Record<string, GeneratorFunction> = {
         if (level <= 4) {
           return [templates.repeat_ab, templates.repeat_aab, templates.repeat_abc];
         }
-        return [templates.repeat_ab, templates.repeat_aab, templates.repeat_abc, templates.repeat_aabb];
+        return [
+          templates.repeat_ab,
+          templates.repeat_aab,
+          templates.repeat_abc,
+          templates.repeat_aabb,
+        ];
       }
 
       if (level <= 2) {
@@ -448,7 +474,12 @@ export const Generators: Record<string, GeneratorFunction> = {
       if (level <= 4) {
         return [templates.repeat_aab, templates.repeat_abc, templates.repeat_aabb];
       }
-      return [templates.repeat_abc, templates.repeat_aabb, templates.repeat_abcd, templates.repeat_aabc];
+      return [
+        templates.repeat_abc,
+        templates.repeat_aabb,
+        templates.repeat_abcd,
+        templates.repeat_aabc,
+      ];
     };
 
     const templatePool = pickTemplates();
@@ -468,24 +499,28 @@ export const Generators: Record<string, GeneratorFunction> = {
     const patternCycle = picked.cycle.map((index) => pool[index] ?? A);
 
     // Ensure the correct answer is always among the choices
-    const opts = new Set([answer]); 
-    while(opts.size < 3) {
+    const opts = new Set([answer]);
+    while (opts.size < 3) {
       const randomItem = getRandom(items, rng);
       if (randomItem && randomItem !== answer) opts.add(randomItem);
     }
-    
-    return { 
-      type: 'pattern', 
-      sequence, 
-      answer, 
-      options: Array.from(opts).sort(() => rng() - 0.5), 
+
+    return {
+      type: 'pattern',
+      sequence,
+      answer,
+      options: Array.from(opts).sort(() => rng() - 0.5),
       patternRule: picked.id,
       patternCycle,
-      uid: uid(rng) 
+      uid: uid(rng),
     };
   },
 
-  memory_math: (level: number, rng: RngFunction = Math.random, profile: ProfileType = 'starter'): MemoryMathProblem => {
+  memory_math: (
+    level: number,
+    rng: RngFunction = Math.random,
+    profile: ProfileType = 'starter',
+  ): MemoryMathProblem => {
     const meta = profileMeta(profile);
     const harder = meta.difficultyOffset > 0;
     // Improved card count progression - smoother
@@ -495,26 +530,40 @@ export const Generators: Record<string, GeneratorFunction> = {
     // Improved maxSum progression - smoother
     const baseMax = harder ? 15 : 10;
     const sumGrowth = Math.floor(level * 2); // Slower growth
-    const maxSum = Math.min(baseMax + sumGrowth, harder ? 35 : 25); 
+    const maxSum = Math.min(baseMax + sumGrowth, harder ? 35 : 25);
     const pairs: Array<{ eq: string; ans: number }> = [];
     const cards: Array<{ id: string; content: string; matched?: boolean }> = [];
-    
-    while(pairs.length < cardCount / 2) { 
-      const sum = Math.floor(rng() * (maxSum - 3)) + 3; 
-      if (pairs.some(p => p.ans === sum)) continue;
+
+    while (pairs.length < cardCount / 2) {
+      const sum = Math.floor(rng() * (maxSum - 3)) + 3;
+      if (pairs.some((p) => p.ans === sum)) continue;
 
       const a = Math.floor(rng() * (sum - 1)) + 1;
-      const eq = `${a} + ${sum-a}`;
-      const id = pairs.length; 
+      const eq = `${a} + ${sum - a}`;
+      const id = pairs.length;
       const matchId = `pair-${id}`;
       pairs.push({ eq, ans: sum });
-      cards.push({ id: `q-${id}`, content: eq, type: 'math', matchId } as MemoryMathProblem['cards'][0]);
-      cards.push({ id: `a-${id}`, content: `${sum}`, type: 'answer', matchId } as MemoryMathProblem['cards'][0]);
+      cards.push({
+        id: `q-${id}`,
+        content: eq,
+        type: 'math',
+        matchId,
+      } as MemoryMathProblem['cards'][0]);
+      cards.push({
+        id: `a-${id}`,
+        content: `${sum}`,
+        type: 'answer',
+        matchId,
+      } as MemoryMathProblem['cards'][0]);
     }
     return { type: 'memory_math', cards: cards.sort(() => rng() - 0.5), pairs, uid: uid(rng) };
   },
 
-  picture_pairs: (level: number, rng: RngFunction = Math.random, profile: ProfileType = 'starter'): PicturePairsProblem => {
+  picture_pairs: (
+    level: number,
+    rng: RngFunction = Math.random,
+    profile: ProfileType = 'starter',
+  ): PicturePairsProblem => {
     const meta = profileMeta(profile);
     const harder = meta.difficultyOffset > 0;
     const locale = getLocale();
@@ -563,54 +612,68 @@ export const Generators: Record<string, GeneratorFunction> = {
     return createMathSnakeProblem(level, rng, profile);
   },
 
-  sentence_logic: (level: number, rng: RngFunction = Math.random, _profile: ProfileType = 'starter'): SentenceLogicProblem => {
+  sentence_logic: (
+    level: number,
+    rng: RngFunction = Math.random,
+    _profile: ProfileType = 'starter',
+  ): SentenceLogicProblem => {
     // 1. Select scene based on level progression
     const allScenes = Object.keys(SCENE_DB);
-    const sceneKeys = level <= 2
-      ? allScenes.filter(k => (SCENE_DB[k]?.positions?.length ?? 0) <= 4)
-      : level <= 5
-      ? allScenes.filter(k => (SCENE_DB[k]?.positions?.length ?? 0) <= 5)
-      : allScenes;
-    
+    const sceneKeys =
+      level <= 2
+        ? allScenes.filter((k) => (SCENE_DB[k]?.positions?.length ?? 0) <= 4)
+        : level <= 5
+          ? allScenes.filter((k) => (SCENE_DB[k]?.positions?.length ?? 0) <= 5)
+          : allScenes;
+
     const sceneKey = getRandom(sceneKeys, rng);
     if (!sceneKey) throw new Error('No scene found for sentence_logic game');
-    
+
     const scene = SCENE_DB[sceneKey];
     if (!scene) throw new Error('Scene not found in SCENE_DB');
-    
+
     // 2. Select objects
     const subject = getRandom(scene.subjects, rng);
     if (!subject) throw new Error('No subject found for sentence_logic game');
-    
+
     const anchor = getRandom(scene.anchors, rng);
     if (!anchor) throw new Error('No anchor found for sentence_logic game');
-    
+
     // 3. Select correct position
     const validPositions = scene.positions;
     const correctPos = getRandom(validPositions, rng);
     if (!correctPos) throw new Error('No position found for sentence_logic game');
-    
+
     // 4. Generate wrong positions (same objects, different positions)
     const usedPositions = new Set([correctPos]);
     const wrongPositions: string[] = [];
-    
+
     // Determine number of wrong options based on level
     const numWrongOptions = level >= 4 ? 3 : level >= 3 ? 2 : level >= 2 ? 2 : 1;
-    
+
     for (let i = 0; i < numWrongOptions && wrongPositions.length < validPositions.length - 1; i++) {
-      const available = validPositions.filter(p => !usedPositions.has(p));
+      const available = validPositions.filter((p) => !usedPositions.has(p));
       if (available.length === 0) break;
-      
+
       const wrongPos = getRandom(available, rng);
       if (wrongPos) {
         wrongPositions.push(wrongPos);
         usedPositions.add(wrongPos);
       }
     }
-    
+
     // 5. Build options array
     const options = [
-      { id: 'correct', pos: correctPos, answer: true, subject, anchor, sceneKey, sceneName: scene.name, bg: scene.bg },
+      {
+        id: 'correct',
+        pos: correctPos,
+        answer: true,
+        subject,
+        anchor,
+        sceneKey,
+        sceneName: scene.name,
+        bg: scene.bg,
+      },
       ...wrongPositions.map((pos, idx) => ({
         id: `wrong-${idx}`,
         pos,
@@ -619,13 +682,13 @@ export const Generators: Record<string, GeneratorFunction> = {
         anchor,
         sceneKey,
         sceneName: scene.name,
-        bg: scene.bg
-      }))
+        bg: scene.bg,
+      })),
     ];
-    
+
     // Shuffle options
     const shuffledOptions = [...options].sort(() => rng() - 0.5);
-    
+
     // 6. Generate sentence in current language
     // Ensure locale is properly initialized (fallback to 'et' if window is not available)
     let locale: 'et' | 'en' = 'et';
@@ -639,13 +702,13 @@ export const Generators: Record<string, GeneratorFunction> = {
       console.warn('Error getting locale, defaulting to Estonian:', error);
       locale = 'et';
     }
-    
+
     const sentence = generateSentence(subject, anchor, correctPos, locale);
     const isInside = correctPos === 'INSIDE';
     const translatedSceneName = getSceneName(scene.name, locale);
-    
+
     // 7. Map to expected format
-    const optionObjects = shuffledOptions.map(opt => ({
+    const optionObjects = shuffledOptions.map((opt) => ({
       text: opt.id === 'correct' ? 'correct' : opt.id,
       pos: opt.pos,
       answer: opt.answer,
@@ -653,9 +716,21 @@ export const Generators: Record<string, GeneratorFunction> = {
       s: opt.subject,
       bg: opt.bg,
       sceneName: translatedSceneName,
-      id: opt.id
-    })) as Array<string | { text: string; pos?: string; answer?: boolean; a?: SceneAnchor; s?: SceneSubject; bg?: string; sceneName?: string; id?: string }>;
-    
+      id: opt.id,
+    })) as Array<
+      | string
+      | {
+          text: string;
+          pos?: string;
+          answer?: boolean;
+          a?: SceneAnchor;
+          s?: SceneSubject;
+          bg?: string;
+          sceneName?: string;
+          id?: string;
+        }
+    >;
+
     return {
       type: 'sentence_logic',
       scene: sceneKey,
@@ -668,117 +743,140 @@ export const Generators: Record<string, GeneratorFunction> = {
       display: sentence,
       options: optionObjects,
       answer: 'correct',
-      uid: uid(rng)
+      uid: uid(rng),
     };
   },
 
-  letter_match: (level: number, rng: RngFunction = Math.random, _profile: ProfileType = 'starter'): LetterMatchProblem => {
+  letter_match: (
+    level: number,
+    rng: RngFunction = Math.random,
+    _profile: ProfileType = 'starter',
+  ): LetterMatchProblem => {
     // Select uppercase letter - this is what is shown
     const targetUpper = getRandom(ALPHABET, rng);
     if (!targetUpper) {
       throw new Error('No letter found for letter_match game');
     }
     const targetLower = targetUpper.toLowerCase();
-    
+
     // Generate wrong choices - lowercase letters
     const opts = new Set([targetLower]);
-    
+
     // Level 1-2: random lowercase letters
     // Level 3-4: similar lowercase letters
     // Level 5+: very similar lowercase letters
-    const similarLetters = level >= 5 
-      ? ALPHABET.filter(l => {
-          // Find letters that are close in alphabet
-          const targetIdx = ALPHABET.indexOf(targetUpper);
-          return Math.abs(ALPHABET.indexOf(l) - targetIdx) <= 2 && l !== targetUpper;
-        })
-      : level >= 3
-      ? ALPHABET.filter(l => {
-          // Find letters that are close in alphabet (laiem)
-          const targetIdx = ALPHABET.indexOf(targetUpper);
-          return Math.abs(ALPHABET.indexOf(l) - targetIdx) <= 5 && l !== targetUpper;
-        })
-      : ALPHABET;
-    
+    const similarLetters =
+      level >= 5
+        ? ALPHABET.filter((l) => {
+            // Find letters that are close in alphabet
+            const targetIdx = ALPHABET.indexOf(targetUpper);
+            return Math.abs(ALPHABET.indexOf(l) - targetIdx) <= 2 && l !== targetUpper;
+          })
+        : level >= 3
+          ? ALPHABET.filter((l) => {
+              // Find letters that are close in alphabet (laiem)
+              const targetIdx = ALPHABET.indexOf(targetUpper);
+              return Math.abs(ALPHABET.indexOf(l) - targetIdx) <= 5 && l !== targetUpper;
+            })
+          : ALPHABET;
+
     // Level 3+ - show more choices (4 instead of 3)
     const optionCount = level >= 3 ? 4 : 3;
-    while(opts.size < optionCount) { 
-      const r = getRandom(similarLetters.length > 0 ? similarLetters : ALPHABET, rng); 
-      if(r && r !== targetUpper) opts.add(r.toLowerCase()); 
+    while (opts.size < optionCount) {
+      const r = getRandom(similarLetters.length > 0 ? similarLetters : ALPHABET, rng);
+      if (r && r !== targetUpper) opts.add(r.toLowerCase());
     }
-    
+
     // Find a word that contains the target letter (for emoji)
     let wordObj = null;
     for (const len of Object.keys(WORD_DB)) {
       const words = WORD_DB[parseInt(len)];
       if (words && words.length > 0) {
-        wordObj = getRandom(words.filter(w => w.w.includes(targetUpper)), rng);
+        wordObj = getRandom(
+          words.filter((w) => w.w.includes(targetUpper)),
+          rng,
+        );
         if (wordObj) break;
       }
     }
     if (!wordObj) {
       wordObj = { w: targetUpper, e: '❓' };
     }
-    
-    return { 
+
+    return {
       type: 'letter_match',
       word: wordObj.w,
       emoji: wordObj.e,
       display: targetUpper, // Show uppercase letter
       targetLetter: targetLower, // Correct answer is lowercase letter
       targetPosition: 0, // No longer needed, but kept for compatibility
-      options: Array.from(opts).sort(() => rng() - 0.5), 
+      options: Array.from(opts).sort(() => rng() - 0.5),
       answer: targetLower,
-      uid: uid(rng) 
+      uid: uid(rng),
     };
   },
 
-  robo_path: (level: number, rng: RngFunction = Math.random, profile: ProfileType = 'starter'): RoboPathProblem => {
+  robo_path: (
+    level: number,
+    rng: RngFunction = Math.random,
+    profile: ProfileType = 'starter',
+  ): RoboPathProblem => {
     const meta = profileMeta(profile);
     const harder = meta.difficultyOffset > 0;
-    
+
     // Improved grid size progression - scales better with levels
     // Starter: 3x3 (1-2), 4x4 (3-5), 5x5 (6-10), 6x6 (11-15), 7x7 (16+)
     // Advanced: 4x4 (1-2), 5x5 (3-5), 6x6 (6-10), 7x7 (11-15), 8x8 (16+)
     const baseGrid = harder ? 4 : 3;
     let gridGrowth = 0;
-    if (level >= 16) gridGrowth = harder ? 4 : 4; // 8x8 advanced, 7x7 starter
-    else if (level >= 11) gridGrowth = harder ? 3 : 3; // 7x7 both
-    else if (level >= 6) gridGrowth = harder ? 2 : 2; // 6x6 both
+    if (level >= 16)
+      gridGrowth = harder ? 4 : 4; // 8x8 advanced, 7x7 starter
+    else if (level >= 11)
+      gridGrowth = harder ? 3 : 3; // 7x7 both
+    else if (level >= 6)
+      gridGrowth = harder ? 2 : 2; // 6x6 both
     else if (level >= 3) gridGrowth = harder ? 1 : 1; // 5x5 both
     const gridSize = Math.min(baseGrid + gridGrowth, harder ? 8 : 7);
-    
+
     // Improved obstacle count progression - more obstacles, better scaling
     // Level 1: 0-1, Level 2-3: 1-2, Level 4-5: 2-3, Level 6-8: 3-4, Level 9-12: 4-5, Level 13+: 5-7
-    const baseObstacles = level === 1 
-      ? (harder ? 1 : 0)
-      : level <= 3
-      ? 1 + Math.floor(level / 2)
-      : level <= 5
-      ? 2 + Math.floor((level - 3) / 2)
-      : level <= 8
-      ? 3 + Math.floor((level - 5) / 2)
-      : level <= 12
-      ? 4 + Math.floor((level - 8) / 2)
-      : 5 + Math.floor((level - 12) / 3);
-    
+    const baseObstacles =
+      level === 1
+        ? harder
+          ? 1
+          : 0
+        : level <= 3
+          ? 1 + Math.floor(level / 2)
+          : level <= 5
+            ? 2 + Math.floor((level - 3) / 2)
+            : level <= 8
+              ? 3 + Math.floor((level - 5) / 2)
+              : level <= 12
+                ? 4 + Math.floor((level - 8) / 2)
+                : 5 + Math.floor((level - 12) / 3);
+
     const obstacleVariance = level <= 3 ? 1 : level <= 8 ? 1 : 2;
     const obstacleCount = Math.min(
       baseObstacles + (harder ? 1 : 0) + Math.floor(rng() * obstacleVariance),
-      Math.max(5, Math.floor(gridSize * gridSize * 0.25)) // Max 25% of grid cells
+      Math.max(5, Math.floor(gridSize * gridSize * 0.25)), // Max 25% of grid cells
     );
-    
-    const start = { x: 0, y: 0, dir: 'N' }; 
+
+    const start = { x: 0, y: 0, dir: 'N' };
     const maxCells = gridSize * gridSize;
     const maxObstacles = Math.max(0, maxCells - 4); // Reserve space for start, goal, and path
     const cappedObstacleCount = Math.min(obstacleCount, maxObstacles);
 
-    const directions: Array<[number, number]> = [[0, -1], [0, 1], [-1, 0], [1, 0]]; // UP, DOWN, LEFT, RIGHT
+    const directions: Array<[number, number]> = [
+      [0, -1],
+      [0, 1],
+      [-1, 0],
+      [1, 0],
+    ]; // UP, DOWN, LEFT, RIGHT
 
     const findShortestPath = (
       startPos: [number, number],
       endPos: [number, number],
-      obstacleSet: Set<string>
+      obstacleSet: Set<string>,
     ): { length: number; path: Array<[number, number]> } | null => {
       const queue: Array<[number, number]> = [startPos];
       const visited = new Set<string>();
@@ -839,31 +937,30 @@ export const Generators: Record<string, GeneratorFunction> = {
     const minDistance = Math.max(2, Math.ceil(Math.sqrt(gridSize * gridSize * 2) * 0.5));
     const maxDistance = Math.floor(Math.sqrt(gridSize * gridSize * 2) * 0.9); // Max 90% of diagonal
 
-    let end = { x: 0, y: 0 }; 
-    let obstacles: Array<{x: number; y: number}> = [];
+    let end = { x: 0, y: 0 };
+    let obstacles: Array<{ x: number; y: number }> = [];
     let optimalMoves = 0;
     let path: Array<[number, number]> = [];
     let safety = 0;
 
     while (safety < 100) {
       safety++;
-      
+
       // Place goal with minimum distance requirement
       let attempts = 0;
-      do { 
-        end = { x: Math.floor(rng() * gridSize), y: Math.floor(rng() * gridSize) }; 
-        attempts++; 
+      do {
+        end = { x: Math.floor(rng() * gridSize), y: Math.floor(rng() * gridSize) };
+        attempts++;
       } while (
-        attempts < 60 && (
-          Math.abs(end.x - start.x) + Math.abs(end.y - start.y) < minDistance ||
-          Math.abs(end.x - start.x) + Math.abs(end.y - start.y) > maxDistance
-        )
+        attempts < 60 &&
+        (Math.abs(end.x - start.x) + Math.abs(end.y - start.y) < minDistance ||
+          Math.abs(end.x - start.x) + Math.abs(end.y - start.y) > maxDistance)
       );
-      
+
       // Strategic obstacle placement
       obstacles = [];
       const obstacleSet = new Set<string>();
-      
+
       // First, place obstacles strategically along potential paths
       // 1. Place some obstacles near the goal (makes it harder to reach)
       const goalObstacleCount = Math.floor(cappedObstacleCount * 0.4); // 40% near goal
@@ -874,19 +971,23 @@ export const Generators: Record<string, GeneratorFunction> = {
         const distance = 1 + rng() * 2; // 1-3 cells from goal
         const obsX = Math.round(end.x + Math.cos(angle) * distance);
         const obsY = Math.round(end.y + Math.sin(angle) * distance);
-        
+
         if (
-          obsX >= 0 && obsX < gridSize &&
-          obsY >= 0 && obsY < gridSize &&
-          obsX !== start.x && obsY !== start.y &&
-          obsX !== end.x && obsY !== end.y &&
+          obsX >= 0 &&
+          obsX < gridSize &&
+          obsY >= 0 &&
+          obsY < gridSize &&
+          obsX !== start.x &&
+          obsY !== start.y &&
+          obsX !== end.x &&
+          obsY !== end.y &&
           !obstacleSet.has(`${obsX},${obsY}`)
         ) {
           obstacles.push({ x: obsX, y: obsY });
           obstacleSet.add(`${obsX},${obsY}`);
         }
       }
-      
+
       // 2. Place obstacles to create interesting detours (not blocking completely, but forcing longer paths)
       const detourObstacleCount = Math.floor(cappedObstacleCount * 0.4); // 40% for detours
       let detourAttempts = 0;
@@ -899,27 +1000,29 @@ export const Generators: Record<string, GeneratorFunction> = {
         const offsetY = Math.floor((rng() - 0.5) * (gridSize * 0.6));
         const obsX = Math.max(0, Math.min(gridSize - 1, midX + offsetX));
         const obsY = Math.max(0, Math.min(gridSize - 1, midY + offsetY));
-        
+
         if (
-          obsX !== start.x && obsY !== start.y &&
-          obsX !== end.x && obsY !== end.y &&
+          obsX !== start.x &&
+          obsY !== start.y &&
+          obsX !== end.x &&
+          obsY !== end.y &&
           !obstacleSet.has(`${obsX},${obsY}`)
         ) {
           obstacles.push({ x: obsX, y: obsY });
           obstacleSet.add(`${obsX},${obsY}`);
         }
       }
-      
+
       // 3. Fill remaining obstacles randomly (but not too close to start)
       let randomAttempts = 0;
       while (obstacles.length < cappedObstacleCount && randomAttempts < 100) {
         randomAttempts++;
-        const obs = { x: Math.floor(rng() * gridSize), y: Math.floor(rng() * gridSize) }; 
+        const obs = { x: Math.floor(rng() * gridSize), y: Math.floor(rng() * gridSize) };
         const distFromStart = Math.abs(obs.x - start.x) + Math.abs(obs.y - start.y);
         const isStart = obs.x === start.x && obs.y === start.y;
         const isEnd = obs.x === end.x && obs.y === end.y;
         const exists = obstacleSet.has(`${obs.x},${obs.y}`);
-        
+
         // Don't place obstacles too close to start (at least 2 cells away)
         if (!isStart && !isEnd && !exists && distFromStart >= 2) {
           obstacles.push(obs);
@@ -935,7 +1038,7 @@ export const Generators: Record<string, GeneratorFunction> = {
       if (!hasFreeStartNeighbor(obstacleSet)) {
         continue;
       }
-      
+
       // Ensure path has minimum complexity (at least 30% longer than direct distance)
       const directDistance = Math.abs(end.x - start.x) + Math.abs(end.y - start.y);
       const pathComplexity = pathResult.length / Math.max(1, directDistance);
@@ -963,44 +1066,51 @@ export const Generators: Record<string, GeneratorFunction> = {
 
     const coalIndex = Math.min(
       Math.max(1, Math.floor(path.length / 2)),
-      Math.max(1, path.length - 2)
+      Math.max(1, path.length - 2),
     );
     const coalPos = path.length >= 3 ? path[coalIndex] : null;
-    
+
     // Build grid
-    const grid: number[][] = Array.from({ length: gridSize }, () => Array(gridSize).fill(0) as number[]);
+    const grid: number[][] = Array.from(
+      { length: gridSize },
+      () => Array(gridSize).fill(0) as number[],
+    );
     for (const obs of obstacles) {
       const row = grid[obs.y];
       if (row) {
         row[obs.x] = 1;
       }
     }
-    
+
     // Generate correct path (simplified - just store instructions)
     const correctPath: string[] = [];
     const optionCommands = ['UP', 'DOWN', 'LEFT', 'RIGHT', 'FORWARD', 'TURN_LEFT', 'TURN_RIGHT'];
-    
+
     // Calculate max commands based on optimal path + buffer for mistakes
     const commandBuffer = level <= 3 ? 2 : level <= 8 ? 3 : 4;
     const maxCommands = Math.max(optimalMoves + commandBuffer, Math.floor(gridSize * 1.2));
-    
-    return { 
+
+    return {
       type: 'robo_path',
       grid,
       gridSize,
       start: [start.x, start.y],
       goal: [end.x, end.y],
-      obstacles: obstacles.map(o => [o.x, o.y] as [number, number]),
+      obstacles: obstacles.map((o) => [o.x, o.y] as [number, number]),
       correctPath,
       options: optionCommands,
       maxCommands,
       optimalMoves,
       coal: coalPos ? [coalPos[0], coalPos[1]] : undefined,
-      uid: uid(rng) 
+      uid: uid(rng),
     };
   },
 
-  syllable_builder: (level: number, rng: RngFunction = Math.random, profile: ProfileType = 'starter'): SyllableBuilderProblem => {
+  syllable_builder: (
+    level: number,
+    rng: RngFunction = Math.random,
+    profile: ProfileType = 'starter',
+  ): SyllableBuilderProblem => {
     const locale = getLocale();
     const words = SYLLABLE_WORDS[locale] ?? SYLLABLE_WORDS.et;
     // Filter by level - higher levels have longer words
@@ -1008,45 +1118,54 @@ export const Generators: Record<string, GeneratorFunction> = {
     // Smoother progression: Level 1-2 = 2 syllables, Level 3-5 = 3 syllables, Level 6+ = 3-4 syllables
     const targetParts = level <= 2 ? 2 : level <= 5 ? 3 : level <= 7 ? 3 : 4;
     const isAdvanced = meta.difficultyOffset > 0;
-    const minParts = isAdvanced
-      ? Math.max(2, targetParts - (level > 3 ? 1 : 0))
-      : 2;
+    const minParts = isAdvanced ? Math.max(2, targetParts - (level > 3 ? 1 : 0)) : 2;
     const maxParts = isAdvanced ? targetParts + 1 : targetParts;
-    let filtered = words.filter(item => {
+    let filtered = words.filter((item) => {
       const partsCount = item.syllables.length;
       return partsCount >= minParts && partsCount <= maxParts;
     });
     if (filtered.length === 0) {
-      const smallestDiff = Math.min(...words.map(item => Math.abs(item.syllables.length - targetParts)));
-      filtered = words.filter(item => Math.abs(item.syllables.length - targetParts) === smallestDiff);
+      const smallestDiff = Math.min(
+        ...words.map((item) => Math.abs(item.syllables.length - targetParts)),
+      );
+      filtered = words.filter(
+        (item) => Math.abs(item.syllables.length - targetParts) === smallestDiff,
+      );
     }
     const wordObj = getRandom(filtered, rng);
     if (!wordObj) {
       throw new Error('No word found for syllable_builder game');
     }
     const syllables = wordObj.syllables;
-    const shuffled = syllables.map((text, i) => ({ 
-      text, 
-      id: `syl-${i}-${uid(rng)}` 
-    })).sort(() => rng() - 0.5);
-    
-    return { 
-      type: 'syllable_builder', 
+    const shuffled = syllables
+      .map((text, i) => ({
+        text,
+        id: `syl-${i}-${uid(rng)}`,
+      }))
+      .sort(() => rng() - 0.5);
+
+    return {
+      type: 'syllable_builder',
       target: syllables.join(''),
       emoji: wordObj.emoji,
       syllables,
       shuffled,
-      uid: uid(rng) 
+      uid: uid(rng),
     };
   },
 
-  time_match: (level: number, rng: RngFunction = Math.random, _profile: ProfileType = 'advanced'): TimeMatchProblem => {
+  time_match: (
+    level: number,
+    rng: RngFunction = Math.random,
+    _profile: ProfileType = 'advanced',
+  ): TimeMatchProblem => {
     // Step: 30min early, 15 then 10 then 5 for trickier "to/past" times
     const step = level <= 2 ? 30 : level <= 4 ? 15 : level <= 6 ? 10 : 5;
     const numOptions = level <= 2 ? 3 : level <= 5 ? 4 : 6;
     const hour24 = Math.floor(rng() * 24);
     const minute = Math.floor(rng() * (60 / step)) * step;
-    const toLabel = (h24: number, m: number) => `${h24.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`;
+    const toLabel = (h24: number, m: number) =>
+      `${h24.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`;
     const correct = toLabel(hour24, minute);
     const opts = new Set([correct]);
     while (opts.size < numOptions) {
@@ -1067,7 +1186,11 @@ export const Generators: Record<string, GeneratorFunction> = {
     };
   },
 
-  unit_conversion: (level: number, rng: RngFunction = Math.random, profile: ProfileType = 'starter'): UnitConversionProblem => {
+  unit_conversion: (
+    level: number,
+    rng: RngFunction = Math.random,
+    profile: ProfileType = 'starter',
+  ): UnitConversionProblem => {
     const meta = profileMeta(profile);
     const harder = meta.difficultyOffset > 0;
 
@@ -1076,16 +1199,16 @@ export const Generators: Record<string, GeneratorFunction> = {
       length: [
         { from: 'm', to: 'cm', factor: 100, emoji: '📏' },
         { from: 'km', to: 'm', factor: 1000, emoji: '📐' },
-        { from: 'cm', to: 'mm', factor: 10, emoji: '📏' }
+        { from: 'cm', to: 'mm', factor: 10, emoji: '📏' },
       ],
       mass: [
         { from: 'kg', to: 'g', factor: 1000, emoji: '⚖️' },
-        { from: 't', to: 'kg', factor: 1000, emoji: '🏋️' }
+        { from: 't', to: 'kg', factor: 1000, emoji: '🏋️' },
       ],
       volume: [
         { from: 'l', to: 'ml', factor: 1000, emoji: '🧪' },
-        { from: 'l', to: 'dl', factor: 10, emoji: '🥛' }
-      ]
+        { from: 'l', to: 'dl', factor: 10, emoji: '🥛' },
+      ],
     };
 
     let selectedConversion;
@@ -1098,11 +1221,12 @@ export const Generators: Record<string, GeneratorFunction> = {
         // Levels 1-3: Basic conversions (m↔cm, kg↔g, l↔ml), numbers 10-50
         const basicTypes: Array<'length' | 'mass' | 'volume'> = ['length', 'mass', 'volume'];
         unitType = getRandom(basicTypes, rng) || 'length';
-        const availableConversions = unitType === 'length' 
-          ? [conversions.length[0]] 
-          : unitType === 'mass' 
-          ? [conversions.mass[0]] 
-          : [conversions.volume[0]];
+        const availableConversions =
+          unitType === 'length'
+            ? [conversions.length[0]]
+            : unitType === 'mass'
+              ? [conversions.mass[0]]
+              : [conversions.volume[0]];
         selectedConversion = getRandom(availableConversions, rng);
         value = Math.floor(rng() * 41) + 10; // 10-50
       } else if (level <= 7) {
@@ -1130,35 +1254,35 @@ export const Generators: Record<string, GeneratorFunction> = {
         // Levels 1-3: Only m↔cm, kg↔g, numbers 1-5
         const basicTypes: Array<'length' | 'mass'> = ['length', 'mass'];
         unitType = getRandom(basicTypes, rng) || 'length';
-        selectedConversion = unitType === 'length' 
-          ? conversions.length[0] 
-          : conversions.mass[0];
+        selectedConversion = unitType === 'length' ? conversions.length[0] : conversions.mass[0];
         value = Math.floor(rng() * 5) + 1; // 1-5
       } else if (level <= 6) {
         // Levels 4-6: Add l↔ml, numbers 1-10
         const types: Array<'length' | 'mass' | 'volume'> = ['length', 'mass', 'volume'];
         unitType = getRandom(types, rng) || 'length';
-        const availableConversions = unitType === 'length' 
-          ? [conversions.length[0]] 
-          : unitType === 'mass' 
-          ? [conversions.mass[0]] 
-          : [conversions.volume[0]];
+        const availableConversions =
+          unitType === 'length'
+            ? [conversions.length[0]]
+            : unitType === 'mass'
+              ? [conversions.mass[0]]
+              : [conversions.volume[0]];
         selectedConversion = getRandom(availableConversions, rng);
         value = Math.floor(rng() * 10) + 1; // 1-10
       } else {
         // Levels 7-10: All basic units, numbers 1-20
         const types: Array<'length' | 'mass' | 'volume'> = ['length', 'mass', 'volume'];
         unitType = getRandom(types, rng) || 'length';
-        const availableConversions = unitType === 'length' 
-          ? [conversions.length[0]] 
-          : unitType === 'mass' 
-          ? [conversions.mass[0]] 
-          : conversions.volume;
+        const availableConversions =
+          unitType === 'length'
+            ? [conversions.length[0]]
+            : unitType === 'mass'
+              ? [conversions.mass[0]]
+              : conversions.volume;
         selectedConversion = getRandom(availableConversions, rng);
         value = Math.floor(rng() * 20) + 1; // 1-20
       }
     }
-    
+
     if (!selectedConversion) {
       throw new Error('No conversion found for unit_conversion game');
     }
@@ -1172,9 +1296,9 @@ export const Generators: Record<string, GeneratorFunction> = {
       Math.floor(correctAnswer * 1.1), // +10%
       Math.floor(correctAnswer * 0.9), // -10%
       Math.floor(correctAnswer * 1.5), // +50%
-      Math.floor(correctAnswer / selectedConversion.factor) // original value without conversion
-    ].filter(a => a !== correctAnswer && a > 0);
-    
+      Math.floor(correctAnswer / selectedConversion.factor), // original value without conversion
+    ].filter((a) => a !== correctAnswer && a > 0);
+
     // Only add ×10 if the result won't be too large (pedagogically confusing)
     if (correctAnswer < 10000) {
       wrongAnswers.push(Math.floor(correctAnswer * 10));
@@ -1182,7 +1306,7 @@ export const Generators: Record<string, GeneratorFunction> = {
 
     // Select 3 unique wrong answers
     const uniqueWrong = [...new Set(wrongAnswers)].sort(() => rng() - 0.5).slice(0, 3);
-    
+
     // If we don't have enough unique wrong answers, generate more (with safety limit)
     let attempts = 0;
     while (uniqueWrong.length < 3 && attempts < 20) {
@@ -1204,17 +1328,21 @@ export const Generators: Record<string, GeneratorFunction> = {
       category: unitType,
       answer: correctAnswer,
       options,
-      uid: uid(rng)
+      uid: uid(rng),
     };
   },
 
-  compare_sizes: (level: number, rng: RngFunction = Math.random, profile: ProfileType = 'starter'): CompareSizesProblem => {
+  compare_sizes: (
+    level: number,
+    rng: RngFunction = Math.random,
+    profile: ProfileType = 'starter',
+  ): CompareSizesProblem => {
     const meta = profileMeta(profile);
     const effectiveLevel = level + meta.difficultyOffset;
-    
+
     // Constants for visual representation
     const MAX_DICE_VALUE = 6;
-    
+
     // REDESIGNED Level progression - More challenging and balanced:
     // 1: Dice (1-6) with symbols - concrete visual + symbol practice
     // 2-3: Dice (1-6) with symbols, introduce equality
@@ -1222,37 +1350,54 @@ export const Generators: Record<string, GeneratorFunction> = {
     // 6-7: Numbers (1-20) with closer values and all symbols
     // 8-9: Mixed: dice/numbers (1-30) with smaller gaps
     // 10+: Numbers (1-50+) with very close values
-    
+
     const showSymbols = true; // Always show symbols - this is the focus!
     const useDice = effectiveLevel <= 5;
     const showNumbers = effectiveLevel >= 4;
-    
-    const maxValue = effectiveLevel <= 1 ? MAX_DICE_VALUE 
-                   : effectiveLevel <= 3 ? MAX_DICE_VALUE
-                   : effectiveLevel <= 5 ? MAX_DICE_VALUE * 2 // double dice
-                   : effectiveLevel <= 7 ? 20
-                   : effectiveLevel <= 9 ? 30
-                   : effectiveLevel <= 11 ? 50
-                   : 100;
-    
+
+    const maxValue =
+      effectiveLevel <= 1
+        ? MAX_DICE_VALUE
+        : effectiveLevel <= 3
+          ? MAX_DICE_VALUE
+          : effectiveLevel <= 5
+            ? MAX_DICE_VALUE * 2 // double dice
+            : effectiveLevel <= 7
+              ? 20
+              : effectiveLevel <= 9
+                ? 30
+                : effectiveLevel <= 11
+                  ? 50
+                  : 100;
+
     // Difficulty affects how close the values are - more challenging gaps
-    const minDifference = effectiveLevel <= 1 ? 2 
-                        : effectiveLevel <= 3 ? 1
-                        : effectiveLevel <= 5 ? 1
-                        : effectiveLevel <= 7 ? 1
-                        : 1;
-    
+    const minDifference =
+      effectiveLevel <= 1
+        ? 2
+        : effectiveLevel <= 3
+          ? 1
+          : effectiveLevel <= 5
+            ? 1
+            : effectiveLevel <= 7
+              ? 1
+              : 1;
+
     // Equal appears from level 2+ (effectiveLevel > 1)
-    const equalChance = effectiveLevel <= 1 ? 0
-                      : effectiveLevel <= 3 ? 0.2  // 20% chance at level 2-3
-                      : effectiveLevel <= 5 ? 0.25 // 25% chance
-                      : effectiveLevel <= 7 ? 0.3  // 30% chance
-                      : 0.35;  // 35% chance at higher levels
-    
+    const equalChance =
+      effectiveLevel <= 1
+        ? 0
+        : effectiveLevel <= 3
+          ? 0.2 // 20% chance at level 2-3
+          : effectiveLevel <= 5
+            ? 0.25 // 25% chance
+            : effectiveLevel <= 7
+              ? 0.3 // 30% chance
+              : 0.35; // 35% chance at higher levels
+
     let leftValue: number;
     let rightValue: number;
     let answer: 'left' | 'right' | 'equal';
-    
+
     if (rng() < equalChance) {
       // Equal case
       leftValue = Math.floor(rng() * maxValue) + 1;
@@ -1261,14 +1406,15 @@ export const Generators: Record<string, GeneratorFunction> = {
     } else {
       // Different values - use smaller gaps for more challenge
       leftValue = Math.floor(rng() * maxValue) + 1;
-      
+
       // Ensure minimum difference but prefer smaller gaps at higher levels
       let rightValue_temp: number;
       let attempts = 0;
       const MAX_DIFFICULTY_GAP = 5;
-      const maxGap = effectiveLevel <= 3 ? maxValue : Math.min(MAX_DIFFICULTY_GAP, Math.floor(maxValue / 4));
-      const RANDOM_VALUE_CHANCE = 0.3;  // 30% chance for any value
-      
+      const maxGap =
+        effectiveLevel <= 3 ? maxValue : Math.min(MAX_DIFFICULTY_GAP, Math.floor(maxValue / 4));
+      const RANDOM_VALUE_CHANCE = 0.3; // 30% chance for any value
+
       do {
         // At higher levels, prefer values close to leftValue for increased difficulty
         if (effectiveLevel >= 6 && rng() > RANDOM_VALUE_CHANCE) {
@@ -1283,15 +1429,15 @@ export const Generators: Record<string, GeneratorFunction> = {
         }
         attempts++;
       } while (Math.abs(leftValue - rightValue_temp) < minDifference && attempts < 20);
-      
+
       rightValue = rightValue_temp;
       answer = leftValue > rightValue ? 'left' : 'right';
     }
-    
+
     // Determine representation mode - prefer visual at higher levels without numbers
     let representationMode: 'dice' | 'number' | 'mixed' = 'number';
-    const DICE_MODE_PROBABILITY = 0.6;  // 60% dice, 40% numbers
-    
+    const DICE_MODE_PROBABILITY = 0.6; // 60% dice, 40% numbers
+
     if (useDice && !showNumbers) {
       // Pure dice mode (levels 1-3)
       representationMode = 'dice';
@@ -1300,43 +1446,52 @@ export const Generators: Record<string, GeneratorFunction> = {
       representationMode = 'dice';
     } else if (effectiveLevel >= 6 && effectiveLevel <= 9 && leftValue <= 12 && rightValue <= 12) {
       // At levels 6-9, use dice for smaller numbers (more visual challenge)
-      representationMode = rng() > (1 - DICE_MODE_PROBABILITY) ? 'dice' : 'number';
+      representationMode = rng() > 1 - DICE_MODE_PROBABILITY ? 'dice' : 'number';
     }
-    
+
     // Create visual representations
-    const leftVisual = representationMode === 'dice' ? '🎲'.repeat(Math.min(leftValue, MAX_DICE_VALUE)) : '';
-    const rightVisual = representationMode === 'dice' ? '🎲'.repeat(Math.min(rightValue, MAX_DICE_VALUE)) : '';
-    
+    const leftVisual =
+      representationMode === 'dice' ? '🎲'.repeat(Math.min(leftValue, MAX_DICE_VALUE)) : '';
+    const rightVisual =
+      representationMode === 'dice' ? '🎲'.repeat(Math.min(rightValue, MAX_DICE_VALUE)) : '';
+
     // Create display strings
-    const leftDisplay = showNumbers || representationMode === 'number' ? String(leftValue) : leftVisual;
-    const rightDisplay = showNumbers || representationMode === 'number' ? String(rightValue) : rightVisual;
-    
+    const leftDisplay =
+      showNumbers || representationMode === 'number' ? String(leftValue) : leftVisual;
+    const rightDisplay =
+      showNumbers || representationMode === 'number' ? String(rightValue) : rightVisual;
+
     // ALWAYS provide symbol options (>, <, =) based on level
-    const options: Array<'left' | 'right' | 'equal'> = effectiveLevel <= 1 
-      ? ['left', 'right'] // Only > and < at level 1
-      : ['left', 'right', 'equal']; // Add = from level 2+
-    
+    const options: Array<'left' | 'right' | 'equal'> =
+      effectiveLevel <= 1
+        ? ['left', 'right'] // Only > and < at level 1
+        : ['left', 'right', 'equal']; // Add = from level 2+
+
     return {
       type: 'compare_sizes',
       leftItem: {
         value: leftValue,
         display: leftDisplay,
-        visual: leftVisual
+        visual: leftVisual,
       },
       rightItem: {
         value: rightValue,
         display: rightDisplay,
-        visual: rightVisual
+        visual: rightVisual,
       },
       answer,
       options,
       showNumbers: showNumbers || representationMode === 'number',
       showSymbols,
-      uid: uid(rng)
+      uid: uid(rng),
     };
   },
 
-  star_mapper: (level: number, rng: RngFunction = Math.random, profile: ProfileType = 'starter'): StarMapperProblem => {
+  star_mapper: (
+    level: number,
+    rng: RngFunction = Math.random,
+    profile: ProfileType = 'starter',
+  ): StarMapperProblem => {
     const profileInfo = profileMeta(profile);
     const effectiveLevel = level + profileInfo.difficultyOffset;
 
@@ -1344,19 +1499,24 @@ export const Generators: Record<string, GeneratorFunction> = {
     const STAR_MAPPER_EASY_MAX = 3;
     const STAR_MAPPER_MEDIUM_MAX = 6;
     const difficulty: 'easy' | 'medium' | 'hard' =
-      effectiveLevel <= STAR_MAPPER_EASY_MAX ? 'easy'
-        : effectiveLevel <= STAR_MAPPER_MEDIUM_MAX ? 'medium'
-        : 'hard';
+      effectiveLevel <= STAR_MAPPER_EASY_MAX
+        ? 'easy'
+        : effectiveLevel <= STAR_MAPPER_MEDIUM_MAX
+          ? 'medium'
+          : 'hard';
 
     // Mode by effective level: trace 1–2, build 3–5, identify 6–8, expert 9+
     const STAR_MAPPER_TRACE_MAX = 2;
     const STAR_MAPPER_BUILD_MAX = 5;
     const STAR_MAPPER_IDENTIFY_MAX = 8;
     const mode =
-      effectiveLevel <= STAR_MAPPER_TRACE_MAX ? 'trace'
-        : effectiveLevel <= STAR_MAPPER_BUILD_MAX ? 'build'
-        : effectiveLevel <= STAR_MAPPER_IDENTIFY_MAX ? 'identify'
-        : 'expert';
+      effectiveLevel <= STAR_MAPPER_TRACE_MAX
+        ? 'trace'
+        : effectiveLevel <= STAR_MAPPER_BUILD_MAX
+          ? 'build'
+          : effectiveLevel <= STAR_MAPPER_IDENTIFY_MAX
+            ? 'identify'
+            : 'expert';
 
     const pool = getConstellationsForLevel(difficulty);
     const picked = getRandom(pool, rng);
@@ -1366,14 +1526,11 @@ export const Generators: Record<string, GeneratorFunction> = {
     }
 
     // Generate distractor stars for expert mode
-    const distractorStars: Star[] = mode === 'expert' 
-      ? generateDistractorStars(constellation, rng, effectiveLevel)
-      : [];
+    const distractorStars: Star[] =
+      mode === 'expert' ? generateDistractorStars(constellation, rng, effectiveLevel) : [];
 
     // Generate options for identify mode
-    const options = mode === 'identify'
-      ? generateIdentifyOptions(constellation, rng)
-      : undefined;
+    const options = mode === 'identify' ? generateIdentifyOptions(constellation, rng) : undefined;
 
     return {
       type: 'star_mapper',
@@ -1394,34 +1551,33 @@ export const Generators: Record<string, GeneratorFunction> = {
    */
   shape_shift: (level: number, rng: RngFunction, _profile: ProfileType): ShapeShiftProblem => {
     // Select mode based on level
-    const mode = level <= 3 ? 'match'
-      : level <= 6 ? 'rotate'
-      : level <= 10 ? 'build'
-      : 'expert';
+    const mode = level <= 3 ? 'match' : level <= 6 ? 'rotate' : level <= 10 ? 'build' : 'expert';
 
     // Select difficulty based on level
     const difficulty = level <= 3 ? 'easy' : level <= 7 ? 'medium' : 'hard';
 
     // Pick puzzle matching difficulty
-    const suitablePuzzles = PUZZLES.filter(p => p.difficulty === difficulty);
+    const suitablePuzzles = PUZZLES.filter((p) => p.difficulty === difficulty);
     // Smart Shuffle: Avoid recently played puzzles
     // @ts-expect-error -- dynamic property on globalThis for session-scoped history
     if (!globalThis._shapeShiftHistory) globalThis._shapeShiftHistory = [];
     // @ts-expect-error -- dynamic property on globalThis for session-scoped history
     const history = globalThis._shapeShiftHistory as string[];
-    
+
     // Filter out recent 50% of history
-    const availablePuzzles = suitablePuzzles.filter(p => !history.includes(p.id));
-    
+    const availablePuzzles = suitablePuzzles.filter((p) => !history.includes(p.id));
+
     const pool = availablePuzzles.length > 0 ? availablePuzzles : suitablePuzzles;
     if (availablePuzzles.length === 0) {
       // @ts-expect-error -- dynamic property on globalThis for session-scoped history
-      globalThis._shapeShiftHistory = history.filter(id => !suitablePuzzles.find(p => p.id === id));
+      globalThis._shapeShiftHistory = history.filter(
+        (id) => !suitablePuzzles.find((p) => p.id === id),
+      );
     }
 
     const puzzleIndex = Math.floor(rng() * pool.length);
     const puzzle = pool[puzzleIndex] || PUZZLES[0];
-    
+
     // Add to history
     history.push(puzzle.id);
     if (history.length > 20) history.shift();
@@ -1445,7 +1601,7 @@ export const Generators: Record<string, GeneratorFunction> = {
     const generateDecoyPiece = (): PieceState => {
       const colors = ['red', 'blue', 'green', 'yellow', 'purple', 'orange'];
       const types: ShapeType[] = ['triangle', 'square', 'diamond', 'circle'];
-      
+
       return {
         id: 'decoy',
         type: types[Math.floor(rng() * types.length)] || 'square',
@@ -1460,7 +1616,7 @@ export const Generators: Record<string, GeneratorFunction> = {
     };
 
     // Prepare piece states
-    const pieces: PieceState[] = puzzle.pieces.map(p => ({
+    const pieces: PieceState[] = puzzle.pieces.map((p) => ({
       ...p,
       currentPosition: null,
       currentRotation: mode === 'match' ? p.correctRotation : randomRotation(),
@@ -1484,7 +1640,11 @@ export const Generators: Record<string, GeneratorFunction> = {
     };
   },
 
-  battlelearn: (level: number, rng: RngFunction = Math.random, profile: ProfileType = 'starter'): BattleLearnProblem => {
+  battlelearn: (
+    level: number,
+    rng: RngFunction = Math.random,
+    profile: ProfileType = 'starter',
+  ): BattleLearnProblem => {
     const isAdvanced = profile === 'advanced';
     let gridSize: number;
     let shipLengths: number[];
@@ -1492,10 +1652,10 @@ export const Generators: Record<string, GeneratorFunction> = {
     function buildBattleLearnCellGrid(
       size: number,
       shipList: { positions: Array<[number, number]> }[],
-      rngFn: RngFunction
+      rngFn: RngFunction,
     ): BattleLearnCellType[][] {
       const grid: BattleLearnCellType[][] = Array.from({ length: size }, () =>
-        Array.from({ length: size }, (): BattleLearnCellType => 'empty')
+        Array.from({ length: size }, (): BattleLearnCellType => 'empty'),
       );
       const shipSet = new Set<string>();
       for (const ship of shipList) {
@@ -1514,7 +1674,7 @@ export const Generators: Record<string, GeneratorFunction> = {
         }
       }
       // Weights: mostly empty, fewer challenges, fewer hearts
-      const weights = [0.72, 0.15, 0.10, 0.03];
+      const weights = [0.72, 0.15, 0.1, 0.03];
       const types: Exclude<BattleLearnCellType, 'ship'>[] = ['empty', 'problem', 'star', 'heart'];
       for (const [r, c] of nonShipCells) {
         const roll = rngFn();
@@ -1533,7 +1693,8 @@ export const Generators: Record<string, GeneratorFunction> = {
     if (isAdvanced) {
       // Advanced profile: starts moderate, grows to complex
       gridSize = level <= 2 ? 5 : level <= 5 ? 6 : level <= 10 ? 7 : 8;
-      shipLengths = level <= 2 ? [3, 2] : level <= 5 ? [3, 2, 2] : level <= 10 ? [4, 3, 2] : [4, 3, 3, 2];
+      shipLengths =
+        level <= 2 ? [3, 2] : level <= 5 ? [3, 2, 2] : level <= 10 ? [4, 3, 2] : [4, 3, 3, 2];
     } else {
       // Starter profile: gradual progression from very simple to moderate
       gridSize = level === 1 ? 4 : level <= 3 ? 4 : level <= 6 ? 5 : 6;
@@ -1560,7 +1721,10 @@ export const Generators: Record<string, GeneratorFunction> = {
         const question = questionTypes[Math.floor(rng() * questionTypes.length)]!();
         prompt = question.prompt;
         correctAnswer = question.correctAnswer;
-        if (typeof correctAnswer === 'string' && (correctAnswer.includes('-') || correctAnswer.includes('('))) {
+        if (
+          typeof correctAnswer === 'string' &&
+          (correctAnswer.includes('-') || correctAnswer.includes('('))
+        ) {
           options = generateCoordinateOptions(correctAnswer, gridSize, rng);
         } else {
           options = generateOptions(correctAnswer as number, 4, rng);
@@ -1579,7 +1743,10 @@ export const Generators: Record<string, GeneratorFunction> = {
         const question = questionTypes[Math.floor(rng() * questionTypes.length)]!();
         prompt = question.prompt;
         correctAnswer = question.correctAnswer;
-        if (typeof correctAnswer === 'string' && (correctAnswer.includes('-') || correctAnswer.includes('('))) {
+        if (
+          typeof correctAnswer === 'string' &&
+          (correctAnswer.includes('-') || correctAnswer.includes('('))
+        ) {
           options = generateCoordinateOptions(correctAnswer, gridSize, rng);
         } else {
           options = generateOptions(correctAnswer as number, 4, rng);
@@ -1597,7 +1764,10 @@ export const Generators: Record<string, GeneratorFunction> = {
         const question = questionTypes[Math.floor(rng() * questionTypes.length)]!();
         prompt = question.prompt;
         correctAnswer = question.correctAnswer;
-        if (typeof correctAnswer === 'string' && (correctAnswer.includes('-') || correctAnswer.includes('('))) {
+        if (
+          typeof correctAnswer === 'string' &&
+          (correctAnswer.includes('-') || correctAnswer.includes('('))
+        ) {
           options = generateCoordinateOptions(correctAnswer, gridSize, rng);
         } else {
           options = generateOptions(correctAnswer as number, 4, rng);
@@ -1664,7 +1834,10 @@ export const Generators: Record<string, GeneratorFunction> = {
       const question = questionType();
       prompt = question.prompt;
       correctAnswer = question.correctAnswer;
-      if (typeof correctAnswer === 'string' && (correctAnswer.includes('-') || correctAnswer.includes('('))) {
+      if (
+        typeof correctAnswer === 'string' &&
+        (correctAnswer.includes('-') || correctAnswer.includes('('))
+      ) {
         options = generateCoordinateOptions(correctAnswer, gridSize, rng);
       } else if (correctAnswer === '>' || correctAnswer === '<' || correctAnswer === '=') {
         options = ['>', '<', '='];
@@ -1672,11 +1845,11 @@ export const Generators: Record<string, GeneratorFunction> = {
         options = generateOptions(correctAnswer as number, 4, rng);
       }
     }
-    
+
     const numOptions = options.length;
     const correctIndex = Math.floor(rng() * numOptions);
     const shuffledOptions = shuffleOptionsWithCorrect(options, correctAnswer, correctIndex, rng);
-    
+
     return {
       type: 'battlelearn',
       uid: uid(rng),
@@ -1696,7 +1869,11 @@ export const Generators: Record<string, GeneratorFunction> = {
     };
   },
 
-  shape_dash: (level: number, rng: RngFunction = Math.random, profile: ProfileType = 'starter'): ShapeDashProblem => {
+  shape_dash: (
+    level: number,
+    rng: RngFunction = Math.random,
+    profile: ProfileType = 'starter',
+  ): ShapeDashProblem => {
     const meta = profileMeta(profile);
     const effectiveLevel = Math.max(1, level + meta.difficultyOffset);
 
@@ -1708,15 +1885,30 @@ export const Generators: Record<string, GeneratorFunction> = {
     // Geometry question bank: large pool (sides, vertices, corners, shape names) – fallbacks for generator; i18n has same keys under games.shape_dash.questions
     const locale = getLocale();
     const fallbackPrompts: Record<string, { et: string; en: string }> = {
-      triangleSides: { et: 'Mitu külge on kolmnurgal?', en: 'How many sides does a triangle have?' },
+      triangleSides: {
+        et: 'Mitu külge on kolmnurgal?',
+        en: 'How many sides does a triangle have?',
+      },
       squareSides: { et: 'Mitu külge on ruudul?', en: 'How many sides does a square have?' },
-      pentagonSides: { et: 'Mitu külge on viisnurgal?', en: 'How many sides does a pentagon have?' },
+      pentagonSides: {
+        et: 'Mitu külge on viisnurgal?',
+        en: 'How many sides does a pentagon have?',
+      },
       hexagonSides: { et: 'Mitu külge on kuusnurgal?', en: 'How many sides does a hexagon have?' },
       circleSides: { et: 'Mitu külge on ringil?', en: 'How many sides does a circle have?' },
-      rectangleSides: { et: 'Mitu külge on ristkülikul?', en: 'How many sides does a rectangle have?' },
-      triangleVertices: { et: 'Mitu tippu on kolmnurgal?', en: 'How many vertices does a triangle have?' },
+      rectangleSides: {
+        et: 'Mitu külge on ristkülikul?',
+        en: 'How many sides does a rectangle have?',
+      },
+      triangleVertices: {
+        et: 'Mitu tippu on kolmnurgal?',
+        en: 'How many vertices does a triangle have?',
+      },
       squareVertices: { et: 'Mitu tippu on ruudul?', en: 'How many vertices does a square have?' },
-      rectangleCorners: { et: 'Mitu nurka on ristkülikul?', en: 'How many corners does a rectangle have?' },
+      rectangleCorners: {
+        et: 'Mitu nurka on ristkülikul?',
+        en: 'How many corners does a rectangle have?',
+      },
       hexagonSidesAlt: { et: 'Mitu külge on kuusnurgal?', en: 'A hexagon has how many sides?' },
       whichThree: { et: 'Millisel kujul on 3 külge?', en: 'Which shape has 3 sides?' },
       whichFour: { et: 'Millisel kujul on 4 külge?', en: 'Which shape has 4 sides?' },
@@ -1724,15 +1916,33 @@ export const Generators: Record<string, GeneratorFunction> = {
       circleEdges: { et: 'Mitu serva on ringil?', en: 'How many edges does a circle have?' },
       whichFive: { et: 'Millisel kujul on 5 külge?', en: 'Which shape has 5 sides?' },
       whichZero: { et: 'Millisel kujul on 0 külge?', en: 'Which shape has 0 sides?' },
-      octagonSides: { et: 'Mitu külge on kaheksanurgal?', en: 'How many sides does an octagon have?' },
-      triangleCorners: { et: 'Mitu nurka on kolmnurgal?', en: 'How many corners does a triangle have?' },
+      octagonSides: {
+        et: 'Mitu külge on kaheksanurgal?',
+        en: 'How many sides does an octagon have?',
+      },
+      triangleCorners: {
+        et: 'Mitu nurka on kolmnurgal?',
+        en: 'How many corners does a triangle have?',
+      },
       squareCorners: { et: 'Mitu nurka on ruudul?', en: 'How many corners does a square have?' },
-      pentagonVertices: { et: 'Mitu tippu on viisnurgal?', en: 'How many vertices does a pentagon have?' },
-      hexagonVertices: { et: 'Mitu tippu on kuusnurgal?', en: 'How many vertices does a hexagon have?' },
-      rectangleSidesCount: { et: 'Mitu külge on ristkülikul?', en: 'How many sides does a rectangle have?' },
+      pentagonVertices: {
+        et: 'Mitu tippu on viisnurgal?',
+        en: 'How many vertices does a pentagon have?',
+      },
+      hexagonVertices: {
+        et: 'Mitu tippu on kuusnurgal?',
+        en: 'How many vertices does a hexagon have?',
+      },
+      rectangleSidesCount: {
+        et: 'Mitu külge on ristkülikul?',
+        en: 'How many sides does a rectangle have?',
+      },
       rhombusSides: { et: 'Mitu külge on rombil?', en: 'How many sides does a rhombus have?' },
       ovalSides: { et: 'Mitu külge on ovaalil?', en: 'How many sides does an oval have?' },
-      starPoints: { et: 'Mitu tipu on viisnurkstel tähel?', en: 'A 5-pointed star has how many points?' },
+      starPoints: {
+        et: 'Mitu tipu on viisnurkstel tähel?',
+        en: 'A 5-pointed star has how many points?',
+      },
       // V3: New question types
       compare5and3: { et: 'Kumb on suurem: 5 või 3?', en: 'Which is bigger: 5 or 3?' },
       compare7and4: { et: 'Kumb on suurem: 7 või 4?', en: 'Which is bigger: 7 or 4?' },
@@ -1742,7 +1952,11 @@ export const Generators: Record<string, GeneratorFunction> = {
       patternABC: { et: 'Mis tuleb järgmisena: ● ▲ ■ ● ▲ ?', en: 'What comes next: ● ▲ ■ ● ▲ ?' },
       patternAAB: { et: 'Mis tuleb järgmisena: ▲ ▲ ■ ▲ ▲ ?', en: 'What comes next: ▲ ▲ ■ ▲ ▲ ?' },
     };
-    const questionBank: Array<{ options: string[]; correctIndex: number; key: keyof typeof fallbackPrompts }> = [
+    const questionBank: Array<{
+      options: string[];
+      correctIndex: number;
+      key: keyof typeof fallbackPrompts;
+    }> = [
       { options: ['3', '4', '5', '6'], correctIndex: 0, key: 'triangleSides' },
       { options: ['3', '4', '5', '6'], correctIndex: 1, key: 'squareSides' },
       { options: ['3', '4', '5', '6'], correctIndex: 2, key: 'pentagonSides' },
@@ -1773,7 +1987,7 @@ export const Generators: Record<string, GeneratorFunction> = {
       { options: ['4', '7', '5', '6'], correctIndex: 1, key: 'compare7and4' },
       { options: ['6', '8', '7', '9'], correctIndex: 1, key: 'compare8and6' },
       { options: ['9', '10', '8', '11'], correctIndex: 1, key: 'compare10and9' },
-      // V3: Pattern questions  
+      // V3: Pattern questions
       { options: ['▲', '■', '●', '◆'], correctIndex: 0, key: 'patternABAB' },
       { options: ['■', '●', '▲', '◆'], correctIndex: 0, key: 'patternABC' },
       { options: ['■', '▲', '●', '◆'], correctIndex: 0, key: 'patternAAB' },
@@ -1795,7 +2009,12 @@ export const Generators: Record<string, GeneratorFunction> = {
 
     let lastX = runInDistance;
 
-    const obstacleTypes: Array<'spike' | 'block' | 'circle' | 'floating'> = ['spike', 'block', 'circle', 'floating'];
+    const obstacleTypes: Array<'spike' | 'block' | 'circle' | 'floating'> = [
+      'spike',
+      'block',
+      'circle',
+      'floating',
+    ];
     const harderBias = Math.min(0.5, effectiveLevel * 0.08);
     for (let i = 0; i < numObstacles; i++) {
       const useGenerousGap = i < firstObstaclesCount;
@@ -1852,7 +2071,9 @@ export const Generators: Record<string, GeneratorFunction> = {
     }
     const shuffledBank = [...questionBank].sort(() => rng() - 0.5);
     const numToPlace = Math.min(numCheckpoints, safeZones.length, shuffledBank.length);
-    const zoneOrder = safeZones.map((_, i) => i).sort((a, b) => safeZones[a]!.start - safeZones[b]!.start);
+    const zoneOrder = safeZones
+      .map((_, i) => i)
+      .sort((a, b) => safeZones[a]!.start - safeZones[b]!.start);
     for (let c = 0; c < numToPlace; c++) {
       const zoneIdx = zoneOrder[c]!;
       const zone = safeZones[zoneIdx]!;
@@ -1883,8 +2104,9 @@ export const Generators: Record<string, GeneratorFunction> = {
       const x = xRange + Math.floor(rng() * Math.max(100, segment - 100));
       const y = starHeights[Math.floor(rng() * starHeights.length)]!;
       // Ensure star doesn't overlap with obstacles or checkpoints
-      const tooClose = obstacles.some(obs => Math.abs(obs.x - x) < 80) || 
-                       checkpoints.some(cp => Math.abs(cp.x - x) < 80);
+      const tooClose =
+        obstacles.some((obs) => Math.abs(obs.x - x) < 80) ||
+        checkpoints.some((cp) => Math.abs(cp.x - x) < 80);
       if (!tooClose) {
         stars.push({ id: `star-${uid(rng)}`, x, y });
       }
@@ -1898,8 +2120,9 @@ export const Generators: Record<string, GeneratorFunction> = {
         const segment = (runLength - runInDistance) / (numJumpPads + 1);
         const x = runInDistance + (j + 1) * segment + Math.floor((rng() - 0.5) * segment * 0.3);
         // Ensure jump pad doesn't overlap with obstacles or checkpoints
-        const tooClose = obstacles.some(obs => Math.abs(obs.x - x) < 120) || 
-                         checkpoints.some(cp => Math.abs(cp.x - x) < 150);
+        const tooClose =
+          obstacles.some((obs) => Math.abs(obs.x - x) < 120) ||
+          checkpoints.some((cp) => Math.abs(cp.x - x) < 150);
         if (!tooClose) {
           jumpPads.push({ id: `pad-${uid(rng)}`, x });
         }
@@ -1915,8 +2138,9 @@ export const Generators: Record<string, GeneratorFunction> = {
         const x = runInDistance + (b + 1) * segment + Math.floor((rng() - 0.5) * segment * 0.4);
         const width = 180 + Math.floor(rng() * 40);
         // Ensure boost zone doesn't overlap with obstacles or checkpoints
-        const tooClose = obstacles.some(obs => obs.x >= x && obs.x <= x + width) || 
-                         checkpoints.some(cp => cp.x >= x && cp.x <= x + width);
+        const tooClose =
+          obstacles.some((obs) => obs.x >= x && obs.x <= x + width) ||
+          checkpoints.some((cp) => cp.x >= x && cp.x <= x + width);
         if (!tooClose) {
           boostZones.push({ id: `boost-${uid(rng)}`, x, width });
         }
@@ -1931,69 +2155,70 @@ export const Generators: Record<string, GeneratorFunction> = {
       correctShape: 'triangle' | 'square' | 'pentagon' | 'hexagon' | 'circle';
       correctLabel: { et: string; en: string };
     }> = [
-      { 
-        prompt: { et: '3 külge?', en: '3 sides?' }, 
-        correctShape: 'triangle', 
-        correctLabel: { et: 'Kolmnurk', en: 'Triangle' } 
+      {
+        prompt: { et: '3 külge?', en: '3 sides?' },
+        correctShape: 'triangle',
+        correctLabel: { et: 'Kolmnurk', en: 'Triangle' },
       },
-      { 
-        prompt: { et: '4 külge?', en: '4 sides?' }, 
-        correctShape: 'square', 
-        correctLabel: { et: 'Ruut', en: 'Square' } 
+      {
+        prompt: { et: '4 külge?', en: '4 sides?' },
+        correctShape: 'square',
+        correctLabel: { et: 'Ruut', en: 'Square' },
       },
-      { 
-        prompt: { et: '5 külge?', en: '5 sides?' }, 
-        correctShape: 'pentagon', 
-        correctLabel: { et: 'Viisnurk', en: 'Pentagon' } 
+      {
+        prompt: { et: '5 külge?', en: '5 sides?' },
+        correctShape: 'pentagon',
+        correctLabel: { et: 'Viisnurk', en: 'Pentagon' },
       },
-      { 
-        prompt: { et: '6 külge?', en: '6 sides?' }, 
-        correctShape: 'hexagon', 
-        correctLabel: { et: 'Kuusnurk', en: 'Hexagon' } 
+      {
+        prompt: { et: '6 külge?', en: '6 sides?' },
+        correctShape: 'hexagon',
+        correctLabel: { et: 'Kuusnurk', en: 'Hexagon' },
       },
-      { 
-        prompt: { et: '0 külge?', en: '0 sides?' }, 
-        correctShape: 'circle', 
-        correctLabel: { et: 'Ring', en: 'Circle' } 
+      {
+        prompt: { et: '0 külge?', en: '0 sides?' },
+        correctShape: 'circle',
+        correctLabel: { et: 'Ring', en: 'Circle' },
       },
-      { 
-        prompt: { et: 'Milline on kolmnurk?', en: 'Which is a triangle?' }, 
-        correctShape: 'triangle', 
-        correctLabel: { et: 'Kolmnurk', en: 'Triangle' } 
+      {
+        prompt: { et: 'Milline on kolmnurk?', en: 'Which is a triangle?' },
+        correctShape: 'triangle',
+        correctLabel: { et: 'Kolmnurk', en: 'Triangle' },
       },
-      { 
-        prompt: { et: 'Milline on ring?', en: 'Which is a circle?' }, 
-        correctShape: 'circle', 
-        correctLabel: { et: 'Ring', en: 'Circle' } 
+      {
+        prompt: { et: 'Milline on ring?', en: 'Which is a circle?' },
+        correctShape: 'circle',
+        correctLabel: { et: 'Ring', en: 'Circle' },
       },
     ];
-    
+
     const shuffledGateBank = [...shapeGateBank].sort(() => rng() - 0.5);
     const lang = locale === 'et' ? 'et' : 'en';
-    
+
     // Define constants for gate positioning
-    const GATE_MIN_DISTANCE = 200;  // Minimum distance from obstacles/checkpoints
-    const MAX_REPOSITION_ATTEMPTS = 10;  // Max attempts to find valid position
-    const REPOSITION_STEP_SIZE = 50;  // Step size for repositioning attempts
-    const MIN_GATE_PADDING = 100;  // Minimum padding from run start
-    const END_GATE_PADDING = 300;  // Padding from run end
-    
+    const GATE_MIN_DISTANCE = 200; // Minimum distance from obstacles/checkpoints
+    const MAX_REPOSITION_ATTEMPTS = 10; // Max attempts to find valid position
+    const REPOSITION_STEP_SIZE = 50; // Step size for repositioning attempts
+    const MIN_GATE_PADDING = 100; // Minimum padding from run start
+    const END_GATE_PADDING = 300; // Padding from run end
+
     for (let g = 0; g < numShapeGates && g < shuffledGateBank.length; g++) {
       const segment = (runLength - runInDistance) / (numShapeGates + 1);
       let x = runInDistance + (g + 1) * segment;
       const gateData = shuffledGateBank[g]!;
-      
+
       // Try to find a valid position for the gate
       let validPosition = false;
       for (let attempt = 0; attempt < MAX_REPOSITION_ATTEMPTS; attempt++) {
-        const tooClose = obstacles.some(obs => Math.abs(obs.x - x) < GATE_MIN_DISTANCE) || 
-                         checkpoints.some(cp => Math.abs(cp.x - x) < GATE_MIN_DISTANCE);
-        
+        const tooClose =
+          obstacles.some((obs) => Math.abs(obs.x - x) < GATE_MIN_DISTANCE) ||
+          checkpoints.some((cp) => Math.abs(cp.x - x) < GATE_MIN_DISTANCE);
+
         if (!tooClose) {
           validPosition = true;
           break;
         }
-        
+
         // Try alternative positions: shift forward/backward
         if (attempt < MAX_REPOSITION_ATTEMPTS - 1) {
           const offset = (attempt + 1) * REPOSITION_STEP_SIZE * (attempt % 2 === 0 ? 1 : -1);
@@ -2002,14 +2227,19 @@ export const Generators: Record<string, GeneratorFunction> = {
           x = Math.max(runInDistance + MIN_GATE_PADDING, Math.min(x, runLength - END_GATE_PADDING));
         }
       }
-      
+
       // Skip gate only if no valid position found after all attempts
       if (!validPosition) continue;
-      
+
       // Generate 3 shape options: correct + 2 random wrong
-      const allShapes: Array<'triangle' | 'square' | 'pentagon' | 'hexagon' | 'circle'> = 
-        ['triangle', 'square', 'pentagon', 'hexagon', 'circle'];
-      const wrongShapes = allShapes.filter(s => s !== gateData.correctShape);
+      const allShapes: Array<'triangle' | 'square' | 'pentagon' | 'hexagon' | 'circle'> = [
+        'triangle',
+        'square',
+        'pentagon',
+        'hexagon',
+        'circle',
+      ];
+      const wrongShapes = allShapes.filter((s) => s !== gateData.correctShape);
       const shuffledWrong = [...wrongShapes].sort(() => rng() - 0.5);
       const shapeLabels: Record<string, { et: string; en: string }> = {
         triangle: { et: 'Kolmnurk', en: 'Triangle' },
@@ -2018,13 +2248,13 @@ export const Generators: Record<string, GeneratorFunction> = {
         hexagon: { et: 'Kuusnurk', en: 'Hexagon' },
         circle: { et: 'Ring', en: 'Circle' },
       };
-      
+
       const shapes = [
         { type: gateData.correctShape, label: gateData.correctLabel[lang], isCorrect: true },
         { type: shuffledWrong[0]!, label: shapeLabels[shuffledWrong[0]!]![lang], isCorrect: false },
         { type: shuffledWrong[1]!, label: shapeLabels[shuffledWrong[1]!]![lang], isCorrect: false },
       ].sort(() => rng() - 0.5); // Randomize gate positions
-      
+
       shapeGates.push({
         id: `gate-${uid(rng)}`,
         x,
@@ -2038,14 +2268,14 @@ export const Generators: Record<string, GeneratorFunction> = {
     const numSegments = 8 + Math.floor(effectiveLevel * 0.5);
     const segmentWidth = runLength / numSegments;
     const themes: Array<'cave' | 'sky' | 'neon' | 'default'> = ['cave', 'sky', 'neon', 'default'];
-    
+
     for (let s = 0; s < numSegments; s++) {
       const x = s * segmentWidth;
       const types: Array<'flat' | 'raised' | 'gap' | 'ramp'> = ['flat', 'flat', 'raised', 'ramp']; // Bias toward flat
       const type = types[Math.floor(rng() * types.length)]!;
       const height = type === 'raised' ? 20 + Math.floor(rng() * 30) : 0;
       const theme = themes[Math.floor(s / 3) % themes.length]!; // Change theme every 3 segments
-      
+
       terrainSegments.push({
         id: `terrain-${uid(rng)}`,
         x,
@@ -2088,7 +2318,10 @@ function formatQuestion(template: string, params: Record<string, string | number
 
 // Starter Profile Question Generators (Level 1-3: Basic counting/arithmetic)
 
-function generateCountShipsQuestion(level: number, _rng: RngFunction): { prompt: string; correctAnswer: number } {
+function generateCountShipsQuestion(
+  level: number,
+  _rng: RngFunction,
+): { prompt: string; correctAnswer: number } {
   const t = getTranslations();
   const shipCount = Math.min(level + 1, 10);
   const shipEmoji = '🚢 '.repeat(shipCount);
@@ -2098,7 +2331,10 @@ function generateCountShipsQuestion(level: number, _rng: RngFunction): { prompt:
   };
 }
 
-function generateSimpleAddition(level: number, rng: RngFunction): { prompt: string; correctAnswer: number } {
+function generateSimpleAddition(
+  level: number,
+  rng: RngFunction,
+): { prompt: string; correctAnswer: number } {
   const t = getTranslations();
   const a = Math.floor(rng() * 5) + 1;
   const b = Math.floor(rng() * 5) + 1;
@@ -2108,7 +2344,10 @@ function generateSimpleAddition(level: number, rng: RngFunction): { prompt: stri
   };
 }
 
-function generateSimpleSubtraction(level: number, rng: RngFunction): { prompt: string; correctAnswer: number } {
+function generateSimpleSubtraction(
+  level: number,
+  rng: RngFunction,
+): { prompt: string; correctAnswer: number } {
   const t = getTranslations();
   const a = Math.floor(rng() * 10) + 5;
   const b = Math.floor(rng() * (a - 1)) + 1;
@@ -2118,7 +2357,10 @@ function generateSimpleSubtraction(level: number, rng: RngFunction): { prompt: s
   };
 }
 
-function generateGreaterThanQuestion(level: number, rng: RngFunction): { prompt: string; correctAnswer: number } {
+function generateGreaterThanQuestion(
+  level: number,
+  rng: RngFunction,
+): { prompt: string; correctAnswer: number } {
   const t = getTranslations();
   const a = Math.floor(rng() * 10) + 1;
   const b = Math.floor(rng() * 10) + 1;
@@ -2129,7 +2371,10 @@ function generateGreaterThanQuestion(level: number, rng: RngFunction): { prompt:
   };
 }
 
-function generateLessThanQuestion(level: number, rng: RngFunction): { prompt: string; correctAnswer: number } {
+function generateLessThanQuestion(
+  level: number,
+  rng: RngFunction,
+): { prompt: string; correctAnswer: number } {
   const t = getTranslations();
   const a = Math.floor(rng() * 10) + 1;
   const b = Math.floor(rng() * 10) + 1;
@@ -2142,7 +2387,10 @@ function generateLessThanQuestion(level: number, rng: RngFunction): { prompt: st
 
 // Starter Profile Question Generators (Level 4-6: Subtraction/addition)
 
-function generateAmmunitionQuestion(level: number, rng: RngFunction): { prompt: string; correctAnswer: number } {
+function generateAmmunitionQuestion(
+  level: number,
+  rng: RngFunction,
+): { prompt: string; correctAnswer: number } {
   const t = getTranslations();
   const total = Math.floor(rng() * 10) + 10;
   const fired = Math.floor(rng() * 5) + 3;
@@ -2152,7 +2400,10 @@ function generateAmmunitionQuestion(level: number, rng: RngFunction): { prompt: 
   };
 }
 
-function generateMissingNumber(level: number, rng: RngFunction): { prompt: string; correctAnswer: number } {
+function generateMissingNumber(
+  level: number,
+  rng: RngFunction,
+): { prompt: string; correctAnswer: number } {
   const t = getTranslations();
   const a = Math.floor(rng() * 10) + 1;
   const missing = Math.floor(rng() * 10) + 1;
@@ -2163,7 +2414,10 @@ function generateMissingNumber(level: number, rng: RngFunction): { prompt: strin
   };
 }
 
-function generateMissingNumberSub(level: number, rng: RngFunction): { prompt: string; correctAnswer: number } {
+function generateMissingNumberSub(
+  level: number,
+  rng: RngFunction,
+): { prompt: string; correctAnswer: number } {
   const t = getTranslations();
   const a = Math.floor(rng() * 15) + 5;
   const result = Math.floor(rng() * (a - 1)) + 1;
@@ -2174,7 +2428,10 @@ function generateMissingNumberSub(level: number, rng: RngFunction): { prompt: st
   };
 }
 
-function generateTimeProblem(level: number, rng: RngFunction): { prompt: string; correctAnswer: number } {
+function generateTimeProblem(
+  level: number,
+  rng: RngFunction,
+): { prompt: string; correctAnswer: number } {
   const t = getTranslations();
   const start = Math.floor(rng() * 12) + 1;
   const duration = Math.floor(rng() * 5) + 1;
@@ -2185,7 +2442,10 @@ function generateTimeProblem(level: number, rng: RngFunction): { prompt: string;
   };
 }
 
-function generateCoinProblem(level: number, rng: RngFunction): { prompt: string; correctAnswer: number } {
+function generateCoinProblem(
+  level: number,
+  rng: RngFunction,
+): { prompt: string; correctAnswer: number } {
   const t = getTranslations();
   const count = Math.floor(rng() * 10) + 2;
   const value = Math.floor(rng() * 5) + 1;
@@ -2195,10 +2455,16 @@ function generateCoinProblem(level: number, rng: RngFunction): { prompt: string;
   };
 }
 
-function generateCountObjectsQuestion(level: number, rng: RngFunction): { prompt: string; correctAnswer: number } {
+function generateCountObjectsQuestion(
+  level: number,
+  rng: RngFunction,
+): { prompt: string; correctAnswer: number } {
   const t = getTranslations();
   const locale = getLocale();
-  const items = locale === 'et' ? ['laeva', 'torpeedot', 'meremeest', 'kahurit'] : ['ships', 'torpedoes', 'sailors', 'cannons'];
+  const items =
+    locale === 'et'
+      ? ['laeva', 'torpeedot', 'meremeest', 'kahurit']
+      : ['ships', 'torpedoes', 'sailors', 'cannons'];
   const item = items[Math.floor(rng() * items.length)]!;
   const count = Math.min(Math.floor(rng() * 5) + 2, 10);
   const shipEmoji = '🚢 '.repeat(count);
@@ -2208,7 +2474,10 @@ function generateCountObjectsQuestion(level: number, rng: RngFunction): { prompt
   };
 }
 
-function generateLogicPuzzle(level: number, rng: RngFunction): { prompt: string; correctAnswer: string } {
+function generateLogicPuzzle(
+  level: number,
+  rng: RngFunction,
+): { prompt: string; correctAnswer: string } {
   const t = getTranslations();
   // Template is "If a > b and b > c, then a ? c" so we need a > b > c; answer is ">"
   const c = Math.floor(rng() * 5) + 1;
@@ -2220,7 +2489,10 @@ function generateLogicPuzzle(level: number, rng: RngFunction): { prompt: string;
   };
 }
 
-function generateWordProblem1(level: number, rng: RngFunction): { prompt: string; correctAnswer: number } {
+function generateWordProblem1(
+  level: number,
+  rng: RngFunction,
+): { prompt: string; correctAnswer: number } {
   const t = getTranslations();
   const a = Math.floor(rng() * 5) + 2;
   const b = Math.floor(rng() * 5) + 2;
@@ -2230,7 +2502,10 @@ function generateWordProblem1(level: number, rng: RngFunction): { prompt: string
   };
 }
 
-function generateWordProblem2(level: number, rng: RngFunction): { prompt: string; correctAnswer: number } {
+function generateWordProblem2(
+  level: number,
+  rng: RngFunction,
+): { prompt: string; correctAnswer: number } {
   const t = getTranslations();
   const total = Math.floor(rng() * 10) + 10;
   const left = Math.floor(rng() * (total - 2)) + 1;
@@ -2240,7 +2515,10 @@ function generateWordProblem2(level: number, rng: RngFunction): { prompt: string
   };
 }
 
-function generateTwoStepProblem(level: number, rng: RngFunction): { prompt: string; correctAnswer: number } {
+function generateTwoStepProblem(
+  level: number,
+  rng: RngFunction,
+): { prompt: string; correctAnswer: number } {
   const t = getTranslations();
   const initial = Math.floor(rng() * 5) + 5;
   const a = Math.floor(rng() * 3) + 1;
@@ -2253,7 +2531,11 @@ function generateTwoStepProblem(level: number, rng: RngFunction): { prompt: stri
 
 // Starter Profile Question Generators (Level 7+: Coordinates/logic)
 
-function generateNavigateQuestion(level: number, rng: RngFunction, gridSize: number): { prompt: string; correctAnswer: string } {
+function generateNavigateQuestion(
+  level: number,
+  rng: RngFunction,
+  gridSize: number,
+): { prompt: string; correctAnswer: string } {
   const t = getTranslations();
   const cols = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'];
   const directions = ['navigate', 'navigateLeft', 'navigateUp', 'navigateDown'] as const;
@@ -2301,7 +2583,10 @@ function generateNavigateQuestion(level: number, rng: RngFunction, gridSize: num
   };
 }
 
-function generateSequenceQuestion(level: number, rng: RngFunction): { prompt: string; correctAnswer: number } {
+function generateSequenceQuestion(
+  level: number,
+  rng: RngFunction,
+): { prompt: string; correctAnswer: number } {
   const t = getTranslations();
   const patterns = [
     { seq: [2, 4, 6], answer: 8 },
@@ -2312,12 +2597,17 @@ function generateSequenceQuestion(level: number, rng: RngFunction): { prompt: st
   ];
   const pattern = patterns[Math.floor(rng() * patterns.length)]!;
   return {
-    prompt: formatQuestion(t.battlelearn.questions.sequenceNext, { sequence: pattern.seq.join(', ') }),
+    prompt: formatQuestion(t.battlelearn.questions.sequenceNext, {
+      sequence: pattern.seq.join(', '),
+    }),
     correctAnswer: pattern.answer,
   };
 }
 
-function generateAreaProblem(level: number, rng: RngFunction): { prompt: string; correctAnswer: number } {
+function generateAreaProblem(
+  level: number,
+  rng: RngFunction,
+): { prompt: string; correctAnswer: number } {
   const t = getTranslations();
   const width = Math.floor(rng() * 4) + 2;
   const height = Math.floor(rng() * 4) + 2;
@@ -2327,7 +2617,10 @@ function generateAreaProblem(level: number, rng: RngFunction): { prompt: string;
   };
 }
 
-function generatePerimeterProblem(level: number, rng: RngFunction): { prompt: string; correctAnswer: number } {
+function generatePerimeterProblem(
+  level: number,
+  rng: RngFunction,
+): { prompt: string; correctAnswer: number } {
   const t = getTranslations();
   const width = Math.floor(rng() * 4) + 2;
   const height = Math.floor(rng() * 4) + 2;
@@ -2339,7 +2632,10 @@ function generatePerimeterProblem(level: number, rng: RngFunction): { prompt: st
 
 // Advanced Profile Question Generators (Level 1-5)
 
-function generatePatternQuestion(level: number, rng: RngFunction): { prompt: string; correctAnswer: number } {
+function generatePatternQuestion(
+  level: number,
+  rng: RngFunction,
+): { prompt: string; correctAnswer: number } {
   const t = getTranslations();
   const patterns = [
     { seq: [2, 4, 8], answer: 16 },
@@ -2352,18 +2648,24 @@ function generatePatternQuestion(level: number, rng: RngFunction): { prompt: str
   ];
   const pattern = patterns[Math.floor(rng() * patterns.length)]!;
   return {
-    prompt: formatQuestion(t.battlelearn.questions.patternNext, { pattern: pattern.seq.join(', ') }),
+    prompt: formatQuestion(t.battlelearn.questions.patternNext, {
+      pattern: pattern.seq.join(', '),
+    }),
     correctAnswer: pattern.answer,
   };
 }
 
-function generateDistanceQuestion(level: number, rng: RngFunction, gridSize: number): { prompt: string; correctAnswer: number } {
+function generateDistanceQuestion(
+  level: number,
+  rng: RngFunction,
+  gridSize: number,
+): { prompt: string; correctAnswer: number } {
   const t = getTranslations();
   const cols = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'];
   const useRow = rng() < 0.5;
   const col1 = Math.floor(rng() * gridSize);
   const row1 = Math.floor(rng() * gridSize) + 1;
-  
+
   if (useRow) {
     // Same column, different rows
     const row2 = Math.min(row1 + Math.floor(rng() * 3) + 2, gridSize);
@@ -2371,8 +2673,9 @@ function generateDistanceQuestion(level: number, rng: RngFunction, gridSize: num
     const coord1 = `${cols[col1]}-${row1}`;
     const coord2 = `${cols[col1]}-${row2}`;
     return {
-      prompt: formatQuestion(t.battlelearn.questions.distance, { 
-        coord1, coord2
+      prompt: formatQuestion(t.battlelearn.questions.distance, {
+        coord1,
+        coord2,
       }),
       correctAnswer: distance,
     };
@@ -2383,15 +2686,19 @@ function generateDistanceQuestion(level: number, rng: RngFunction, gridSize: num
     const coord1 = `${cols[col1]}-${row1}`;
     const coord2 = `${cols[col2]}-${row1}`;
     return {
-      prompt: formatQuestion(t.battlelearn.questions.distance, { 
-        coord1, coord2
+      prompt: formatQuestion(t.battlelearn.questions.distance, {
+        coord1,
+        coord2,
       }),
       correctAnswer: distance,
     };
   }
 }
 
-function generateWordProblem3(level: number, rng: RngFunction): { prompt: string; correctAnswer: number } {
+function generateWordProblem3(
+  level: number,
+  rng: RngFunction,
+): { prompt: string; correctAnswer: number } {
   const t = getTranslations();
   const ships = Math.floor(rng() * 4) + 2;
   const perShip = Math.floor(rng() * 5) + 3;
@@ -2403,30 +2710,37 @@ function generateWordProblem3(level: number, rng: RngFunction): { prompt: string
 
 // Advanced Profile Question Generators (Level 6-10)
 
-function generateMultiMoveQuestion(level: number, rng: RngFunction, gridSize: number): { prompt: string; correctAnswer: string } {
+function generateMultiMoveQuestion(
+  level: number,
+  rng: RngFunction,
+  gridSize: number,
+): { prompt: string; correctAnswer: string } {
   const t = getTranslations();
   const cols = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'];
   const startCol = Math.floor(rng() * (gridSize - 3));
   const startRow = Math.floor(rng() * (gridSize - 3)) + 2; // Start from row 2+ to allow upward movement
   const colMoves = Math.floor(rng() * 2) + 1;
   const rowMoves = Math.floor(rng() * 2) + 1;
-  
+
   const finalCol = startCol + colMoves; // Right = column increases
   const finalRow = startRow - rowMoves; // Up = row number DECREASES (1 is at top)
   const startCoord = `${cols[startCol]}-${startRow}`;
   const finalCoord = `${cols[finalCol]}-${finalRow}`;
-  
+
   return {
-    prompt: formatQuestion(t.battlelearn.questions.multiMove, { 
-      start: startCoord, 
-      right: colMoves, 
-      up: rowMoves 
+    prompt: formatQuestion(t.battlelearn.questions.multiMove, {
+      start: startCoord,
+      right: colMoves,
+      up: rowMoves,
     }),
     correctAnswer: finalCoord,
   };
 }
 
-function generateFleetMultiplyQuestion(level: number, rng: RngFunction): { prompt: string; correctAnswer: number } {
+function generateFleetMultiplyQuestion(
+  level: number,
+  rng: RngFunction,
+): { prompt: string; correctAnswer: number } {
   const t = getTranslations();
   const ships = Math.floor(rng() * 4) + 3;
   const cannons = Math.floor(rng() * 5) + 4;
@@ -2436,7 +2750,10 @@ function generateFleetMultiplyQuestion(level: number, rng: RngFunction): { promp
   };
 }
 
-function generateFormationCount(level: number, rng: RngFunction): { prompt: string; correctAnswer: number } {
+function generateFormationCount(
+  level: number,
+  rng: RngFunction,
+): { prompt: string; correctAnswer: number } {
   const t = getTranslations();
   const row1 = Math.floor(rng() * 5) + 3;
   const row2 = Math.floor(rng() * 5) + 3;
@@ -2449,17 +2766,23 @@ function generateFormationCount(level: number, rng: RngFunction): { prompt: stri
 
 // Advanced Profile Question Generators (Level 11+)
 
-function generateVectorAddition(level: number, rng: RngFunction): { prompt: string; correctAnswer: number } {
+function generateVectorAddition(
+  level: number,
+  rng: RngFunction,
+): { prompt: string; correctAnswer: number } {
   const t = getTranslations();
   const right1 = Math.floor(rng() * 3) + 1;
   const up1 = Math.floor(rng() * 3) + 1;
   const right2 = Math.floor(rng() * 3) + 1;
   const up2 = Math.floor(rng() * 3) + 1;
   const totalMoves = right1 + up1 + right2 + up2;
-  
+
   return {
-    prompt: formatQuestion(t.battlelearn.questions.vectorAdd, { 
-      right1, up1, right2, up2 
+    prompt: formatQuestion(t.battlelearn.questions.vectorAdd, {
+      right1,
+      up1,
+      right2,
+      up2,
     }),
     correctAnswer: totalMoves,
   };
@@ -2471,7 +2794,7 @@ function generateVectorAddition(level: number, rng: RngFunction): { prompt: stri
 function generateOptions(correct: number, count: number, rng: RngFunction): string[] {
   const options = [String(correct)];
   const attempts = new Set<number>([correct]);
-  
+
   while (options.length < count && attempts.size < count * 3) {
     const offset = Math.floor(rng() * 10) - 5; // -5 to 4
     const wrong = correct + offset;
@@ -2480,7 +2803,7 @@ function generateOptions(correct: number, count: number, rng: RngFunction): stri
       options.push(String(wrong));
     }
   }
-  
+
   // Fill remaining with random numbers if needed
   while (options.length < count) {
     const wrong = Math.floor(rng() * (correct * 2 + 10)) + 1;
@@ -2488,7 +2811,7 @@ function generateOptions(correct: number, count: number, rng: RngFunction): stri
       options.push(String(wrong));
     }
   }
-  
+
   return options;
 }
 
@@ -2499,10 +2822,10 @@ function generateCoordinateOptions(correct: string, gridSize: number, rng: RngFu
   const cols = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'];
   const options = [correct];
   const attempts = new Set<string>([correct]);
-  
+
   // Check if coordinate is in (x,y) format or A-1 format
   const isNumericFormat = correct.startsWith('(');
-  
+
   if (isNumericFormat) {
     // Generate (x,y) format options
     while (options.length < 4 && attempts.size < gridSize * gridSize) {
@@ -2526,44 +2849,52 @@ function generateCoordinateOptions(correct: string, gridSize: number, rng: RngFu
       }
     }
   }
-  
+
   return options;
 }
 
 /**
  * Shuffle options and place correct answer at specified index
  */
-function shuffleOptionsWithCorrect(options: string[], correct: number | string, correctIndex: number, rng: RngFunction): string[] {
+function shuffleOptionsWithCorrect(
+  options: string[],
+  correct: number | string,
+  correctIndex: number,
+  rng: RngFunction,
+): string[] {
   const shuffled = [...options];
-  
+
   // Shuffle all options first
   for (let i = shuffled.length - 1; i > 0; i--) {
     const j = Math.floor(rng() * (i + 1));
     [shuffled[i], shuffled[j]] = [shuffled[j]!, shuffled[i]!];
   }
-  
+
   // Find and move correct answer to desired index
   const correctStr = String(correct);
   const currentCorrectIndex = shuffled.indexOf(correctStr);
   if (currentCorrectIndex !== -1 && currentCorrectIndex !== correctIndex) {
-    [shuffled[currentCorrectIndex], shuffled[correctIndex]] = [shuffled[correctIndex]!, shuffled[currentCorrectIndex]!];
+    [shuffled[currentCorrectIndex], shuffled[correctIndex]] = [
+      shuffled[correctIndex]!,
+      shuffled[currentCorrectIndex]!,
+    ];
   }
-  
+
   return shuffled;
 }
 
 /**
  * Generate a new question for BattleLearn game while preserving board state
- * 
+ *
  * This helper generates only a new question (not a new problem) to maintain
  * game continuity. The board state (revealed, hits, sunkShips, ships) is preserved.
- * 
+ *
  * @param currentProblem - The current BattleLearn problem with board state
  * @param level - Current difficulty level
  * @param profile - Player profile (starter or advanced)
  * @param rng - Random number generator
  * @returns Updated problem with new question but same board state
- * 
+ *
  * @example
  * // After a player clicks a cell and answers a question, generate next question:
  * const currentProblem = {
@@ -2579,16 +2910,19 @@ export function generateBattleLearnQuestion(
   currentProblem: BattleLearnProblem,
   level: number,
   profile: ProfileType,
-  rng: RngFunction = Math.random
+  rng: RngFunction = Math.random,
 ): BattleLearnProblem {
   const gridSize = currentProblem.gridSize;
   let prompt: string;
   let correctAnswer: number | string;
   let options: string[];
-  
+
   // Helper to set options and return correctIndex for next step
   const setOptionsForAnswer = (): number => {
-    if (typeof correctAnswer === 'string' && (correctAnswer.includes('-') || correctAnswer.includes('('))) {
+    if (
+      typeof correctAnswer === 'string' &&
+      (correctAnswer.includes('-') || correctAnswer.includes('('))
+    ) {
       options = generateCoordinateOptions(correctAnswer, gridSize, rng);
     } else if (correctAnswer === '>' || correctAnswer === '<' || correctAnswer === '=') {
       options = ['>', '<', '='];
@@ -2697,11 +3031,11 @@ export function generateBattleLearnQuestion(
       setOptionsForAnswer();
     }
   }
-  
+
   const numOptions = options.length;
   const correctIndex = Math.floor(rng() * numOptions);
   const shuffledOptions = shuffleOptionsWithCorrect(options, correctAnswer, correctIndex, rng);
-  
+
   // Return updated problem with new question but SAME board state (keep same uid so view does not remount and lose answeredProblemCells)
   return {
     ...currentProblem,
@@ -2724,19 +3058,23 @@ export function generateBattleLearnQuestion(
 
 /**
  * Helper function to generate distractor stars for expert mode
- * 
+ *
  * Creates dim background stars that are not part of the constellation
  * to increase difficulty. Number of distractors increases with level.
- * 
+ *
  * @param constellation - The target constellation (unused, for future positioning logic)
  * @param rng - Random number generator for consistent results
  * @param level - Player level (determines number of distractors: level/3, max 3)
  * @returns Array of distractor stars with magnitude 4-6 (dimmer than constellation stars)
  */
-function generateDistractorStars(constellation: Constellation, rng: RngFunction, level: number): Star[] {
+function generateDistractorStars(
+  constellation: Constellation,
+  rng: RngFunction,
+  level: number,
+): Star[] {
   const numDistractors = Math.min(3, Math.floor(level / 3)); // 1-3 distractor stars
   const distractors: Star[] = [];
-  
+
   for (let i = 0; i < numDistractors; i++) {
     distractors.push({
       id: `distractor_${i}`,
@@ -2745,7 +3083,7 @@ function generateDistractorStars(constellation: Constellation, rng: RngFunction,
       magnitude: 4 + rng() * 2, // Dim stars (magnitude 4-6)
     });
   }
-  
+
   return distractors;
 }
 
@@ -2756,30 +3094,30 @@ function generateDistractorStars(constellation: Constellation, rng: RngFunction,
 function generateIdentifyOptions(correct: Constellation, rng: RngFunction): string[] {
   // Get wrong options from other constellations
   const allConstellations = CONSTELLATIONS.filter((c: Constellation) => c.id !== correct.id);
-  
+
   // Fisher-Yates shuffle
   const shuffled = [...allConstellations];
   for (let i = shuffled.length - 1; i > 0; i--) {
     const j = Math.floor(rng() * (i + 1));
     [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
   }
-  
+
   // Pick 3 wrong options
   const options: string[] = [correct.id];
   for (let i = 0; i < Math.min(3, shuffled.length); i++) {
     options.push(shuffled[i].id);
   }
-  
+
   // Ensure we have 4 options - if not enough constellations, repeat some
   while (options.length < 4 && allConstellations.length > 0) {
     options.push(getRandom(allConstellations, rng).id);
   }
-  
+
   // Fisher-Yates shuffle final options
   for (let i = options.length - 1; i > 0; i--) {
     const j = Math.floor(rng() * (i + 1));
     [options[i], options[j]] = [options[j], options[i]];
   }
-  
+
   return options;
 }

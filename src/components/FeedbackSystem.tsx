@@ -35,15 +35,17 @@ interface ProgressIndicatorProps {
   label?: string;
 }
 
-export const ProgressIndicator: React.FC<ProgressIndicatorProps> = ({ current, total, label = '' }) => {
+export const ProgressIndicator: React.FC<ProgressIndicatorProps> = ({
+  current,
+  total,
+  label = '',
+}) => {
   const percentage = (current / total) * 100;
 
   return (
     <div className="w-full max-w-xs">
       {label && (
-        <div className="text-sm font-semibold text-slate-600 mb-1 text-center">
-          {label}
-        </div>
+        <div className="text-sm font-semibold text-slate-600 mb-1 text-center">{label}</div>
       )}
       <div className="w-full h-3 bg-slate-200 rounded-full overflow-hidden shadow-inner">
         <div

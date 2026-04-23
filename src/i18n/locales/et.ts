@@ -71,12 +71,7 @@ export const et = {
       '6 ÕIGET JÄRJEST! 💯',
       '7+ ÕIGET JÄRJEST! 🚀',
     ],
-    levelUp: [
-      'TASE TÕUSIS! 🎊',
-      'UUS TASE! 🌟',
-      'EDENED! ⭐',
-      'SUUREPÄRANE! 🏆',
-    ],
+    levelUp: ['TASE TÕUSIS! 🎊', 'UUS TASE! 🌟', 'EDENED! ⭐', 'SUUREPÄRANE! 🏆'],
   },
 
   // Notification labels
@@ -384,11 +379,13 @@ export const et = {
     },
     answerCorrectly: {
       title: 'Vasta õigesti',
-      content: 'Vasta õigesti, et edasi jõuda! Kui näitad oskust (õiged vastused + hea täpsus), tõused automaatselt taseme võrra ja teenid tähti!',
+      content:
+        'Vasta õigesti, et edasi jõuda! Kui näitad oskust (õiged vastused + hea täpsus), tõused automaatselt taseme võrra ja teenid tähti!',
     },
     beCareful: {
       title: 'Ole ettevaatlik',
-      content: 'Iga vale vastus maksab ühe südame. Südamid on globaalsed - need säilivad mängude vahel. Kui südamed otsa saavad, saad neid tähtedega osta!',
+      content:
+        'Iga vale vastus maksab ühe südame. Südamid on globaalsed - need säilivad mängude vahel. Kui südamed otsa saavad, saad neid tähtedega osta!',
     },
     collectAchievements: {
       title: 'Kogu saavutusi',
@@ -440,7 +437,8 @@ export const et = {
       triesLeft: '{count} katset jäänud',
       outOfTries: 'Katsed otsas',
       greatJob: 'Tubli töö!',
-      tutorial: 'Puuduta langevaid tähti, et sõna kokku panna. Punasele barjäärile jõudnud tähed annavad veamärke!',
+      tutorial:
+        'Puuduta langevaid tähti, et sõna kokku panna. Punasele barjäärile jõudnud tähed annavad veamärke!',
       starPickup: 'Tähtede boonus',
       heartPickup: 'Südame boonus',
       shieldPickup: 'Veamärgi kaitse',
@@ -733,83 +731,97 @@ export const et = {
     word_builder: {
       title: 'SÕNAMEISTER',
       desc: 'Lao tähtedest sõna kokku',
-      gameDescription: 'Näed pilti (emoji) ja pead valima õiged tähed järjekorras, et moodustada sõna. Tähed on segamini – vali need õiges järjekorras. Alusta esimesest tähest!',
+      gameDescription:
+        'Näed pilti (emoji) ja pead valima õiged tähed järjekorras, et moodustada sõna. Tähed on segamini – vali need õiges järjekorras. Alusta esimesest tähest!',
       hintRevealNextCost: 'Näita järgmist tähte ({cost}⭐)',
       hintEliminateCost: 'Eemalda üks vale täht ({cost}⭐)',
     },
     word_cascade: {
       title: 'SÕNAKOSK',
       desc: 'Püüa tähti ja lao sõnu kiiresti',
-      gameDescription: 'Tähed kukuvad alla – puuduta neid õiges järjekorras, et kirjutada sihtsõna. Kui täht jõuab punase jooneni, saad veamärgi. Koguda võid tähti ⭐, südameid ❤️ ja kilpe, mis eemaldavad veamärgi.',
+      gameDescription:
+        'Tähed kukuvad alla – puuduta neid õiges järjekorras, et kirjutada sihtsõna. Kui täht jõuab punase jooneni, saad veamärgi. Koguda võid tähti ⭐, südameid ❤️ ja kilpe, mis eemaldavad veamärgi.',
       hintRevealNextCost: 'Näita järgmist tähte ({cost}⭐)',
     },
     syllable_builder: {
       title: 'SILBIMEISTER',
       desc: 'Pane silbid sõnaks kokku',
-      gameDescription: 'Näed pilti ja silpe. Silbid on sõna osad – lohista need õigesse järjekorda, et moodustada täissõna. Kui loed sõna ette, kuuled ära, kas see kõlab õigesti.',
+      gameDescription:
+        'Näed pilti ja silpe. Silbid on sõna osad – lohista need õigesse järjekorda, et moodustada täissõna. Kui loed sõna ette, kuuled ära, kas see kõlab õigesti.',
     },
     pattern: {
       title: 'MUSTRI-RONG',
       desc: 'Jätka mustrit',
-      gameDescription: 'Rongis on vaguneid emojidega, mis järgivad mustrit. Vali järgmiseks õige vagun neljast valikust. Vaata, kuidas mustrit korratakse (nt A-B-A-B või A-B-C-A-B-C).',
+      gameDescription:
+        'Rongis on vaguneid emojidega, mis järgivad mustrit. Vali järgmiseks õige vagun neljast valikust. Vaata, kuidas mustrit korratakse (nt A-B-A-B või A-B-C-A-B-C).',
       hintEliminateCost: 'Eemalda üks vale ({cost}⭐)',
     },
     sentence_logic: {
       title: 'LAUSE-DETEKTIIV',
       desc: 'Kus asub ese?',
-      gameDescription: 'Loe lauset ja vaata stseeni. Lause ütleb, kus ese asub (nt "Kass on diivani peal"). Vali õige vastus neljast valikust. Pane tähele ase- ja seesütlevat käänet.',
+      gameDescription:
+        'Loe lauset ja vaata stseeni. Lause ütleb, kus ese asub (nt "Kass on diivani peal"). Vali õige vastus neljast valikust. Pane tähele ase- ja seesütlevat käänet.',
     },
     memory_math: {
       title: 'MATEMAATIKA MÄLU',
       desc: 'Leia tehe ja vastus',
-      gameDescription: 'Pööra kaardid ümber ja leia paarid: üks kaart on tehe (nt 3+4) ja teine on vastus (7). Mäluta, kus kumb kaart on, et paarid kiiresti leida.',
+      gameDescription:
+        'Pööra kaardid ümber ja leia paarid: üks kaart on tehe (nt 3+4) ja teine on vastus (7). Mäluta, kus kumb kaart on, et paarid kiiresti leida.',
       hintRevealPairCost: 'Näita üht paari ({cost}⭐)',
     },
     picture_pairs: {
       title: 'PILDIPAARID',
       desc: 'Leia pildi ja sõna paar',
-      gameDescription: 'Klassikaline mälumäng: pööra kaardid ümber ja leia pildi (emoji) ja sõna paar. Enne mängu näed kaarte lühikest aega – jäta asukohad meelde!',
+      gameDescription:
+        'Klassikaline mälumäng: pööra kaardid ümber ja leia pildi (emoji) ja sõna paar. Enne mängu näed kaarte lühikest aega – jäta asukohad meelde!',
       hintRevealPairCost: 'Näita üht paari ({cost}⭐)',
     },
     robo_path: {
       title: 'ROBO-RADA',
       desc: 'Programmeerirobot',
-      gameDescription: 'Anna robotile käsud (üles, alla, vasakule, paremale), et ta jõuaks rohelise aknaga lahtrini. Vältida tuleb takistusi. Vali käskude järjekord enne "Käivita" vajutamist.',
+      gameDescription:
+        'Anna robotile käsud (üles, alla, vasakule, paremale), et ta jõuaks rohelise aknaga lahtrini. Vältida tuleb takistusi. Vali käskude järjekord enne "Käivita" vajutamist.',
     },
     letter_match: {
       title: 'TÄHE-DETEKTIIV',
       desc: 'Leia õige täht',
-      gameDescription: 'Näed sõna ja pilti. Küsimus on: milline täht on kindlas kohas (nt esimene või teine)? Vali õige täht neljast valikust. Suur ja väike täht loetakse samaks.',
+      gameDescription:
+        'Näed sõna ja pilti. Küsimus on: milline täht on kindlas kohas (nt esimene või teine)? Vali õige täht neljast valikust. Suur ja väike täht loetakse samaks.',
     },
     unit_conversion: {
       title: 'MÕÕTÜHIKUD',
       desc: 'Muunda ühikuid',
-      gameDescription: 'Teisenda ühest mõõtühikust teise (nt meetrid sentimeetriteks, kilogrammid grammideks). Loe ülesannet hoolikalt ja vali õige vastus.',
+      gameDescription:
+        'Teisenda ühest mõõtühikust teise (nt meetrid sentimeetriteks, kilogrammid grammideks). Loe ülesannet hoolikalt ja vali õige vastus.',
       hintEliminateCost: 'Eemalda üks vale ({cost}⭐)',
     },
     balance_scale: {
       title: 'KAALUD',
       desc: 'Tasakaalusta kaalud',
-      gameDescription: 'Vasakul kaalul on raskused. Arvuta vasaku poole summa ja vali kaal, mis tasakaalustab parema poole. Vali õige raskus neljast valikust.',
+      gameDescription:
+        'Vasakul kaalul on raskused. Arvuta vasaku poole summa ja vali kaal, mis tasakaalustab parema poole. Vali õige raskus neljast valikust.',
       hintEliminateCost: 'Eemalda üks vale ({cost}⭐)',
       chooseWeight: 'Milline kaal tasakaalustab?',
     },
     time_match: {
       title: 'KELLAMÄNG',
       desc: 'Määra kellaaeg',
-      gameDescription: 'Näed kella, mis näitab tundi ja minuteid. Vali õige kellaaeg neljast valikust (nt "kell 3" või "pool 4"). Tund on suurem number, minut väiksem.',
+      gameDescription:
+        'Näed kella, mis näitab tundi ja minuteid. Vali õige kellaaeg neljast valikust (nt "kell 3" või "pool 4"). Tund on suurem number, minut väiksem.',
       hintEliminateCost: 'Eemalda üks vale aeg ({cost}⭐)',
     },
     math_snake: {
       title: 'NUMBRIMADU',
       desc: 'Sööda madu tehetega',
-      gameDescription: 'Liigu nooleklahvidega ja söö õunu – madu kasvab. Mõnel õunal on matemaatikaülesanne: lahenda tehe ja vali õige vastus. Vale vastus lühendab madu.',
+      gameDescription:
+        'Liigu nooleklahvidega ja söö õunu – madu kasvab. Mõnel õunal on matemaatikaülesanne: lahenda tehe ja vali õige vastus. Vale vastus lühendab madu.',
       hintEliminateCost: 'Eemalda üks vale ({cost}⭐)',
     },
     compare_sizes: {
       title: 'ARVUDE VÕRDLEMINE',
       desc: 'Võrdle arve',
-      gameDescription: 'Võrdle kaht arvu või kogust. Vali õige sümbol: < (väiksem), = (võrdne) või > (suurem). Vaata mõlemat poolt hoolikalt.',
+      gameDescription:
+        'Võrdle kaht arvu või kogust. Vali õige sümbol: < (väiksem), = (võrdne) või > (suurem). Vaata mõlemat poolt hoolikalt.',
       instruction: 'Milline sümbol on õige?',
       symbolInstruction: 'Vali õige võrdlussümbol',
       selectSymbol: 'Vali sümbol',
@@ -823,7 +835,8 @@ export const et = {
     shape_shift: {
       title: 'KUJUNDAJA',
       desc: 'Ehita kujundeid tükkidest',
-      gameDescription: 'Lohista geomeetrilised tükid lauale ja paiguta need pildile vastavusse. Puuduta tükki, et teda 90° pöörata. Mõnes režiimis tuleb ehitada kujund ise või leida üleliigne tükk.',
+      gameDescription:
+        'Lohista geomeetrilised tükid lauale ja paiguta need pildile vastavusse. Puuduta tükki, et teda 90° pöörata. Mõnes režiimis tuleb ehitada kujund ise või leida üleliigne tükk.',
       instructions: {
         match: 'Lohista tükid õigetesse kohtadesse',
         rotate: 'Puuduta pööramiseks, lohista paigutamiseks',
@@ -841,7 +854,8 @@ export const et = {
       hintPlacePieceUsed: 'Üks juba paigutatud',
       hintOutlineDescription: 'Näita, kuhu tükid kuuluvad',
       hintPlacePieceDescription: 'Paigutan ühe tüki sinna õigesse kohta',
-      hintText: 'Lohista kujundid vastavusse pildiga. Puuduta pööramiseks. Kasuta all olevaid vihjenuppe!',
+      hintText:
+        'Lohista kujundid vastavusse pildiga. Puuduta pööramiseks. Kasuta all olevaid vihjenuppe!',
       rotateButton: 'Pööra 90°',
       orUse: 'või kasuta',
       piecesRemaining: 'Tükke jäänud',
@@ -876,12 +890,14 @@ export const et = {
     star_mapper: {
       title: 'TÄHEKUJUNDID',
       desc: 'Õpi tundma tähtkujusid',
-      gameDescription: 'Ühenda tähed joontega, et moodustada tähtkuju (nt Suur Vanker). Mõnes režiimis järgid juhiseid, mõnes ehitad mälu järgi. Võid kasutada "Tagasi" nuppu, kui teed vea.',
+      gameDescription:
+        'Ühenda tähed joontega, et moodustada tähtkuju (nt Suur Vanker). Mõnes režiimis järgid juhiseid, mõnes ehitad mälu järgi. Võid kasutada "Tagasi" nuppu, kui teed vea.',
     },
     shape_dash: {
       title: 'KUJUNDITE JOOKS',
       desc: 'Hüppa, väldi takistusi ja vasta geomeetriale',
-      gameDescription: 'Sinu tegelane jookseb ise edasi. Vajuta tühikuklahvi või puuduta ekraani, et hüpata takistuste üle. Läbi õige kujundi värava jookstes vastame geomeetria küsimustele! Vale värav = kaotad combo/kilbi, aga jooksed edasi. Kaks valet järjest või kokkupõrge takistustega = mäng läbi.',
+      gameDescription:
+        'Sinu tegelane jookseb ise edasi. Vajuta tühikuklahvi või puuduta ekraani, et hüpata takistuste üle. Läbi õige kujundi värava jookstes vastame geomeetria küsimustele! Vale värav = kaotad combo/kilbi, aga jooksed edasi. Kaks valet järjest või kokkupõrge takistustega = mäng läbi.',
       tapToRetry: 'Vajuta uuesti proovimiseks',
       hintRevealGateCost: 'Näita õiget väravat ({cost}⭐)',
       hintSlowTimeCost: 'Aeglusta aega väravate juures ({cost}⭐)',
@@ -932,7 +948,8 @@ export const et = {
     battlelearn: {
       title: 'LAEVADE UPUTAMINE',
       desc: 'Uputa laevad ja õpi matemaatikat',
-      gameDescription: 'Vali ruut võrgustikul – kui seal on laev, saad tabamuse; kui tühi, napib. Mõnel ruudul tuleb vastata matemaatika- või loogikaküsimusele. Uputa kõik laevad, et võita!',
+      gameDescription:
+        'Vali ruut võrgustikul – kui seal on laev, saad tabamuse; kui tühi, napib. Mõnel ruudul tuleb vastata matemaatika- või loogikaküsimusele. Uputa kõik laevad, et võita!',
       hintRevealEmptyCost: 'Näita üht tühja ruutu ({cost}⭐)',
       hintRevealCost: 'Näita üht laeva asukohta ({cost}⭐)',
       hintEliminateCost: 'Eemalda üks vale vastus ({cost}⭐)',
@@ -1044,31 +1061,40 @@ export const et = {
       sequenceNext: 'Järgmine arv: {sequence}, __',
       // Word problems
       wordProblem1: 'Kapten nägi hommikul {a} laeva ja õhtul {b} laeva. Kokku mitu laeva?',
-      wordProblem2: 'Laeval oli {total} meremeest. Seejärel lahkus {left} meremeest. Mitu jäi laevale?',
-      wordProblem3: 'Igal laeval on {perShip} kahurit. Kui laevu on {ships}, siis kokku mitu kahurit?',
+      wordProblem2:
+        'Laeval oli {total} meremeest. Seejärel lahkus {left} meremeest. Mitu jäi laevale?',
+      wordProblem3:
+        'Igal laeval on {perShip} kahurit. Kui laevu on {ships}, siis kokku mitu kahurit?',
       // Time-based
-      timeProblem: 'Reis algas kell {start}:00 ja kestis {duration} tundi. Millal reis lõppes? (anna vastuseks tunninumber)',
+      timeProblem:
+        'Reis algas kell {start}:00 ja kestis {duration} tundi. Millal reis lõppes? (anna vastuseks tunninumber)',
       // Money counting
       coinProblem: 'Sul on {count} münti, igaüks {value}€ väärt. Kui palju raha kokku?',
       // Multi-step
-      twoStep: 'Sadamasse saabus {a} laeva ja lahkus {b} laeva. Algselt oli seal {initial} laeva. Mitu laeva on nüüd sadamas?',
+      twoStep:
+        'Sadamasse saabus {a} laeva ja lahkus {b} laeva. Algselt oli seal {initial} laeva. Mitu laeva on nüüd sadamas?',
       // Logic puzzles
       logicPuzzle: 'Kui {a} > {b} ja {b} > {c}, siis {a} ? {c} (vali: >, < või =)',
       // Area/perimeter
-      areaProblem: 'Laeva võrk on {width} × {height} ruutu suur. Kui suur on pindala (ruutühikutes)?',
+      areaProblem:
+        'Laeva võrk on {width} × {height} ruutu suur. Kui suur on pindala (ruutühikutes)?',
       perimeterProblem: 'Doki võrk on {width} × {height} ruutu. Kui pikk on ümbermõõt (ühikutes)?',
       // Direction sequences
       directionSequence: 'Liigu {dir1}, siis {dir2}. Mis suunas?',
       // Advanced coordinate
-      multiMove: 'Alguspunkt on {start}. Liigu {right} sammu paremale ja {up} sammu üles. Mis on uus koordinaat?',
+      multiMove:
+        'Alguspunkt on {start}. Liigu {right} sammu paremale ja {up} sammu üles. Mis on uus koordinaat?',
       // Vector addition
-      vectorAdd: 'Laev liigub {right1} sammu paremale ja {up1} sammu üles, siis {right2} sammu paremale ja {up2} sammu üles. Kokku mitu sammu?',
+      vectorAdd:
+        'Laev liigub {right1} sammu paremale ja {up1} sammu üles, siis {right2} sammu paremale ja {up2} sammu üles. Kokku mitu sammu?',
       // Distance
       distance: 'Laev asub {coord1}, sihtmärk on {coord2}. Mitu ühikut kaugusel?',
       // Multiplication
-      fleetMultiply: 'Ühel hävitajal on {cannons} kahurit. Hävitajaid on {ships}. Kokku mitu kahurit?',
+      fleetMultiply:
+        'Ühel hävitajal on {cannons} kahurit. Hävitajaid on {ships}. Kokku mitu kahurit?',
       // Formation problems
-      formationCount: 'Esimeses reas {row1} laeva, teises reas {row2} laeva, kolmandas reas {row3} laeva. Kokku mitu laeva?',
+      formationCount:
+        'Esimeses reas {row1} laeva, teises reas {row2} laeva, kolmandas reas {row3} laeva. Kokku mitu laeva?',
       // Strategic positioning
       strategicPos: 'Parim koht ründamiseks vahemikus {x1}-{x2}, {y1}-{y2}. Keskpunkt?',
     },

@@ -50,7 +50,8 @@ body:has(.fixed.inset-0) {
 
 /* Force native emoji font so emojis render on iOS (avoid blank when inheriting system font) */
 .emoji-font {
-  font-family: "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji", sans-serif;
+  font-family:
+    'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji', sans-serif;
 }
 
 /* Screen reader only */
@@ -85,7 +86,8 @@ html {
 
 /* Better touch targets for mobile */
 @media (max-width: 768px) {
-  button, a {
+  button,
+  a {
     min-height: 44px;
     min-width: 44px;
   }
@@ -104,14 +106,16 @@ html {
 
 /* High contrast mode support */
 @media (prefers-contrast: high) {
-  button, a {
+  button,
+  a {
     border: 2px solid currentColor;
   }
 }
 
 /* Custom animations for sentence detective game */
 @keyframes pulse-slow {
-  0%, 100% {
+  0%,
+  100% {
     opacity: 1;
     transform: scale(1);
   }
@@ -126,7 +130,8 @@ html {
 }
 
 @keyframes bounce-subtle {
-  0%, 100% {
+  0%,
+  100% {
     transform: translateY(0);
   }
   50% {
@@ -140,7 +145,8 @@ html {
 
 /* Notification animations */
 @keyframes bounce-short {
-  0%, 100% {
+  0%,
+  100% {
     transform: scale(1);
   }
   25% {
@@ -159,13 +165,21 @@ html {
 }
 
 @keyframes shake {
-  0%, 100% {
+  0%,
+  100% {
     transform: translateX(0);
   }
-  10%, 30%, 50%, 70%, 90% {
+  10%,
+  30%,
+  50%,
+  70%,
+  90% {
     transform: translateX(-5px);
   }
-  20%, 40%, 60%, 80% {
+  20%,
+  40%,
+  60%,
+  80% {
     transform: translateX(5px);
   }
 }
@@ -217,13 +231,14 @@ html {
 
 /* Star Mapper animations */
 @keyframes twinkle {
-  0%, 100% { 
-    opacity: 1; 
-    transform: scale(1); 
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
   }
-  50% { 
-    opacity: 0.7; 
-    transform: scale(0.9); 
+  50% {
+    opacity: 0.7;
+    transform: scale(0.9);
   }
 }
 

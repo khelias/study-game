@@ -2,7 +2,7 @@ import { PersistenceAdapter, PersistenceError } from './types';
 
 /**
  * LocalStorage Persistence Adapter
- * 
+ *
  * Implements persistence using browser LocalStorage.
  * This is the default adapter for MVP and offline-first scenarios.
  */
@@ -14,7 +14,7 @@ export class LocalStorageAdapter implements PersistenceAdapter {
     if (typeof window === 'undefined') {
       return false;
     }
-    
+
     try {
       const testKey = '__localStorage_test__';
       window.localStorage.setItem(testKey, 'test');
@@ -33,11 +33,7 @@ export class LocalStorageAdapter implements PersistenceAdapter {
   // eslint-disable-next-line @typescript-eslint/require-await
   async save(key: string, data: unknown): Promise<void> {
     if (!this.isAvailable()) {
-      throw new PersistenceError(
-        'LocalStorage is not available in this environment',
-        key,
-        'save'
-      );
+      throw new PersistenceError('LocalStorage is not available in this environment', key, 'save');
     }
 
     try {
@@ -46,20 +42,10 @@ export class LocalStorageAdapter implements PersistenceAdapter {
     } catch (error) {
       // Handle quota exceeded or other storage errors
       if (error instanceof DOMException && error.name === 'QuotaExceededError') {
-        throw new PersistenceError(
-          `Storage quota exceeded for key: ${key}`,
-          key,
-          'save',
-          error
-        );
+        throw new PersistenceError(`Storage quota exceeded for key: ${key}`, key, 'save', error);
       }
-      
-      throw new PersistenceError(
-        `Failed to save data for key: ${key}`,
-        key,
-        'save',
-        error
-      );
+
+      throw new PersistenceError(`Failed to save data for key: ${key}`, key, 'save', error);
     }
   }
 
@@ -71,11 +57,7 @@ export class LocalStorageAdapter implements PersistenceAdapter {
   // eslint-disable-next-line @typescript-eslint/require-await
   async load<T>(key: string): Promise<T | null> {
     if (!this.isAvailable()) {
-      throw new PersistenceError(
-        'LocalStorage is not available in this environment',
-        key,
-        'load'
-      );
+      throw new PersistenceError('LocalStorage is not available in this environment', key, 'load');
     }
 
     try {
@@ -83,7 +65,7 @@ export class LocalStorageAdapter implements PersistenceAdapter {
       if (item === null) {
         return null;
       }
-      
+
       return JSON.parse(item) as T;
     } catch (error) {
       // If JSON parsing fails, the data might be corrupted
@@ -93,7 +75,7 @@ export class LocalStorageAdapter implements PersistenceAdapter {
         `Failed to load or parse data for key: ${key}`,
         key,
         'load',
-        error
+        error,
       );
     }
   }
@@ -108,19 +90,14 @@ export class LocalStorageAdapter implements PersistenceAdapter {
       throw new PersistenceError(
         'LocalStorage is not available in this environment',
         key,
-        'delete'
+        'delete',
       );
     }
 
     try {
       window.localStorage.removeItem(key);
     } catch (error) {
-      throw new PersistenceError(
-        `Failed to delete data for key: ${key}`,
-        key,
-        'delete',
-        error
-      );
+      throw new PersistenceError(`Failed to delete data for key: ${key}`, key, 'delete', error);
     }
   }
 }

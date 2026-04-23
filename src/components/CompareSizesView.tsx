@@ -31,7 +31,7 @@ const DiceFace: React.FC<{ value: number }> = ({ value }) => {
   };
 
   const pattern = getDotPattern(value);
-  
+
   return (
     <div className="w-16 h-16 sm:w-20 sm:h-20 bg-white border-2 sm:border-4 border-gray-800 rounded-lg shadow-lg aspect-square p-1 sm:p-2">
       <div className="grid grid-cols-3 grid-rows-3 w-full h-full gap-0.5 sm:gap-1">
@@ -67,23 +67,25 @@ export const CompareSizesView: React.FC<CompareSizesViewProps> = ({
   const handlePaidHint = useCallback(
     (hintId: string) => {
       if (hintId !== 'eliminate' || !spendStars) return;
-      const wrongOptions = problem.options.filter((opt) => opt !== problem.answer && !eliminatedOptions.includes(opt));
+      const wrongOptions = problem.options.filter(
+        (opt) => opt !== problem.answer && !eliminatedOptions.includes(opt),
+      );
       if (wrongOptions.length === 0) return;
       if (!spendStars(1)) return;
       const pick = wrongOptions[Math.floor(Math.random() * wrongOptions.length)] as CompareOption;
       setEliminatedOptions((prev) => [...prev, pick]);
     },
-    [problem.options, problem.answer, eliminatedOptions, spendStars]
+    [problem.options, problem.answer, eliminatedOptions, spendStars],
   );
 
   const handleAnswer = (userAnswer: CompareOption) => {
     setSelectedAnswer(userAnswer);
     const isCorrect = userAnswer === problem.answer;
-    
+
     if (soundEnabled) {
       playSound(isCorrect ? 'correct' : 'wrong');
     }
-    
+
     setTimeout(() => {
       onAnswer(isCorrect);
       setSelectedAnswer(null);
@@ -98,7 +100,7 @@ export const CompareSizesView: React.FC<CompareSizesViewProps> = ({
 
   // Check if we're using dice visualization
   const isDiceMode = problem.leftItem.visual && problem.leftItem.visual.includes('🎲');
-  
+
   // Render dice display with responsive layout
   const renderDiceDisplay = (value: number) => {
     if (value <= 6) {
@@ -121,7 +123,7 @@ export const CompareSizesView: React.FC<CompareSizesViewProps> = ({
       {/* Comparison display */}
       <div className="flex flex-row items-center justify-center gap-3 sm:gap-5 lg:gap-8 mb-6 sm:mb-8 w-full max-w-5xl">
         {/* Left item */}
-        <div 
+        <div
           className="flex flex-col items-center justify-center bg-gradient-to-br from-blue-50 to-blue-100 rounded-3xl p-4 sm:p-5 lg:p-7 min-w-[110px] sm:min-w-[150px] lg:min-w-[200px] min-h-[110px] sm:min-h-[150px] lg:min-h-[200px] border-3 sm:border-4 border-blue-400 shadow-xl hover:shadow-2xl transition-shadow duration-300 flex-1 max-w-xs relative overflow-hidden"
           aria-label={t.games.compare_sizes.leftItem}
         >
@@ -156,7 +158,7 @@ export const CompareSizesView: React.FC<CompareSizesViewProps> = ({
         </div>
 
         {/* Right item */}
-        <div 
+        <div
           className="flex flex-col items-center justify-center bg-gradient-to-br from-green-50 to-green-100 rounded-3xl p-4 sm:p-5 lg:p-7 min-w-[110px] sm:min-w-[150px] lg:min-w-[200px] min-h-[110px] sm:min-h-[150px] lg:min-h-[200px] border-3 sm:border-4 border-green-400 shadow-xl hover:shadow-2xl transition-shadow duration-300 flex-1 max-w-xs relative overflow-hidden"
           aria-label={t.games.compare_sizes.rightItem}
         >
@@ -185,13 +187,15 @@ export const CompareSizesView: React.FC<CompareSizesViewProps> = ({
           const symbol = getSymbol(option);
           const isEliminated = eliminatedOptions.includes(option);
           const isAvailable = problem.options.includes(option);
-          const label = option === 'left'
-            ? `${symbol} (${t.games.compare_sizes.leftBigger})`
-            : option === 'right'
-              ? `${symbol} (${t.games.compare_sizes.rightBigger})`
-              : `${symbol} (${t.games.compare_sizes.equal})`;
+          const label =
+            option === 'left'
+              ? `${symbol} (${t.games.compare_sizes.leftBigger})`
+              : option === 'right'
+                ? `${symbol} (${t.games.compare_sizes.rightBigger})`
+                : `${symbol} (${t.games.compare_sizes.equal})`;
 
-          const baseSize = 'flex flex-col items-center justify-center gap-1.5 sm:gap-2 px-4 sm:px-5 lg:px-7 py-3 sm:py-4 lg:py-5 rounded-2xl sm:rounded-3xl font-bold w-[100px] sm:w-[120px] lg:w-[140px] h-[80px] sm:h-[96px] lg:h-[112px] border-3 sm:border-4 box-border';
+          const baseSize =
+            'flex flex-col items-center justify-center gap-1.5 sm:gap-2 px-4 sm:px-5 lg:px-7 py-3 sm:py-4 lg:py-5 rounded-2xl sm:rounded-3xl font-bold w-[100px] sm:w-[120px] lg:w-[140px] h-[80px] sm:h-[96px] lg:h-[112px] border-3 sm:border-4 box-border';
 
           if (isEliminated) {
             return (
@@ -206,27 +210,41 @@ export const CompareSizesView: React.FC<CompareSizesViewProps> = ({
           const optionStyles = {
             left: {
               idle: 'bg-gradient-to-br from-blue-400 to-blue-600 text-white border-blue-500 hover:from-blue-500 hover:to-blue-700 shadow-xl hover:shadow-2xl border-3 sm:border-4 border-blue-400',
-              correct: 'bg-gradient-to-br from-green-500 to-green-600 text-white ring-4 ring-green-300 border-green-400',
-              wrong: 'bg-gradient-to-br from-red-500 to-red-600 text-white ring-4 ring-red-300 border-red-400',
-              disabled: 'bg-gradient-to-br from-slate-200 to-slate-300 text-slate-400 border-slate-300',
+              correct:
+                'bg-gradient-to-br from-green-500 to-green-600 text-white ring-4 ring-green-300 border-green-400',
+              wrong:
+                'bg-gradient-to-br from-red-500 to-red-600 text-white ring-4 ring-red-300 border-red-400',
+              disabled:
+                'bg-gradient-to-br from-slate-200 to-slate-300 text-slate-400 border-slate-300',
             },
             equal: {
               idle: 'bg-gradient-to-br from-purple-400 to-indigo-500 text-white border-purple-500 hover:from-purple-500 hover:to-indigo-600 shadow-xl hover:shadow-2xl border-3 sm:border-4 border-purple-400',
-              correct: 'bg-gradient-to-br from-green-500 to-green-600 text-white ring-4 ring-green-300 border-green-400',
-              wrong: 'bg-gradient-to-br from-red-500 to-red-600 text-white ring-4 ring-red-300 border-red-400',
-              disabled: 'bg-gradient-to-br from-slate-200 to-slate-300 text-slate-400 border-slate-300',
+              correct:
+                'bg-gradient-to-br from-green-500 to-green-600 text-white ring-4 ring-green-300 border-green-400',
+              wrong:
+                'bg-gradient-to-br from-red-500 to-red-600 text-white ring-4 ring-red-300 border-red-400',
+              disabled:
+                'bg-gradient-to-br from-slate-200 to-slate-300 text-slate-400 border-slate-300',
             },
             right: {
               idle: 'bg-gradient-to-br from-green-400 to-emerald-600 text-white border-emerald-500 hover:from-green-500 hover:to-emerald-700 shadow-xl hover:shadow-2xl border-3 sm:border-4 border-green-400',
-              correct: 'bg-gradient-to-br from-green-500 to-green-600 text-white ring-4 ring-green-300 border-green-400',
-              wrong: 'bg-gradient-to-br from-red-500 to-red-600 text-white ring-4 ring-red-300 border-red-400',
-              disabled: 'bg-gradient-to-br from-slate-200 to-slate-300 text-slate-400 border-slate-300',
+              correct:
+                'bg-gradient-to-br from-green-500 to-green-600 text-white ring-4 ring-green-300 border-green-400',
+              wrong:
+                'bg-gradient-to-br from-red-500 to-red-600 text-white ring-4 ring-red-300 border-red-400',
+              disabled:
+                'bg-gradient-to-br from-slate-200 to-slate-300 text-slate-400 border-slate-300',
             },
           };
           const style = optionStyles[option];
-          const stateClass = selectedAnswer === option
-            ? (selectedAnswer === problem.answer ? style.correct : style.wrong)
-            : (isAvailable ? style.idle : style.disabled);
+          const stateClass =
+            selectedAnswer === option
+              ? selectedAnswer === problem.answer
+                ? style.correct
+                : style.wrong
+              : isAvailable
+                ? style.idle
+                : style.disabled;
 
           return (
             <button
@@ -249,8 +267,10 @@ export const CompareSizesView: React.FC<CompareSizesViewProps> = ({
                 {symbol}
               </span>
               <span className="text-[10px] sm:text-xs font-semibold text-center relative z-10 leading-tight">
-                {option === 'left' ? t.games.compare_sizes.leftBigger
-                  : option === 'right' ? t.games.compare_sizes.rightBigger
+                {option === 'left'
+                  ? t.games.compare_sizes.leftBigger
+                  : option === 'right'
+                    ? t.games.compare_sizes.rightBigger
                     : t.games.compare_sizes.equal}
               </span>
             </button>
@@ -260,19 +280,11 @@ export const CompareSizesView: React.FC<CompareSizesViewProps> = ({
 
       {/* Screen reader feedback only - visually hidden */}
       {selectedAnswer && (
-        <div 
-          className="sr-only"
-          role="status"
-          aria-live="polite"
-        >
+        <div className="sr-only" role="status" aria-live="polite">
           {selectedAnswer === problem.answer ? (
-            <span>
-              {t.feedback.correct[0]}
-            </span>
+            <span>{t.feedback.correct[0]}</span>
           ) : (
-            <span>
-              {t.feedback.wrong[0]}
-            </span>
+            <span>{t.feedback.wrong[0]}</span>
           )}
         </div>
       )}

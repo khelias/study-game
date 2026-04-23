@@ -31,15 +31,15 @@ export type Direction = 'UP' | 'DOWN' | 'LEFT' | 'RIGHT';
 
 // Position constants for sentence logic game (English keys, translated to Estonian in UI)
 export const POSITION = {
-  NEXT_TO: 'NEXT_TO',    // KÕRVAL
-  ON: 'ON',               // PEAL
-  UNDER: 'UNDER',         // ALL
-  IN_FRONT: 'IN_FRONT',   // EES
-  BEHIND: 'BEHIND',       // TAGA
-  INSIDE: 'INSIDE'        // SEES
+  NEXT_TO: 'NEXT_TO', // KÕRVAL
+  ON: 'ON', // PEAL
+  UNDER: 'UNDER', // ALL
+  IN_FRONT: 'IN_FRONT', // EES
+  BEHIND: 'BEHIND', // TAGA
+  INSIDE: 'INSIDE', // SEES
 } as const;
 
-export type PositionType = typeof POSITION[keyof typeof POSITION];
+export type PositionType = (typeof POSITION)[keyof typeof POSITION];
 
 // Level-up strategy for games
 export type LevelUpStrategy = 'standard' | 'onGameWin';
@@ -165,7 +165,15 @@ export interface SentenceLogicProblem extends BaseProblem {
 // Memory math problem
 export interface MemoryMathProblem extends BaseProblem {
   type: 'memory_math';
-  cards: Array<{ id: string; content: string; matched?: boolean; flipped?: boolean; solved?: boolean; matchId?: string; type?: string }>;
+  cards: Array<{
+    id: string;
+    content: string;
+    matched?: boolean;
+    flipped?: boolean;
+    solved?: boolean;
+    matchId?: string;
+    type?: string;
+  }>;
   pairs: Array<{ eq: string; ans: number }>;
 }
 
@@ -279,53 +287,60 @@ export interface WordCascadeProblem extends BaseProblem {
 
 // Star Mapper types
 export interface Star {
-  id: string;           // e.g., "betelgeuse"
-  x: number;            // Normalized 0-100 (relative to constellation bounds)
-  y: number;            // Normalized 0-100
-  magnitude: number;    // Visual brightness 0-6 (lower = brighter)
-  name?: string;        // Famous star name (optional)
+  id: string; // e.g., "betelgeuse"
+  x: number; // Normalized 0-100 (relative to constellation bounds)
+  y: number; // Normalized 0-100
+  magnitude: number; // Visual brightness 0-6 (lower = brighter)
+  name?: string; // Famous star name (optional)
 }
 
 export interface ConstellationLine {
-  from: string;         // Star ID
-  to: string;           // Star ID
+  from: string; // Star ID
+  to: string; // Star ID
 }
 
 export interface Constellation {
   id: string;
   nameEn: string;
   nameEt: string;
-  folkNameEt?: string;  // Traditional Estonian name
-  descriptionKey: string;  // i18n key for description
+  folkNameEt?: string; // Traditional Estonian name
+  descriptionKey: string; // i18n key for description
   season: 'circumpolar' | 'winter' | 'spring' | 'summer' | 'autumn';
   difficulty: 'easy' | 'medium' | 'hard';
   stars: Star[];
-  lines: ConstellationLine[];  // Correct connections
-  bounds: { width: number; height: number };  // Aspect ratio
+  lines: ConstellationLine[]; // Correct connections
+  bounds: { width: number; height: number }; // Aspect ratio
 }
 
 export interface StarMapperProblem extends BaseProblem {
   type: 'star_mapper';
   mode: 'trace' | 'build' | 'identify' | 'expert';
   constellation: Constellation;
-  distractorStars: Star[];           // Extra stars (expert mode)
-  showGuide: boolean;                // Trace mode
-  options?: string[];                // Identify mode - 4 constellation IDs
-  correctAnswer: string;             // Constellation ID
-  playerLines: ConstellationLine[];  // What player has drawn (starts empty)
+  distractorStars: Star[]; // Extra stars (expert mode)
+  showGuide: boolean; // Trace mode
+  options?: string[]; // Identify mode - 4 constellation IDs
+  correctAnswer: string; // Constellation ID
+  playerLines: ConstellationLine[]; // What player has drawn (starts empty)
 }
 
 // Shape shift problem (geometric puzzle game)
-export type ShapeType = 'triangle' | 'half_square' | 'square' | 'rectangle' | 'hexagon' | 'diamond' | 'circle';
+export type ShapeType =
+  | 'triangle'
+  | 'half_square'
+  | 'square'
+  | 'rectangle'
+  | 'hexagon'
+  | 'diamond'
+  | 'circle';
 
 export interface ShapePiece {
   id: string;
   type: ShapeType;
-  color: string;           // Tailwind color: 'red' | 'blue' | 'green' | 'yellow' | 'purple' | 'orange' | 'pink' | 'cyan'
-  size: number;            // Scale factor (1 = base unit)
-  correctPosition: { x: number; y: number };  // Target grid position
+  color: string; // Tailwind color: 'red' | 'blue' | 'green' | 'yellow' | 'purple' | 'orange' | 'pink' | 'cyan'
+  size: number; // Scale factor (1 = base unit)
+  correctPosition: { x: number; y: number }; // Target grid position
   correctRotation: number; // Target rotation (0, 90, 180, 270)
-  isDecoy?: boolean;       // For expert mode - piece doesn't belong
+  isDecoy?: boolean; // For expert mode - piece doesn't belong
 }
 
 export interface Puzzle {
@@ -334,7 +349,7 @@ export interface Puzzle {
   nameEn: string;
   category: 'shapes' | 'animals' | 'objects' | 'letters' | 'abstract';
   difficulty: 'easy' | 'medium' | 'hard';
-  gridSize: number;  // e.g., 6 = 6x6 grid
+  gridSize: number; // e.g., 6 = 6x6 grid
   pieces: ShapePiece[];
 }
 
@@ -342,12 +357,12 @@ export interface ShapeShiftProblem extends BaseProblem {
   type: 'shape_shift';
   mode: 'match' | 'rotate' | 'build' | 'expert';
   puzzle: Puzzle;
-  pieces: PieceState[];  // Pieces with current position/rotation state
-  showHints: boolean;    // Match mode shows placement hints
+  pieces: PieceState[]; // Pieces with current position/rotation state
+  showHints: boolean; // Match mode shows placement hints
 }
 
 export interface PieceState extends ShapePiece {
-  currentPosition: { x: number; y: number } | null;  // null = in tray
+  currentPosition: { x: number; y: number } | null; // null = in tray
   currentRotation: number;
 }
 
@@ -358,36 +373,36 @@ export type BattleLearnCellType = 'empty' | 'problem' | 'ship' | 'star' | 'heart
 export interface Ship {
   id: string;
   length: number;
-  positions: Array<[number, number]>;  // Grid coordinates occupied by ship
-  hits: number;  // Number of hits on this ship
+  positions: Array<[number, number]>; // Grid coordinates occupied by ship
+  hits: number; // Number of hits on this ship
 }
 
 export interface BattleLearnQuestion {
-  prompt: string;           // Question text
-  options: string[];        // Multiple choice options
-  correctIndex: number;     // Index of correct answer
+  prompt: string; // Question text
+  options: string[]; // Multiple choice options
+  correctIndex: number; // Index of correct answer
 }
 
 export interface BattleLearnProblem extends BaseProblem {
   type: 'battlelearn';
-  gridSize: number;         // Grid dimensions (e.g., 5 for 5x5)
+  gridSize: number; // Grid dimensions (e.g., 5 for 5x5)
   /** Per-cell type: only 'problem' cells open the question modal */
   cellGrid: BattleLearnCellType[][];
-  ships: Ship[];            // Ship placements (hidden from UI initially)
-  revealed: Array<[number, number]>;  // Cells that have been shot
-  hits: Array<[number, number]>;      // Cells that were hits
-  sunkShips: string[];      // IDs of ships that have been sunk
-  shotAvailable: boolean;   // Whether player can take a shot
-  question: BattleLearnQuestion;  // Current educational question
-  gameWon: boolean;         // All ships sunk
+  ships: Ship[]; // Ship placements (hidden from UI initially)
+  revealed: Array<[number, number]>; // Cells that have been shot
+  hits: Array<[number, number]>; // Cells that were hits
+  sunkShips: string[]; // IDs of ships that have been sunk
+  shotAvailable: boolean; // Whether player can take a shot
+  question: BattleLearnQuestion; // Current educational question
+  gameWon: boolean; // All ships sunk
 }
 
 // Shape Dash (Geometry Dash–inspired runner with geometry checkpoints)
 export interface ShapeDashObstacle {
   id: string;
-  x: number;           // World x position (pixels)
+  x: number; // World x position (pixels)
   type: 'spike' | 'block' | 'circle' | 'floating';
-  height?: number;     // Block height in px (spikes use default)
+  height?: number; // Block height in px (spikes use default)
   /** Vertical offset from ground (floating obstacles hover in air) */
   offsetY?: number;
   /** Circle radius in px (for type 'circle') */
@@ -409,44 +424,45 @@ export interface ShapeDashCheckpoint {
 /** Collectible star for V3 scoring system */
 export interface ShapeDashStar {
   id: string;
-  x: number;           // World x position (pixels)
-  y: number;           // World y position (pixels from ground)
+  x: number; // World x position (pixels)
+  y: number; // World y position (pixels from ground)
   collected?: boolean; // Whether the star has been collected
 }
 
 /** Jump pad that auto-bounces the player higher */
 export interface ShapeDashJumpPad {
   id: string;
-  x: number;           // World x position (pixels)
+  x: number; // World x position (pixels)
 }
 
 /** Speed boost zone that briefly accelerates the player */
 export interface ShapeDashBoostZone {
   id: string;
-  x: number;           // World x position (pixels)
-  width: number;       // Zone width in pixels
+  x: number; // World x position (pixels)
+  width: number; // Zone width in pixels
 }
 
 /** V4: Shape gate for inline geometry questions (replaces checkpoint modals) */
 export interface ShapeDashShapeGate {
   id: string;
-  x: number;           // World x position (pixels) - center of gate zone
-  prompt: string;      // Question text (e.g., "4 sides?" or "Which is a triangle?")
-  shapes: Array<{      // 3 shape options displayed as gates
+  x: number; // World x position (pixels) - center of gate zone
+  prompt: string; // Question text (e.g., "4 sides?" or "Which is a triangle?")
+  shapes: Array<{
+    // 3 shape options displayed as gates
     type: 'triangle' | 'square' | 'pentagon' | 'hexagon' | 'circle';
-    label: string;     // Display label (e.g., "Triangle", "Square")
+    label: string; // Display label (e.g., "Triangle", "Square")
     isCorrect: boolean;
   }>;
-  passed?: boolean;    // Whether player has passed through this gate zone
+  passed?: boolean; // Whether player has passed through this gate zone
   correctChoice?: boolean; // Whether player chose correctly (if passed)
 }
 
 /** V4: Terrain segment for multi-level platforms */
 export interface ShapeDashTerrainSegment {
   id: string;
-  x: number;           // World x position (start of segment)
-  width: number;       // Segment width in pixels
-  height: number;      // Platform height (0 = ground level, positive = raised)
+  x: number; // World x position (start of segment)
+  width: number; // Segment width in pixels
+  height: number; // Platform height (0 = ground level, positive = raised)
   type: 'flat' | 'raised' | 'gap' | 'ramp';
   theme?: 'cave' | 'sky' | 'neon' | 'default'; // Visual theme
 }
@@ -455,10 +471,10 @@ export interface ShapeDashProblem extends BaseProblem {
   type: 'shape_dash';
   obstacles: ShapeDashObstacle[];
   checkpoints: ShapeDashCheckpoint[]; // V3: Legacy - will be replaced by shapeGates in V4
-  scrollSpeed: number;   // px per second
-  runLength: number;     // Total world width in px (finish line)
-  stars?: ShapeDashStar[];           // V3: Collectible stars
-  jumpPads?: ShapeDashJumpPad[];     // V3: Jump pads
+  scrollSpeed: number; // px per second
+  runLength: number; // Total world width in px (finish line)
+  stars?: ShapeDashStar[]; // V3: Collectible stars
+  jumpPads?: ShapeDashJumpPad[]; // V3: Jump pads
   boostZones?: ShapeDashBoostZone[]; // V3: Speed boost zones
   shapeGates?: ShapeDashShapeGate[]; // V4: Shape gates for inline questions
   terrainSegments?: ShapeDashTerrainSegment[]; // V4: Multi-level terrain
@@ -493,5 +509,5 @@ export type RngFunction = () => number;
 export type GeneratorFunction = (
   level: number,
   rng?: RngFunction,
-  profile?: ProfileType
+  profile?: ProfileType,
 ) => Problem;

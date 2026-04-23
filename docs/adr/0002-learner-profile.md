@@ -45,15 +45,15 @@ Introduce `LearnerProfile` as the root aggregate of the Learner context. Depreca
 type Persona = 'kid' | 'adult';
 
 interface LearnerProfile {
-  id: string;             // uuid, stable across renames
+  id: string; // uuid, stable across renames
   displayName: string;
-  persona: Persona;       // drives UX register, not difficulty
-  ageHint?: number;       // optional, for default content curation only
+  persona: Persona; // drives UX register, not difficulty
+  ageHint?: number; // optional, for default content curation only
   preferences: {
     locale: 'et' | 'en';
-    theme?: string;       // meta-progression context populates this
+    theme?: string; // meta-progression context populates this
   };
-  skillMastery: Record<SkillId, SkillMastery>;  // SkillId arrives in Phase 1
+  skillMastery: Record<SkillId, SkillMastery>; // SkillId arrives in Phase 1
   createdAt: number;
   updatedAt: number;
 }

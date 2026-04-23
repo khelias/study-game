@@ -1,6 +1,6 @@
 /**
  * ShapeDashView V4 – Geometry Dash runner with inline shape gates (no modal interruptions)
- * 
+ *
  * Features:
  * - V4: Shape gate system with inline rendering (no checkpoint modals)
  * - V4: Responsive canvas sizing with aspect ratio preservation
@@ -75,8 +75,6 @@ const LANDING_STRETCH = 1.3; // stretch amount on landing
 const SCREEN_SHAKE_INTENSITY = 8; // pixels
 const SCREEN_SHAKE_DECAY = 10; // decay rate per second
 
-
-
 // Particle system
 interface Particle {
   x: number;
@@ -111,24 +109,24 @@ interface GameState {
   particles: Particle[];
   trailPoints: Array<{ x: number; y: number }>;
   // V3 additions
-  combo: number;              // Current combo multiplier (1, 2, 3)
-  comboCount: number;         // Number of obstacles cleared without hit
-  starsCollected: number;     // Stars collected this run
+  combo: number; // Current combo multiplier (1, 2, 3)
+  comboCount: number; // Number of obstacles cleared without hit
+  starsCollected: number; // Stars collected this run
   correctAnswerStreak: number; // Consecutive correct checkpoint answers (legacy)
-  hasShield: boolean;         // Shield power-up active
-  questionTimer: number;      // Current question timer (seconds) - not used in V4
+  hasShield: boolean; // Shield power-up active
+  questionTimer: number; // Current question timer (seconds) - not used in V4
   collectedStarIds: Set<string>; // Track which stars collected
-  bestScore: number;          // Best score achieved
-  totalStars: number;         // Total stars in the run
+  bestScore: number; // Best score achieved
+  totalStars: number; // Total stars in the run
   // V4 additions
   passedGateIds: Set<string>; // Track which gates have been passed
   passedObstacleIndices: Set<number>; // Track which obstacles have been passed (for combo)
   consecutiveWrongGates: number; // Track consecutive wrong gates for crash mechanic
   revealedGateId: string | null; // ID of gate revealed by hint
-  slowTimeUntil: number;      // Timestamp when slow time effect ends
+  slowTimeUntil: number; // Timestamp when slow time effect ends
   feedbackMessage: string | null; // Feedback message to display
   feedbackType: 'correct' | 'wrong' | 'warning' | null; // Type of feedback
-  feedbackUntil: number;      // Timestamp when feedback disappears
+  feedbackUntil: number; // Timestamp when feedback disappears
 }
 
 // Particle system helpers
@@ -217,18 +215,20 @@ function createSparkleParticles(x: number, y: number): Particle[] {
 
 // V3: Score popup particle
 function createScorePopup(x: number, y: number, score: number, combo: number): Particle[] {
-  return [{
-    x,
-    y,
-    vx: 0,
-    vy: -60, // Float upward
-    life: 1.5,
-    maxLife: 1.5,
-    size: 16,
-    color: combo > 1 ? '#fef08a' : '#ffffff',
-    type: 'score',
-    text: `+${score}${combo > 1 ? ` (${combo}x)` : ''}`,
-  }];
+  return [
+    {
+      x,
+      y,
+      vx: 0,
+      vy: -60, // Float upward
+      life: 1.5,
+      maxLife: 1.5,
+      size: 16,
+      color: combo > 1 ? '#fef08a' : '#ffffff',
+      type: 'score',
+      text: `+${score}${combo > 1 ? ` (${combo}x)` : ''}`,
+    },
+  ];
 }
 
 function updateParticles(particles: Particle[], dt: number): Particle[] {
@@ -251,7 +251,7 @@ function drawBackground(
   pulsePhase: number,
   width: number,
   height: number,
-  groundY: number
+  groundY: number,
 ) {
   // Dark background gradient
   const skyGrad = ctx.createLinearGradient(0, 0, 0, height);
@@ -293,7 +293,7 @@ function drawBackground(
   ctx.lineWidth = 2;
   for (let i = 0; i < 8; i++) {
     const x = ((i * 120) % width) - shapeOffset;
-    const y = 50 + (i * 60) % (groundY - 100);
+    const y = 50 + ((i * 60) % (groundY - 100));
     const rot = pulsePhase * 0.5 + i;
     ctx.save();
     ctx.translate(x, y);
@@ -348,7 +348,7 @@ function drawPlayer(
   squashStretch: number,
   _scale: number, // Reserved for future mini/mega portal modes
   pulsePhase: number,
-  hasShield: boolean = false
+  hasShield: boolean = false,
 ) {
   ctx.save();
   ctx.translate(x + size / 2, y + size / 2);
@@ -393,7 +393,11 @@ function drawPlayer(
   ctx.restore();
 }
 
-function drawTrail(ctx: CanvasRenderingContext2D, trail: Array<{ x: number; y: number }>, size: number) {
+function drawTrail(
+  ctx: CanvasRenderingContext2D,
+  trail: Array<{ x: number; y: number }>,
+  size: number,
+) {
   const colors = ['#ff0088', '#ff8800', '#ffff00', '#00ff88', '#0088ff', '#8800ff'];
   for (let i = 0; i < trail.length; i++) {
     const t = trail[i];
@@ -407,7 +411,12 @@ function drawTrail(ctx: CanvasRenderingContext2D, trail: Array<{ x: number; y: n
     const b = parseInt(hexColor.slice(5, 7), 16);
     ctx.fillStyle = `rgba(${r}, ${g}, ${b}, ${alpha})`;
     const trailSize = (size * (i / trail.length)) / 2;
-    ctx.fillRect(t.x + size / 2 - trailSize / 2, t.y + size / 2 - trailSize / 2, trailSize, trailSize);
+    ctx.fillRect(
+      t.x + size / 2 - trailSize / 2,
+      t.y + size / 2 - trailSize / 2,
+      trailSize,
+      trailSize,
+    );
   }
 }
 
@@ -419,7 +428,7 @@ function drawObstacle(
   offsetY: number,
   height: number,
   radius: number,
-  pulsePhase: number
+  pulsePhase: number,
 ) {
   const pulse = 1 + Math.sin(pulsePhase * 3) * 0.03;
   const glowBlur = 12 + Math.sin(pulsePhase * 2) * 4;
@@ -478,27 +487,27 @@ function drawStar(
   screenX: number,
   screenY: number,
   pulsePhase: number,
-  collected: boolean
+  collected: boolean,
 ) {
   if (collected) return;
-  
+
   const STAR_SIZE = 16;
   const STAR_POINTS = 10; // 5 outer points + 5 inner points
   const STAR_ROTATION_OFFSET = -Math.PI / 2; // Point star upward
   const STAR_INNER_RADIUS_RATIO = 0.4;
-  
+
   const pulse = 1 + Math.sin(pulsePhase * 5) * 0.15;
   const rotation = pulsePhase * 2;
-  
+
   ctx.save();
   ctx.translate(screenX, screenY);
   ctx.rotate(rotation);
   ctx.scale(pulse, pulse);
-  
+
   // Glow
   ctx.shadowColor = '#fef08a';
   ctx.shadowBlur = 16;
-  
+
   // Draw 5-pointed star (10 points total: alternating outer and inner)
   ctx.fillStyle = '#fef08a';
   ctx.beginPath();
@@ -512,14 +521,14 @@ function drawStar(
   }
   ctx.closePath();
   ctx.fill();
-  
+
   // Inner highlight
   ctx.shadowBlur = 0;
   ctx.fillStyle = '#ffffff';
   ctx.beginPath();
   ctx.arc(-3, -3, 3, 0, Math.PI * 2);
   ctx.fill();
-  
+
   ctx.restore();
 }
 
@@ -528,22 +537,22 @@ function drawJumpPad(
   ctx: CanvasRenderingContext2D,
   screenX: number,
   groundY: number,
-  pulsePhase: number
+  pulsePhase: number,
 ) {
   const width = JUMP_PAD_WIDTH;
   const height = 12;
   const pulse = 1 + Math.sin(pulsePhase * 4) * 0.08;
-  
+
   // Glow
   ctx.shadowColor = '#00ffcc';
   ctx.shadowBlur = 20;
-  
+
   // Platform
   ctx.fillStyle = '#00ffcc';
   ctx.fillRect(screenX, groundY - height * pulse, width, height * pulse);
-  
+
   ctx.shadowBlur = 0;
-  
+
   // Upward arrows
   ctx.strokeStyle = '#0a0a1a';
   ctx.lineWidth = 2;
@@ -565,19 +574,19 @@ function drawBoostZone(
   screenX: number,
   groundY: number,
   width: number,
-  pulsePhase: number
+  pulsePhase: number,
 ) {
   const height = 4;
-  
+
   // Neon streak effect
   const gradient = ctx.createLinearGradient(screenX, 0, screenX + width, 0);
   gradient.addColorStop(0, 'rgba(255, 102, 0, 0)');
   gradient.addColorStop(0.5, 'rgba(255, 102, 0, 0.6)');
   gradient.addColorStop(1, 'rgba(255, 102, 0, 0)');
-  
+
   ctx.fillStyle = gradient;
   ctx.fillRect(screenX, groundY, width, height);
-  
+
   // Moving streak lines
   const streakOffset = (pulsePhase * 200) % 30;
   ctx.strokeStyle = 'rgba(255, 204, 0, 0.8)';
@@ -593,7 +602,7 @@ function drawBoostZone(
 function drawParticles(ctx: CanvasRenderingContext2D, particles: Particle[]) {
   for (const p of particles) {
     const alpha = p.life / p.maxLife;
-    
+
     // V3: Handle score popup text particles differently
     if (p.type === 'score' && p.text) {
       ctx.save();
@@ -610,7 +619,10 @@ function drawParticles(ctx: CanvasRenderingContext2D, particles: Particle[]) {
       // Regular particle rendering
       ctx.fillStyle = p.color.includes('rgba')
         ? p.color.replace(/[\d.]+\)$/g, `${alpha})`)
-        : p.color + `${Math.floor(alpha * 255).toString(16).padStart(2, '0')}`;
+        : p.color +
+          `${Math.floor(alpha * 255)
+            .toString(16)
+            .padStart(2, '0')}`;
       ctx.fillRect(p.x - p.size / 2, p.y - p.size / 2, p.size, p.size);
     }
   }
@@ -624,19 +636,19 @@ function drawShape(
   cy: number,
   size: number,
   color: string,
-  glow: boolean = false
+  glow: boolean = false,
 ) {
   ctx.save();
-  
+
   if (glow) {
     ctx.shadowColor = color;
     ctx.shadowBlur = 24;
   }
-  
+
   ctx.fillStyle = color;
   ctx.strokeStyle = '#ffffff';
   ctx.lineWidth = 2;
-  
+
   switch (type) {
     case 'triangle': {
       ctx.beginPath();
@@ -691,56 +703,73 @@ function drawShape(
       break;
     }
   }
-  
+
   ctx.restore();
 }
 
 // V4: Draw shape gate zone (3 gates side-by-side)
 function drawShapeGates(
   ctx: CanvasRenderingContext2D,
-  gate: { id: string; x: number; prompt: string; shapes: Array<{ type: 'triangle' | 'square' | 'pentagon' | 'hexagon' | 'circle'; label: string; isCorrect: boolean }> },
+  gate: {
+    id: string;
+    x: number;
+    prompt: string;
+    shapes: Array<{
+      type: 'triangle' | 'square' | 'pentagon' | 'hexagon' | 'circle';
+      label: string;
+      isCorrect: boolean;
+    }>;
+  },
   scrollOffset: number,
   groundY: number,
   pulsePhase: number,
-  revealed: boolean = false
+  revealed: boolean = false,
 ) {
   const gateScreenX = gate.x - scrollOffset;
-  
+
   // Calculate positions for 3 gates
   const totalWidth = GATE_ZONE_WIDTH;
   const startX = gateScreenX - totalWidth / 2;
-  
+
   for (let i = 0; i < 3; i++) {
     const shape = gate.shapes[i];
     if (!shape) continue;
-    
+
     const gateX = startX + i * (GATE_WIDTH + GATE_SPACING);
     const gateCenterX = gateX + GATE_WIDTH / 2;
     const gateCenterY = groundY - GATE_HEIGHT / 2;
-    
+
     // Draw gate frame
     const isCorrect = shape.isCorrect;
     const frameColor = revealed && isCorrect ? '#00ff88' : '#00ffcc';
     const pulse = revealed && isCorrect ? 1 + Math.sin(pulsePhase * 8) * 0.15 : 1;
-    
+
     ctx.save();
-    
+
     if (revealed && isCorrect) {
       ctx.shadowColor = '#00ff88';
       ctx.shadowBlur = 32 * pulse;
     }
-    
+
     ctx.strokeStyle = frameColor;
     ctx.lineWidth = 4;
     ctx.strokeRect(gateX, groundY - GATE_HEIGHT, GATE_WIDTH, GATE_HEIGHT);
-    
+
     ctx.restore();
-    
+
     // Draw shape inside gate
     const shapeSize = 20;
     const shapeColor = revealed && isCorrect ? '#00ff88' : '#00ffcc';
-    drawShape(ctx, shape.type, gateCenterX, gateCenterY, shapeSize, shapeColor, revealed && isCorrect);
-    
+    drawShape(
+      ctx,
+      shape.type,
+      gateCenterX,
+      gateCenterY,
+      shapeSize,
+      shapeColor,
+      revealed && isCorrect,
+    );
+
     // Draw label below shape
     ctx.fillStyle = '#ffffff';
     ctx.font = 'bold 12px Arial';
@@ -755,21 +784,22 @@ function drawGateWarning(
   prompt: string,
   width: number,
   pulsePhase: number,
-  consecutiveWrong: number
+  consecutiveWrong: number,
 ) {
   const pulse = 1 + Math.sin(pulsePhase * 4) * 0.1;
-  
+
   // Warning background
   const bgAlpha = consecutiveWrong >= 1 ? 0.3 : 0.2;
-  const bgColor = consecutiveWrong >= 1 ? `rgba(255, 51, 102, ${bgAlpha})` : `rgba(0, 255, 204, ${bgAlpha})`;
+  const bgColor =
+    consecutiveWrong >= 1 ? `rgba(255, 51, 102, ${bgAlpha})` : `rgba(0, 255, 204, ${bgAlpha})`;
   ctx.fillStyle = bgColor;
   ctx.fillRect(0, 60, width, 60);
-  
+
   // Border
   ctx.strokeStyle = consecutiveWrong >= 1 ? '#ff3366' : '#00ffcc';
   ctx.lineWidth = 2;
   ctx.strokeRect(0, 60, width, 60);
-  
+
   // Prompt text
   ctx.save();
   ctx.textAlign = 'center';
@@ -780,14 +810,15 @@ function drawGateWarning(
   ctx.strokeText(prompt, width / 2, 95);
   ctx.fillText(prompt, width / 2, 95);
   ctx.restore();
-  
+
   // Warning for consecutive wrong gates
   if (consecutiveWrong >= 1) {
     ctx.save();
     ctx.textAlign = 'center';
     ctx.font = 'bold 14px Arial';
     ctx.fillStyle = '#ff3366';
-    const warningText = consecutiveWrong === 1 ? '⚠️ One more wrong = CRASH!' : '⚠️ Wrong gate! Next one crashes!';
+    const warningText =
+      consecutiveWrong === 1 ? '⚠️ One more wrong = CRASH!' : '⚠️ Wrong gate! Next one crashes!';
     ctx.strokeText(warningText, width / 2, 112);
     ctx.fillText(warningText, width / 2, 112);
     ctx.restore();
@@ -800,17 +831,17 @@ function drawFeedback(
   message: string,
   type: 'correct' | 'wrong' | 'warning',
   width: number,
-  pulsePhase: number
+  pulsePhase: number,
 ) {
   const colors = {
     correct: '#00ff88',
     wrong: '#ff3366',
-    warning: '#ffcc00'
+    warning: '#ffcc00',
   };
-  
+
   const color = colors[type];
   const pulse = 1 + Math.sin(pulsePhase * 6) * 0.15;
-  
+
   ctx.save();
   ctx.textAlign = 'center';
   ctx.font = `bold ${24 * pulse}px Arial`;
@@ -834,7 +865,7 @@ function drawHUD(
   starsCollected: number,
   totalStars: number,
   hasShield: boolean,
-  questionTimer?: number
+  questionTimer?: number,
 ) {
   // Progress bar
   const barWidth = 200;
@@ -868,7 +899,7 @@ function drawHUD(
   // Score (right)
   ctx.textAlign = 'right';
   ctx.fillText(`Score: ${score}`, width - 12, 26);
-  
+
   // V3: Combo multiplier (center-right)
   if (combo > 1) {
     ctx.save();
@@ -881,18 +912,18 @@ function drawHUD(
     ctx.fillText(`${combo}x!`, width / 2 + 100, 50);
     ctx.restore();
   }
-  
+
   // V3: Stars collected (left below attempt)
   ctx.textAlign = 'left';
   ctx.fillStyle = '#fef08a';
   ctx.fillText(`⭐ ${starsCollected}/${totalStars}`, 12, 44);
-  
+
   // V3: Shield indicator (left below stars)
   if (hasShield) {
     ctx.fillStyle = '#00ffcc';
     ctx.fillText(`🛡️ Shield`, 12, 62);
   }
-  
+
   // V3: Question timer (if active)
   if (questionTimer !== undefined && questionTimer >= 0) {
     ctx.save();
@@ -1040,39 +1071,42 @@ export const ShapeDashView: React.FC<ShapeDashViewProps> = ({
   const hints = useMemo(() => GAME_CONFIG.shape_dash?.paidHints ?? [], []);
 
   // V4: Paid hint handler
-  const handlePaidHint = useCallback((hintId: string) => {
-    if (!spendStars) return;
-    
-    const state = stateRef.current;
-    const currentTime = performance.now();
-    
-    // Find the hint configuration
-    const hint = hints.find(h => h.id === hintId);
-    if (!hint) return;
-    
-    // Spend stars before activating hint
-    if (!spendStars(hint.cost)) return;
-    
-    if (hintId === 'reveal_gate') {
-      // Find next unpassed gate
-      const shapeGates = problemRef.current.shapeGates ?? [];
-      const nextGate = shapeGates.find(g => !state.passedGateIds.has(g.id));
-      if (nextGate) {
-        state.revealedGateId = nextGate.id;
-        playSound('correct', soundEnabledRef.current);
-        // Clear reveal after 5 seconds
-        setTimeout(() => {
-          if (stateRef.current.revealedGateId === nextGate.id) {
-            stateRef.current.revealedGateId = null;
-          }
-        }, 5000);
+  const handlePaidHint = useCallback(
+    (hintId: string) => {
+      if (!spendStars) return;
+
+      const state = stateRef.current;
+      const currentTime = performance.now();
+
+      // Find the hint configuration
+      const hint = hints.find((h) => h.id === hintId);
+      if (!hint) return;
+
+      // Spend stars before activating hint
+      if (!spendStars(hint.cost)) return;
+
+      if (hintId === 'reveal_gate') {
+        // Find next unpassed gate
+        const shapeGates = problemRef.current.shapeGates ?? [];
+        const nextGate = shapeGates.find((g) => !state.passedGateIds.has(g.id));
+        if (nextGate) {
+          state.revealedGateId = nextGate.id;
+          playSound('correct', soundEnabledRef.current);
+          // Clear reveal after 5 seconds
+          setTimeout(() => {
+            if (stateRef.current.revealedGateId === nextGate.id) {
+              stateRef.current.revealedGateId = null;
+            }
+          }, 5000);
+        }
+      } else if (hintId === 'slow_time') {
+        // Slow time for 3 seconds
+        state.slowTimeUntil = currentTime + 3000;
+        playSound('tap', soundEnabledRef.current);
       }
-    } else if (hintId === 'slow_time') {
-      // Slow time for 3 seconds
-      state.slowTimeUntil = currentTime + 3000;
-      playSound('tap', soundEnabledRef.current);
-    }
-  }, [spendStars, hints]);
+    },
+    [spendStars, hints],
+  );
 
   const requestJump = useCallback(() => {
     jumpRequestedRef.current = true;
@@ -1135,27 +1169,30 @@ export const ShapeDashView: React.FC<ShapeDashViewProps> = ({
       if (!containerRef.current) return;
       const container = containerRef.current;
       const rect = container.getBoundingClientRect();
-      
+
       // Detect portrait orientation (height > width)
       const windowIsPortrait = window.innerHeight > window.innerWidth;
       setIsPortrait(windowIsPortrait);
-      
+
       // In portrait mode, adjust aspect ratio to fit better
       let width, height;
       if (windowIsPortrait) {
         // Use a more square aspect ratio for portrait (closer to 1:1)
         width = Math.min(rect.width, CANVAS_MAX_WIDTH);
-        height = Math.min(width * PORTRAIT_ASPECT_RATIO, CANVAS_HEIGHT_BASE * MAX_PORTRAIT_HEIGHT_MULTIPLIER);
+        height = Math.min(
+          width * PORTRAIT_ASPECT_RATIO,
+          CANVAS_HEIGHT_BASE * MAX_PORTRAIT_HEIGHT_MULTIPLIER,
+        );
       } else {
         // Use standard 16:10 aspect ratio for landscape
         width = Math.min(rect.width, CANVAS_MAX_WIDTH);
         height = width / CANVAS_ASPECT_RATIO;
       }
-      
+
       setCanvasWidth(Math.floor(width));
       setCanvasHeight(Math.floor(height));
     };
-    
+
     updateCanvasSize();
     window.addEventListener('resize', updateCanvasSize);
     window.addEventListener('orientationchange', updateCanvasSize);
@@ -1190,21 +1227,21 @@ export const ShapeDashView: React.FC<ShapeDashViewProps> = ({
       lastTimeRef.current = time;
 
       const state = stateRef.current;
-      
+
       // V4: Calculate dynamic ground Y based on canvas height (for portrait mode support)
       const groundY = canvasHeight - 90;
-      
+
       // V4: Check for slow time effect
       const isSlowTime = time < state.slowTimeUntil;
       const timeScale = isSlowTime ? 0.7 : 1.0; // 30% slower during slow time
-      
+
       // V3: Check boost zone for speed multiplier
       const collectibleStars = prob.stars ?? [];
       const jumpPads = prob.jumpPads ?? [];
       const boostZones = prob.boostZones ?? [];
       const inBoostZone = checkBoostZone(PLAYER_X, boostZones, state.scroll);
       const speedMultiplier = inBoostZone ? BOOST_ZONE_MULTIPLIER : 1;
-      
+
       const nextScroll = state.scroll + prob.scrollSpeed * speedMultiplier * timeScale * dt;
       let py = state.playerY;
       let pvy = state.playerVelY;
@@ -1213,7 +1250,7 @@ export const ShapeDashView: React.FC<ShapeDashViewProps> = ({
       const jumpPadId = checkJumpPadContact(
         { x: PLAYER_X, y: py, velocityY: pvy, isOnGround: state.isOnGround },
         jumpPads,
-        nextScroll
+        nextScroll,
       );
       if (jumpPadId && state.isOnGround) {
         pvy = JUMP_PAD_BOOST_VELOCITY;
@@ -1284,7 +1321,7 @@ export const ShapeDashView: React.FC<ShapeDashViewProps> = ({
         { x: PLAYER_X, y: py, velocityY: pvy, isOnGround: state.isOnGround },
         collectibleStars,
         nextScroll,
-        groundY  // Pass groundY for correct coordinate calculation
+        groundY, // Pass groundY for correct coordinate calculation
       );
       for (const starId of newlyCollectedStarIds) {
         if (!state.collectedStarIds.has(starId)) {
@@ -1293,14 +1330,16 @@ export const ShapeDashView: React.FC<ShapeDashViewProps> = ({
           const starPoints = 100 * state.combo;
           state.score += starPoints;
           // Mark star as collected in the problem data
-          const star = collectibleStars.find(s => s.id === starId);
+          const star = collectibleStars.find((s) => s.id === starId);
           if (star) {
             star.collected = true;
             // Create sparkle and score popup particles
             const starScreenX = star.x - nextScroll;
             const starScreenY = groundY - star.y;
             state.particles.push(...createSparkleParticles(starScreenX, starScreenY));
-            state.particles.push(...createScorePopup(starScreenX, starScreenY, starPoints, state.combo));
+            state.particles.push(
+              ...createScorePopup(starScreenX, starScreenY, starPoints, state.combo),
+            );
             playSound('correct', soundEnabledRef.current);
           }
         }
@@ -1351,7 +1390,12 @@ export const ShapeDashView: React.FC<ShapeDashViewProps> = ({
           const obsTop = groundY - h - offsetY;
           const obsBottom = groundY - offsetY;
           if (obsScreenX + w < -20 || obsScreenX > canvasWidth + 20) continue;
-          if (playerRight - 6 > obsLeft + 6 && playerLeft + 6 < obsRight - 6 && playerBottom - 6 > obsTop + 6 && playerTop + 6 < obsBottom - 6) {
+          if (
+            playerRight - 6 > obsLeft + 6 &&
+            playerLeft + 6 < obsRight - 6 &&
+            playerBottom - 6 > obsTop + 6 &&
+            playerTop + 6 < obsBottom - 6
+          ) {
             collision = true;
             break;
           }
@@ -1362,14 +1406,26 @@ export const ShapeDashView: React.FC<ShapeDashViewProps> = ({
         // V3: Shield absorbs one hit
         if (state.hasShield) {
           state.hasShield = false;
-          state.particles.push(...createExplosionParticles(PLAYER_X + PLAYER_SIZE / 2, py + PLAYER_SIZE / 2, '#00ffcc'));
+          state.particles.push(
+            ...createExplosionParticles(
+              PLAYER_X + PLAYER_SIZE / 2,
+              py + PLAYER_SIZE / 2,
+              '#00ffcc',
+            ),
+          );
           playSound('tap', soundEnabledRef.current);
           // Reset combo but don't crash
           state.combo = 1;
           state.comboCount = 0;
         } else {
           state.screenShake = SCREEN_SHAKE_INTENSITY;
-          state.particles.push(...createExplosionParticles(PLAYER_X + PLAYER_SIZE / 2, py + PLAYER_SIZE / 2, '#00ff88'));
+          state.particles.push(
+            ...createExplosionParticles(
+              PLAYER_X + PLAYER_SIZE / 2,
+              py + PLAYER_SIZE / 2,
+              '#00ff88',
+            ),
+          );
           setDisplayScore(state.score);
           setDisplayAttempt(state.attemptCount);
           setGameState('crashed');
@@ -1401,16 +1457,16 @@ export const ShapeDashView: React.FC<ShapeDashViewProps> = ({
         { x: PLAYER_X, y: py, velocityY: pvy, isOnGround: state.isOnGround },
         shapeGates,
         nextScroll,
-        state.passedGateIds
+        state.passedGateIds,
       );
-      
+
       if (gatePass) {
         const gate = shapeGates[gatePass.gateIndex];
         if (gate && !state.passedGateIds.has(gate.id)) {
           state.passedGateIds.add(gate.id);
           const chosenShape = gate.shapes[gatePass.gateChoice];
           const isCorrect = chosenShape?.isCorrect ?? false;
-          
+
           if (isCorrect) {
             // Correct gate: +200 points, reset consecutive wrong counter, maintain combo
             state.score += 200 * state.combo;
@@ -1420,16 +1476,26 @@ export const ShapeDashView: React.FC<ShapeDashViewProps> = ({
             state.feedbackUntil = time + 1000;
             playSound('correct', soundEnabledRef.current);
             // Create sparkle particles at player position
-            state.particles.push(...createSparkleParticles(PLAYER_X + PLAYER_SIZE / 2, py + PLAYER_SIZE / 2));
-            state.particles.push(...createScorePopup(PLAYER_X + PLAYER_SIZE / 2, py - 20, 200, state.combo));
+            state.particles.push(
+              ...createSparkleParticles(PLAYER_X + PLAYER_SIZE / 2, py + PLAYER_SIZE / 2),
+            );
+            state.particles.push(
+              ...createScorePopup(PLAYER_X + PLAYER_SIZE / 2, py - 20, 200, state.combo),
+            );
           } else {
             // Wrong gate
             state.consecutiveWrongGates += 1;
-            
+
             if (state.consecutiveWrongGates >= 2) {
               // 2 consecutive wrong gates = crash
               state.screenShake = SCREEN_SHAKE_INTENSITY;
-              state.particles.push(...createExplosionParticles(PLAYER_X + PLAYER_SIZE / 2, py + PLAYER_SIZE / 2, '#ff3366'));
+              state.particles.push(
+                ...createExplosionParticles(
+                  PLAYER_X + PLAYER_SIZE / 2,
+                  py + PLAYER_SIZE / 2,
+                  '#ff3366',
+                ),
+              );
               setDisplayScore(state.score);
               setDisplayAttempt(state.attemptCount);
               setGameState('crashed');
@@ -1440,7 +1506,13 @@ export const ShapeDashView: React.FC<ShapeDashViewProps> = ({
               // First wrong gate: lose shield OR lose combo
               if (state.hasShield) {
                 state.hasShield = false;
-                state.particles.push(...createExplosionParticles(PLAYER_X + PLAYER_SIZE / 2, py + PLAYER_SIZE / 2, '#00ffcc'));
+                state.particles.push(
+                  ...createExplosionParticles(
+                    PLAYER_X + PLAYER_SIZE / 2,
+                    py + PLAYER_SIZE / 2,
+                    '#00ffcc',
+                  ),
+                );
                 state.feedbackMessage = '⚠️ Shield Lost!';
               } else {
                 state.combo = 1;
@@ -1463,7 +1535,7 @@ export const ShapeDashView: React.FC<ShapeDashViewProps> = ({
         setDisplayAttempt(state.attemptCount);
         setDisplayStarsCollected(state.starsCollected);
         setDisplayTotalStars(state.totalStars);
-        
+
         // V3: Calculate three-star rating
         // ⭐ Complete the run
         // ⭐⭐ Complete with 50%+ stars collected
@@ -1478,7 +1550,7 @@ export const ShapeDashView: React.FC<ShapeDashViewProps> = ({
           if (state.starsCollected === state.totalStars && state.attemptCount === 1) rating = 3;
         }
         setDisplayRating(rating);
-        
+
         setGameState('won');
         playSound('win', soundEnabledRef.current);
         setTimeout(() => onAnswerRef.current(true), 800);
@@ -1519,7 +1591,8 @@ export const ShapeDashView: React.FC<ShapeDashViewProps> = ({
         if (state.passedGateIds.has(gate.id)) continue;
         const gateScreenX = gate.x - nextScroll;
         // Only draw if gate zone is visible
-        if (gateScreenX + GATE_ZONE_WIDTH / 2 < -20 || gateScreenX - GATE_ZONE_WIDTH / 2 > cw + 20) continue;
+        if (gateScreenX + GATE_ZONE_WIDTH / 2 < -20 || gateScreenX - GATE_ZONE_WIDTH / 2 > cw + 20)
+          continue;
         const revealed = state.revealedGateId === gate.id;
         drawShapeGates(ctx, gate, nextScroll, groundY, state.pulsePhase, revealed);
       }
@@ -1546,24 +1619,50 @@ export const ShapeDashView: React.FC<ShapeDashViewProps> = ({
       drawTrail(ctx, state.trailPoints, PLAYER_SIZE);
 
       // Player
-      drawPlayer(ctx, PLAYER_X, py, PLAYER_SIZE, state.playerRotation, state.squashStretch, state.playerScale, state.pulsePhase, state.hasShield);
+      drawPlayer(
+        ctx,
+        PLAYER_X,
+        py,
+        PLAYER_SIZE,
+        state.playerRotation,
+        state.squashStretch,
+        state.playerScale,
+        state.pulsePhase,
+        state.hasShield,
+      );
 
       // Particles
       drawParticles(ctx, state.particles);
 
       // HUD
       const progress = Math.min(1, nextScroll / prob.runLength);
-      drawHUD(ctx, progress, state.attemptCount, state.score, cw, state.combo, state.starsCollected, state.totalStars, state.hasShield);
-      
+      drawHUD(
+        ctx,
+        progress,
+        state.attemptCount,
+        state.score,
+        cw,
+        state.combo,
+        state.starsCollected,
+        state.totalStars,
+        state.hasShield,
+      );
+
       // V4: Draw gate warning if approaching
-      const approachingGateIndex = getApproachingGateIndex(PLAYER_X, shapeGates, nextScroll, state.passedGateIds, 400);
+      const approachingGateIndex = getApproachingGateIndex(
+        PLAYER_X,
+        shapeGates,
+        nextScroll,
+        state.passedGateIds,
+        400,
+      );
       if (approachingGateIndex !== null) {
         const gate = shapeGates[approachingGateIndex];
         if (gate) {
           drawGateWarning(ctx, gate.prompt, cw, state.pulsePhase, state.consecutiveWrongGates);
         }
       }
-      
+
       // V4: Draw feedback message
       if (state.feedbackMessage && time < state.feedbackUntil && state.feedbackType) {
         drawFeedback(ctx, state.feedbackMessage, state.feedbackType, cw, state.pulsePhase);
@@ -1587,7 +1686,7 @@ export const ShapeDashView: React.FC<ShapeDashViewProps> = ({
       }
       requestJump();
     },
-    [gameState, requestJump, doRetry]
+    [gameState, requestJump, doRetry],
   );
 
   const handleClick = useCallback(
@@ -1599,7 +1698,7 @@ export const ShapeDashView: React.FC<ShapeDashViewProps> = ({
       }
       requestJump();
     },
-    [gameState, requestJump, doRetry]
+    [gameState, requestJump, doRetry],
   );
 
   const handleKeyDown = useCallback(
@@ -1613,21 +1712,24 @@ export const ShapeDashView: React.FC<ShapeDashViewProps> = ({
         requestJump();
       }
     },
-    [gameState, requestJump, doRetry]
+    [gameState, requestJump, doRetry],
   );
 
-  const tapToRetry = (t.games as Record<string, { tapToRetry?: string }>)?.['shape_dash']?.tapToRetry ?? (t.game as { retry?: string })?.retry ?? 'Tap to try again';
+  const tapToRetry =
+    (t.games as Record<string, { tapToRetry?: string }>)?.['shape_dash']?.tapToRetry ??
+    (t.game as { retry?: string })?.retry ??
+    'Tap to try again';
 
   return (
     <div className="flex flex-col items-center gap-3 w-full max-w-4xl relative">
       <div
         ref={containerRef}
         className="relative rounded-2xl overflow-hidden border-2 border-emerald-400 shadow-xl bg-slate-900 cursor-pointer focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 w-full"
-        style={{ 
+        style={{
           aspectRatio: isPortrait ? undefined : CANVAS_ASPECT_RATIO,
           maxWidth: '100%',
           boxShadow: '0 0 40px rgba(0, 255, 136, 0.2)',
-          height: isPortrait ? `${canvasHeight}px` : undefined
+          height: isPortrait ? `${canvasHeight}px` : undefined,
         }}
         onClick={handleClick}
         onPointerDown={handlePointerDown}
@@ -1644,17 +1746,16 @@ export const ShapeDashView: React.FC<ShapeDashViewProps> = ({
           style={{ display: 'block' }}
         />
         {gameState === 'won' && (
-          <div 
-            className="absolute inset-0 flex flex-col items-center justify-center gap-3 pointer-events-none rounded-2xl" 
-            style={{ 
-              background: 'radial-gradient(circle, rgba(0, 255, 136, 0.4) 0%, rgba(0, 255, 204, 0.2) 100%)'
+          <div
+            className="absolute inset-0 flex flex-col items-center justify-center gap-3 pointer-events-none rounded-2xl"
+            style={{
+              background:
+                'radial-gradient(circle, rgba(0, 255, 136, 0.4) 0%, rgba(0, 255, 204, 0.2) 100%)',
             }}
           >
             <span className="text-5xl">🎉</span>
             <span className="text-3xl font-black text-white drop-shadow-lg">LEVEL COMPLETE!</span>
-            <div className="text-4xl">
-              {'⭐'.repeat(displayRating)}
-            </div>
+            <div className="text-4xl">{'⭐'.repeat(displayRating)}</div>
             <span className="text-xl font-bold text-white drop-shadow-md">
               Score: {displayScore}
             </span>
@@ -1666,8 +1767,9 @@ export const ShapeDashView: React.FC<ShapeDashViewProps> = ({
         {gameState === 'crashed' && (
           <div
             className="absolute inset-0 flex flex-col items-center justify-center gap-3 rounded-2xl pointer-events-none"
-            style={{ 
-              background: 'radial-gradient(circle, rgba(255, 51, 102, 0.5) 0%, rgba(255, 0, 0, 0.3) 100%)'
+            style={{
+              background:
+                'radial-gradient(circle, rgba(255, 51, 102, 0.5) 0%, rgba(255, 0, 0, 0.3) 100%)',
             }}
           >
             <span className="text-5xl">💥</span>
@@ -1691,9 +1793,12 @@ export const ShapeDashView: React.FC<ShapeDashViewProps> = ({
 
       {/* Instructions hint */}
       <div className="text-sm text-slate-400 text-center">
-        <kbd className="px-2 py-1 bg-slate-700 rounded text-xs font-semibold text-slate-200">SPACE</kbd> or tap to jump • Double-jump available!
+        <kbd className="px-2 py-1 bg-slate-700 rounded text-xs font-semibold text-slate-200">
+          SPACE
+        </kbd>{' '}
+        or tap to jump • Double-jump available!
       </div>
-      
+
       {/* V4: Paid hint buttons */}
       <PaidHintButtons
         hints={hints}

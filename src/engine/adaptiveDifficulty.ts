@@ -12,7 +12,7 @@ export const createAdaptiveDifficulty = (): AdaptiveDifficulty => ({
   averageResponseTime: [], // Last 10 response times (ms)
   consecutiveCorrect: 0, // Consecutive correct answers
   consecutiveWrong: 0, // Consecutive wrong answers
-  
+
   // Difficulty parameters
   difficultyMultiplier: 1.0, // 0.5 (easy) to 2.0 (hard)
   levelAdjustment: 0, // -2 to +2 level adjustment
@@ -28,16 +28,16 @@ export const createAdaptiveDifficulty = (): AdaptiveDifficulty => ({
 export const updateAdaptiveDifficulty = (
   adaptive: AdaptiveDifficulty,
   isCorrect: boolean,
-  responseTime: number | null = null
+  responseTime: number | null = null,
 ): AdaptiveDifficulty => {
   const updated = { ...adaptive };
-  
+
   // Update recent answers
   updated.recentAccuracy = [...updated.recentAccuracy, isCorrect].slice(-10);
   if (responseTime !== null) {
     updated.averageResponseTime = [...updated.averageResponseTime, responseTime].slice(-10);
   }
-  
+
   // Update consecutive answer counters
   if (isCorrect) {
     updated.consecutiveCorrect += 1;
@@ -46,17 +46,19 @@ export const updateAdaptiveDifficulty = (
     updated.consecutiveWrong += 1;
     updated.consecutiveCorrect = 0;
   }
-  
+
   // Calculate accuracy
-  const accuracy = updated.recentAccuracy.length > 0
-    ? updated.recentAccuracy.filter(a => a).length / updated.recentAccuracy.length
-    : 0.5;
-  
+  const accuracy =
+    updated.recentAccuracy.length > 0
+      ? updated.recentAccuracy.filter((a) => a).length / updated.recentAccuracy.length
+      : 0.5;
+
   // Calculate average response time (if data available)
-  const avgResponseTime = updated.averageResponseTime.length > 0
-    ? updated.averageResponseTime.reduce((a, b) => a + b, 0) / updated.averageResponseTime.length
-    : null;
-  
+  const avgResponseTime =
+    updated.averageResponseTime.length > 0
+      ? updated.averageResponseTime.reduce((a, b) => a + b, 0) / updated.averageResponseTime.length
+      : null;
+
   // Adaptive difficulty logic
   // If accuracy > 80% and 3+ consecutive correct answers -> increase difficulty
   if (accuracy > 0.8 && updated.consecutiveCorrect >= 3) {
@@ -72,7 +74,7 @@ export const updateAdaptiveDifficulty = (
   else if (avgResponseTime !== null && avgResponseTime < 1000 && accuracy > 0.7) {
     updated.difficultyMultiplier = Math.min(updated.difficultyMultiplier + 0.05, 2.0);
   }
-  
+
   return updated;
 };
 
@@ -99,11 +101,11 @@ export const getDifficultyForGame = (
   _gameType: string,
   baseLevel: number,
   adaptive: AdaptiveDifficulty,
-  _profile: ProfileType
+  _profile: ProfileType,
 ): GameDifficulty => {
   const effectiveLevel = getEffectiveLevel(baseLevel, adaptive);
   const multiplier = adaptive.difficultyMultiplier;
-  
+
   return {
     effectiveLevel,
     multiplier,

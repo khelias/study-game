@@ -20,7 +20,7 @@ describe('gameStore', () => {
         totalTimePlayed: 0,
         lastPlayed: null,
         stars: 0,
-        maxSnakeLength: 0
+        maxSnakeLength: 0,
       },
       unlockedAchievements: [],
       soundEnabled: true,
@@ -49,7 +49,7 @@ describe('gameStore', () => {
     it('should record correct answer', () => {
       const { recordAnswer } = useGameStore.getState();
       recordAnswer(true, 10);
-      
+
       const state = useGameStore.getState();
       expect(state.stats.correctAnswers).toBe(1);
       expect(state.stats.wrongAnswers).toBe(0);
@@ -60,7 +60,7 @@ describe('gameStore', () => {
     it('should record wrong answer', () => {
       const { recordAnswer } = useGameStore.getState();
       recordAnswer(false);
-      
+
       const state = useGameStore.getState();
       expect(state.stats.correctAnswers).toBe(0);
       expect(state.stats.wrongAnswers).toBe(1);
@@ -69,11 +69,11 @@ describe('gameStore', () => {
 
     it('should track streak correctly', () => {
       const { recordAnswer } = useGameStore.getState();
-      
+
       recordAnswer(true, 10);
       recordAnswer(true, 10);
       recordAnswer(true, 10);
-      
+
       const state = useGameStore.getState();
       expect(state.stats.maxStreak).toBe(3);
       expect(state.stats.currentStreak).toBe(3);
@@ -81,11 +81,11 @@ describe('gameStore', () => {
 
     it('should reset streak on wrong answer', () => {
       const { recordAnswer } = useGameStore.getState();
-      
+
       recordAnswer(true, 10);
       recordAnswer(true, 10);
       recordAnswer(false);
-      
+
       const state = useGameStore.getState();
       expect(state.stats.maxStreak).toBe(2);
       expect(state.stats.currentStreak).toBe(0);
@@ -96,7 +96,7 @@ describe('gameStore', () => {
     it('should record level up', () => {
       const { recordLevelUp } = useGameStore.getState();
       recordLevelUp('word_builder', 2);
-      
+
       const state = useGameStore.getState();
       expect(state.levels[state.profile]?.['word_builder']).toBe(2);
       expect(state.stats.maxLevels['word_builder']).toBe(2);
@@ -104,10 +104,10 @@ describe('gameStore', () => {
 
     it('should track max level correctly', () => {
       const { recordLevelUp } = useGameStore.getState();
-      
+
       recordLevelUp('word_builder', 3);
       recordLevelUp('word_builder', 2); // Lower level shouldn't change max
-      
+
       const state = useGameStore.getState();
       expect(state.stats.maxLevels['word_builder']).toBe(3);
     });
@@ -126,7 +126,7 @@ describe('gameStore', () => {
     it('should earn stars', () => {
       const { earnStars } = useGameStore.getState();
       earnStars(5);
-      
+
       const state = useGameStore.getState();
       expect(state.stars).toBe(5);
       expect(state.stats.collectedStars).toBe(5); // Synced for achievement compatibility
@@ -136,7 +136,7 @@ describe('gameStore', () => {
       const { earnStars } = useGameStore.getState();
       earnStars(3);
       earnStars(2);
-      
+
       const state = useGameStore.getState();
       expect(state.stars).toBe(5);
     });
@@ -144,10 +144,10 @@ describe('gameStore', () => {
     it('should spend stars', () => {
       const { earnStars, spendStars } = useGameStore.getState();
       earnStars(10);
-      
+
       const success = spendStars(3);
       expect(success).toBe(true);
-      
+
       const state = useGameStore.getState();
       expect(state.stars).toBe(7);
     });
@@ -155,10 +155,10 @@ describe('gameStore', () => {
     it('should not spend stars if insufficient', () => {
       const { earnStars, spendStars } = useGameStore.getState();
       earnStars(5);
-      
+
       const success = spendStars(10); // Try to spend more than available
       expect(success).toBe(false);
-      
+
       const state = useGameStore.getState();
       expect(state.stars).toBe(5); // Unchanged
     });
@@ -187,11 +187,11 @@ describe('gameStore', () => {
 
     it('should spend hearts', () => {
       const { spendHeart } = useGameStore.getState();
-      
+
       const success1 = spendHeart();
       expect(success1).toBe(true);
       expect(useGameStore.getState().hearts).toBe(2);
-      
+
       const success2 = spendHeart();
       expect(success2).toBe(true);
       expect(useGameStore.getState().hearts).toBe(1);
@@ -199,12 +199,12 @@ describe('gameStore', () => {
 
     it('should not spend hearts if none available', () => {
       const { spendHeart } = useGameStore.getState();
-      
+
       // Spend all hearts
       spendHeart();
       spendHeart();
       spendHeart();
-      
+
       const success = spendHeart();
       expect(success).toBe(false);
       expect(useGameStore.getState().hearts).toBe(0);
@@ -212,16 +212,16 @@ describe('gameStore', () => {
 
     it('should add hearts up to max', () => {
       const { addHeart, spendHeart } = useGameStore.getState();
-      
+
       // Spend some hearts first
       spendHeart();
       spendHeart();
       expect(useGameStore.getState().hearts).toBe(1);
-      
+
       // Add hearts
       addHeart(2);
       expect(useGameStore.getState().hearts).toBe(3);
-      
+
       // Try to add more than max (should cap at 5)
       addHeart(5);
       expect(useGameStore.getState().hearts).toBe(5);
@@ -231,7 +231,7 @@ describe('gameStore', () => {
   describe('Sound Settings', () => {
     it('should toggle sound', () => {
       const { toggleSound } = useGameStore.getState();
-      
+
       expect(useGameStore.getState().soundEnabled).toBe(true);
       toggleSound();
       expect(useGameStore.getState().soundEnabled).toBe(false);
@@ -259,7 +259,7 @@ describe('gameStore', () => {
     it('should unlock achievement', () => {
       const { unlockAchievement } = useGameStore.getState();
       unlockAchievement('first_game');
-      
+
       expect(useGameStore.getState().unlockedAchievements).toContain('first_game');
     });
 
@@ -267,8 +267,10 @@ describe('gameStore', () => {
       const { unlockAchievement } = useGameStore.getState();
       unlockAchievement('first_game');
       unlockAchievement('first_game');
-      
-      const achievements = useGameStore.getState().unlockedAchievements.filter(a => a === 'first_game');
+
+      const achievements = useGameStore
+        .getState()
+        .unlockedAchievements.filter((a) => a === 'first_game');
       expect(achievements.length).toBe(1);
     });
   });
@@ -276,7 +278,7 @@ describe('gameStore', () => {
   describe('Tutorial', () => {
     it('should mark tutorial as seen', () => {
       const { markTutorialSeen } = useGameStore.getState();
-      
+
       expect(useGameStore.getState().hasSeenTutorial).toBe(false);
       markTutorialSeen();
       expect(useGameStore.getState().hasSeenTutorial).toBe(true);

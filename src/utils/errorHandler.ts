@@ -10,7 +10,11 @@ const isDevelopment = import.meta.env.DEV;
  * @param error - Error object (optional)
  * @param context - Additional context (optional)
  */
-export const logError = (message: string, error: unknown = null, context: Record<string, unknown> = {}): void => {
+export const logError = (
+  message: string,
+  error: unknown = null,
+  context: Record<string, unknown> = {},
+): void => {
   if (isDevelopment) {
     console.error(`[Error] ${message}`, { error, context });
   }

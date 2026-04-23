@@ -12,15 +12,13 @@ export const GameOverScreen: React.FC = () => {
   const navigate = useNavigate();
   const t = useTranslation();
   const { formatText } = useProfileText();
-  const score = usePlaySessionStore(state => state.score); // Use session score, not global
-  const soundEnabled = useGameStore(state => state.soundEnabled);
-  const gameType = usePlaySessionStore(state => state.gameType);
-  const returnToMenu = usePlaySessionStore(state => state.returnToMenu);
-  const getHighScore = useGameStore(state => state.getHighScore);
+  const score = usePlaySessionStore((state) => state.score); // Use session score, not global
+  const soundEnabled = useGameStore((state) => state.soundEnabled);
+  const gameType = usePlaySessionStore((state) => state.gameType);
+  const returnToMenu = usePlaySessionStore((state) => state.returnToMenu);
+  const getHighScore = useGameStore((state) => state.getHighScore);
   const { playClick } = useGameAudio(soundEnabled);
-  const scoreMessage = formatText(
-    t.game.scoreMessage.replace('{score}', String(score))
-  );
+  const scoreMessage = formatText(t.game.scoreMessage.replace('{score}', String(score)));
 
   const highScore = gameType ? getHighScore(gameType) : 0;
   const isNewRecord = gameType && score > 0 && score >= highScore;
@@ -52,9 +50,13 @@ export const GameOverScreen: React.FC = () => {
   return (
     <div className="min-h-screen flex items-center justify-center px-4 py-8 bg-slate-50 animate-in fade-in">
       <div className="w-full max-w-md">
-        <div className={`relative rounded-3xl bg-white/95 shadow-xl border ${themeBorder} px-6 py-6 sm:px-8 sm:py-8`}>
+        <div
+          className={`relative rounded-3xl bg-white/95 shadow-xl border ${themeBorder} px-6 py-6 sm:px-8 sm:py-8`}
+        >
           {/* Game title pill */}
-          <div className={`inline-flex items-center gap-2 px-3 py-1 rounded-full ${themeBgSoft} border border-slate-200 mb-4`}>
+          <div
+            className={`inline-flex items-center gap-2 px-3 py-1 rounded-full ${themeBgSoft} border border-slate-200 mb-4`}
+          >
             <span className="text-lg" aria-hidden="true">
               {headerEmoji}
             </span>
@@ -75,9 +77,7 @@ export const GameOverScreen: React.FC = () => {
             <h2 className="text-2xl sm:text-3xl font-black text-slate-900 mb-1">
               {formatText(t.game.gameOver)}
             </h2>
-            <p className="text-sm sm:text-base text-slate-600">
-              {scoreMessage}
-            </p>
+            <p className="text-sm sm:text-base text-slate-600">{scoreMessage}</p>
           </div>
 
           {/* Score + high score */}
@@ -86,9 +86,7 @@ export const GameOverScreen: React.FC = () => {
               <div className="text-[0.65rem] sm:text-xs uppercase tracking-wide text-slate-500 mb-1">
                 {formatText(t.game.score)}
               </div>
-              <div className="text-2xl sm:text-3xl font-black text-slate-900">
-                {score}
-              </div>
+              <div className="text-2xl sm:text-3xl font-black text-slate-900">{score}</div>
             </div>
             <div
               className={[

@@ -82,7 +82,7 @@ describe('Progression Engine (Phase 3)', () => {
       // Easy game, level 1-5: 1 base × 1.0 = 1 star
       expect(calculateStarReward('word_builder', 1, false)).toBe(1);
       expect(calculateStarReward('word_builder', 1, true)).toBe(2); // +1 perfect bonus
-      
+
       // Easy game, level 6: 1 base × 1.5 = 1-2 stars (rounded)
       expect(calculateStarReward('word_builder', 6, false)).toBe(2);
       expect(calculateStarReward('word_builder', 6, true)).toBe(3);
@@ -92,7 +92,7 @@ describe('Progression Engine (Phase 3)', () => {
       // Medium game, level 1: 2 base × 1.0 = 2 stars
       expect(calculateStarReward('memory_math', 1, false)).toBe(2);
       expect(calculateStarReward('memory_math', 1, true)).toBe(3);
-      
+
       // Medium game, level 11: 2 base × 2.0 = 4 stars
       expect(calculateStarReward('memory_math', 11, false)).toBe(4);
       expect(calculateStarReward('memory_math', 11, true)).toBe(5);
@@ -102,7 +102,7 @@ describe('Progression Engine (Phase 3)', () => {
       // Hard game, level 1: 3 base × 1.0 = 3 stars
       expect(calculateStarReward('balance_scale', 1, false)).toBe(3);
       expect(calculateStarReward('balance_scale', 1, true)).toBe(4);
-      
+
       // Hard game, level 16: 3 base × 2.5 = 7-8 stars (rounded)
       expect(calculateStarReward('balance_scale', 16, false)).toBe(8);
       expect(calculateStarReward('balance_scale', 16, true)).toBe(9);

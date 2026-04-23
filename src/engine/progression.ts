@@ -14,15 +14,15 @@ import type { Stats, PerformanceMetrics } from '../types/stats';
 export const calculateOptimalDifficulty = (
   _gameType: string,
   level: number,
-  profile: ProfileType
+  profile: ProfileType,
 ): DifficultyResult => {
   const profileData = PROFILES[profile] || PROFILES.starter;
   const baseLevel = profileData.levelStart || 1;
   const difficultyOffset = profileData.difficultyOffset || 0;
-  
+
   // Smoother progression - fewer sharp jumps
   const effectiveLevel = Math.max(1, level + difficultyOffset);
-  
+
   return {
     effectiveLevel,
     baseLevel,
@@ -42,14 +42,14 @@ export const calculateOptimalDifficulty = (
  */
 export const getNextLevelDifficulty = (
   currentLevel: number,
-  performance: PerformanceMetrics
+  performance: PerformanceMetrics,
 ): number => {
   // If performance is good (>80% accuracy), increase difficulty faster
   // If performance is poor (<50% accuracy), increase difficulty slower
   const { accuracy, averageTime } = performance;
-  
+
   let levelIncrease = 1;
-  
+
   if (accuracy > 0.8 && averageTime < 5000) {
     // Good performance - increase difficulty
     levelIncrease = 1.5;
@@ -57,7 +57,7 @@ export const getNextLevelDifficulty = (
     // Poor performance - increase difficulty slower
     levelIncrease = 0.5;
   }
-  
+
   return Math.max(1, Math.floor(currentLevel + levelIncrease));
 };
 
@@ -69,41 +69,41 @@ export const getNextLevelDifficulty = (
  */
 export const getProgressionRecommendation = (
   stats: Stats,
-  gameType: string
+  gameType: string,
 ): ProgressionRecommendation => {
   const t = getTranslations();
   const gameStats = stats.gamesByType[gameType] || 0;
   const maxLevel = stats.maxLevels[gameType] || 1;
   const accuracy = stats.correctAnswers / (stats.correctAnswers + stats.wrongAnswers) || 0;
-  
+
   if (gameStats === 0) {
     return {
       message: t.progression.startGame,
       action: 'start',
-      priority: 'high'
+      priority: 'high',
     };
   }
-  
+
   if (accuracy > 0.8 && maxLevel < 5) {
     return {
       message: t.progression.doingGreat,
       action: 'level_up',
-      priority: 'medium'
+      priority: 'medium',
     };
   }
-  
+
   if (accuracy < 0.5 && maxLevel > 3) {
     return {
       message: t.progression.maybeTooHard,
       action: 'level_down',
-      priority: 'low'
+      priority: 'low',
     };
   }
-  
+
   return {
     message: t.progression.keepPracticing,
     action: 'continue',
-    priority: 'low'
+    priority: 'low',
   };
 };
 
@@ -113,19 +113,16 @@ export const getProgressionRecommendation = (
  * @param gameType - Type of game
  * @returns Success score (0-100)
  */
-export const calculateGameSuccessScore = (
-  stats: Stats,
-  gameType: string
-): number => {
+export const calculateGameSuccessScore = (stats: Stats, gameType: string): number => {
   const gameStats = stats.gamesByType[gameType] || 0;
   const maxLevel = stats.maxLevels[gameType] || 1;
   const accuracy = stats.correctAnswers / (stats.correctAnswers + stats.wrongAnswers) || 0;
-  
+
   // Score 0-100
   const levelScore = Math.min(100, maxLevel * 10);
   const accuracyScore = accuracy * 50;
   const gamesPlayedScore = Math.min(30, gameStats * 2);
-  
+
   return Math.round(levelScore + accuracyScore + gamesPlayedScore);
 };
 
@@ -134,9 +131,9 @@ export const calculateGameSuccessScore = (
  * Prevents farming easy games for stars
  */
 const GAME_DIFFICULTY_TIERS: Record<string, number> = {
-  easy: 1,    // Easy games: 1 star base
-  medium: 2,  // Medium games: 2 stars base
-  hard: 3,    // Hard games: 3 stars base
+  easy: 1, // Easy games: 1 star base
+  medium: 2, // Medium games: 2 stars base
+  hard: 3, // Hard games: 3 stars base
 };
 
 /**
@@ -167,11 +164,11 @@ export const calculateLevelUpRequirement = (level: number): number => {
 export const checkLevelUp = (
   currentLevel: number,
   correctAnswers: number,
-  totalAnswers: number
+  totalAnswers: number,
 ): boolean => {
   const required = calculateLevelUpRequirement(currentLevel);
   const accuracy = totalAnswers > 0 ? correctAnswers / totalAnswers : 0;
-  
+
   // Must have required correct answers AND maintain 80%+ accuracy
   return correctAnswers >= required && accuracy >= 0.8;
 };
@@ -210,12 +207,12 @@ export const getLevelStarMultiplier = (level: number): number => {
 export const calculateStarReward = (
   gameType: string,
   level: number,
-  perfect: boolean = false
+  perfect: boolean = false,
 ): number => {
   const baseReward = getGameBaseStarReward(gameType);
   const multiplier = getLevelStarMultiplier(level);
   const baseStars = Math.round(baseReward * multiplier);
   const perfectBonus = perfect ? 1 : 0;
-  
+
   return baseStars + perfectBonus;
 };

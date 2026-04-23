@@ -10,7 +10,10 @@ type AnyFunction = (...args: unknown[]) => unknown;
  * @param wait - Wait time in milliseconds
  * @returns Debounced function
  */
-export const debounce = <T extends AnyFunction>(func: T, wait: number): ((...args: Parameters<T>) => void) => {
+export const debounce = <T extends AnyFunction>(
+  func: T,
+  wait: number,
+): ((...args: Parameters<T>) => void) => {
   let timeout: ReturnType<typeof setTimeout> | undefined;
   return function executedFunction(...args: Parameters<T>) {
     const later = () => {
@@ -28,13 +31,16 @@ export const debounce = <T extends AnyFunction>(func: T, wait: number): ((...arg
  * @param limit - Limit time in milliseconds
  * @returns Throttled function
  */
-export const throttle = <T extends AnyFunction>(func: T, limit: number): ((...args: Parameters<T>) => void) => {
+export const throttle = <T extends AnyFunction>(
+  func: T,
+  limit: number,
+): ((...args: Parameters<T>) => void) => {
   let inThrottle: boolean;
-  return function(...args: Parameters<T>) {
+  return function (...args: Parameters<T>) {
     if (!inThrottle) {
       func(...args);
       inThrottle = true;
-      setTimeout(() => inThrottle = false, limit);
+      setTimeout(() => (inThrottle = false), limit);
     }
   };
 };
@@ -44,7 +50,7 @@ export const throttle = <T extends AnyFunction>(func: T, limit: number): ((...ar
  * @param urls - Array of image URLs to preload
  */
 export const preloadImages = (urls: string[]): void => {
-  urls.forEach(url => {
+  urls.forEach((url) => {
     const img = new Image();
     img.src = url;
   });
@@ -55,9 +61,10 @@ export const preloadImages = (urls: string[]): void => {
  * @returns True if device is mobile
  */
 export const isMobile = (): boolean => {
-  return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
-    navigator.userAgent
-  ) || window.innerWidth < 768;
+  return (
+    /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
+    window.innerWidth < 768
+  );
 };
 
 /**

@@ -62,7 +62,7 @@ export const TimeGameView: React.FC<TimeGameViewProps> = ({
       const pick = wrongIndices[Math.floor(Math.random() * wrongIndices.length)] as number;
       setEliminatedIndices((prev) => [...prev, pick]);
     },
-    [problem.options, problem.answer, eliminatedIndices, spendStars]
+    [problem.options, problem.answer, eliminatedIndices, spendStars],
   );
 
   const handleChoice = (opt: string): void => {

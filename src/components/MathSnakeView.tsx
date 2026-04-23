@@ -17,7 +17,16 @@ interface MathSnakeViewProps {
   spendStars?: (count: number) => boolean;
 }
 
-export const MathSnakeView: React.FC<MathSnakeViewProps> = ({ problem, onAnswer, onMove, soundEnabled, level = 1, gameType, stars = 0, spendStars }) => {
+export const MathSnakeView: React.FC<MathSnakeViewProps> = ({
+  problem,
+  onAnswer,
+  onMove,
+  soundEnabled,
+  level = 1,
+  gameType,
+  stars = 0,
+  spendStars,
+}) => {
   const t = useTranslation();
   const baseType = gameType?.replace('_adv', '') ?? 'math_snake';
   const paidHints = GAME_CONFIG[baseType]?.paidHints ?? [];
@@ -57,7 +66,15 @@ export const MathSnakeView: React.FC<MathSnakeViewProps> = ({ problem, onAnswer,
   }, [problem.snake.length]);
 
   const snakeSegments = useMemo(() => {
-    const map = new Map<string, { type: 'head' | 'body' | 'tail'; prev?: [number, number]; next?: [number, number]; index: number }>();
+    const map = new Map<
+      string,
+      {
+        type: 'head' | 'body' | 'tail';
+        prev?: [number, number];
+        next?: [number, number];
+        index: number;
+      }
+    >();
     problem.snake.forEach((pos, index) => {
       const prev = index > 0 ? problem.snake[index - 1] : undefined;
       const next = index < problem.snake.length - 1 ? problem.snake[index + 1] : undefined;
@@ -71,18 +88,21 @@ export const MathSnakeView: React.FC<MathSnakeViewProps> = ({ problem, onAnswer,
     return map;
   }, [problem.snake]);
 
-  const handleAnswerClick = useCallback((value: number) => {
-    if (!problem.math || status !== 'idle') return;
-    const isCorrect = value === problem.math.answer;
-    setSelectedOption(value);
-    playSound(isCorrect ? 'correct' : 'wrong', soundEnabled);
-    setStatus(isCorrect ? 'correct' : 'wrong');
-    setTimeout(() => {
-      onAnswer(isCorrect);
-      setStatus('idle');
-      setSelectedOption(null);
-    }, 800);
-  }, [onAnswer, problem.math, soundEnabled, status]);
+  const handleAnswerClick = useCallback(
+    (value: number) => {
+      if (!problem.math || status !== 'idle') return;
+      const isCorrect = value === problem.math.answer;
+      setSelectedOption(value);
+      playSound(isCorrect ? 'correct' : 'wrong', soundEnabled);
+      setStatus(isCorrect ? 'correct' : 'wrong');
+      setTimeout(() => {
+        onAnswer(isCorrect);
+        setStatus('idle');
+        setSelectedOption(null);
+      }, 800);
+    },
+    [onAnswer, problem.math, soundEnabled, status],
+  );
 
   const handlePaidHint = useCallback(
     (hintId: string) => {
@@ -100,13 +120,17 @@ export const MathSnakeView: React.FC<MathSnakeViewProps> = ({ problem, onAnswer,
         return next;
       });
     },
-    [problem.math, spendStars]
+    [problem.math, spendStars],
   );
 
   useEffect(() => {
     const handleKeyPress = (event: KeyboardEvent): void => {
       if (!onMove || problem.math || status !== 'idle') return;
-      if ((event.target as HTMLElement).tagName === 'INPUT' || (event.target as HTMLElement).tagName === 'TEXTAREA') return;
+      if (
+        (event.target as HTMLElement).tagName === 'INPUT' ||
+        (event.target as HTMLElement).tagName === 'TEXTAREA'
+      )
+        return;
       let direction: Direction | null = null;
       if (event.key === 'ArrowUp' || event.key === 'w' || event.key === 'W') direction = 'UP';
       if (event.key === 'ArrowDown' || event.key === 's' || event.key === 'S') direction = 'DOWN';
@@ -121,7 +145,10 @@ export const MathSnakeView: React.FC<MathSnakeViewProps> = ({ problem, onAnswer,
     return () => window.removeEventListener('keydown', handleKeyPress);
   }, [onMove, problem.math, status]);
 
-  const getDir = (from?: [number, number], to?: [number, number]): 'up' | 'down' | 'left' | 'right' | null => {
+  const getDir = (
+    from?: [number, number],
+    to?: [number, number],
+  ): 'up' | 'down' | 'left' | 'right' | null => {
     if (!from || !to) return null;
     if (to[0] === from[0] && to[1] === from[1] - 1) return 'up';
     if (to[0] === from[0] && to[1] === from[1] + 1) return 'down';
@@ -147,7 +174,7 @@ export const MathSnakeView: React.FC<MathSnakeViewProps> = ({ problem, onAnswer,
     }
     // Alternating pattern for body segments
     const isEven = index % 2 === 0;
-    return isEven 
+    return isEven
       ? {
           gradient: 'from-emerald-300 via-emerald-400 to-emerald-500',
           border: 'border-emerald-600/50',
@@ -166,7 +193,10 @@ export const MathSnakeView: React.FC<MathSnakeViewProps> = ({ problem, onAnswer,
     const isHead = segment?.type === 'head';
     const isBody = segment?.type === 'body';
     const isTail = segment?.type === 'tail';
-    const apple = problem.apple && problem.apple.pos[0] === x && problem.apple.pos[1] === y ? problem.apple : null;
+    const apple =
+      problem.apple && problem.apple.pos[0] === x && problem.apple.pos[1] === y
+        ? problem.apple
+        : null;
     const connectionDirs = segment
       ? [getDir([x, y], segment.prev), getDir([x, y], segment.next)].filter(Boolean)
       : [];
@@ -174,10 +204,38 @@ export const MathSnakeView: React.FC<MathSnakeViewProps> = ({ problem, onAnswer,
 
     const connectorStyle = (dir: 'up' | 'down' | 'left' | 'right'): React.CSSProperties => {
       switch (dir) {
-        case 'up': return { top: 0, left: '50%', width: '52%', height: '52%', transform: 'translateX(-50%)' };
-        case 'down': return { bottom: 0, left: '50%', width: '52%', height: '52%', transform: 'translateX(-50%)' };
-        case 'left': return { left: 0, top: '50%', width: '52%', height: '52%', transform: 'translateY(-50%)' };
-        case 'right': return { right: 0, top: '50%', width: '52%', height: '52%', transform: 'translateY(-50%)' };
+        case 'up':
+          return {
+            top: 0,
+            left: '50%',
+            width: '52%',
+            height: '52%',
+            transform: 'translateX(-50%)',
+          };
+        case 'down':
+          return {
+            bottom: 0,
+            left: '50%',
+            width: '52%',
+            height: '52%',
+            transform: 'translateX(-50%)',
+          };
+        case 'left':
+          return {
+            left: 0,
+            top: '50%',
+            width: '52%',
+            height: '52%',
+            transform: 'translateY(-50%)',
+          };
+        case 'right':
+          return {
+            right: 0,
+            top: '50%',
+            width: '52%',
+            height: '52%',
+            transform: 'translateY(-50%)',
+          };
       }
     };
 
@@ -191,11 +249,16 @@ export const MathSnakeView: React.FC<MathSnakeViewProps> = ({ problem, onAnswer,
     const tailDir = segment?.type === 'tail' ? getDir([x, y], segment.prev) : null;
     const tailTipStyle = (): React.CSSProperties => {
       switch (tailDir) {
-        case 'up': return { bottom: '8%', left: '50%', transform: 'translate(-50%, 50%)' };
-        case 'down': return { top: '8%', left: '50%', transform: 'translate(-50%, -50%)' };
-        case 'left': return { right: '8%', top: '50%', transform: 'translate(50%, -50%)' };
-        case 'right': return { left: '8%', top: '50%', transform: 'translate(-50%, -50%)' };
-        default: return { bottom: '10%', left: '50%', transform: 'translate(-50%, 50%)' };
+        case 'up':
+          return { bottom: '8%', left: '50%', transform: 'translate(-50%, 50%)' };
+        case 'down':
+          return { top: '8%', left: '50%', transform: 'translate(-50%, -50%)' };
+        case 'left':
+          return { right: '8%', top: '50%', transform: 'translate(50%, -50%)' };
+        case 'right':
+          return { left: '8%', top: '50%', transform: 'translate(-50%, -50%)' };
+        default:
+          return { bottom: '10%', left: '50%', transform: 'translate(-50%, 50%)' };
       }
     };
 
@@ -205,26 +268,28 @@ export const MathSnakeView: React.FC<MathSnakeViewProps> = ({ problem, onAnswer,
         className="relative w-full aspect-square rounded-md border border-slate-300/50 bg-gradient-to-br from-slate-50 via-white to-slate-50 shadow-sm flex items-center justify-center"
       >
         {apple && (
-          <div 
+          <div
             className="relative flex items-center justify-center animate-bounce-subtle"
             style={{ width: 'clamp(1.5rem, 6vw, 2.5rem)', height: 'clamp(1.5rem, 6vw, 2.5rem)' }}
           >
             {apple.kind === 'math' ? (
-              <div 
+              <div
                 className="flex items-center justify-center drop-shadow-lg animate-bounce-subtle"
-                style={{ 
+                style={{
                   fontSize: 'clamp(1rem, 4vw, 1.5rem)',
-                  filter: 'drop-shadow(0 0 8px rgba(59, 130, 246, 0.6)) drop-shadow(0 0 12px rgba(59, 130, 246, 0.4))',
+                  filter:
+                    'drop-shadow(0 0 8px rgba(59, 130, 246, 0.6)) drop-shadow(0 0 12px rgba(59, 130, 246, 0.4))',
                 }}
               >
                 🧮
               </div>
             ) : (
-              <div 
+              <div
                 className="flex items-center justify-center drop-shadow-lg animate-bounce-subtle"
-                style={{ 
+                style={{
                   fontSize: 'clamp(1.25rem, 5vw, 2rem)',
-                  filter: 'drop-shadow(0 0 6px rgba(239, 68, 68, 0.5)) drop-shadow(0 0 10px rgba(239, 68, 68, 0.3))',
+                  filter:
+                    'drop-shadow(0 0 6px rgba(239, 68, 68, 0.5)) drop-shadow(0 0 10px rgba(239, 68, 68, 0.3))',
                 }}
               >
                 🍎
@@ -247,7 +312,7 @@ export const MathSnakeView: React.FC<MathSnakeViewProps> = ({ problem, onAnswer,
                 >
                   {/* Scale pattern overlay for body segments */}
                   {isBody && (
-                    <div 
+                    <div
                       className="absolute inset-0 rounded-full bg-gradient-to-br from-white/20 to-transparent"
                       style={{ transform: 'translateY(-15%)' }}
                     />
@@ -256,8 +321,8 @@ export const MathSnakeView: React.FC<MathSnakeViewProps> = ({ problem, onAnswer,
               );
             })}
             {isTail && (
-              <div 
-                className="absolute rounded-full bg-gradient-to-br from-emerald-600 via-emerald-700 to-emerald-800 shadow-sm" 
+              <div
+                className="absolute rounded-full bg-gradient-to-br from-emerald-600 via-emerald-700 to-emerald-800 shadow-sm"
                 style={{
                   ...tailTipStyle(),
                   width: 'clamp(0.5rem, 2vw, 0.75rem)',
@@ -266,7 +331,7 @@ export const MathSnakeView: React.FC<MathSnakeViewProps> = ({ problem, onAnswer,
                 }}
               >
                 {/* Highlight on tail tip */}
-                <div 
+                <div
                   className="absolute inset-0 rounded-full bg-gradient-to-br from-white/30 to-transparent"
                   style={{ transform: 'translateY(-20%)' }}
                 />
@@ -276,7 +341,7 @@ export const MathSnakeView: React.FC<MathSnakeViewProps> = ({ problem, onAnswer,
               <>
                 {/* Glow ring when eating */}
                 {justAte && (
-                  <div 
+                  <div
                     className="absolute rounded-full border-4 border-emerald-400 animate-ping"
                     style={{
                       width: 'clamp(2rem, 8vw, 3.5rem)',
@@ -290,16 +355,17 @@ export const MathSnakeView: React.FC<MathSnakeViewProps> = ({ problem, onAnswer,
                     width: 'clamp(1.25rem, 5vw, 2rem)',
                     height: 'clamp(1.25rem, 5vw, 2rem)',
                     transform: `rotate(${headRotation()}) ${justAte && segment && segment.index < 3 ? 'scale(1.15)' : ''}`,
-                    boxShadow: '0 4px 8px rgba(16,185,129,0.5), inset 0 1px 2px rgba(255,255,255,0.7)',
+                    boxShadow:
+                      '0 4px 8px rgba(16,185,129,0.5), inset 0 1px 2px rgba(255,255,255,0.7)',
                   }}
                 >
                   {/* Shine/highlight overlay on head */}
-                  <div 
+                  <div
                     className="absolute inset-0 rounded-full bg-gradient-to-br from-white/40 to-transparent"
                     style={{ transform: 'translateY(-15%)' }}
                   />
                   {/* Eyes - white background with inset shadow */}
-                  <div 
+                  <div
                     className="absolute rounded-full bg-white"
                     style={{
                       top: 'clamp(0.25rem, 1vw, 0.5rem)',
@@ -309,7 +375,7 @@ export const MathSnakeView: React.FC<MathSnakeViewProps> = ({ problem, onAnswer,
                       boxShadow: 'inset 0 1px 2px rgba(0,0,0,0.2)',
                     }}
                   ></div>
-                  <div 
+                  <div
                     className="absolute rounded-full bg-white"
                     style={{
                       top: 'clamp(0.25rem, 1vw, 0.5rem)',
@@ -320,7 +386,7 @@ export const MathSnakeView: React.FC<MathSnakeViewProps> = ({ problem, onAnswer,
                     }}
                   ></div>
                   {/* Pupils - dilate when eating */}
-                  <div 
+                  <div
                     className={`absolute rounded-full bg-slate-900 transition-transform duration-200 ${justAte ? 'scale-125' : ''}`}
                     style={{
                       top: 'clamp(0.375rem, 1.5vw, 0.625rem)',
@@ -329,7 +395,7 @@ export const MathSnakeView: React.FC<MathSnakeViewProps> = ({ problem, onAnswer,
                       height: 'clamp(0.125rem, 0.5vw, 0.25rem)',
                     }}
                   ></div>
-                  <div 
+                  <div
                     className={`absolute rounded-full bg-slate-900 transition-transform duration-200 ${justAte ? 'scale-125' : ''}`}
                     style={{
                       top: 'clamp(0.375rem, 1.5vw, 0.625rem)',
@@ -340,7 +406,7 @@ export const MathSnakeView: React.FC<MathSnakeViewProps> = ({ problem, onAnswer,
                   ></div>
                   {/* Tongue when eating */}
                   {justAte && (
-                    <div 
+                    <div
                       className="absolute bg-red-500 rounded-full"
                       style={{
                         bottom: 'clamp(0.125rem, 0.5vw, 0.25rem)',
@@ -354,7 +420,7 @@ export const MathSnakeView: React.FC<MathSnakeViewProps> = ({ problem, onAnswer,
                 </div>
                 {/* +1 indicator when eating */}
                 {justAte && (
-                  <div 
+                  <div
                     className="absolute font-bold text-emerald-600 animate-ping"
                     style={{
                       top: 'clamp(-1rem, -4vw, -1.5rem)',
@@ -368,7 +434,7 @@ export const MathSnakeView: React.FC<MathSnakeViewProps> = ({ problem, onAnswer,
                 {/* Sparkle particles when eating */}
                 {justAte && (
                   <>
-                    <div 
+                    <div
                       className="absolute animate-ping"
                       style={{
                         top: 'clamp(-0.75rem, -3vw, -1rem)',
@@ -378,7 +444,7 @@ export const MathSnakeView: React.FC<MathSnakeViewProps> = ({ problem, onAnswer,
                     >
                       ✨
                     </div>
-                    <div 
+                    <div
                       className="absolute animate-ping"
                       style={{
                         bottom: 'clamp(-0.5rem, -2vw, -0.75rem)',
@@ -392,7 +458,7 @@ export const MathSnakeView: React.FC<MathSnakeViewProps> = ({ problem, onAnswer,
                   </>
                 )}
                 {status === 'wrong' && (
-                  <div 
+                  <div
                     className="absolute animate-bounce"
                     style={{
                       top: 'clamp(-0.5rem, -2vw, -0.75rem)',
@@ -404,7 +470,7 @@ export const MathSnakeView: React.FC<MathSnakeViewProps> = ({ problem, onAnswer,
                   </div>
                 )}
                 {status === 'correct' && (
-                  <div 
+                  <div
                     className="absolute animate-spin"
                     style={{
                       top: 'clamp(-0.5rem, -2vw, -0.75rem)',
@@ -425,21 +491,23 @@ export const MathSnakeView: React.FC<MathSnakeViewProps> = ({ problem, onAnswer,
 
   // Calculate level theme colors
   const getLevelTheme = (lvl: number) => {
-    if (lvl <= 2) return { bg: 'from-blue-50 via-cyan-50 to-emerald-50', border: 'border-blue-300/60' };
-    if (lvl <= 4) return { bg: 'from-emerald-50 via-lime-50 to-amber-50', border: 'border-emerald-300/60' };
-    if (lvl <= 6) return { bg: 'from-amber-50 via-orange-50 to-red-50', border: 'border-amber-300/60' };
+    if (lvl <= 2)
+      return { bg: 'from-blue-50 via-cyan-50 to-emerald-50', border: 'border-blue-300/60' };
+    if (lvl <= 4)
+      return { bg: 'from-emerald-50 via-lime-50 to-amber-50', border: 'border-emerald-300/60' };
+    if (lvl <= 6)
+      return { bg: 'from-amber-50 via-orange-50 to-red-50', border: 'border-amber-300/60' };
     return { bg: 'from-red-50 via-pink-50 to-purple-50', border: 'border-red-300/60' };
   };
-  
+
   const levelTheme = getLevelTheme(level);
-  
+
   // Prepare modal options
   const modalOptions = problem.math ? problem.math.options.map(String) : [];
   const correctIndex = problem.math ? problem.math.options.indexOf(problem.math.answer) : -1;
-  const selectedIndex = problem.math && selectedOption !== null 
-    ? problem.math.options.indexOf(selectedOption) 
-    : null;
-  
+  const selectedIndex =
+    problem.math && selectedOption !== null ? problem.math.options.indexOf(selectedOption) : null;
+
   return (
     <div className="w-full flex flex-col items-center px-4 sm:px-6 max-w-2xl mx-auto pt-4 sm:pt-6 animate-in fade-in duration-300">
       {/* Math Problem Modal */}
@@ -447,7 +515,11 @@ export const MathSnakeView: React.FC<MathSnakeViewProps> = ({ problem, onAnswer,
         <GameProblemModal
           isOpen={true}
           title={t.gameScreen.mathSnake.nextMathLabel}
-          prompt={problem.math.equation.includes('=') ? problem.math.equation : `${problem.math.equation} = ?`}
+          prompt={
+            problem.math.equation.includes('=')
+              ? problem.math.equation
+              : `${problem.math.equation} = ?`
+          }
           options={modalOptions}
           correctIndex={correctIndex}
           selectedOption={selectedIndex}
@@ -473,25 +545,26 @@ export const MathSnakeView: React.FC<MathSnakeViewProps> = ({ problem, onAnswer,
           className={`relative w-full bg-gradient-to-br ${levelTheme.bg} rounded-2xl sm:rounded-3xl border-2 ${levelTheme.border} shadow-lg`}
           style={{
             padding: 'clamp(0.5rem, 2vw, 1rem)',
-            backgroundImage: 'radial-gradient(circle at 20% 20%, rgba(16,185,129,0.1), transparent 50%), radial-gradient(circle at 80% 80%, rgba(251,191,36,0.1), transparent 50%)',
+            backgroundImage:
+              'radial-gradient(circle at 20% 20%, rgba(16,185,129,0.1), transparent 50%), radial-gradient(circle at 80% 80%, rgba(251,191,36,0.1), transparent 50%)',
           }}
         >
           <div
             className="grid"
-            style={{ 
+            style={{
               gridTemplateColumns: `repeat(${problem.gridSize}, minmax(0, 1fr))`,
-              gap: 'clamp(0.25rem, 1vw, 0.5rem)'
+              gap: 'clamp(0.25rem, 1vw, 0.5rem)',
             }}
           >
             {Array.from({ length: problem.gridSize }, (_, row) =>
-              Array.from({ length: problem.gridSize }, (_, col) => renderCell(col, row))
+              Array.from({ length: problem.gridSize }, (_, col) => renderCell(col, row)),
             )}
           </div>
         </div>
       </div>
 
       {/* Control Pad - Below game board */}
-      <div 
+      <div
         className="w-full mt-3 sm:mt-4 flex justify-center"
         style={{ maxWidth: 'min(90vw, 28rem, 100%)' }}
       >

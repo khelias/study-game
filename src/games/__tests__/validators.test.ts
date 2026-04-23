@@ -143,9 +143,7 @@ describe('validateStarMapper', () => {
         uid: 'test-7',
         mode: 'expert',
         constellation: baseConstellation,
-        distractorStars: [
-          { id: 'distractor1', x: 50, y: 50, magnitude: 4 },
-        ],
+        distractorStars: [{ id: 'distractor1', x: 50, y: 50, magnitude: 4 }],
         showGuide: false,
         correctAnswer: 'test_constellation',
         playerLines: [],
@@ -209,10 +207,10 @@ describe('validateBattleLearn', () => {
       },
       gameWon: false,
     };
-    
+
     expect(validateBattleLearn(problem, 1)).toBe(true);
   });
-  
+
   it('should return false for incorrect answer index', () => {
     const problem = {
       type: 'battlelearn' as const,
@@ -230,12 +228,12 @@ describe('validateBattleLearn', () => {
       },
       gameWon: false,
     };
-    
+
     expect(validateBattleLearn(problem, 0)).toBe(false);
     expect(validateBattleLearn(problem, 2)).toBe(false);
     expect(validateBattleLearn(problem, 3)).toBe(false);
   });
-  
+
   it('should return false for non-number answer', () => {
     const problem = {
       type: 'battlelearn' as const,
@@ -253,13 +251,13 @@ describe('validateBattleLearn', () => {
       },
       gameWon: false,
     };
-    
+
     expect(validateBattleLearn(problem, '1')).toBe(false);
     expect(validateBattleLearn(problem, null)).toBe(false);
     expect(validateBattleLearn(problem, undefined)).toBe(false);
     expect(validateBattleLearn(problem, {})).toBe(false);
   });
-  
+
   it('should return false for wrong problem type', () => {
     const problem = {
       type: 'word_builder' as const,
@@ -268,7 +266,7 @@ describe('validateBattleLearn', () => {
       emoji: '🎯',
       shuffled: [],
     };
-    
+
     expect(validateBattleLearn(problem, 1)).toBe(false);
   });
 });
@@ -298,6 +296,11 @@ describe('validateShapeDash', () => {
   });
 
   it('should return false for wrong problem type', () => {
-    expect(validateShapeDash({ type: 'word_builder', uid: 'x', target: 'x', emoji: 'x', shuffled: [] }, true)).toBe(false);
+    expect(
+      validateShapeDash(
+        { type: 'word_builder', uid: 'x', target: 'x', emoji: 'x', shuffled: [] },
+        true,
+      ),
+    ).toBe(false);
   });
 });

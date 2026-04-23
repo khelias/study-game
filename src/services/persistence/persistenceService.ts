@@ -3,21 +3,21 @@ import type { GameStore } from '../../stores/gameStore';
 
 /**
  * Persistence Service
- * 
+ *
  * High-level service for persisting application data.
  * Uses an adapter pattern to support different storage backends.
- * 
+ *
  * Currently supports:
  * - LocalStorage (via LocalStorageAdapter) - Default for MVP
  * - API (via ApiAdapter) - For future cloud sync
- * 
+ *
  * Usage:
  * ```typescript
  * import { persistenceService } from './services/persistence';
- * 
+ *
  * // Save game state
  * await persistenceService.saveGameState(gameStore);
- * 
+ *
  * // Load game state
  * const state = await persistenceService.loadGameState();
  * ```

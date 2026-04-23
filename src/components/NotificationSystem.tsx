@@ -86,7 +86,10 @@ const resolveLevelUpEmoji = (value?: string): string => {
 };
 
 const stripEmojis = (text: string): string => {
-  return text.replace(/\p{Extended_Pictographic}/gu, '').replace(/\s{2,}/g, ' ').trim();
+  return text
+    .replace(/\p{Extended_Pictographic}/gu, '')
+    .replace(/\s{2,}/g, ' ')
+    .trim();
 };
 
 interface NotificationSystemProps {
@@ -107,7 +110,7 @@ const groupBySlot = (notifications: Notification[]): Record<NotificationSlot, No
       acc[slot].push(notification);
       return acc;
     },
-    { top: [], center: [], bottom: [], overlay: [] } as Record<NotificationSlot, Notification[]>
+    { top: [], center: [], bottom: [], overlay: [] } as Record<NotificationSlot, Notification[]>,
   );
 };
 
@@ -116,24 +119,24 @@ const selectVisible = (items: Notification[], slot: NotificationSlot): Notificat
   return sorted.slice(0, STACK_LIMIT[slot]);
 };
 
-export const NotificationSystem: React.FC<NotificationSystemProps> = ({ notifications, onDismiss }) => {
+export const NotificationSystem: React.FC<NotificationSystemProps> = ({
+  notifications,
+  onDismiss,
+}) => {
   const grouped = useMemo(() => groupBySlot(notifications), [notifications]);
 
-  const topNotifications = useMemo(
-    () => selectVisible(grouped.top, 'top'),
-    [grouped.top]
-  );
+  const topNotifications = useMemo(() => selectVisible(grouped.top, 'top'), [grouped.top]);
   const centerNotifications = useMemo(
     () => selectVisible(grouped.center, 'center'),
-    [grouped.center]
+    [grouped.center],
   );
   const bottomNotifications = useMemo(
     () => selectVisible(grouped.bottom, 'bottom'),
-    [grouped.bottom]
+    [grouped.bottom],
   );
   const overlayNotification = useMemo(
     () => selectVisible(grouped.overlay, 'overlay')[0] ?? null,
-    [grouped.overlay]
+    [grouped.overlay],
   );
 
   return (
@@ -157,11 +160,16 @@ interface NotificationStackProps {
 const STACK_CLASSES: Record<NotificationSlot, string> = {
   top: 'fixed inset-x-0 top-16 sm:top-20 flex flex-col items-center gap-3 px-4 pointer-events-none',
   center: 'fixed inset-0 flex flex-col items-center justify-center gap-4 px-4 pointer-events-none',
-  bottom: 'fixed inset-x-0 bottom-4 sm:bottom-6 flex flex-col items-center gap-3 px-4 pointer-events-none',
+  bottom:
+    'fixed inset-x-0 bottom-4 sm:bottom-6 flex flex-col items-center gap-3 px-4 pointer-events-none',
   overlay: '',
 };
 
-const NotificationStack: React.FC<NotificationStackProps> = ({ slot, notifications, onDismiss }) => {
+const NotificationStack: React.FC<NotificationStackProps> = ({
+  slot,
+  notifications,
+  onDismiss,
+}) => {
   if (notifications.length === 0) return null;
 
   return (
@@ -219,9 +227,10 @@ const NotificationItem: React.FC<NotificationItemProps> = ({ notification, onDis
   }, []);
 
   const duration = notification.duration ?? DEFAULT_DURATION[notification.type];
-  const autoDismiss = notification.duration !== undefined
-    ? notification.duration > 0
-    : AUTO_DISMISS[notification.type];
+  const autoDismiss =
+    notification.duration !== undefined
+      ? notification.duration > 0
+      : AUTO_DISMISS[notification.type];
 
   useEffect(() => {
     if (!visible) return;
@@ -302,7 +311,8 @@ const ToastNotification: React.FC<ToastNotificationProps> = ({
 }) => {
   switch (notification.type) {
     case 'correct': {
-      const emojiIndex = notification.id.charCodeAt(notification.id.length - 1) % CORRECT_EMOJIS.length;
+      const emojiIndex =
+        notification.id.charCodeAt(notification.id.length - 1) % CORRECT_EMOJIS.length;
       const emoji = notification.emoji ?? CORRECT_EMOJIS[emojiIndex] ?? '✨';
       const message = stripEmojis(formatText(notification.message ?? t.notifications.correctTitle));
       return (
@@ -408,11 +418,21 @@ interface HeroToastProps {
   attentionClass?: string;
 }
 
-const HeroToast: React.FC<HeroToastProps> = ({ slot, isShowing, emoji, message, role, tone, attentionClass = '' }) => {
+const HeroToast: React.FC<HeroToastProps> = ({
+  slot,
+  isShowing,
+  emoji,
+  message,
+  role,
+  tone,
+  attentionClass = '',
+}) => {
   const toneClasses = {
     success: 'bg-gradient-to-r from-green-500 to-emerald-500 border-green-600 text-white',
-    celebration: 'bg-gradient-to-r from-orange-500 via-red-500 to-pink-500 border-orange-400 text-white',
-    support: 'bg-gradient-to-r from-amber-400 via-orange-400 to-rose-500 border-amber-400 text-white',
+    celebration:
+      'bg-gradient-to-r from-orange-500 via-red-500 to-pink-500 border-orange-400 text-white',
+    support:
+      'bg-gradient-to-r from-amber-400 via-orange-400 to-rose-500 border-amber-400 text-white',
   }[tone];
 
   return (
@@ -573,10 +593,16 @@ const LevelUpPopup: React.FC<LevelUpPopupProps> = ({
         <div className="mx-auto w-24 h-24 sm:w-28 sm:h-28 bg-white/20 rounded-full flex items-center justify-center mb-4 text-6xl sm:text-7xl animate-pulse">
           {resolveLevelUpEmoji(notification.emoji)}
         </div>
-        <h2 id={`${notification.id}-levelup-title`} className="text-3xl sm:text-4xl font-black text-white mb-2">
+        <h2
+          id={`${notification.id}-levelup-title`}
+          className="text-3xl sm:text-4xl font-black text-white mb-2"
+        >
           {notification.title ? formatText(notification.title) : titleFallback}
         </h2>
-        <p id={`${notification.id}-levelup-message`} className="text-white text-lg sm:text-xl font-bold mb-6">
+        <p
+          id={`${notification.id}-levelup-message`}
+          className="text-white text-lg sm:text-xl font-bold mb-6"
+        >
           {notification.message ? formatText(notification.message) : messageFallback}
         </p>
         <button
@@ -654,7 +680,10 @@ const AchievementPopup: React.FC<AchievementPopupProps> = ({
           {achievement.icon}
         </div>
         <div className="text-2xl font-black text-yellow-600 mb-2">{titleFallback}</div>
-        <h2 id={`${notification.id}-achievement-title`} className="text-2xl sm:text-3xl font-black text-slate-800 mb-2">
+        <h2
+          id={`${notification.id}-achievement-title`}
+          className="text-2xl sm:text-3xl font-black text-slate-800 mb-2"
+        >
           {formatText(achievement.title)}
         </h2>
         <p className="text-slate-600 mb-6 font-semibold">{formatText(achievement.desc)}</p>

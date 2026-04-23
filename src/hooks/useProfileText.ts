@@ -12,7 +12,7 @@ import type { ProfileType } from '../types/game';
 const toTitleCase = (text: string): string => {
   return text
     .split(' ')
-    .map(word => {
+    .map((word) => {
       if (word.length === 0) return word;
       // Handle special words like "ON" which should stay uppercase in Estonian
       if (word === 'ON' || word === 'ON.') return word;
@@ -27,8 +27,8 @@ const toTitleCase = (text: string): string => {
  * - advanced (koolilaps): normal case (convert uppercase to title case if needed)
  */
 export const useProfileText = () => {
-  const profile = useGameStore(state => state.profile) as ProfileType;
-  
+  const profile = useGameStore((state) => state.profile) as ProfileType;
+
   const formatText = (text: string): string => {
     if (!text) return text;
     if (profile === 'starter') {
@@ -42,6 +42,6 @@ export const useProfileText = () => {
       return text;
     }
   };
-  
+
   return { formatText, profile };
 };

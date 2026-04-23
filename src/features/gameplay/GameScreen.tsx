@@ -1,6 +1,6 @@
 /**
  * GameScreen Component (Refactored)
- * 
+ *
  * Main game screen component. Orchestrates game play, UI, and state management.
  * This refactored version uses extracted hooks and components for better scalability.
  */
@@ -40,58 +40,64 @@ import type { AchievementUnlock } from '../../types/achievement';
 export const GameScreen: React.FC = () => {
   const navigate = useNavigate();
   const { formatText } = useProfileText();
-  
+
   // Global state
-  const profile = useGameStore(state => state.profile);
+  const profile = useGameStore((state) => state.profile);
   const profileId = profile as ProfileType;
-  const levels = useGameStore(state => state.levels);
-  const soundEnabled = useGameStore(state => state.soundEnabled);
-  const toggleSound = useGameStore(state => state.toggleSound);
-  const recordLevelUp = useGameStore(state => state.recordLevelUp);
-  const setLevel = useGameStore(state => state.setLevel);
-  const addGlobalScore = useGameStore(state => state.addScore);
-  const updateStats = useGameStore(state => state.updateStats);
-  const updateHighScore = useGameStore(state => state.updateHighScore);
+  const levels = useGameStore((state) => state.levels);
+  const soundEnabled = useGameStore((state) => state.soundEnabled);
+  const toggleSound = useGameStore((state) => state.toggleSound);
+  const recordLevelUp = useGameStore((state) => state.recordLevelUp);
+  const setLevel = useGameStore((state) => state.setLevel);
+  const addGlobalScore = useGameStore((state) => state.addScore);
+  const updateStats = useGameStore((state) => state.updateStats);
+  const updateHighScore = useGameStore((state) => state.updateHighScore);
 
   // Session state
-  const gameType = usePlaySessionStore(state => state.gameType);
-  const problem = usePlaySessionStore(state => state.problem);
-  const stars = useGameStore(state => state.stars); // Persistent currency (for display in menu)
-  const spendStars = useGameStore(state => state.spendStars); // For shape_shift star hints
-  const spendHeart = useGameStore(state => state.spendHeart);
-  const hearts = useGameStore(state => state.hearts); // Persistent global resource
-  const score = usePlaySessionStore(state => state.score);
-  const levelProgress = usePlaySessionStore(state => state.levelProgress);
-  const bgClass = usePlaySessionStore(state => state.bgClass);
-  const confetti = usePlaySessionStore(state => state.confetti);
-  const enhancedConfetti = usePlaySessionStore(state => state.enhancedConfetti);
-  const particleActive = usePlaySessionStore(state => state.particleActive);
-  const adaptiveDifficulty = usePlaySessionStore(state => state.adaptiveDifficulty);
-  const gameStartTime = usePlaySessionStore(state => state.gameStartTime);
-  const notifications = usePlaySessionStore(state => state.notifications);
-  const autoShowGameDescription = usePlaySessionStore(state => state.autoShowGameDescription);
-  const setAutoShowGameDescription = usePlaySessionStore(state => state.setAutoShowGameDescription);
+  const gameType = usePlaySessionStore((state) => state.gameType);
+  const problem = usePlaySessionStore((state) => state.problem);
+  const stars = useGameStore((state) => state.stars); // Persistent currency (for display in menu)
+  const spendStars = useGameStore((state) => state.spendStars); // For shape_shift star hints
+  const spendHeart = useGameStore((state) => state.spendHeart);
+  const hearts = useGameStore((state) => state.hearts); // Persistent global resource
+  const score = usePlaySessionStore((state) => state.score);
+  const levelProgress = usePlaySessionStore((state) => state.levelProgress);
+  const bgClass = usePlaySessionStore((state) => state.bgClass);
+  const confetti = usePlaySessionStore((state) => state.confetti);
+  const enhancedConfetti = usePlaySessionStore((state) => state.enhancedConfetti);
+  const particleActive = usePlaySessionStore((state) => state.particleActive);
+  const adaptiveDifficulty = usePlaySessionStore((state) => state.adaptiveDifficulty);
+  const gameStartTime = usePlaySessionStore((state) => state.gameStartTime);
+  const notifications = usePlaySessionStore((state) => state.notifications);
+  const autoShowGameDescription = usePlaySessionStore((state) => state.autoShowGameDescription);
+  const setAutoShowGameDescription = usePlaySessionStore(
+    (state) => state.setAutoShowGameDescription,
+  );
 
   // Session actions
-  const setProblem = usePlaySessionStore(state => state.setProblem);
-  const returnToMenu = usePlaySessionStore(state => state.returnToMenu);
-  const setBgClass = usePlaySessionStore(state => state.setBgClass);
-  const setConfetti = usePlaySessionStore(state => state.setConfetti);
-  const setEnhancedConfetti = usePlaySessionStore(state => state.setEnhancedConfetti);
+  const setProblem = usePlaySessionStore((state) => state.setProblem);
+  const returnToMenu = usePlaySessionStore((state) => state.returnToMenu);
+  const setBgClass = usePlaySessionStore((state) => state.setBgClass);
+  const setConfetti = usePlaySessionStore((state) => state.setConfetti);
+  const setEnhancedConfetti = usePlaySessionStore((state) => state.setEnhancedConfetti);
   // Stars are now persistent (gameStore.stars), no reset needed
-  const endGame = usePlaySessionStore(state => state.endGame);
-  const addScore = usePlaySessionStore(state => state.addScore);
-  const addNotification = usePlaySessionStore(state => state.addNotification);
-  const removeNotification = usePlaySessionStore(state => state.removeNotification);
-  const clearNotifications = usePlaySessionStore(state => state.clearNotifications);
+  const endGame = usePlaySessionStore((state) => state.endGame);
+  const addScore = usePlaySessionStore((state) => state.addScore);
+  const addNotification = usePlaySessionStore((state) => state.addNotification);
+  const removeNotification = usePlaySessionStore((state) => state.removeNotification);
+  const clearNotifications = usePlaySessionStore((state) => state.clearNotifications);
 
   // Hooks
   const { generateUniqueProblemForGame, getRng } = useGameEngine();
   const { playClick } = useGameAudio(soundEnabled);
   const { handleAnswer: handleAnswerBase } = useAnswerHandler();
-  
+
   // Wrap handleAnswer to check achievement state and pass through options (e.g. skipHeartDeduction)
-  const handleAnswer = (isCorrect: boolean, shouldShowAchievement?: () => boolean, options?: { skipHeartDeduction?: boolean }) => {
+  const handleAnswer = (
+    isCorrect: boolean,
+    shouldShowAchievement?: () => boolean,
+    options?: { skipHeartDeduction?: boolean },
+  ) => {
     handleAnswerBase(isCorrect, shouldShowAchievement ?? (() => !achievementShown), options);
   };
 
@@ -104,15 +110,15 @@ export const GameScreen: React.FC = () => {
   const [showShop, setShowShop] = useState(false);
   const [showLevelSelector, setShowLevelSelector] = useState(false);
   const settingsMenuRef = useRef<HTMLDivElement>(null);
-  
+
   // Get stats and achievements for modals
-  const stats = useGameStore(state => state.stats);
-  const unlockedAchievementIds = useGameStore(state => state.unlockedAchievements);
+  const stats = useGameStore((state) => state.stats);
+  const unlockedAchievementIds = useGameStore((state) => state.unlockedAchievements);
   const t = useTranslation();
 
   // Convert achievement IDs to AchievementUnlock objects
   const unlockedAchievements: AchievementUnlock[] = unlockedAchievementIds
-    .map(id => {
+    .map((id) => {
       const achievement = ACHIEVEMENTS[id];
       if (!achievement) return null;
       const copy = getAchievementCopy(t, achievement.id);
@@ -126,7 +132,7 @@ export const GameScreen: React.FC = () => {
     .filter((a): a is AchievementUnlock => a !== null);
 
   // Track achievement notifications - compute directly from notifications
-  const achievementShown = notifications.some(n => n.type === 'achievement');
+  const achievementShown = notifications.some((n) => n.type === 'achievement');
 
   // Use tips hook
   const { handleTipReplay, canReopenTip } = useGameTips(
@@ -134,7 +140,7 @@ export const GameScreen: React.FC = () => {
     problem,
     notifications,
     addNotification,
-    isCompactLayout
+    isCompactLayout,
   );
 
   // Settings menu click outside handler
@@ -169,13 +175,26 @@ export const GameScreen: React.FC = () => {
   useEffect(() => {
     if (gameType && !problem) {
       const currentLevel = levels[profile]?.[gameType] || 1;
-      const newProblem = generateUniqueProblemForGame(gameType, currentLevel, profile, adaptiveDifficulty);
+      const newProblem = generateUniqueProblemForGame(
+        gameType,
+        currentLevel,
+        profile,
+        adaptiveDifficulty,
+      );
       setProblem(newProblem);
     }
-  }, [gameType, problem, levels, profile, adaptiveDifficulty, generateUniqueProblemForGame, setProblem]);
-  
+  }, [
+    gameType,
+    problem,
+    levels,
+    profile,
+    adaptiveDifficulty,
+    generateUniqueProblemForGame,
+    setProblem,
+  ]);
+
   // Reset level progress only on fresh start (no problem yet). Do not reset when resuming from game over.
-  const resetLevelProgress = usePlaySessionStore(state => state.resetLevelProgress);
+  const resetLevelProgress = usePlaySessionStore((state) => state.resetLevelProgress);
   useEffect(() => {
     if (gameType && !problem) {
       resetLevelProgress();
@@ -185,7 +204,8 @@ export const GameScreen: React.FC = () => {
   // Auto-show game description when route set autoShowGameDescription (first time entering this game type).
   // Defer open to next frame so modal opens after first paint (fixes iOS). Do not cancel rAF in cleanup: clearing the flag re-runs this effect and would cancel the scheduled open.
   useEffect(() => {
-    if (!gameType || !problem || !autoShowGameDescription || hasAutoShownDescriptionRef.current) return;
+    if (!gameType || !problem || !autoShowGameDescription || hasAutoShownDescriptionRef.current)
+      return;
     hasAutoShownDescriptionRef.current = true;
     setAutoShowGameDescription(false);
     requestAnimationFrame(() => {
@@ -215,7 +235,7 @@ export const GameScreen: React.FC = () => {
     setConfetti(false);
     // Stars are now persistent (gameStore.stars), no reset needed
     // Level progress is reset automatically when level-up happens
-    
+
     // For games with 'onGameWin' level-up strategy, level-up is already handled in useAnswerHandler
     // Don't call recordLevelUp again (would cause double level-up)
     const baseGameType = gameType.replace('_adv', '');
@@ -245,7 +265,12 @@ export const GameScreen: React.FC = () => {
 
     setTimeout(() => {
       if (!isMathSnake) {
-        const newProblem = generateUniqueProblemForGame(gameType, newLevel, profile, adaptiveDifficulty);
+        const newProblem = generateUniqueProblemForGame(
+          gameType,
+          newLevel,
+          profile,
+          adaptiveDifficulty,
+        );
         setProblem(newProblem);
       }
       setBgClass('bg-slate-50');
@@ -266,16 +291,16 @@ export const GameScreen: React.FC = () => {
     const result = moveMathSnake(problem, direction, currentLevel, rng, profileId);
     if (result.collision) {
       const finalSnakeLength = problem.snake.length;
-      updateStats(stats => ({
+      updateStats((stats) => ({
         ...stats,
         maxSnakeLength: Math.max(stats.maxSnakeLength || 0, finalSnakeLength),
       }));
-      
+
       // High score is already updated on each score increase, no need to update here
       endGame();
       if (gameStartTime) {
         const playTime = Math.floor((Date.now() - gameStartTime) / 1000);
-        updateStats(stats => ({
+        updateStats((stats) => ({
           ...stats,
           totalTimePlayed: stats.totalTimePlayed + playTime,
         }));
@@ -284,7 +309,7 @@ export const GameScreen: React.FC = () => {
     }
 
     const currentSnakeLength = result.problem.snake.length;
-    updateStats(stats => ({
+    updateStats((stats) => ({
       ...stats,
       maxSnakeLength: Math.max(stats.maxSnakeLength || 0, currentSnakeLength),
     }));
@@ -293,7 +318,7 @@ export const GameScreen: React.FC = () => {
       const applePoints = 5;
       addScore(applePoints);
       addGlobalScore(applePoints);
-      
+
       // Update high score after adding apple points
       const newScore = score + applePoints;
       updateHighScore(gameType, newScore);
@@ -304,7 +329,7 @@ export const GameScreen: React.FC = () => {
 
   // Handle notification dismissal
   const handleNotificationDismiss = (id: string) => {
-    const notification = notifications.find(n => n.id === id);
+    const notification = notifications.find((n) => n.id === id);
     removeNotification(id);
 
     // Level-up: next problem and level record are already handled by levelUpOnDismiss in useAnswerHandler.
@@ -323,9 +348,13 @@ export const GameScreen: React.FC = () => {
   const isMathSnake = baseType === 'math_snake';
 
   return (
-    <div className={`min-h-screen font-sans flex flex-col ${bgClass} transition-colors duration-500 select-none overflow-hidden`}>
+    <div
+      className={`min-h-screen font-sans flex flex-col ${bgClass} transition-colors duration-500 select-none overflow-hidden`}
+    >
       {confetti && <Confetti />}
-      {enhancedConfetti && <EnhancedConfetti active={enhancedConfetti} onComplete={() => setEnhancedConfetti(false)} />}
+      {enhancedConfetti && (
+        <EnhancedConfetti active={enhancedConfetti} onComplete={() => setEnhancedConfetti(false)} />
+      )}
       <ParticleEffect type="success" active={particleActive} />
 
       <NotificationSystem notifications={notifications} onDismiss={handleNotificationDismiss} />
@@ -379,13 +408,13 @@ export const GameScreen: React.FC = () => {
         <div
           onClick={() => setShowLevelSelector(true)}
           className="absolute top-2 left-2 sm:top-4 sm:left-4 z-30 flex items-center gap-1.5 bg-purple-50 border-purple-200 rounded-lg shadow-md hover:bg-purple-100 hover:border-purple-300 transition-colors cursor-pointer"
-          style={{ 
+          style={{
             padding: '0.375rem 0.625rem',
             boxSizing: 'border-box',
             border: '1px solid',
             borderColor: 'rgb(233, 213, 255)',
             width: 'fit-content',
-            height: 'fit-content'
+            height: 'fit-content',
           }}
           role="button"
           tabIndex={0}
@@ -397,66 +426,82 @@ export const GameScreen: React.FC = () => {
           }}
           aria-label="Change level"
         >
-          <TrendingUp size={14} className="text-purple-600 w-3.5 h-3.5 sm:w-4 sm:h-4 flex-shrink-0" />
-          <span className="text-xs sm:text-sm font-bold text-purple-700 whitespace-nowrap">{currentLevel}</span>
+          <TrendingUp
+            size={14}
+            className="text-purple-600 w-3.5 h-3.5 sm:w-4 sm:h-4 flex-shrink-0"
+          />
+          <span className="text-xs sm:text-sm font-bold text-purple-700 whitespace-nowrap">
+            {currentLevel}
+          </span>
         </div>
-        
+
         {/* Game Name Badge - clickable, opens game description */}
-        {gameType && (() => {
-          const baseType = gameType.replace('_adv', '');
-          const gameConfig = GAME_CONFIG[baseType];
-          const gameEmoji = gameConfig?.emoji ?? '🎮';
-          const gameTitleStr: string = (gameConfig && t.games[baseType as keyof typeof t.games]
-            ? t.games[baseType as keyof typeof t.games].title
-            : gameType.toUpperCase()) as string;
-          const gameName = formatText(gameTitleStr);
-          return (
-            <button
-              type="button"
-              onClick={() => {
-                playClick();
-                setShowGameDescription(true);
-              }}
-              className="absolute top-2 left-1/2 transform -translate-x-1/2 sm:top-4 z-30 flex items-center gap-1.5 bg-slate-50 border-slate-200 rounded-lg shadow-md cursor-pointer hover:bg-slate-100 active:scale-[0.98] transition-colors"
-              style={{
-                padding: '0.375rem 0.75rem',
-                boxSizing: 'border-box',
-                border: '1px solid',
-                borderColor: 'rgb(226, 232, 240)',
-                width: 'fit-content',
-                height: 'fit-content',
-                maxWidth: '60vw',
-              }}
-              aria-label={formatText(t.gameScreen.gameDescriptionTitle)}
-            >
-              <span className="text-base sm:text-lg flex-shrink-0">{gameEmoji}</span>
-              <span className="text-xs sm:text-sm font-bold text-slate-700 whitespace-nowrap truncate">{gameName}</span>
-            </button>
-          );
-        })()}
-        
+        {gameType &&
+          (() => {
+            const baseType = gameType.replace('_adv', '');
+            const gameConfig = GAME_CONFIG[baseType];
+            const gameEmoji = gameConfig?.emoji ?? '🎮';
+            const gameTitleStr: string = (
+              gameConfig && t.games[baseType as keyof typeof t.games]
+                ? t.games[baseType as keyof typeof t.games].title
+                : gameType.toUpperCase()
+            ) as string;
+            const gameName = formatText(gameTitleStr);
+            return (
+              <button
+                type="button"
+                onClick={() => {
+                  playClick();
+                  setShowGameDescription(true);
+                }}
+                className="absolute top-2 left-1/2 transform -translate-x-1/2 sm:top-4 z-30 flex items-center gap-1.5 bg-slate-50 border-slate-200 rounded-lg shadow-md cursor-pointer hover:bg-slate-100 active:scale-[0.98] transition-colors"
+                style={{
+                  padding: '0.375rem 0.75rem',
+                  boxSizing: 'border-box',
+                  border: '1px solid',
+                  borderColor: 'rgb(226, 232, 240)',
+                  width: 'fit-content',
+                  height: 'fit-content',
+                  maxWidth: '60vw',
+                }}
+                aria-label={formatText(t.gameScreen.gameDescriptionTitle)}
+              >
+                <span className="text-base sm:text-lg flex-shrink-0">{gameEmoji}</span>
+                <span className="text-xs sm:text-sm font-bold text-slate-700 whitespace-nowrap truncate">
+                  {gameName}
+                </span>
+              </button>
+            );
+          })()}
+
         {/* Session Score Badge - floating in top right of game area */}
-        <div 
+        <div
           className="absolute top-2 right-2 sm:top-4 sm:right-4 z-30 flex items-center gap-1.5 bg-blue-50 border-blue-200 rounded-lg shadow-md"
-          style={{ 
+          style={{
             padding: '0.375rem 0.625rem',
             boxSizing: 'border-box',
             border: '1px solid',
             borderColor: 'rgb(191, 219, 254)',
             width: 'fit-content',
-            height: 'fit-content'
+            height: 'fit-content',
           }}
         >
           <Trophy size={14} className="text-blue-600 w-3.5 h-3.5 sm:w-4 sm:h-4 flex-shrink-0" />
-          <span className="text-xs sm:text-sm font-bold text-blue-700 whitespace-nowrap">{score}</span>
+          <span className="text-xs sm:text-sm font-bold text-blue-700 whitespace-nowrap">
+            {score}
+          </span>
         </div>
-        
+
         {!problem ? (
           <Loader2 className="animate-spin mt-20 text-slate-400" size={48} />
         ) : (
           <div key={problem.uid} className="w-full flex justify-center pb-8">
             <GameRenderer
-              key={problem ? `${problem.type}-${problem.uid}-${'target' in problem ? problem.target : ''}` : 'no-problem'}
+              key={
+                problem
+                  ? `${problem.type}-${problem.uid}-${'target' in problem ? problem.target : ''}`
+                  : 'no-problem'
+              }
               gameType={gameType}
               problem={problem}
               onAnswer={handleAnswer}
@@ -469,7 +514,11 @@ export const GameScreen: React.FC = () => {
               endGame={endGame}
             />
 
-            <TipButton onTip={handleTipReplay} soundEnabled={soundEnabled} disabled={!canReopenTip} />
+            <TipButton
+              onTip={handleTipReplay}
+              soundEnabled={soundEnabled}
+              disabled={!canReopenTip}
+            />
           </div>
         )}
       </div>
@@ -489,10 +538,7 @@ export const GameScreen: React.FC = () => {
         />
       )}
       {showShop && (
-        <ShopModal
-          onClose={() => setShowShop(false)}
-          openedFromNoHearts={hearts <= 0}
-        />
+        <ShopModal onClose={() => setShowShop(false)} openedFromNoHearts={hearts <= 0} />
       )}
       {showLevelSelector && gameType && (
         <LevelSelectorModal
@@ -503,7 +549,12 @@ export const GameScreen: React.FC = () => {
             setLevel(gameType, newLevel);
             // Reset level progress and regenerate problem for new level
             resetLevelProgress();
-            const newProblem = generateUniqueProblemForGame(gameType, newLevel, profileId, adaptiveDifficulty);
+            const newProblem = generateUniqueProblemForGame(
+              gameType,
+              newLevel,
+              profileId,
+              adaptiveDifficulty,
+            );
             setProblem(newProblem);
             setShowLevelSelector(false);
           }}
@@ -511,64 +562,77 @@ export const GameScreen: React.FC = () => {
       )}
 
       {/* Game description modal (how to play) */}
-      {showGameDescription && gameType && (() => {
-        const baseType = gameType.replace('_adv', '');
-        const gameConfig = GAME_CONFIG[baseType];
-        const gameEmoji = gameConfig?.emoji ?? '🎮';
-        const gameTitleStr: string = (gameConfig && t.games[baseType as keyof typeof t.games]
-          ? t.games[baseType as keyof typeof t.games].title
-          : gameType.toUpperCase()) as string;
-        const gameName = formatText(gameTitleStr);
-        const gameDesc = (t.games[baseType as keyof typeof t.games] as { gameDescription?: string })?.gameDescription;
-        const tips = (t.gameScreen.tips as Record<string, string[] | undefined>)[baseType];
-        const tipsList = Array.isArray(tips) ? tips : [];
-        return (
-          <div
-            className="fixed inset-0 flex items-center justify-center p-4 animate-in fade-in duration-200"
-            style={{ zIndex: Z_INDEX.MODALS, backgroundColor: 'rgba(0, 0, 0, 0.5)' }}
-            onClick={(e) => {
-              if (e.target === e.currentTarget) {
-                playClick();
-                setShowGameDescription(false);
-              }
-            }}
-          >
+      {showGameDescription &&
+        gameType &&
+        (() => {
+          const baseType = gameType.replace('_adv', '');
+          const gameConfig = GAME_CONFIG[baseType];
+          const gameEmoji = gameConfig?.emoji ?? '🎮';
+          const gameTitleStr: string = (
+            gameConfig && t.games[baseType as keyof typeof t.games]
+              ? t.games[baseType as keyof typeof t.games].title
+              : gameType.toUpperCase()
+          ) as string;
+          const gameName = formatText(gameTitleStr);
+          const gameDesc = (
+            t.games[baseType as keyof typeof t.games] as { gameDescription?: string }
+          )?.gameDescription;
+          const tips = (t.gameScreen.tips as Record<string, string[] | undefined>)[baseType];
+          const tipsList = Array.isArray(tips) ? tips : [];
+          return (
             <div
-              className="bg-gradient-to-br from-slate-50 via-white to-slate-50 rounded-2xl shadow-2xl border-2 border-slate-200 w-full max-w-md animate-in zoom-in duration-300 p-5 sm:p-6 max-h-[85vh] overflow-y-auto"
-              role="dialog"
-              aria-modal="true"
-              aria-labelledby="game-description-title"
-            >
-              <h2 id="game-description-title" className="text-lg sm:text-xl font-black text-slate-800 mb-2 flex items-center gap-2">
-                <span>{gameEmoji}</span>
-                {gameName}
-              </h2>
-              <p className="text-sm text-slate-700 mb-4 whitespace-pre-wrap">{gameDesc ? formatText(gameDesc) : ''}</p>
-              {tipsList.length > 0 && (
-                <>
-                  <h3 className="text-sm font-bold text-slate-700 mb-2">{formatText(t.gameScreen.tipsLabel)}</h3>
-                  <ul className="list-disc list-inside text-sm text-slate-600 space-y-1 mb-4">
-                    {tipsList.map((tip, i) => (
-                      <li key={i}>{formatText(tip)}</li>
-                    ))}
-                  </ul>
-                </>
-              )}
-              <button
-                type="button"
-                onClick={() => {
+              className="fixed inset-0 flex items-center justify-center p-4 animate-in fade-in duration-200"
+              style={{ zIndex: Z_INDEX.MODALS, backgroundColor: 'rgba(0, 0, 0, 0.5)' }}
+              onClick={(e) => {
+                if (e.target === e.currentTarget) {
                   playClick();
                   setShowGameDescription(false);
-                }}
-                className="w-full py-2.5 rounded-xl font-bold border-2 border-slate-600 bg-slate-600 text-white hover:bg-slate-700 transition-colors"
-                aria-label={formatText(t.common.close)}
+                }
+              }}
+            >
+              <div
+                className="bg-gradient-to-br from-slate-50 via-white to-slate-50 rounded-2xl shadow-2xl border-2 border-slate-200 w-full max-w-md animate-in zoom-in duration-300 p-5 sm:p-6 max-h-[85vh] overflow-y-auto"
+                role="dialog"
+                aria-modal="true"
+                aria-labelledby="game-description-title"
               >
-                {formatText(t.common.close)}
-              </button>
+                <h2
+                  id="game-description-title"
+                  className="text-lg sm:text-xl font-black text-slate-800 mb-2 flex items-center gap-2"
+                >
+                  <span>{gameEmoji}</span>
+                  {gameName}
+                </h2>
+                <p className="text-sm text-slate-700 mb-4 whitespace-pre-wrap">
+                  {gameDesc ? formatText(gameDesc) : ''}
+                </p>
+                {tipsList.length > 0 && (
+                  <>
+                    <h3 className="text-sm font-bold text-slate-700 mb-2">
+                      {formatText(t.gameScreen.tipsLabel)}
+                    </h3>
+                    <ul className="list-disc list-inside text-sm text-slate-600 space-y-1 mb-4">
+                      {tipsList.map((tip, i) => (
+                        <li key={i}>{formatText(tip)}</li>
+                      ))}
+                    </ul>
+                  </>
+                )}
+                <button
+                  type="button"
+                  onClick={() => {
+                    playClick();
+                    setShowGameDescription(false);
+                  }}
+                  className="w-full py-2.5 rounded-xl font-bold border-2 border-slate-600 bg-slate-600 text-white hover:bg-slate-700 transition-colors"
+                  aria-label={formatText(t.common.close)}
+                >
+                  {formatText(t.common.close)}
+                </button>
+              </div>
             </div>
-          </div>
-        );
-      })()}
+          );
+        })()}
 
       <style>{`
         .no-scrollbar::-webkit-scrollbar { display: none; }

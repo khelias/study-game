@@ -39,13 +39,18 @@ const oppositeDirection: Record<Direction, Direction> = {
   RIGHT: 'LEFT',
 };
 
-const getMathSnakeGridSizeForLevel = (_level: number, _profile: ProfileType = 'starter'): number => {
+const getMathSnakeGridSizeForLevel = (
+  _level: number,
+  _profile: ProfileType = 'starter',
+): number => {
   return 7;
 };
 
 const getRandomCountdown = (rng: RngFunction): number => randomInt(2, 3, rng);
 
-const createInitialSnake = (gridSize: number): { snake: Array<[number, number]>; direction: Direction } => {
+const createInitialSnake = (
+  gridSize: number,
+): { snake: Array<[number, number]>; direction: Direction } => {
   const mid = Math.floor(gridSize / 2);
   return {
     snake: [
@@ -57,7 +62,10 @@ const createInitialSnake = (gridSize: number): { snake: Array<[number, number]>;
   };
 };
 
-const getEmptyCells = (gridSize: number, snake: Array<[number, number]>): Array<[number, number]> => {
+const getEmptyCells = (
+  gridSize: number,
+  snake: Array<[number, number]>,
+): Array<[number, number]> => {
   const snakeSet = new Set(snake.map(([x, y]) => `${x},${y}`));
   const cells: Array<[number, number]> = [];
   for (let y = 0; y < gridSize; y++) {
@@ -74,7 +82,7 @@ const spawnApple = (
   gridSize: number,
   snake: Array<[number, number]>,
   applesUntilMath: number,
-  rng: RngFunction
+  rng: RngFunction,
 ): SpawnResult => {
   const empty = getEmptyCells(gridSize, snake);
   if (empty.length === 0) {
@@ -97,13 +105,13 @@ const spawnApple = (
 };
 
 type EquationKind =
-  | 'add_result'      // a + b = ?
-  | 'add_missing'     // a + ? = c  or  ? + b = c
-  | 'sub_result'      // a - b = ?
-  | 'sub_missing_minuend'   // ? - b = c
+  | 'add_result' // a + b = ?
+  | 'add_missing' // a + ? = c  or  ? + b = c
+  | 'sub_result' // a - b = ?
+  | 'sub_missing_minuend' // ? - b = c
   | 'sub_missing_subtrahend' // a - ? = c
-  | 'mul_result'      // a × b = ?
-  | 'mul_missing';    // a × ? = c
+  | 'mul_result' // a × b = ?
+  | 'mul_missing'; // a × ? = c
 
 const generateEquation = (level: number, rng: RngFunction, harder: boolean) => {
   const baseMax = level <= 2 ? 10 : level <= 4 ? 15 : level <= 6 ? 20 : level <= 10 ? 30 : 50;
@@ -175,7 +183,13 @@ const generateEquation = (level: number, rng: RngFunction, harder: boolean) => {
   }
 };
 
-const buildOptions = (answer: number, count: number, level: number, rng: RngFunction, maxValue: number) => {
+const buildOptions = (
+  answer: number,
+  count: number,
+  level: number,
+  rng: RngFunction,
+  maxValue: number,
+) => {
   const optionsSet = new Set<number>([answer]);
   const spread = level <= 3 ? 2 : level <= 6 ? 4 : level <= 10 ? 8 : 12;
   let guard = 0;
@@ -196,7 +210,11 @@ const buildOptions = (answer: number, count: number, level: number, rng: RngFunc
   return shuffle(Array.from(optionsSet), rng);
 };
 
-const createMathChallenge = (level: number, rng: RngFunction, profile: ProfileType): MathChallenge => {
+const createMathChallenge = (
+  level: number,
+  rng: RngFunction,
+  profile: ProfileType,
+): MathChallenge => {
   const meta = profileMeta(profile);
   const harder = meta.difficultyOffset > 0;
   const { equation, answer, maxValue } = generateEquation(level, rng, harder);
@@ -205,7 +223,8 @@ const createMathChallenge = (level: number, rng: RngFunction, profile: ProfileTy
   return { equation, answer, options };
 };
 
-const isOpposite = (current: Direction, next: Direction): boolean => oppositeDirection[current] === next;
+const isOpposite = (current: Direction, next: Direction): boolean =>
+  oppositeDirection[current] === next;
 
 const normalizeDirection = (current: Direction, next: Direction): Direction => {
   if (isOpposite(current, next)) return current;
@@ -216,7 +235,7 @@ const isCollision = (
   _gridSize: number, // Not used anymore (wraparound handles walls)
   snake: Array<[number, number]>,
   nextHead: [number, number],
-  ignoreTail: boolean
+  ignoreTail: boolean,
 ): boolean => {
   // Only check self-collision, not walls (wraparound handles walls)
   const snakeBody = ignoreTail ? snake.slice(0, Math.max(0, snake.length - 1)) : snake;
@@ -237,7 +256,7 @@ const wrapPosition = (pos: [number, number], gridSize: number): [number, number]
 export const createMathSnakeProblem = (
   level: number,
   rng: RngFunction = Math.random,
-  profile: ProfileType = 'starter'
+  profile: ProfileType = 'starter',
 ): MathSnakeProblem => {
   const gridSize = getMathSnakeGridSizeForLevel(level, profile);
   const { snake, direction } = createInitialSnake(gridSize);
@@ -261,7 +280,7 @@ export const moveMathSnake = (
   inputDirection: Direction,
   level: number,
   rng: RngFunction = Math.random,
-  profile: ProfileType = 'starter'
+  profile: ProfileType = 'starter',
 ): { problem: MathSnakeProblem; collision: boolean } => {
   if (problem.math) {
     return { problem, collision: false };
@@ -271,7 +290,7 @@ export const moveMathSnake = (
   const [dx, dy] = directionVectors[direction];
   const head = problem.snake[0] ?? [0, 0];
   const rawNextHead: [number, number] = [head[0] + dx, head[1] + dy];
-  
+
   // Wrap around if out of bounds
   const nextHead = wrapPosition(rawNextHead, problem.gridSize);
 
@@ -334,7 +353,7 @@ export const moveMathSnake = (
 export const resolveMathSnakeAnswer = (
   problem: MathSnakeProblem,
   isCorrect: boolean,
-  rng: RngFunction = Math.random
+  rng: RngFunction = Math.random,
 ): { problem: MathSnakeProblem; gameOver: boolean } => {
   if (!problem.math) {
     return { problem, gameOver: false };

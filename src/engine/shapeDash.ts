@@ -5,7 +5,15 @@
  * V4: Adds shape gate detection, terrain segments
  */
 
-import type { ShapeDashObstacle, ShapeDashCheckpoint, ShapeDashStar, ShapeDashJumpPad, ShapeDashBoostZone, ShapeDashShapeGate, ShapeDashTerrainSegment } from '../types/game';
+import type {
+  ShapeDashObstacle,
+  ShapeDashCheckpoint,
+  ShapeDashStar,
+  ShapeDashJumpPad,
+  ShapeDashBoostZone,
+  ShapeDashShapeGate,
+  ShapeDashTerrainSegment,
+} from '../types/game';
 
 /** Player hitbox: width and height in px */
 export const PLAYER_WIDTH = 28;
@@ -21,7 +29,7 @@ export const BLOCK_DEFAULT_HEIGHT = 40;
 
 export interface PlayerState {
   x: number;
-  y: number;       // Bottom of player (feet)
+  y: number; // Bottom of player (feet)
   velocityY: number;
   isOnGround: boolean;
 }
@@ -41,7 +49,7 @@ export const CIRCLE_DEFAULT_RADIUS = 18;
  */
 export function getObstacleBounds(
   obstacle: ShapeDashObstacle,
-  scrollOffset: number
+  scrollOffset: number,
 ): ObstacleBounds {
   const worldX = obstacle.x - scrollOffset;
   const offsetY = obstacle.offsetY ?? 0;
@@ -56,10 +64,7 @@ export function getObstacleBounds(
     };
   }
   const w = SPIKE_WIDTH;
-  const h =
-    obstacle.type === 'spike'
-      ? SPIKE_HEIGHT
-      : (obstacle.height ?? BLOCK_DEFAULT_HEIGHT);
+  const h = obstacle.type === 'spike' ? SPIKE_HEIGHT : (obstacle.height ?? BLOCK_DEFAULT_HEIGHT);
   return {
     left: worldX,
     right: worldX + w,
@@ -93,7 +98,7 @@ export function checkAABBOverlap(a: ObstacleBounds, b: ObstacleBounds): boolean 
 export function checkObstacleCollision(
   playerState: PlayerState,
   obstacles: ShapeDashObstacle[],
-  scrollOffset: number
+  scrollOffset: number,
 ): boolean {
   const playerBounds = getPlayerBounds(playerState);
   for (const obs of obstacles) {
@@ -110,7 +115,7 @@ export function getReachedCheckpointIndex(
   playerX: number,
   checkpoints: ShapeDashCheckpoint[],
   scrollOffset: number,
-  passedCheckpointIndices: Set<number>
+  passedCheckpointIndices: Set<number>,
 ): number | null {
   const playerRight = playerX + PLAYER_WIDTH;
   for (let i = 0; i < checkpoints.length; i++) {
@@ -149,7 +154,7 @@ const DEFAULT_LANDING_MARGIN_PX = 140;
  */
 export function getMinObstacleGap(
   scrollSpeed: number,
-  landingMarginPx: number = DEFAULT_LANDING_MARGIN_PX
+  landingMarginPx: number = DEFAULT_LANDING_MARGIN_PX,
 ): number {
   const distanceDuringJump = scrollSpeed * JUMP_AIR_TIME_S;
   return distanceDuringJump + SPIKE_WIDTH + landingMarginPx;
@@ -174,7 +179,7 @@ export function checkStarCollection(
   playerState: PlayerState,
   stars: ShapeDashStar[],
   scrollOffset: number,
-  groundY: number = GROUND_Y
+  groundY: number = GROUND_Y,
 ): string[] {
   const collected: string[] = [];
   const playerCenterX = playerState.x + PLAYER_WIDTH / 2;
@@ -200,10 +205,10 @@ export function checkStarCollection(
 export function checkJumpPadContact(
   playerState: PlayerState,
   jumpPads: ShapeDashJumpPad[],
-  scrollOffset: number
+  scrollOffset: number,
 ): string | null {
   if (!playerState.isOnGround) return null;
-  
+
   const playerLeft = playerState.x;
   const playerRight = playerState.x + PLAYER_WIDTH;
 
@@ -211,7 +216,7 @@ export function checkJumpPadContact(
     const padScreenX = pad.x - scrollOffset;
     const padLeft = padScreenX;
     const padRight = padScreenX + JUMP_PAD_WIDTH;
-    
+
     // Check if player is overlapping with jump pad horizontally
     if (playerRight > padLeft && playerLeft < padRight) {
       return pad.id;
@@ -226,10 +231,10 @@ export function checkJumpPadContact(
 export function checkBoostZone(
   playerX: number,
   boostZones: ShapeDashBoostZone[],
-  scrollOffset: number
+  scrollOffset: number,
 ): boolean {
   const playerCenter = playerX + PLAYER_WIDTH / 2;
-  
+
   for (const zone of boostZones) {
     const zoneScreenX = zone.x - scrollOffset;
     if (playerCenter >= zoneScreenX && playerCenter <= zoneScreenX + zone.width) {
@@ -255,7 +260,7 @@ export function getApproachingGateIndex(
   shapeGates: ShapeDashShapeGate[],
   scrollOffset: number,
   passedGateIds: Set<string>,
-  warningDistance: number = 400
+  warningDistance: number = 400,
 ): number | null {
   const playerRight = playerX + PLAYER_WIDTH;
   for (let i = 0; i < shapeGates.length; i++) {
@@ -277,17 +282,17 @@ export function checkShapeGatePass(
   playerState: PlayerState,
   shapeGates: ShapeDashShapeGate[],
   scrollOffset: number,
-  passedGateIds: Set<string>
+  passedGateIds: Set<string>,
 ): { gateIndex: number; gateChoice: number } | null {
   const playerCenterX = playerState.x + PLAYER_WIDTH / 2;
-  
+
   for (let i = 0; i < shapeGates.length; i++) {
     const gate = shapeGates[i]!;
     if (passedGateIds.has(gate.id)) continue;
     const gateScreenX = gate.x - scrollOffset;
     const gateZoneLeft = gateScreenX - GATE_ZONE_WIDTH / 2;
     const gateZoneRight = gateScreenX + GATE_ZONE_WIDTH / 2;
-    
+
     // Check if player center is within gate zone horizontally
     if (playerCenterX >= gateZoneLeft && playerCenterX <= gateZoneRight) {
       // Determine which gate (left, middle, right) the player is passing through
@@ -295,15 +300,15 @@ export function checkShapeGatePass(
       const gateSlotWidth = GATE_WIDTH + GATE_SPACING;
       const gateSlot = Math.floor(relativeX / gateSlotWidth);
       const posWithinSlot = relativeX % gateSlotWidth;
-      
+
       // Check if player is actually within a gate (not in the spacing)
       if (posWithinSlot > GATE_WIDTH) {
         // Player is in the spacing between gates - don't register as a pass yet
         continue;
       }
-      
+
       const gateChoice = Math.max(0, Math.min(2, gateSlot)); // Clamp to 0-2
-      
+
       return { gateIndex: i, gateChoice };
     }
   }

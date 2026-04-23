@@ -46,7 +46,7 @@ describe('PersistenceService', () => {
   describe('saveGameState', () => {
     it('should save game state', async () => {
       await service.saveGameState(testGameState as GameStore);
-      
+
       const loaded = await service.loadGameState();
       expect(loaded).toMatchObject(testGameState);
     });
@@ -55,7 +55,7 @@ describe('PersistenceService', () => {
   describe('loadGameState', () => {
     it('should load game state', async () => {
       await adapter.save('gameState', testGameState);
-      
+
       const loaded = await service.loadGameState();
       expect(loaded).toMatchObject(testGameState);
     });
@@ -69,10 +69,10 @@ describe('PersistenceService', () => {
   describe('save/load generic', () => {
     it('should save and load generic data', async () => {
       const testData = { custom: 'data', number: 42 };
-      
+
       await service.save('custom_key', testData);
       const loaded = await service.load<typeof testData>('custom_key');
-      
+
       expect(loaded).toEqual(testData);
     });
   });
@@ -81,7 +81,7 @@ describe('PersistenceService', () => {
     it('should delete data', async () => {
       await service.save('test_key', { data: 'test' });
       await service.delete('test_key');
-      
+
       const loaded = await service.load('test_key');
       expect(loaded).toBeNull();
     });
@@ -94,9 +94,9 @@ describe('PersistenceService', () => {
         sync: vi.fn().mockResolvedValue(undefined),
       };
       const syncService = new PersistenceService(syncAdapter);
-      
+
       await syncService.sync();
-      
+
       expect(syncAdapter.sync).toHaveBeenCalled();
     });
 
@@ -115,13 +115,13 @@ describe('PersistenceService', () => {
   describe('integration with LocalStorageAdapter', () => {
     it('should work with LocalStorageAdapter', async () => {
       const localStorageService = new PersistenceService(new LocalStorageAdapter());
-      
+
       // Clear localStorage first
       localStorage.clear();
-      
+
       await localStorageService.saveGameState(testGameState as GameStore);
       const loaded = await localStorageService.loadGameState();
-      
+
       expect(loaded).toMatchObject(testGameState);
     });
   });

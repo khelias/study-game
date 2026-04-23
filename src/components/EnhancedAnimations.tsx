@@ -12,7 +12,10 @@ interface StarCollectAnimationProps {
 }
 
 // Star collection animation
-export const StarCollectAnimation: React.FC<StarCollectAnimationProps> = ({ position, onComplete }) => {
+export const StarCollectAnimation: React.FC<StarCollectAnimationProps> = ({
+  position,
+  onComplete,
+}) => {
   return (
     <div
       className="fixed pointer-events-none z-50"
@@ -54,7 +57,7 @@ interface EffectWrapperProps {
 // Pulsing effect for correct answer
 export const PulseEffect: React.FC<EffectWrapperProps> = ({ active, children }) => {
   if (!active) return <>{children}</>;
-  
+
   return (
     <div className="relative">
       {children}
@@ -77,7 +80,7 @@ export const PulseEffect: React.FC<EffectWrapperProps> = ({ active, children }) 
 // Shake animation for wrong answer
 export const ShakeEffect: React.FC<EffectWrapperProps> = ({ active, children }) => {
   if (!active) return <>{children}</>;
-  
+
   return (
     <div className={active ? 'animate-shake' : ''}>
       {children}
@@ -103,10 +106,7 @@ interface FadeInProps {
 // Fade in animation for new tasks
 export const FadeIn: React.FC<FadeInProps> = ({ children, delay = 0 }) => {
   return (
-    <div 
-      className="animate-fade-in"
-      style={{ animationDelay: `${delay}ms` }}
-    >
+    <div className="animate-fade-in" style={{ animationDelay: `${delay}ms` }}>
       {children}
       <style>{`
         @keyframes fade-in {
@@ -135,18 +135,15 @@ interface BounceOnClickProps {
 // Bounce animation for buttons
 export const BounceOnClick: React.FC<BounceOnClickProps> = ({ children, onClick }) => {
   const [bouncing, setBouncing] = React.useState(false);
-  
+
   const handleClick = (e: React.MouseEvent<HTMLDivElement>): void => {
     setBouncing(true);
     setTimeout(() => setBouncing(false), 300);
     if (onClick) onClick(e);
   };
-  
+
   return (
-    <div 
-      className={bouncing ? 'animate-bounce-click' : ''}
-      onClick={handleClick}
-    >
+    <div className={bouncing ? 'animate-bounce-click' : ''} onClick={handleClick}>
       {children}
       <style>{`
         @keyframes bounce-click {
@@ -177,7 +174,7 @@ interface EnhancedConfettiProps {
 // Confetti effect
 export const EnhancedConfetti: React.FC<EnhancedConfettiProps> = ({ active, onComplete }) => {
   const [particles, setParticles] = React.useState<Particle[]>([]);
-  
+
   React.useEffect(() => {
     if (active) {
       const newParticles: Particle[] = Array.from({ length: 50 }, (_, i) => ({
@@ -188,22 +185,22 @@ export const EnhancedConfetti: React.FC<EnhancedConfettiProps> = ({ active, onCo
         duration: 2 + Math.random() * 2,
       }));
       setParticles(newParticles);
-      
+
       const timer = setTimeout(() => {
         setParticles([]);
         if (onComplete) onComplete();
       }, 4000);
-      
+
       return () => clearTimeout(timer);
     }
     return undefined;
   }, [active, onComplete]);
-  
+
   if (!active || particles.length === 0) return null;
-  
+
   return (
     <div className="fixed inset-0 pointer-events-none z-[50] overflow-hidden">
-      {particles.map(particle => (
+      {particles.map((particle) => (
         <div
           key={particle.id}
           className="absolute text-3xl animate-confetti-enhanced"

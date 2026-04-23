@@ -23,7 +23,15 @@ const SIZE = {
   md: { w: 40, h: 40, rx: 10, font: 20, shadowRy: 5 },
 } as const;
 
-export const SvgWeight: React.FC<SvgWeightProps> = ({ x, y, num, label, color, dashed, size: sizeProp = 'md' }) => {
+export const SvgWeight: React.FC<SvgWeightProps> = ({
+  x,
+  y,
+  num,
+  label,
+  color,
+  dashed,
+  size: sizeProp = 'md',
+}) => {
   const uid = useId();
   const displayText = label ?? String(num ?? '');
   const s = SIZE[sizeProp];
@@ -80,7 +88,14 @@ export const SvgWeight: React.FC<SvgWeightProps> = ({ x, y, num, label, color, d
       </defs>
 
       {/* Shadow on tray – just below weight base so it reads as cast on the pan */}
-      <ellipse cx="0" cy={s.h / 2 + 4} rx={s.w * 0.5} ry={s.shadowRy + 2} fill="#000" opacity="0.12" />
+      <ellipse
+        cx="0"
+        cy={s.h / 2 + 4}
+        rx={s.w * 0.5}
+        ry={s.shadowRy + 2}
+        fill="#000"
+        opacity="0.12"
+      />
 
       {/* Weight body – solid block, slight bevel for “weight” look */}
       <rect
@@ -97,9 +112,23 @@ export const SvgWeight: React.FC<SvgWeightProps> = ({ x, y, num, label, color, d
         filter={`url(#${shadowId})`}
       />
       {/* Bottom edge – suggests thickness / metal weight */}
-      <rect x={-s.w / 2 + 2} y={s.h / 2 - 6} width={s.w - 4} height="4" rx="1" fill="rgba(0,0,0,0.15)" />
+      <rect
+        x={-s.w / 2 + 2}
+        y={s.h / 2 - 6}
+        width={s.w - 4}
+        height="4"
+        rx="1"
+        fill="rgba(0,0,0,0.15)"
+      />
       {/* Top highlight */}
-      <rect x={-s.w / 2 + 2} y={-s.h / 2} width={s.w - 4} height={Math.round(s.h * 0.26)} rx={s.rx - 2} fill="rgba(255,255,255,0.3)" />
+      <rect
+        x={-s.w / 2 + 2}
+        y={-s.h / 2}
+        width={s.w - 4}
+        height={Math.round(s.h * 0.26)}
+        rx={s.rx - 2}
+        fill="rgba(255,255,255,0.3)"
+      />
 
       {/* Number or label – vertically centered in weight */}
       <text

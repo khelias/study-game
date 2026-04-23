@@ -1,6 +1,6 @@
 /**
  * LevelUpModal Component
- * 
+ *
  * Modal displayed when player levels up.
  */
 
@@ -18,22 +18,22 @@ interface LevelUpModalProps {
 export const LevelUpModal: React.FC<LevelUpModalProps> = ({ level, onNext, gameConfig }) => {
   const t = useTranslation();
   return (
-    <div 
+    <div
       className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 animate-in fade-in duration-300"
-      style={{ 
-        position: 'fixed', 
-        top: 0, 
-        left: 0, 
-        right: 0, 
-        bottom: 0, 
+      style={{
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
         margin: 0,
         padding: '1rem',
         display: 'flex',
         alignItems: 'center',
-        justifyContent: 'center'
+        justifyContent: 'center',
       }}
     >
-      <div 
+      <div
         className="bg-gradient-to-br from-white to-slate-50 rounded-3xl p-8 max-w-sm w-full shadow-2xl text-center transform scale-100 animate-bounce-short border-4 border-yellow-400"
         style={{ margin: '0 auto' }}
       >
@@ -44,8 +44,8 @@ export const LevelUpModal: React.FC<LevelUpModalProps> = ({ level, onNext, gameC
           {t.levelUp.level} {level}!
         </h2>
         <p className="text-slate-600 mb-8 font-bold">{t.levelUp.greatWork}</p>
-        
-        <button 
+
+        <button
           onClick={onNext}
           className={`w-full py-4 rounded-xl text-xl font-black text-white shadow-lg active:scale-95 transition-all hover:scale-105 flex items-center justify-center gap-2 ${gameConfig.theme.accent} hover:brightness-110`}
         >

@@ -2,10 +2,7 @@ import { ReactElement } from 'react';
 import { render, RenderOptions } from '@testing-library/react';
 
 // Custom render function that includes common providers if needed
-export function customRender(
-  ui: ReactElement,
-  options?: Omit<RenderOptions, 'wrapper'>
-) {
+export function customRender(ui: ReactElement, options?: Omit<RenderOptions, 'wrapper'>) {
   return render(ui, { ...options });
 }
 

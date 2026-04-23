@@ -11,25 +11,28 @@ interface StatsDashboardProps {
   unlockedAchievements?: AchievementUnlock[];
 }
 
-export const StatsDashboard: React.FC<StatsDashboardProps> = ({ stats, unlockedAchievements = [] }) => {
+export const StatsDashboard: React.FC<StatsDashboardProps> = ({
+  stats,
+  unlockedAchievements = [],
+}) => {
   const t = useTranslation();
   const { formatText } = useProfileText();
-  const accuracy: number = stats.gamesPlayed > 0
-    ? Math.round((stats.correctAnswers / (stats.correctAnswers + stats.wrongAnswers)) * 100)
-    : 0;
-  
+  const accuracy: number =
+    stats.gamesPlayed > 0
+      ? Math.round((stats.correctAnswers / (stats.correctAnswers + stats.wrongAnswers)) * 100)
+      : 0;
+
   const totalAnswers: number = stats.correctAnswers + stats.wrongAnswers;
-  const avgTimePerGame: number = stats.gamesPlayed > 0
-    ? Math.floor(stats.totalTimePlayed / stats.gamesPlayed)
-    : 0;
-  
+  const avgTimePerGame: number =
+    stats.gamesPlayed > 0 ? Math.floor(stats.totalTimePlayed / stats.gamesPlayed) : 0;
+
   const formatTime = (seconds: number): string => {
     if (seconds < 60) return `${seconds}s`;
     const minutes: number = Math.floor(seconds / 60);
     const secs: number = seconds % 60;
     return `${minutes}m ${secs}s`;
   };
-  
+
   interface StatCard {
     icon: React.ComponentType<{ size?: number }>;
     label: string;
@@ -37,7 +40,7 @@ export const StatsDashboard: React.FC<StatsDashboardProps> = ({ stats, unlockedA
     color: string;
     subtitle?: string;
   }
-  
+
   const statCards: StatCard[] = [
     {
       icon: Trophy,
@@ -70,7 +73,8 @@ export const StatsDashboard: React.FC<StatsDashboardProps> = ({ stats, unlockedA
       label: formatText(t.stats.playTime),
       value: formatTime(stats.totalTimePlayed),
       color: 'bg-indigo-100 text-indigo-700',
-      subtitle: avgTimePerGame > 0 ? `~${formatTime(avgTimePerGame)} ${formatText(t.stats.perGame)}` : '',
+      subtitle:
+        avgTimePerGame > 0 ? `~${formatTime(avgTimePerGame)} ${formatText(t.stats.perGame)}` : '',
     },
     {
       icon: BarChart3,
@@ -79,7 +83,7 @@ export const StatsDashboard: React.FC<StatsDashboardProps> = ({ stats, unlockedA
       color: 'bg-pink-100 text-pink-700',
     },
   ];
-  
+
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
       {statCards.map((card, idx) => {
@@ -94,17 +98,9 @@ export const StatsDashboard: React.FC<StatsDashboardProps> = ({ stats, unlockedA
                 <Icon size={24} />
               </div>
             </div>
-            <div className="text-3xl font-black text-slate-800 mb-1">
-              {card.value}
-            </div>
-            <div className="text-sm font-semibold text-slate-600">
-              {card.label}
-            </div>
-            {card.subtitle && (
-              <div className="text-xs text-slate-500 mt-1">
-                {card.subtitle}
-              </div>
-            )}
+            <div className="text-3xl font-black text-slate-800 mb-1">{card.value}</div>
+            <div className="text-sm font-semibold text-slate-600">{card.label}</div>
+            {card.subtitle && <div className="text-xs text-slate-500 mt-1">{card.subtitle}</div>}
           </div>
         );
       })}
@@ -122,33 +118,36 @@ export const GameTypeStats: React.FC<GameTypeStatsProps> = ({ stats }) => {
   const { formatText } = useProfileText();
   const gameTypes: Record<string, number> = stats.gamesByType || {};
   const totalGames: number = Object.values(gameTypes).reduce((a, b) => a + b, 0);
-  
+
   if (totalGames === 0) {
     return (
-      <div className="text-center text-slate-500 py-8">
-        {formatText(t.stats.noGamesPlayed)}
-      </div>
+      <div className="text-center text-slate-500 py-8">{formatText(t.stats.noGamesPlayed)}</div>
     );
   }
-  
+
   const sortedTypes: [string, number][] = Object.entries(gameTypes)
     .sort((a, b) => b[1] - a[1])
     .slice(0, 5);
-  
+
   return (
     <div className="space-y-3">
-      <h3 className="text-lg font-black text-slate-800 mb-4">{formatText(t.stats.mostPlayedGames)}</h3>
+      <h3 className="text-lg font-black text-slate-800 mb-4">
+        {formatText(t.stats.mostPlayedGames)}
+      </h3>
       {sortedTypes.map(([type, count]) => {
         const percentage: number = (count / totalGames) * 100;
         const baseType = type.replace('_adv', '');
-        const gameLabel: string = (t.games[baseType as keyof typeof t.games]?.title ?? type.replace(/_/g, ' ')) as string;
+        const gameLabel: string = (t.games[baseType as keyof typeof t.games]?.title ??
+          type.replace(/_/g, ' ')) as string;
         return (
           <div key={type} className="space-y-1">
             <div className="flex justify-between items-center text-sm">
               <span className="font-semibold text-slate-700 capitalize">
                 {formatText(gameLabel)}
               </span>
-              <span className="text-slate-500">{count} {formatText(t.stats.gamesLabel)}</span>
+              <span className="text-slate-500">
+                {count} {formatText(t.stats.gamesLabel)}
+              </span>
             </div>
             <div className="w-full h-2 bg-slate-200 rounded-full overflow-hidden">
               <div

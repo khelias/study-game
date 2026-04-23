@@ -27,7 +27,7 @@ The domain is organized into five bounded contexts. Each owns its types, its tes
 4. **Meta-progression** — `Wallet`, `Inventory`, `UnlockCatalog`, `Achievement`. Owns the collection and economy layer around play, independent of any single session or skill.
 5. **Entitlement** — `Tier`, `FeatureFlag`, `Paywall`. Owns whether a given profile has access to a given feature. Feature-flag scaffolding already exists in `src/monetization/`; this ADR formalizes that it is its own context.
 
-A game is no longer a first-class domain entity. What the registry in `src/games/registrations.ts` registers is a *binding* of the form `{ mechanic, compatibleSkills[], defaultContentPackId }`. The same mechanic can serve multiple skills; the same skill can be rendered by multiple mechanics.
+A game is no longer a first-class domain entity. What the registry in `src/games/registrations.ts` registers is a _binding_ of the form `{ mechanic, compatibleSkills[], defaultContentPackId }`. The same mechanic can serve multiple skills; the same skill can be rendered by multiple mechanics.
 
 ## Alternatives considered
 
@@ -37,7 +37,7 @@ A game is no longer a first-class domain entity. What the registry in `src/games
 
 **Seven or more contexts.** Split Assessment out of Gameplay, Achievement out of Meta-progression, Locale and Accessibility as their own contexts, etc. Rejected for now: premature for current scale. Revisit when any single context reaches ~8 entity files or grows a recurring cross-cutting concern.
 
-**Feature-first (vertical) slicing only.** Organize by subject: `src/multiplication/`, `src/reading/`, `src/estonian/`. Rejected: each feature would duplicate mechanic code, adaptive-difficulty logic, and meta-progression plumbing. The project's architectural leverage depends on the *horizontal* reuse of the engine across subjects.
+**Feature-first (vertical) slicing only.** Organize by subject: `src/multiplication/`, `src/reading/`, `src/estonian/`. Rejected: each feature would duplicate mechanic code, adaptive-difficulty logic, and meta-progression plumbing. The project's architectural leverage depends on the _horizontal_ reuse of the engine across subjects.
 
 **Full DDD with aggregate roots, repositories, and application services.** Rejected for this phase: the bounded contexts give the correct seam for the current work without the ceremony. Aggregates can be introduced inside a context later if the context grows to need them; the boundaries set here will not have to move.
 

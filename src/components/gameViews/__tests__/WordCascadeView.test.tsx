@@ -62,10 +62,10 @@ describe('WordCascadeView', () => {
   it('renders word cascade game correctly', () => {
     const onAnswer = vi.fn();
     render(<WordCascadeView problem={mockProblem} onAnswer={onAnswer} soundEnabled={false} />);
-    
+
     // Check emoji is rendered
     expect(screen.getByText('🐱')).toBeDefined();
-    
+
     // Check target word slots are rendered (3 for CAT)
     const slots = screen.getByText('🐱').parentElement?.querySelectorAll('.rounded-xl');
     expect(slots?.length).toBeGreaterThan(0);
@@ -74,11 +74,11 @@ describe('WordCascadeView', () => {
   it('renders wave letter buttons with touch-manipulation', () => {
     const onAnswer = vi.fn();
     const { container } = render(
-      <WordCascadeView problem={mockProblem} onAnswer={onAnswer} soundEnabled={false} />
+      <WordCascadeView problem={mockProblem} onAnswer={onAnswer} soundEnabled={false} />,
     );
     const letterButtons = container.querySelectorAll('button[aria-label^="Letter"]');
     expect(letterButtons.length).toBeGreaterThan(0);
-    letterButtons.forEach(button => {
+    letterButtons.forEach((button) => {
       expect(button.getAttribute('type')).toBe('button');
       expect(button.className).toMatch(/touch-manipulation/);
     });
@@ -87,25 +87,27 @@ describe('WordCascadeView', () => {
   it('resets state on problem change', () => {
     const onAnswer = vi.fn();
     const { rerender } = render(
-      <WordCascadeView problem={mockProblem} onAnswer={onAnswer} soundEnabled={false} />
+      <WordCascadeView problem={mockProblem} onAnswer={onAnswer} soundEnabled={false} />,
     );
-    
+
     // Change problem uid to trigger reset
     const newProblem: WordCascadeProblem = {
       ...mockProblem,
       uid: 'test-uid-cascade-2',
       target: 'DOG',
     };
-    
+
     rerender(<WordCascadeView problem={newProblem} onAnswer={onAnswer} soundEnabled={false} />);
-    
+
     // If we got here without errors, the reset worked
     expect(true).toBe(true);
   });
 
   it('renders game area and status; instructions are in tips (TipButton)', () => {
     const onAnswer = vi.fn();
-    const { container } = render(<WordCascadeView problem={mockProblem} onAnswer={onAnswer} soundEnabled={false} />);
+    const { container } = render(
+      <WordCascadeView problem={mockProblem} onAnswer={onAnswer} soundEnabled={false} />,
+    );
     // No in-screen tutorial text; only "Try again!" when wrong. Slots and play area present.
     const statusRegion = container.querySelector('[role="status"]');
     expect(statusRegion).toBeDefined();

@@ -26,7 +26,7 @@ export function boardPxToGridTopLeft(
   ry: number,
   boardWidthPx: number,
   gridSize: number,
-  pieceSize: number
+  pieceSize: number,
 ): GridPosition {
   const cellSizePx = boardWidthPx / gridSize;
   const centerCellX = Math.round(rx / cellSizePx);
@@ -48,7 +48,7 @@ export function gridPieceToPercent(
   x: number,
   y: number,
   size: number,
-  gridSize: number
+  gridSize: number,
 ): { left: number; top: number; width: number; height: number } {
   return {
     left: (x / gridSize) * 100,
@@ -65,7 +65,7 @@ export function sortByDistanceFromCenter<T>(
   items: T[],
   gridSize: number,
   getPosition: (item: T) => GridPosition,
-  getSize: (item: T) => number
+  getSize: (item: T) => number,
 ): T[] {
   const center = (gridSize - 1) / 2;
   return [...items].sort((a, b) => {
@@ -80,16 +80,6 @@ export function sortByDistanceFromCenter<T>(
 }
 
 /** True if piece (x, y, size) fits inside grid. */
-export function pieceInBounds(
-  x: number,
-  y: number,
-  size: number,
-  gridSize: number
-): boolean {
-  return (
-    x >= 0 &&
-    y >= 0 &&
-    x + size <= gridSize &&
-    y + size <= gridSize
-  );
+export function pieceInBounds(x: number, y: number, size: number, gridSize: number): boolean {
+  return x >= 0 && y >= 0 && x + size <= gridSize && y + size <= gridSize;
 }

@@ -1,6 +1,6 @@
 /**
  * PaidHintButtons - Global hint system for games with star-based hints
- * 
+ *
  * Renders hint buttons configured in GameConfig.paidHints
  */
 
@@ -45,7 +45,8 @@ export const PaidHintButtons: React.FC<PaidHintButtonsProps> = ({
       {hints.map((hint) => {
         const isDisabled = disabled || stars < hint.cost;
         const rawLabel = getNestedValue(t, hint.labelKey);
-        const labelText = rawLabel?.replace('{cost}', String(hint.cost)) || `${hint.icon} ${hint.cost}⭐`;
+        const labelText =
+          rawLabel?.replace('{cost}', String(hint.cost)) || `${hint.icon} ${hint.cost}⭐`;
 
         return (
           <button

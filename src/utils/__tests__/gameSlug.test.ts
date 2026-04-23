@@ -59,7 +59,7 @@ describe('gameSlug utilities', () => {
   describe('round-trip conversion', () => {
     it('should maintain consistency when converting back and forth', () => {
       const gameIds = ['word_cascade', 'math_snake', 'pattern', 'balance_scale'];
-      gameIds.forEach(gameId => {
+      gameIds.forEach((gameId) => {
         const slug = gameIdToSlug(gameId);
         const convertedBack = slugToGameId(slug);
         expect(convertedBack).toBe(gameId);

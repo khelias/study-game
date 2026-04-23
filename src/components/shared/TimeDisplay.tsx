@@ -70,7 +70,10 @@ export const TimeDisplay: React.FC<TimeDisplayProps> = ({ hour, minute, feedback
       })}
       <div
         className="absolute left-1/2 top-1/2 w-2 bg-blue-500 rounded-full origin-bottom shadow-md"
-        style={{ height: `${HOUR_LEN}px`, transform: `translate(-50%, -100%) rotate(${angleH}deg)` }}
+        style={{
+          height: `${HOUR_LEN}px`,
+          transform: `translate(-50%, -100%) rotate(${angleH}deg)`,
+        }}
       />
       <div
         className="absolute left-1/2 top-1/2 w-[6px] bg-blue-800 rounded-full origin-bottom shadow"

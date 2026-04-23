@@ -57,11 +57,12 @@ const MemoCard: React.FC<{
         relative w-full h-full min-w-0 min-h-0 rounded-xl sm:rounded-2xl flex items-center justify-center
         text-sm sm:text-base font-bold transition-all duration-200
         border-2 shadow-md overflow-hidden
-        ${card.solved
-          ? 'opacity-40 scale-[0.96] pointer-events-none bg-slate-100/80 border-slate-200'
-          : isFlipped
-            ? 'bg-white border-pink-400 text-slate-800 shadow-lg'
-            : 'bg-gradient-to-br from-pink-400 to-amber-500 border-pink-600/80 text-transparent hover:from-pink-500 hover:to-amber-600 hover:scale-[1.02] active:scale-[0.98]'
+        ${
+          card.solved
+            ? 'opacity-40 scale-[0.96] pointer-events-none bg-slate-100/80 border-slate-200'
+            : isFlipped
+              ? 'bg-white border-pink-400 text-slate-800 shadow-lg'
+              : 'bg-gradient-to-br from-pink-400 to-amber-500 border-pink-600/80 text-transparent hover:from-pink-500 hover:to-amber-600 hover:scale-[1.02] active:scale-[0.98]'
         }
       `}
     >
@@ -109,7 +110,7 @@ export const PicturePairsView: React.FC<PicturePairsViewProps> = ({
   const baseType = gameType?.replace('_adv', '') ?? 'picture_pairs';
   const paidHints = GAME_CONFIG[baseType]?.paidHints ?? [];
   const [cards, setCards] = useState<CardState[]>(() =>
-    problem.cards.map(c => ({ ...c, flipped: false, solved: false }))
+    problem.cards.map((c) => ({ ...c, flipped: false, solved: false })),
   );
   const [flipped, setFlipped] = useState<number[]>([]);
   const [matchedPairs, setMatchedPairs] = useState(0);
@@ -121,7 +122,7 @@ export const PicturePairsView: React.FC<PicturePairsViewProps> = ({
   useEffect(() => {
     let peekTimerId: ReturnType<typeof setTimeout>;
     const id = setTimeout(() => {
-      setCards(problem.cards.map(c => ({ ...c, flipped: false, solved: false })));
+      setCards(problem.cards.map((c) => ({ ...c, flipped: false, solved: false })));
       setFlipped([]);
       setMatchedPairs(0);
       setMoves(0);
@@ -139,27 +140,29 @@ export const PicturePairsView: React.FC<PicturePairsViewProps> = ({
     (hintId: string) => {
       if (hintId !== 'reveal_pair' || !spendStars) return;
       const solvedMatchIds = new Set(
-        cards.filter(c => c.solved && c.matchId).map(c => c.matchId)
+        cards.filter((c) => c.solved && c.matchId).map((c) => c.matchId),
       );
-      const unsolvedMatchIds = [...new Set(cards.map(c => c.matchId))].filter(
-        mid => mid && !solvedMatchIds.has(mid)
+      const unsolvedMatchIds = [...new Set(cards.map((c) => c.matchId))].filter(
+        (mid) => mid && !solvedMatchIds.has(mid),
       );
       if (unsolvedMatchIds.length === 0) return;
       if (!spendStars(1)) return;
-      const pickMatchId = unsolvedMatchIds[Math.floor(Math.random() * unsolvedMatchIds.length)] as string;
+      const pickMatchId = unsolvedMatchIds[
+        Math.floor(Math.random() * unsolvedMatchIds.length)
+      ] as string;
       const indices = cards
         .map((c, i) => (c.matchId === pickMatchId ? i : -1))
-        .filter(i => i >= 0);
+        .filter((i) => i >= 0);
       if (indices.length !== 2) return;
       playSound('click', soundEnabled);
-      setCards(prev => {
+      setCards((prev) => {
         const next = prev.slice();
         if (next[indices[0]!]) next[indices[0]!] = { ...next[indices[0]!]!, flipped: true };
         if (next[indices[1]!]) next[indices[1]!] = { ...next[indices[1]!]!, flipped: true };
         return next;
       });
       setTimeout(() => {
-        setCards(prev => {
+        setCards((prev) => {
           const next = prev.slice();
           if (next[indices[0]!]) next[indices[0]!] = { ...next[indices[0]!]!, flipped: false };
           if (next[indices[1]!]) next[indices[1]!] = { ...next[indices[1]!]!, flipped: false };
@@ -167,13 +170,13 @@ export const PicturePairsView: React.FC<PicturePairsViewProps> = ({
         });
       }, 2500);
     },
-    [cards, spendStars, soundEnabled]
+    [cards, spendStars, soundEnabled],
   );
 
   const handleCard = (index: number): void => {
     if (isPeeking || flipped.length >= 2 || cards[index]?.flipped || cards[index]?.solved) return;
     playSound('click', soundEnabled);
-    setMoves(prev => prev + 1);
+    setMoves((prev) => prev + 1);
 
     const newCards = [...cards];
     const at = newCards[index];
@@ -192,15 +195,15 @@ export const PicturePairsView: React.FC<PicturePairsViewProps> = ({
       const card2 = newCards[i2];
       if (card1 && card2 && card1.matchId === card2.matchId) {
         playSound('correct', soundEnabled);
-        setMatchedPairs(prev => prev + 1);
+        setMatchedPairs((prev) => prev + 1);
         setTimeout(() => {
           const solvedCards = newCards.map((c, i) =>
-            i === i1 || i === i2 ? { ...c, solved: true } : c
+            i === i1 || i === i2 ? { ...c, solved: true } : c,
           );
           setCards(solvedCards);
           setFlipped([]);
 
-          const allSolved = solvedCards.every(c => c.solved);
+          const allSolved = solvedCards.every((c) => c.solved);
           if (allSolved) {
             setShowCelebration(true);
             setTimeout(() => {
@@ -212,7 +215,7 @@ export const PicturePairsView: React.FC<PicturePairsViewProps> = ({
       } else {
         setTimeout(() => {
           const resetCards = newCards.map((c, i) =>
-            i === i1 || i === i2 ? { ...c, flipped: false } : c
+            i === i1 || i === i2 ? { ...c, flipped: false } : c,
           );
           setCards(resetCards);
           setFlipped([]);

@@ -5,10 +5,7 @@ import { useProfileText } from '../hooks/useProfileText';
 
 // Keyboard navigation helper
 // eslint-disable-next-line react-refresh/only-export-components
-export const useKeyboardNavigation = (
-  onEscape?: () => void,
-  onEnter?: () => void
-): void => {
+export const useKeyboardNavigation = (onEscape?: () => void, onEnter?: () => void): void => {
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent): void => {
       if (e.key === 'Escape' && onEscape) {
@@ -18,7 +15,7 @@ export const useKeyboardNavigation = (
         onEnter();
       }
     };
-    
+
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [onEscape, onEnter]);
@@ -31,20 +28,20 @@ interface FocusTrapProps {
 
 const FocusTrap: React.FC<FocusTrapProps> = ({ children, active = true }) => {
   const containerRef = React.useRef<HTMLDivElement>(null);
-  
+
   useEffect(() => {
     if (!active || !containerRef.current) return;
-    
+
     const focusableElements = containerRef.current.querySelectorAll<HTMLElement>(
-      'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+      'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])',
     );
-    
+
     const firstElement = focusableElements[0];
     const lastElement = focusableElements[focusableElements.length - 1];
-    
+
     const handleTab = (e: KeyboardEvent): void => {
       if (e.key !== 'Tab') return;
-      
+
       if (e.shiftKey) {
         if (document.activeElement === firstElement) {
           e.preventDefault();
@@ -57,15 +54,15 @@ const FocusTrap: React.FC<FocusTrapProps> = ({ children, active = true }) => {
         }
       }
     };
-    
+
     document.addEventListener('keydown', handleTab);
     firstElement?.focus();
-    
+
     return () => {
       document.removeEventListener('keydown', handleTab);
     };
   }, [active]);
-  
+
   return <div ref={containerRef}>{children}</div>;
 };
 
@@ -75,17 +72,12 @@ interface ScreenReaderMessageProps {
   priority?: 'polite' | 'assertive';
 }
 
-const ScreenReaderMessage: React.FC<ScreenReaderMessageProps> = ({ 
-  message, 
-  priority = 'polite' 
+const ScreenReaderMessage: React.FC<ScreenReaderMessageProps> = ({
+  message,
+  priority = 'polite',
 }) => {
   return (
-    <div
-      className="sr-only"
-      role="status"
-      aria-live={priority}
-      aria-atomic="true"
-    >
+    <div className="sr-only" role="status" aria-live={priority} aria-atomic="true">
       {message}
     </div>
   );

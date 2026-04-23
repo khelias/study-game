@@ -18,27 +18,27 @@ interface StatsModalProps {
 export const StatsModal: React.FC<StatsModalProps> = ({ stats, unlockedAchievements, onClose }) => {
   const t = useTranslation();
   const { formatText } = useProfileText();
-  const highScores = useGameStore(state => state.highScores);
+  const highScores = useGameStore((state) => state.highScores);
 
   return (
-    <div 
+    <div
       className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-300"
-      style={{ 
-        position: 'fixed', 
-        top: 0, 
-        left: 0, 
-        right: 0, 
-        bottom: 0, 
+      style={{
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
         margin: 0,
         padding: '1rem',
         display: 'flex',
         alignItems: 'center',
-        justifyContent: 'center'
+        justifyContent: 'center',
       }}
       onClick={(e: React.MouseEvent<HTMLDivElement>) => e.target === e.currentTarget && onClose()}
     >
       <FocusTrap active={true}>
-        <div 
+        <div
           className="bg-white rounded-3xl p-6 max-w-4xl w-full shadow-2xl max-h-[90vh] overflow-y-auto"
           style={{ margin: '0 auto' }}
         >
@@ -56,7 +56,7 @@ export const StatsModal: React.FC<StatsModalProps> = ({ stats, unlockedAchieveme
           <div className="space-y-6">
             {/* Enhanced dashboard */}
             <StatsDashboard stats={stats} unlockedAchievements={unlockedAchievements} />
-            
+
             {/* Game type statistics */}
             <div className="bg-slate-50 p-6 rounded-2xl border-2 border-slate-200">
               <GameTypeStats stats={stats} />
@@ -65,14 +65,20 @@ export const StatsModal: React.FC<StatsModalProps> = ({ stats, unlockedAchieveme
             {/* Max levels */}
             {stats.maxLevels && Object.keys(stats.maxLevels).length > 0 && (
               <div className="bg-slate-50 p-6 rounded-2xl border-2 border-slate-200">
-                <h3 className="text-lg font-black text-slate-800 mb-4">{t.statsModal.highestLevels}</h3>
+                <h3 className="text-lg font-black text-slate-800 mb-4">
+                  {t.statsModal.highestLevels}
+                </h3>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   {Object.entries(stats.maxLevels).map(([gameType, level]) => {
                     const config = GAME_CONFIG[gameType];
                     if (!config) return null;
-                    const gameTitle: string = (t.games[config.id as keyof typeof t.games]?.title ?? config.title) as string;
+                    const gameTitle: string = (t.games[config.id as keyof typeof t.games]?.title ??
+                      config.title) as string;
                     return (
-                      <div key={gameType} className="flex justify-between items-center bg-white p-3 rounded-xl">
+                      <div
+                        key={gameType}
+                        className="flex justify-between items-center bg-white p-3 rounded-xl"
+                      >
                         <span className="text-sm font-semibold text-slate-600">{gameTitle}</span>
                         <span className="text-lg font-black text-slate-800">{level}</span>
                       </div>
@@ -95,10 +101,16 @@ export const StatsModal: React.FC<StatsModalProps> = ({ stats, unlockedAchieveme
                     .map(([gameType, score]) => {
                       const config = GAME_CONFIG[gameType];
                       if (!config) return null;
-                      const gameTitle: string = (t.games[config.id as keyof typeof t.games]?.title ?? config.title) as string;
+                      const gameTitle: string = (t.games[config.id as keyof typeof t.games]
+                        ?.title ?? config.title) as string;
                       return (
-                        <div key={gameType} className="flex justify-between items-center bg-white p-3 rounded-xl">
-                          <span className="text-sm font-semibold text-slate-600">{formatText(gameTitle)}</span>
+                        <div
+                          key={gameType}
+                          className="flex justify-between items-center bg-white p-3 rounded-xl"
+                        >
+                          <span className="text-sm font-semibold text-slate-600">
+                            {formatText(gameTitle)}
+                          </span>
                           <span className="text-lg font-black text-yellow-600">{score}</span>
                         </div>
                       );

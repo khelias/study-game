@@ -5,6 +5,7 @@
 ### 1. GameProblemModal - When Your Game Has Questions
 
 #### When to Use
+
 ✅ Problem interrupts gameplay (BattleLearn, MathSnake)
 ✅ Player needs to focus on question
 ✅ Gameplay pauses for answer
@@ -25,7 +26,7 @@ const [selectedOption, setSelectedOption] = useState<number | null>(null);
 const handleOptionSelect = (index: number) => {
   setSelectedOption(index);
   const isCorrect = index === problem.correctIndex;
-  
+
   // Brief pause to show button color (green/red), then close modal
   setTimeout(() => {
     if (isCorrect) {
@@ -46,24 +47,24 @@ const handleOptionSelect = (index: number) => {
   selectedOption={selectedOption}
   onOptionSelect={handleOptionSelect}
   icon={<YourIcon />}
-/>
+/>;
 ```
 
 #### Props Reference
 
 ```tsx
 interface GameProblemModalProps {
-  isOpen: boolean;              // Show/hide modal
-  title?: string;               // Modal title (optional)
-  prompt: string;               // Question text
-  options: string[];            // Answer options
-  correctIndex: number;         // Index of correct answer
-  selectedOption: number | null;// Currently selected option
+  isOpen: boolean; // Show/hide modal
+  title?: string; // Modal title (optional)
+  prompt: string; // Question text
+  options: string[]; // Answer options
+  correctIndex: number; // Index of correct answer
+  selectedOption: number | null; // Currently selected option
   onOptionSelect: (index: number) => void; // Handle selection
-  disabled?: boolean;           // Disable all buttons
+  disabled?: boolean; // Disable all buttons
   variant?: 'default' | 'compact'; // Size variant
-  icon?: React.ReactNode;       // Icon next to title
-  onClose?: () => void;         // Optional close handler
+  icon?: React.ReactNode; // Icon next to title
+  onClose?: () => void; // Optional close handler
 }
 
 // Note: The modal shows visual feedback through button colors (green/red).
@@ -73,6 +74,7 @@ interface GameProblemModalProps {
 ### 2. GameStatsBar - When Your Game Has Counters
 
 #### When to Use
+
 ✅ Game-specific counters (ships, apples, moves)
 ✅ Progress indicators
 ✅ Status displays
@@ -95,25 +97,25 @@ const stats: GameStat[] = [
     label: 'Label',
     value: '3/5',
     variant: 'default', // or 'success', 'warning', 'danger', 'info'
-  }
+  },
 ];
 
 // Render
-<GameStatsBar stats={stats} className="mb-4" />
+<GameStatsBar stats={stats} className="mb-4" />;
 ```
 
 #### GameStat Interface
 
 ```tsx
 interface GameStat {
-  id: string;                   // Unique identifier
-  icon?: LucideIcon;            // Lucide icon (optional)
-  emoji?: string;               // Emoji (optional, use instead of icon)
-  label?: string;               // Label text (optional)
-  value: string | number;       // Display value
+  id: string; // Unique identifier
+  icon?: LucideIcon; // Lucide icon (optional)
+  emoji?: string; // Emoji (optional, use instead of icon)
+  label?: string; // Label text (optional)
+  value: string | number; // Display value
   variant?: 'default' | 'success' | 'warning' | 'danger' | 'info';
-  pulse?: boolean;              // Pulse animation
-  bounce?: boolean;             // Bounce animation
+  pulse?: boolean; // Pulse animation
+  bounce?: boolean; // Bounce animation
 }
 ```
 
@@ -122,29 +124,27 @@ interface GameStat {
 #### BEFORE (Inline Problem Display)
 
 ```tsx
-{problem.math ? (
-  <div className="bg-gradient-to-br from-emerald-50 rounded-xl shadow-lg p-4">
-    <div className="text-center mb-3">
-      <div className="font-black text-slate-800 text-xl">
-        {problem.math.equation} = ?
+{
+  problem.math ? (
+    <div className="bg-gradient-to-br from-emerald-50 rounded-xl shadow-lg p-4">
+      <div className="text-center mb-3">
+        <div className="font-black text-slate-800 text-xl">{problem.math.equation} = ?</div>
+      </div>
+      <div className="flex gap-2 justify-center">
+        {problem.math.options.map((option) => (
+          <button onClick={() => handleAnswerClick(option)}>{option}</button>
+        ))}
       </div>
     </div>
-    <div className="flex gap-2 justify-center">
-      {problem.math.options.map(option => (
-        <button onClick={() => handleAnswerClick(option)}>
-          {option}
-        </button>
-      ))}
+  ) : (
+    <div className="bg-gradient-to-br from-amber-50 rounded-xl p-4">
+      <div className="text-center">
+        <div className="text-xs text-amber-600">Next Math</div>
+        <div className="text-2xl font-black">{problem.applesUntilMath}</div>
+      </div>
     </div>
-  </div>
-) : (
-  <div className="bg-gradient-to-br from-amber-50 rounded-xl p-4">
-    <div className="text-center">
-      <div className="text-xs text-amber-600">Next Math</div>
-      <div className="text-2xl font-black">{problem.applesUntilMath}</div>
-    </div>
-  </div>
-)}
+  );
+}
 ```
 
 #### AFTER (Using New Components)
@@ -158,19 +158,17 @@ const stats: GameStat[] = [
     label: t.gameScreen.mathSnake.nextMathLabel,
     value: problem.applesUntilMath,
     variant: problem.applesUntilMath === 0 ? 'warning' : 'info',
-  }
+  },
 ];
 
 return (
   <>
     {/* Stats bar above board */}
     <GameStatsBar stats={stats} className="mb-4" />
-    
+
     {/* Game board */}
-    <div className="game-board">
-      {/* ... grid rendering ... */}
-    </div>
-    
+    <div className="game-board">{/* ... grid rendering ... */}</div>
+
     {/* Problem modal (only when math problem exists) */}
     <GameProblemModal
       isOpen={Boolean(problem.math)}
@@ -193,19 +191,29 @@ return (
 
 ```tsx
 // Default - neutral gray
-{ variant: 'default' } // bg-slate-50 border-slate-300 text-slate-700
+{
+  variant: 'default';
+} // bg-slate-50 border-slate-300 text-slate-700
 
 // Success - green (goal achieved)
-{ variant: 'success' } // bg-green-50 border-green-400 text-green-700
+{
+  variant: 'success';
+} // bg-green-50 border-green-400 text-green-700
 
 // Warning - orange (caution needed)
-{ variant: 'warning' } // bg-orange-50 border-orange-400 text-orange-700
+{
+  variant: 'warning';
+} // bg-orange-50 border-orange-400 text-orange-700
 
 // Danger - red (critical state)
-{ variant: 'danger' } // bg-red-50 border-red-400 text-red-700
+{
+  variant: 'danger';
+} // bg-red-50 border-red-400 text-red-700
 
 // Info - blue (informational)
-{ variant: 'info' } // bg-blue-50 border-blue-400 text-blue-700
+{
+  variant: 'info';
+} // bg-blue-50 border-blue-400 text-blue-700
 ```
 
 #### GameProblemModal Variants
@@ -263,7 +271,7 @@ const stats: GameStat[] = [
     icon: Heart,
     value: `${current}/${max}`,
     variant: getVariant(current, max),
-  }
+  },
 ];
 ```
 
@@ -290,7 +298,7 @@ const stats: GameStat[] = [
     emoji: '📊',
     value: `${accuracy}%`,
     variant: accuracy > 70 ? 'success' : 'warning',
-  }
+  },
 ];
 ```
 
@@ -307,7 +315,7 @@ const handleTriggerProblem = () => {
 const handleOptionSelect = (index: number) => {
   setSelectedOption(index);
   const isCorrect = index === correctIndex;
-  
+
   // Brief pause to show button color
   setTimeout(() => {
     if (isCorrect) {
@@ -323,7 +331,7 @@ const handleOptionSelect = (index: number) => {
   selectedOption={selectedOption}
   onOptionSelect={handleOptionSelect}
   // ... other props
-/>
+/>;
 ```
 
 ### 6. Accessibility Checklist
@@ -354,20 +362,23 @@ When implementing these components:
 #### Memoize Stats Array
 
 ```tsx
-const stats = useMemo<GameStat[]>(() => [
-  {
-    id: 'counter',
-    value: computeExpensiveValue(),
-    variant: 'default',
-  }
-], [dependencies]);
+const stats = useMemo<GameStat[]>(
+  () => [
+    {
+      id: 'counter',
+      value: computeExpensiveValue(),
+      variant: 'default',
+    },
+  ],
+  [dependencies],
+);
 ```
 
 #### Lazy Load Icons
 
 ```tsx
 import { lazy } from 'react';
-const Target = lazy(() => import('lucide-react').then(m => ({ default: m.Target })));
+const Target = lazy(() => import('lucide-react').then((m) => ({ default: m.Target })));
 ```
 
 #### Debounce Rapid Changes
@@ -375,51 +386,52 @@ const Target = lazy(() => import('lucide-react').then(m => ({ default: m.Target 
 ```tsx
 const debouncedValue = useDebounce(value, 300);
 
-const stats: GameStat[] = [
-  { id: 'counter', value: debouncedValue }
-];
+const stats: GameStat[] = [{ id: 'counter', value: debouncedValue }];
 ```
 
 ### 9. Common Mistakes to Avoid
 
 ❌ **Don't use modal for continuous problems**
+
 ```tsx
 // BAD: WordBuilder emoji should stay visible
 <GameProblemModal isOpen={true} prompt={emoji} />
 ```
 
 ✅ **Do use modal for interrupting problems**
+
 ```tsx
 // GOOD: BattleLearn question interrupts gameplay
 <GameProblemModal isOpen={phase === 'answering'} />
 ```
 
 ❌ **Don't overload stats bar**
+
 ```tsx
 // BAD: Too much information
 <GameStatsBar stats={[stat1, stat2, stat3, stat4, stat5, stat6]} />
 ```
 
 ✅ **Do keep stats essential**
+
 ```tsx
 // GOOD: Only what matters for gameplay
 <GameStatsBar stats={[{ id: 'main', value: count }]} />
 ```
 
 ❌ **Don't create duplicate feedback**
+
 ```tsx
 // BAD: Modal feedback + general feedback = duplicate
-<GameProblemModal 
-  showFeedback={true}
-  feedbackMessage="Correct!"
-/>
+<GameProblemModal showFeedback={true} feedbackMessage="Correct!" />
 // And onAnswer() also triggers general feedback
 ```
 
 ✅ **Do let general feedback system handle it**
+
 ```tsx
 // GOOD: Modal shows button colors, general system shows text
-<GameProblemModal 
+<GameProblemModal
   selectedOption={selected}
   onOptionSelect={(i) => {
     setSelected(i);
@@ -440,6 +452,7 @@ const stats: GameStat[] = [
 ### Need Help?
 
 See detailed docs:
+
 - `GAME_UI_REDESIGN.md` - Full analysis and patterns
 - `BATTLELEARN_COMPARISON.md` - Before/after comparison
 - Component files - `src/components/shared/GameProblemModal.tsx` and `GameStatsBar.tsx`

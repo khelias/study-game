@@ -39,16 +39,18 @@ interface MockAudio {
   src: string;
 }
 
-global.Audio = vi.fn().mockImplementation((): MockAudio => ({
-  play: vi.fn().mockResolvedValue(undefined),
-  pause: vi.fn(),
-  addEventListener: vi.fn(),
-  removeEventListener: vi.fn(),
-  volume: 1,
-  currentTime: 0,
-  duration: 0,
-  src: '',
-})) as unknown as typeof Audio;
+global.Audio = vi.fn().mockImplementation(
+  (): MockAudio => ({
+    play: vi.fn().mockResolvedValue(undefined),
+    pause: vi.fn(),
+    addEventListener: vi.fn(),
+    removeEventListener: vi.fn(),
+    volume: 1,
+    currentTime: 0,
+    duration: 0,
+    src: '',
+  }),
+) as unknown as typeof Audio;
 
 // Mock matchMedia
 Object.defineProperty(window, 'matchMedia', {

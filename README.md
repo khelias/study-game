@@ -16,6 +16,7 @@ Educational web game for children aged 5-8, helping them practice reading, math,
 ## 🎯 Overview
 
 **Smart Games** is an interactive educational game offering 14 different games across two age profiles:
+
 - **5+ (Starter)** - For preschoolers and 1st grade beginners
 - **1st Grade+ (Advanced)** - For more experienced students
 
@@ -26,6 +27,7 @@ The game uses adaptive difficulty that automatically adjusts task complexity bas
 ### 🎮 Games
 
 #### Starter profile (5+)
+
 1. **WORD MASTER** - Building words from letters
 2. **SYLLABLE MASTER** - Building words from syllables
 3. **PATTERN TRAIN** - Pattern recognition and continuation
@@ -36,6 +38,7 @@ The game uses adaptive difficulty that automatically adjusts task complexity bas
 8. **SIZE COMPARE** - Compare object sizes (bigger/smaller/equal)
 
 #### Advanced profile (1st grade+)
+
 1. **BALANCE SCALE** - Mathematical logic practice
 2. **CLOCK GAME** - Learning to tell time
 3. **MATH MEMORY** (enhanced) - Harder math tasks
@@ -71,20 +74,24 @@ The game uses adaptive difficulty that automatically adjusts task complexity bas
 ### Steps
 
 1. **Clone repository**
+
    ```bash
    git clone https://github.com/khelias/study-game.git
    cd study-game
    ```
 
 2. **Install dependencies**
+
    ```bash
    npm install
    ```
 
 3. **Run development server**
+
    ```bash
    npm run dev
    ```
+
    The game opens in browser at `http://localhost:5173`
 
 4. **Build for production**
@@ -98,6 +105,7 @@ The game uses adaptive difficulty that automatically adjusts task complexity bas
 The project uses GitHub Actions CI/CD workflow that automatically builds and uploads the application to FTP server on every `main` branch push.
 
 **Setup:**
+
 1. Go to GitHub repository → Settings → Secrets and variables → Actions
 2. Add the following secrets:
    - `FTP_SERVER` - FTP server address (e.g., `ftp.example.com`)
@@ -142,6 +150,7 @@ npm run test:coverage
 ```
 
 **Test Coverage:**
+
 - Engine (critical logic): 76.58% ✅
 - Tested components: 100% ✅
 - Testing goals: Engine 80%+, Components 60%+
@@ -173,6 +182,7 @@ For detailed project structure and architecture, see [ARCHITECTURE.md](./ARCHITE
 The game registry system makes adding new games simple and scalable. No need to modify `GameRenderer.tsx` anymore!
 
 **Quick steps:**
+
 1. Add game configuration to `src/games/data.ts`
 2. Add generator function to `src/games/generators.ts`
 3. Create validator in `src/games/validators.ts`
@@ -197,6 +207,7 @@ The game uses adaptive difficulty that works as follows:
 ### State Management
 
 The game uses:
+
 - **Zustand** - State management library
 - **LocalStorage** - Saving progress and statistics (via `gameStore`)
 - **Session state** - Temporary game state (via `playSessionStore`)
@@ -239,12 +250,14 @@ The game uses:
 ### Progression System
 
 **Levels:**
+
 - Automatically earned through gameplay (performance-based)
 - Level up when you demonstrate mastery (correct answers + 80%+ accuracy)
 - Requirements scale with level (5→7→10→12→15+ correct answers)
 - Controls game difficulty/complexity
 
 **Stars (Currency):**
+
 - Earned when completing levels (not per answer)
 - Rewards scale with game difficulty (easy: 1, medium: 2, hard: 3 base stars)
 - Rewards scale with level (1.0x to 2.5x multiplier)
@@ -252,6 +265,7 @@ The game uses:
 - Use stars to buy hearts in the shop
 
 **Hearts (Lives):**
+
 - Global resource that persists across games
 - Wrong answers cost 1 heart
 - Game ends when hearts reach 0
@@ -259,17 +273,20 @@ The game uses:
 - Maximum 5 hearts
 
 **Points:**
+
 - Cosmetic points earned per correct answer
 - Used for achievements and bragging rights
 - No gameplay impact
 
 **Achievements:**
+
 - Unlocked through various accomplishments
 - Bragging rights and progress tracking
 
 ### Statistics Tracking
 
 The game tracks:
+
 - Number of games played
 - Correct/wrong answers
 - Best streak
@@ -287,6 +304,7 @@ All data is saved to LocalStorage and persists across browser sessions.
 ### Testing Philosophy
 
 The project follows best testing practices:
+
 - **Behavior, not implementation** - Tests check what code does, not how
 - **Fast and isolated** - Tests run quickly (under 10 seconds) and don't depend on each other
 - **Deterministic** - Tests use seeded RNG for predictability
@@ -295,6 +313,7 @@ The project follows best testing practices:
 ### Test Suite
 
 #### Engine Tests (Unit Tests)
+
 Highest priority tests for critical business logic:
 
 - **rng.test.ts** (16 tests)
@@ -387,6 +406,7 @@ npm run test:ui
 5. Add descriptive test names
 
 **Example:**
+
 ```typescript
 import { describe, it, expect } from 'vitest';
 import { createRng } from '../rng';
@@ -396,11 +416,11 @@ describe('createRng', () => {
     // Arrange
     const rng1 = createRng(12345);
     const rng2 = createRng(12345);
-    
+
     // Act
     const values1 = [rng1(), rng1(), rng1()];
     const values2 = [rng2(), rng2(), rng2()];
-    
+
     // Assert
     expect(values1).toEqual(values2);
   });
@@ -410,6 +430,7 @@ describe('createRng', () => {
 ## 🎯 Educational Value
 
 The game develops:
+
 - **Reading** - Letter, syllable, and word practice
 - **Math** - Calculations, logic, telling time
 - **Logic** - Pattern recognition, programming basics
@@ -418,6 +439,7 @@ The game develops:
 ## 🌍 Internationalization
 
 The game supports multiple languages:
+
 - **Estonian** (default) - `et.ts`
 - **English** - `en.ts`
 

@@ -11,12 +11,18 @@ interface HintButtonProps {
   disabled?: boolean;
 }
 
-export const HintButton: React.FC<HintButtonProps> = ({ onHint, soundEnabled, disabled = false }) => {
+export const HintButton: React.FC<HintButtonProps> = ({
+  onHint,
+  soundEnabled,
+  disabled = false,
+}) => {
   const [used, setUsed] = useState<boolean>(false);
   const t = useTranslation();
   const { formatText } = useProfileText();
   const isDisabled = used || disabled;
-  const label = formatText(isDisabled ? t.gameScreen.hintButton.used : t.gameScreen.hintButton.show);
+  const label = formatText(
+    isDisabled ? t.gameScreen.hintButton.used : t.gameScreen.hintButton.show,
+  );
 
   const handleClick = (): void => {
     if (isDisabled) return;
@@ -31,9 +37,10 @@ export const HintButton: React.FC<HintButtonProps> = ({ onHint, soundEnabled, di
       disabled={isDisabled}
       className={`
         fixed bottom-4 right-4 p-4 rounded-full shadow-lg transition-all
-        ${isDisabled
-          ? 'bg-slate-200 text-slate-400 cursor-not-allowed'
-          : 'bg-yellow-400 hover:bg-yellow-500 text-yellow-900 hover:scale-110 active:scale-95'
+        ${
+          isDisabled
+            ? 'bg-slate-200 text-slate-400 cursor-not-allowed'
+            : 'bg-yellow-400 hover:bg-yellow-500 text-yellow-900 hover:scale-110 active:scale-95'
         }
       `}
       style={{ zIndex: Z_INDEX.HINTS }}

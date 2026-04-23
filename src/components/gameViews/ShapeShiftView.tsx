@@ -44,7 +44,7 @@ export const ShapeShiftView: React.FC<ShapeShiftViewProps> = ({
 }) => {
   const t = useTranslation();
   const locale = getLocale();
-  const addNotification = usePlaySessionStore(state => state.addNotification);
+  const addNotification = usePlaySessionStore((state) => state.addNotification);
 
   const boardRef = useRef<HTMLDivElement>(null);
   const trayRef = useRef<HTMLDivElement>(null);
@@ -62,14 +62,8 @@ export const ShapeShiftView: React.FC<ShapeShiftViewProps> = ({
   } | null>(null);
 
   // Hook for game logic
-  const {
-    pieces,
-    status,
-    placeHintPiece,
-    handleStartDrag,
-    handleDragMove,
-    handleDragEnd
-  } = useShapeShiftGame(problem, onAnswer, soundEnabled, boardWidthPx);
+  const { pieces, status, placeHintPiece, handleStartDrag, handleDragMove, handleDragEnd } =
+    useShapeShiftGame(problem, onAnswer, soundEnabled, boardWidthPx);
 
   // Measure board
   useEffect(() => {
@@ -90,95 +84,105 @@ export const ShapeShiftView: React.FC<ShapeShiftViewProps> = ({
   }, [showOutlineOverlay]);
 
   // Use refs for drag handlers to access latest state without re-binding
-  const boardRefValues = useRef<{ board: HTMLDivElement | null; tray: HTMLDivElement | null }>({ board: null, tray: null });
+  const boardRefValues = useRef<{ board: HTMLDivElement | null; tray: HTMLDivElement | null }>({
+    board: null,
+    tray: null,
+  });
   useEffect(() => {
     boardRefValues.current = { board: boardRef.current, tray: trayRef.current };
   });
 
   // ─── Input Handlers ──────────────────────────────────────────────────────
 
-  const onPointerDown = useCallback((e: React.PointerEvent, pieceId: string) => {
-    e.preventDefault();
-    e.stopPropagation();
+  const onPointerDown = useCallback(
+    (e: React.PointerEvent, pieceId: string) => {
+      e.preventDefault();
+      e.stopPropagation();
 
-    // Only left click or touch
-    if (e.button !== 0) return;
+      // Only left click or touch
+      if (e.button !== 0) return;
 
-    const target = e.currentTarget as HTMLElement;
-    const rect = target.getBoundingClientRect();
-    const centerX = rect.left + rect.width / 2;
-    const centerY = rect.top + rect.height / 2;
+      const target = e.currentTarget as HTMLElement;
+      const rect = target.getBoundingClientRect();
+      const centerX = rect.left + rect.width / 2;
+      const centerY = rect.top + rect.height / 2;
 
-    // Offset from center of the piece (unscaled initially)
-    const offsetX = e.clientX - centerX;
-    const offsetY = e.clientY - centerY;
+      // Offset from center of the piece (unscaled initially)
+      const offsetX = e.clientX - centerX;
+      const offsetY = e.clientY - centerY;
 
-    // Calculate dragScale
-    const piece = pieces.find(p => p.id === pieceId);
-    let scale = 1;
+      // Calculate dragScale
+      const piece = pieces.find((p) => p.id === pieceId);
+      let scale = 1;
 
-    // Helper to calculate tray size logic locally if needed, or re-use function
-    // We need to re-calc boardSize and traySize here to determine ratio
-    if (piece && piece.currentPosition === null && boardWidthPx > 0) {
-      // Re-calculate tray size for this piece
-      // (Logic duplicated from below, or we could hoist getTrayPieceSize)
-      const gs = problem.puzzle.gridSize;
-      const TRAY_PIECE_MAX_PX = 80;
-      const rawPx = (boardWidthPx / gs) * piece.size;
-      const traySize = Math.min(rawPx, TRAY_PIECE_MAX_PX);
-      const boardSize = rawPx; // Size on board
+      // Helper to calculate tray size logic locally if needed, or re-use function
+      // We need to re-calc boardSize and traySize here to determine ratio
+      if (piece && piece.currentPosition === null && boardWidthPx > 0) {
+        // Re-calculate tray size for this piece
+        // (Logic duplicated from below, or we could hoist getTrayPieceSize)
+        const gs = problem.puzzle.gridSize;
+        const TRAY_PIECE_MAX_PX = 80;
+        const rawPx = (boardWidthPx / gs) * piece.size;
+        const traySize = Math.min(rawPx, TRAY_PIECE_MAX_PX);
+        const boardSize = rawPx; // Size on board
 
-      if (traySize > 0) {
-        scale = boardSize / traySize;
+        if (traySize > 0) {
+          scale = boardSize / traySize;
+        }
       }
-    }
 
-    setDragState({
-      x: e.clientX,
-      y: e.clientY,
-      isoX: offsetX,
-      isoY: offsetY,
-      pieceId,
-      dragScale: scale
-    });
+      setDragState({
+        x: e.clientX,
+        y: e.clientY,
+        isoX: offsetX,
+        isoY: offsetY,
+        pieceId,
+        dragScale: scale,
+      });
 
-    handleStartDrag(pieceId, e.clientX, e.clientY, offsetX, offsetY, scale);
+      handleStartDrag(pieceId, e.clientX, e.clientY, offsetX, offsetY, scale);
 
-    // Capture pointer
-    target.setPointerCapture(e.pointerId);
-  }, [handleStartDrag, pieces, boardWidthPx, problem.puzzle.gridSize]);
+      // Capture pointer
+      target.setPointerCapture(e.pointerId);
+    },
+    [handleStartDrag, pieces, boardWidthPx, problem.puzzle.gridSize],
+  );
 
-  const onPointerMove = useCallback((e: React.PointerEvent) => {
-    if (!dragState) return;
-    e.preventDefault();
+  const onPointerMove = useCallback(
+    (e: React.PointerEvent) => {
+      if (!dragState) return;
+      e.preventDefault();
 
-    setDragState(prev => prev ? { ...prev, x: e.clientX, y: e.clientY } : null);
-    handleDragMove(e.clientX, e.clientY);
-  }, [dragState, handleDragMove]);
+      setDragState((prev) => (prev ? { ...prev, x: e.clientX, y: e.clientY } : null));
+      handleDragMove(e.clientX, e.clientY);
+    },
+    [dragState, handleDragMove],
+  );
 
-  const onPointerUp = useCallback((e: React.PointerEvent) => {
-    if (!dragState) return;
-    e.preventDefault();
+  const onPointerUp = useCallback(
+    (e: React.PointerEvent) => {
+      if (!dragState) return;
+      e.preventDefault();
 
-    const { board, tray } = boardRefValues.current;
+      const { board, tray } = boardRefValues.current;
 
-    const boardRect = board?.getBoundingClientRect() ?? null;
-    const trayRect = tray?.getBoundingClientRect() ?? null;
+      const boardRect = board?.getBoundingClientRect() ?? null;
+      const trayRect = tray?.getBoundingClientRect() ?? null;
 
-    // Release capture first
-    if (e.currentTarget.hasPointerCapture(e.pointerId)) {
-      try {
-        e.currentTarget.releasePointerCapture(e.pointerId);
-      } catch {
-        // Ignore if already released
+      // Release capture first
+      if (e.currentTarget.hasPointerCapture(e.pointerId)) {
+        try {
+          e.currentTarget.releasePointerCapture(e.pointerId);
+        } catch {
+          // Ignore if already released
+        }
       }
-    }
 
-    handleDragEnd(e.clientX, e.clientY, boardRect, trayRect);
-    setDragState(null);
-
-  }, [dragState, handleDragEnd]);
-
+      handleDragEnd(e.clientX, e.clientY, boardRect, trayRect);
+      setDragState(null);
+    },
+    [dragState, handleDragEnd],
+  );
 
   // ─── Hints ──────────────────────────────────────────────────────────────
 
@@ -207,21 +211,20 @@ export const ShapeShiftView: React.FC<ShapeShiftViewProps> = ({
   // Get game config for hints
   const gameConfig = GAME_CONFIG.shape_shift;
 
-
   // ─── Rendering Helpers ──────────────────────────────────────────────────
 
   const gs = problem.puzzle.gridSize;
   const _puzzleName = locale === 'et' ? problem.puzzle.nameEt : problem.puzzle.nameEn;
 
   // Sort pieces for z-index (center pieces on top)
-  const placedPieces = pieces.filter(p => p.currentPosition !== null);
-  const trayPieces = pieces.filter(p => p.currentPosition === null);
+  const placedPieces = pieces.filter((p) => p.currentPosition !== null);
+  const trayPieces = pieces.filter((p) => p.currentPosition === null);
 
   const placedSorted = sortByDistanceFromCenter(
     placedPieces,
     gs,
-    p => p.currentPosition!,
-    p => p.size
+    (p) => p.currentPosition!,
+    (p) => p.size,
   );
 
   // Calculate size for tray items (limited max size)
@@ -233,13 +236,11 @@ export const ShapeShiftView: React.FC<ShapeShiftViewProps> = ({
   };
 
   // Ghost element for dragging
-  const dragPiece = pieces.find(p => p.id === dragState?.pieceId);
+  const dragPiece = pieces.find((p) => p.id === dragState?.pieceId);
   const ghostSize = dragPiece ? (boardWidthPx / gs) * dragPiece.size : 0;
-
 
   return (
     <div className="w-full flex flex-col items-center px-4 max-w-3xl mx-auto pt-4 animate-in fade-in duration-300 select-none">
-
       {/* Game Board */}
       <div
         className="relative mb-6 rounded-2xl shadow-xl bg-slate-50 overflow-hidden border-4 border-slate-200"
@@ -250,38 +251,46 @@ export const ShapeShiftView: React.FC<ShapeShiftViewProps> = ({
       >
         <div ref={boardRef} className="absolute inset-0 w-full h-full">
           {/* Grid Pattern Background */}
-          <div className="absolute inset-0 opacity-10"
+          <div
+            className="absolute inset-0 opacity-10"
             style={{
               backgroundImage: 'radial-gradient(circle, #94a3b8 1px, transparent 1px)',
-              backgroundSize: `${(100 / 12)}% ${(100 / 12)}%` // 12x12 visual grid
+              backgroundSize: `${100 / 12}% ${100 / 12}%`, // 12x12 visual grid
             }}
           />
 
           {/* Hints Overlay */}
           {showOutlineOverlay && (
             <div className="absolute inset-0 z-0">
-              {problem.puzzle.pieces.filter(p => !p.isDecoy).map(p => {
-                const pct = gridPieceToPercent(p.correctPosition.x, p.correctPosition.y, p.size, gs);
-                return (
-                  <div
-                    key={`outline-${p.id}`}
-                    className="absolute opacity-20 pointer-events-none"
-                    style={{
-                      left: `${pct.left}%`,
-                      top: `${pct.top}%`,
-                      width: `${pct.width}%`,
-                      height: `${pct.height}%`,
-                    }}
-                  >
-                    <PieceSvg type={p.type} color={p.color} rotation={p.correctRotation} />
-                  </div>
-                );
-              })}
+              {problem.puzzle.pieces
+                .filter((p) => !p.isDecoy)
+                .map((p) => {
+                  const pct = gridPieceToPercent(
+                    p.correctPosition.x,
+                    p.correctPosition.y,
+                    p.size,
+                    gs,
+                  );
+                  return (
+                    <div
+                      key={`outline-${p.id}`}
+                      className="absolute opacity-20 pointer-events-none"
+                      style={{
+                        left: `${pct.left}%`,
+                        top: `${pct.top}%`,
+                        width: `${pct.width}%`,
+                        height: `${pct.height}%`,
+                      }}
+                    >
+                      <PieceSvg type={p.type} color={p.color} rotation={p.correctRotation} />
+                    </div>
+                  );
+                })}
             </div>
           )}
 
           {/* Placed Pieces */}
-          {placedSorted.map(p => {
+          {placedSorted.map((p) => {
             const pct = gridPieceToPercent(p.currentPosition!.x, p.currentPosition!.y, p.size, gs);
             const isDragging = dragState?.pieceId === p.id;
 
@@ -294,7 +303,7 @@ export const ShapeShiftView: React.FC<ShapeShiftViewProps> = ({
                   top: `${pct.top}%`,
                   width: `${pct.width}%`,
                   height: `${pct.height}%`,
-                  touchAction: 'none'
+                  touchAction: 'none',
                 }}
                 onPointerDown={(e) => onPointerDown(e, p.id)}
                 onPointerMove={onPointerMove}
@@ -331,14 +340,18 @@ export const ShapeShiftView: React.FC<ShapeShiftViewProps> = ({
             marginTop: -(dragState.isoY * dragState.dragScale),
             // No transform needed if using margins.
             // Wait, if no transform, (left, top) is top-left corner.
-            // Margin moves that corner back. So mouse stays at (0,0) relative to viewport? 
+            // Margin moves that corner back. So mouse stays at (0,0) relative to viewport?
             // No. fixed position sets left/top. Margin offsets from there.
             // So visually: (mouse) is over point (isoX*scale, isoY*scale) inside the ghost.
             // This is correct.
           }}
         >
           <div className="w-full h-full filter drop-shadow-2xl opacity-90">
-            <PieceSvg type={dragPiece.type} color={dragPiece.color} rotation={dragPiece.currentRotation} />
+            <PieceSvg
+              type={dragPiece.type}
+              color={dragPiece.color}
+              rotation={dragPiece.currentRotation}
+            />
           </div>
         </div>
       )}
@@ -362,7 +375,7 @@ export const ShapeShiftView: React.FC<ShapeShiftViewProps> = ({
           <span className="text-slate-400 italic text-sm">{t.games.shape_shift.dragHint}</span>
         )}
 
-        {trayPieces.map(p => {
+        {trayPieces.map((p) => {
           const isDragging = dragState?.pieceId === p.id;
           const sizePx = getTrayPieceSize(p.size);
 
@@ -373,7 +386,7 @@ export const ShapeShiftView: React.FC<ShapeShiftViewProps> = ({
               style={{
                 width: sizePx,
                 height: sizePx,
-                touchAction: 'none'
+                touchAction: 'none',
               }}
               onPointerDown={(e) => onPointerDown(e, p.id)}
               onPointerMove={onPointerMove}
@@ -384,7 +397,6 @@ export const ShapeShiftView: React.FC<ShapeShiftViewProps> = ({
           );
         })}
       </div>
-
     </div>
   );
 };

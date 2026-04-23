@@ -1,6 +1,6 @@
 /**
  * PatternTrainView Component
- * 
+ *
  * Game view for pattern recognition games.
  * Header shows only generic game name (in GameScreen). Tips and paid hints available.
  */
@@ -80,26 +80,26 @@ export const PatternTrainView: React.FC<PatternTrainViewProps> = ({
         return next;
       });
     },
-    [problem.options, problem.answer, spendStars]
+    [problem.options, problem.answer, spendStars],
   );
 
   const handleChoice = (opt: string, idx: number): void => {
     if (disabled.includes(idx) || trainState === 'leave') return;
-    
+
     playSound('click', soundEnabled);
     setSelectedOption(idx);
-    
+
     const isCorrect = opt === problem.answer;
-    
-    if (isCorrect) { 
+
+    if (isCorrect) {
       setFeedbackChoice(null);
-      setTrainState('leave'); 
+      setTrainState('leave');
       setTimeout(() => {
         onAnswer(true);
         setSelectedOption(null);
-      }, 700); 
-    } else { 
-      setDisabled(prev => [...prev, idx]); 
+      }, 700);
+    } else {
+      setDisabled((prev) => [...prev, idx]);
       setFeedbackChoice(opt);
       setTimeout(() => {
         onAnswer(false);
@@ -158,11 +158,13 @@ export const PatternTrainView: React.FC<PatternTrainViewProps> = ({
             {formatText(
               t.gameScreen.pattern.feedbackReason
                 .replace('{pattern}', patternPreview)
-                .replace('{answer}', problem.answer)
+                .replace('{answer}', problem.answer),
             )}
           </p>
           <p className="flex items-center gap-2 flex-wrap">
-            <span className="font-semibold">{formatText(t.gameScreen.pattern.feedbackChoiceLabel)}</span>
+            <span className="font-semibold">
+              {formatText(t.gameScreen.pattern.feedbackChoiceLabel)}
+            </span>
             <span className="text-xl">{feedbackChoice}</span>
           </p>
           <p className="flex items-center gap-2 flex-wrap">
@@ -180,7 +182,13 @@ export const PatternTrainView: React.FC<PatternTrainViewProps> = ({
         {problem.options.map((opt, idx) => {
           const isEliminated = eliminatedOptions.includes(idx);
           if (isEliminated) {
-            return <div key={idx} className="h-16 sm:h-24 rounded-2xl border-2 border-dashed border-slate-200 bg-slate-100/50" aria-hidden />;
+            return (
+              <div
+                key={idx}
+                className="h-16 sm:h-24 rounded-2xl border-2 border-dashed border-slate-200 bg-slate-100/50"
+                aria-hidden
+              />
+            );
           }
           const isDisabled = disabled.includes(idx) || trainState === 'leave';
           const isSelected = selectedOption === idx;
@@ -192,11 +200,12 @@ export const PatternTrainView: React.FC<PatternTrainViewProps> = ({
               className={`
                 h-16 sm:h-24 rounded-2xl border-2 text-3xl sm:text-5xl flex items-center justify-center
                 transition-all duration-200 shadow-md
-                ${isDisabled
-                  ? 'bg-slate-200 opacity-40 grayscale cursor-not-allowed border-slate-300'
-                  : isSelected
-                    ? 'bg-emerald-200 border-emerald-400 scale-[1.02] shadow-lg'
-                    : 'bg-white border-teal-200 hover:border-teal-400 hover:bg-teal-50 active:scale-95'
+                ${
+                  isDisabled
+                    ? 'bg-slate-200 opacity-40 grayscale cursor-not-allowed border-slate-300'
+                    : isSelected
+                      ? 'bg-emerald-200 border-emerald-400 scale-[1.02] shadow-lg'
+                      : 'bg-white border-teal-200 hover:border-teal-400 hover:bg-teal-50 active:scale-95'
                 }
               `}
             >

@@ -1,6 +1,6 @@
 /**
  * Game Answer Validators
- * 
+ *
  * Validator functions for each game type.
  * These are pure functions that validate user answers against problems.
  */
@@ -12,7 +12,10 @@ import type { AnswerValidator } from './registry';
  * Validator for word builder games
  * Case-insensitive comparison to handle mixed case letters
  */
-export const validateWordBuilder: AnswerValidator = (problem: Problem, userAnswer: unknown): boolean => {
+export const validateWordBuilder: AnswerValidator = (
+  problem: Problem,
+  userAnswer: unknown,
+): boolean => {
   if (problem.type !== 'word_builder') return false;
   if (typeof userAnswer !== 'string' || typeof problem.target !== 'string') return false;
   return userAnswer.toLowerCase() === problem.target.toLowerCase();
@@ -22,7 +25,10 @@ export const validateWordBuilder: AnswerValidator = (problem: Problem, userAnswe
  * Validator for word cascade games
  * Case-insensitive comparison to handle mixed case letters
  */
-export const validateWordCascade: AnswerValidator = (problem: Problem, userAnswer: unknown): boolean => {
+export const validateWordCascade: AnswerValidator = (
+  problem: Problem,
+  userAnswer: unknown,
+): boolean => {
   if (problem.type !== 'word_cascade') return false;
   if (typeof userAnswer !== 'string' || typeof problem.target !== 'string') return false;
   return userAnswer.toLowerCase() === problem.target.toLowerCase();
@@ -32,7 +38,10 @@ export const validateWordCascade: AnswerValidator = (problem: Problem, userAnswe
  * Validator for syllable builder games
  * Case-insensitive comparison to handle mixed case letters
  */
-export const validateSyllableBuilder: AnswerValidator = (problem: Problem, userAnswer: unknown): boolean => {
+export const validateSyllableBuilder: AnswerValidator = (
+  problem: Problem,
+  userAnswer: unknown,
+): boolean => {
   if (problem.type !== 'syllable_builder') return false;
   if (typeof userAnswer !== 'string' || typeof problem.target !== 'string') return false;
   return userAnswer.toLowerCase() === problem.target.toLowerCase();
@@ -41,7 +50,10 @@ export const validateSyllableBuilder: AnswerValidator = (problem: Problem, userA
 /**
  * Validator for letter match games
  */
-export const validateLetterMatch: AnswerValidator = (problem: Problem, userAnswer: unknown): boolean => {
+export const validateLetterMatch: AnswerValidator = (
+  problem: Problem,
+  userAnswer: unknown,
+): boolean => {
   if (problem.type !== 'letter_match') return false;
   return userAnswer === (problem.answer ?? problem.targetLetter);
 };
@@ -49,7 +61,10 @@ export const validateLetterMatch: AnswerValidator = (problem: Problem, userAnswe
 /**
  * Validator for sentence logic games
  */
-export const validateSentenceLogic: AnswerValidator = (problem: Problem, userAnswer: unknown): boolean => {
+export const validateSentenceLogic: AnswerValidator = (
+  problem: Problem,
+  userAnswer: unknown,
+): boolean => {
   if (problem.type !== 'sentence_logic') return false;
   return userAnswer === problem.answer;
 };
@@ -57,7 +72,10 @@ export const validateSentenceLogic: AnswerValidator = (problem: Problem, userAns
 /**
  * Validator for pattern games
  */
-export const validatePattern: AnswerValidator = (problem: Problem, userAnswer: unknown): boolean => {
+export const validatePattern: AnswerValidator = (
+  problem: Problem,
+  userAnswer: unknown,
+): boolean => {
   if (problem.type !== 'pattern') return false;
   return userAnswer === problem.answer;
 };
@@ -65,7 +83,10 @@ export const validatePattern: AnswerValidator = (problem: Problem, userAnswer: u
 /**
  * Validator for time match games
  */
-export const validateTimeMatch: AnswerValidator = (problem: Problem, userAnswer: unknown): boolean => {
+export const validateTimeMatch: AnswerValidator = (
+  problem: Problem,
+  userAnswer: unknown,
+): boolean => {
   if (problem.type !== 'time_match') return false;
   return userAnswer === problem.answer;
 };
@@ -73,7 +94,10 @@ export const validateTimeMatch: AnswerValidator = (problem: Problem, userAnswer:
 /**
  * Validator for balance scale games
  */
-export const validateBalanceScale: AnswerValidator = (problem: Problem, userAnswer: unknown): boolean => {
+export const validateBalanceScale: AnswerValidator = (
+  problem: Problem,
+  userAnswer: unknown,
+): boolean => {
   if (problem.type !== 'balance_scale') return false;
   return userAnswer === problem.answer;
 };
@@ -81,7 +105,10 @@ export const validateBalanceScale: AnswerValidator = (problem: Problem, userAnsw
 /**
  * Validator for unit conversion games
  */
-export const validateUnitConversion: AnswerValidator = (problem: Problem, userAnswer: unknown): boolean => {
+export const validateUnitConversion: AnswerValidator = (
+  problem: Problem,
+  userAnswer: unknown,
+): boolean => {
   if (problem.type !== 'unit_conversion') return false;
   return userAnswer === problem.answer;
 };
@@ -89,7 +116,10 @@ export const validateUnitConversion: AnswerValidator = (problem: Problem, userAn
 /**
  * Validator for compare sizes games
  */
-export const validateCompareSizes: AnswerValidator = (problem: Problem, userAnswer: unknown): boolean => {
+export const validateCompareSizes: AnswerValidator = (
+  problem: Problem,
+  userAnswer: unknown,
+): boolean => {
   if (problem.type !== 'compare_sizes') return false;
   return userAnswer === problem.answer;
 };
@@ -97,7 +127,10 @@ export const validateCompareSizes: AnswerValidator = (problem: Problem, userAnsw
 /**
  * Validator for math snake games
  */
-export const validateMathSnake: AnswerValidator = (problem: Problem, userAnswer: unknown): boolean => {
+export const validateMathSnake: AnswerValidator = (
+  problem: Problem,
+  userAnswer: unknown,
+): boolean => {
   if (problem.type !== 'math_snake') return false;
   return userAnswer === problem.math?.answer;
 };
@@ -106,7 +139,10 @@ export const validateMathSnake: AnswerValidator = (problem: Problem, userAnswer:
  * Validator for memory math games
  * Note: Memory math doesn't have simple answer validation - it's handled in the component
  */
-export const validateMemoryMath: AnswerValidator = (_problem: Problem, _userAnswer: unknown): boolean => {
+export const validateMemoryMath: AnswerValidator = (
+  _problem: Problem,
+  _userAnswer: unknown,
+): boolean => {
   // Memory math validation is complex and handled in the component
   // This is a placeholder
   return false;
@@ -116,7 +152,10 @@ export const validateMemoryMath: AnswerValidator = (_problem: Problem, _userAnsw
  * Validator for picture pairs (emoji–word memory game).
  * Component calls onAnswer(true) when all pairs are matched.
  */
-export const validatePicturePairs: AnswerValidator = (_problem: Problem, userAnswer: unknown): boolean => {
+export const validatePicturePairs: AnswerValidator = (
+  _problem: Problem,
+  userAnswer: unknown,
+): boolean => {
   return userAnswer === true;
 };
 
@@ -124,7 +163,10 @@ export const validatePicturePairs: AnswerValidator = (_problem: Problem, userAns
  * Validator for robo path games
  * Note: Robo path doesn't have simple answer validation - it's handled in the component
  */
-export const validateRoboPath: AnswerValidator = (_problem: Problem, _userAnswer: unknown): boolean => {
+export const validateRoboPath: AnswerValidator = (
+  _problem: Problem,
+  _userAnswer: unknown,
+): boolean => {
   // Robo path validation is complex and handled in the component
   // This is a placeholder
   return false;
@@ -133,7 +175,10 @@ export const validateRoboPath: AnswerValidator = (_problem: Problem, _userAnswer
 /**
  * Validator for star mapper games
  */
-export const validateStarMapper: AnswerValidator = (problem: Problem, userAnswer: unknown): boolean => {
+export const validateStarMapper: AnswerValidator = (
+  problem: Problem,
+  userAnswer: unknown,
+): boolean => {
   if (problem.type !== 'star_mapper') return false;
 
   if (problem.mode === 'identify') {
@@ -148,11 +193,12 @@ export const validateStarMapper: AnswerValidator = (problem: Problem, userAnswer
   const requiredLines = problem.constellation.lines;
 
   // Check if all required connections are made (order-independent, bidirectional)
-  return requiredLines.every(required =>
-    playerLines.some(player =>
-      (player.from === required.from && player.to === required.to) ||
-      (player.from === required.to && player.to === required.from)
-    )
+  return requiredLines.every((required) =>
+    playerLines.some(
+      (player) =>
+        (player.from === required.from && player.to === required.to) ||
+        (player.from === required.to && player.to === required.from),
+    ),
   );
 };
 
@@ -161,7 +207,10 @@ export const validateStarMapper: AnswerValidator = (problem: Problem, userAnswer
  * Requires exact position (x, y) and rotation (with symmetry for circle, square, etc.).
  * Coordinate model: see src/games/shapeShiftGrid.ts.
  */
-export const validateShapeShift: AnswerValidator = (problem: Problem, userAnswer: unknown): boolean => {
+export const validateShapeShift: AnswerValidator = (
+  problem: Problem,
+  userAnswer: unknown,
+): boolean => {
   if (problem.type !== 'shape_shift') return false;
 
   const placedPieces = userAnswer as Array<{
@@ -175,16 +224,16 @@ export const validateShapeShift: AnswerValidator = (problem: Problem, userAnswer
   if (!Array.isArray(placedPieces)) return false;
 
   // Get required (non-decoy) pieces
-  const requiredPieces = problem.puzzle.pieces.filter(p => !p.isDecoy);
+  const requiredPieces = problem.puzzle.pieces.filter((p) => !p.isDecoy);
 
   // Count placed non-decoy pieces
-  const placedNonDecoy = placedPieces.filter(p => !p.isDecoy && p.currentPosition !== null);
+  const placedNonDecoy = placedPieces.filter((p) => !p.isDecoy && p.currentPosition !== null);
 
   if (placedNonDecoy.length !== requiredPieces.length) return false;
 
   // Each required piece must be correctly placed
-  return requiredPieces.every(required => {
-    const placed = placedPieces.find(p => p.id === required.id);
+  return requiredPieces.every((required) => {
+    const placed = placedPieces.find((p) => p.id === required.id);
     if (!placed || !placed.currentPosition) return false;
 
     // Check position: allow ±10 units on 100x100 grid for more leeway when placing
@@ -229,12 +278,15 @@ export const validateShapeShift: AnswerValidator = (problem: Problem, userAnswer
  * Validator for BattleLearn games
  * Validates the answer to the educational question
  */
-export const validateBattleLearn: AnswerValidator = (problem: Problem, userAnswer: unknown): boolean => {
+export const validateBattleLearn: AnswerValidator = (
+  problem: Problem,
+  userAnswer: unknown,
+): boolean => {
   if (problem.type !== 'battlelearn') return false;
-  
+
   // userAnswer should be the index of the selected option
   if (typeof userAnswer !== 'number') return false;
-  
+
   return userAnswer === problem.question.correctIndex;
 };
 
@@ -242,7 +294,10 @@ export const validateBattleLearn: AnswerValidator = (problem: Problem, userAnswe
  * Validator for Shape Dash games.
  * View calls onAnswer(true) when run is completed; onAnswer(false) on crash or wrong checkpoint.
  */
-export const validateShapeDash: AnswerValidator = (problem: Problem, userAnswer: unknown): boolean => {
+export const validateShapeDash: AnswerValidator = (
+  problem: Problem,
+  userAnswer: unknown,
+): boolean => {
   if (problem.type !== 'shape_dash') return false;
   return userAnswer === true;
 };

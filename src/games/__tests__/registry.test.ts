@@ -1,6 +1,6 @@
 /**
  * Game Registry Tests
- * 
+ *
  * Tests for the game registry system to ensure games are properly registered
  * and can be retrieved.
  */
@@ -41,32 +41,32 @@ describe('GameRegistry', () => {
   it('should get all games', () => {
     const allGames = gameRegistry.getAll();
     expect(allGames.length).toBeGreaterThan(0);
-    expect(allGames.every(game => game.id !== undefined)).toBe(true);
+    expect(allGames.every((game) => game.id !== undefined)).toBe(true);
   });
 
   it('should get games by profile', () => {
     const starterGames = gameRegistry.getByProfile('starter');
     const advancedGames = gameRegistry.getByProfile('advanced');
-    
+
     expect(starterGames.length).toBeGreaterThan(0);
     expect(advancedGames.length).toBeGreaterThan(0);
-    
+
     // Word builder should be available for both profiles
-    const wordBuilder = starterGames.find(g => g.id === 'word_builder');
+    const wordBuilder = starterGames.find((g) => g.id === 'word_builder');
     expect(wordBuilder).toBeDefined();
-    
+
     // Balance scale should only be for advanced
-    const balanceScale = advancedGames.find(g => g.id === 'balance_scale');
+    const balanceScale = advancedGames.find((g) => g.id === 'balance_scale');
     expect(balanceScale).toBeDefined();
-    
-    const balanceScaleStarter = starterGames.find(g => g.id === 'balance_scale');
+
+    const balanceScaleStarter = starterGames.find((g) => g.id === 'balance_scale');
     expect(balanceScaleStarter).toBeUndefined();
   });
 
   it('should have all required game properties', () => {
     const allGames = gameRegistry.getAll();
-    
-    allGames.forEach(game => {
+
+    allGames.forEach((game) => {
       expect(game.id).toBeDefined();
       expect(game.component).toBeDefined();
       expect(game.generator).toBeDefined();

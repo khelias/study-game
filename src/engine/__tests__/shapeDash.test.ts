@@ -23,7 +23,12 @@ import {
   GATE_SPACING,
 } from '../shapeDash';
 import type { PlayerState } from '../shapeDash';
-import type { ShapeDashObstacle, ShapeDashCheckpoint, ShapeDashStar, ShapeDashShapeGate } from '../../types/game';
+import type {
+  ShapeDashObstacle,
+  ShapeDashCheckpoint,
+  ShapeDashStar,
+  ShapeDashShapeGate,
+} from '../../types/game';
 
 describe('shapeDash engine', () => {
   it('getPlayerBounds returns AABB for player', () => {
@@ -58,9 +63,7 @@ describe('shapeDash engine', () => {
 
   it('checkObstacleCollision returns true when player hits obstacle', () => {
     const player: PlayerState = { x: 80, y: 0, velocityY: 0, isOnGround: true };
-    const obstacles: ShapeDashObstacle[] = [
-      { id: 'o1', x: 80 + 50, type: 'spike' },
-    ];
+    const obstacles: ShapeDashObstacle[] = [{ id: 'o1', x: 80 + 50, type: 'spike' }];
     const scrollOffset = 50;
     const hit = checkObstacleCollision(player, obstacles, scrollOffset);
     expect(hit).toBe(true);
@@ -68,9 +71,7 @@ describe('shapeDash engine', () => {
 
   it('checkObstacleCollision returns false when player is past obstacle', () => {
     const player: PlayerState = { x: 80, y: 0, velocityY: 0, isOnGround: true };
-    const obstacles: ShapeDashObstacle[] = [
-      { id: 'o1', x: 50, type: 'spike' },
-    ];
+    const obstacles: ShapeDashObstacle[] = [{ id: 'o1', x: 50, type: 'spike' }];
     const scrollOffset = 200;
     const hit = checkObstacleCollision(player, obstacles, scrollOffset);
     expect(hit).toBe(false);
@@ -140,44 +141,40 @@ describe('shapeDash engine', () => {
     expect(gap).toBeGreaterThanOrEqual(minExpected);
     expect(getMinObstacleGap(200)).toBeGreaterThan(gap);
   });
-  
+
   describe('V3: Star collection', () => {
     it('checkStarCollection uses correct coordinate system (GROUND_Y - star.y)', () => {
       // Star at ground level (y=0 in world coordinates)
-      const stars: ShapeDashStar[] = [
-        { id: 'star1', x: 150, y: 0, collected: false }
-      ];
-      
+      const stars: ShapeDashStar[] = [{ id: 'star1', x: 150, y: 0, collected: false }];
+
       // Player at ground level, centered on star
       const playerState: PlayerState = {
-        x: 150 - PLAYER_WIDTH / 2,  // Center player on star X
-        y: GROUND_Y,                 // Player Y at ground
+        x: 150 - PLAYER_WIDTH / 2, // Center player on star X
+        y: GROUND_Y, // Player Y at ground
         velocityY: 0,
-        isOnGround: true
+        isOnGround: true,
       };
-      
+
       const scrollOffset = 0;
       const collected = checkStarCollection(playerState, stars, scrollOffset, GROUND_Y);
-      
+
       // Star should be collected when coordinates match
       expect(collected).toContain('star1');
     });
-    
+
     it('checkStarCollection does not collect distant stars', () => {
-      const stars: ShapeDashStar[] = [
-        { id: 'star1', x: 500, y: 0, collected: false }
-      ];
-      
+      const stars: ShapeDashStar[] = [{ id: 'star1', x: 500, y: 0, collected: false }];
+
       const playerState: PlayerState = {
         x: 100,
         y: GROUND_Y,
         velocityY: 0,
-        isOnGround: true
+        isOnGround: true,
       };
-      
+
       const scrollOffset = 0;
       const collected = checkStarCollection(playerState, stars, scrollOffset, GROUND_Y);
-      
+
       expect(collected).toHaveLength(0);
     });
   });
@@ -192,9 +189,9 @@ describe('shapeDash engine', () => {
           shapes: [
             { type: 'circle', label: 'Circle', isCorrect: true },
             { type: 'square', label: 'Square', isCorrect: false },
-            { type: 'triangle', label: 'Triangle', isCorrect: false }
-          ]
-        }
+            { type: 'triangle', label: 'Triangle', isCorrect: false },
+          ],
+        },
       ];
 
       // Player positioned in the left gate (first gate slot)
@@ -202,7 +199,7 @@ describe('shapeDash engine', () => {
         x: 500 - (GATE_WIDTH * 3 + GATE_SPACING * 2) / 2 + GATE_WIDTH / 2 - PLAYER_WIDTH / 2,
         y: GROUND_Y,
         velocityY: 0,
-        isOnGround: true
+        isOnGround: true,
       };
 
       const scrollOffset = 0;
@@ -223,17 +220,23 @@ describe('shapeDash engine', () => {
           shapes: [
             { type: 'circle', label: 'Circle', isCorrect: false },
             { type: 'square', label: 'Square', isCorrect: true },
-            { type: 'triangle', label: 'Triangle', isCorrect: false }
-          ]
-        }
+            { type: 'triangle', label: 'Triangle', isCorrect: false },
+          ],
+        },
       ];
 
       // Player positioned in the middle gate (second gate slot)
       const playerState: PlayerState = {
-        x: 500 - (GATE_WIDTH * 3 + GATE_SPACING * 2) / 2 + GATE_WIDTH + GATE_SPACING + GATE_WIDTH / 2 - PLAYER_WIDTH / 2,
+        x:
+          500 -
+          (GATE_WIDTH * 3 + GATE_SPACING * 2) / 2 +
+          GATE_WIDTH +
+          GATE_SPACING +
+          GATE_WIDTH / 2 -
+          PLAYER_WIDTH / 2,
         y: GROUND_Y,
         velocityY: 0,
-        isOnGround: true
+        isOnGround: true,
       };
 
       const scrollOffset = 0;
@@ -254,17 +257,22 @@ describe('shapeDash engine', () => {
           shapes: [
             { type: 'circle', label: 'Circle', isCorrect: true },
             { type: 'square', label: 'Square', isCorrect: false },
-            { type: 'triangle', label: 'Triangle', isCorrect: false }
-          ]
-        }
+            { type: 'triangle', label: 'Triangle', isCorrect: false },
+          ],
+        },
       ];
 
       // Player positioned in the spacing between left and middle gates
       const playerState: PlayerState = {
-        x: 500 - (GATE_WIDTH * 3 + GATE_SPACING * 2) / 2 + GATE_WIDTH + GATE_SPACING / 2 - PLAYER_WIDTH / 2,
+        x:
+          500 -
+          (GATE_WIDTH * 3 + GATE_SPACING * 2) / 2 +
+          GATE_WIDTH +
+          GATE_SPACING / 2 -
+          PLAYER_WIDTH / 2,
         y: GROUND_Y,
         velocityY: 0,
-        isOnGround: true
+        isOnGround: true,
       };
 
       const scrollOffset = 0;
@@ -284,9 +292,9 @@ describe('shapeDash engine', () => {
           shapes: [
             { type: 'circle', label: 'Circle', isCorrect: true },
             { type: 'square', label: 'Square', isCorrect: false },
-            { type: 'triangle', label: 'Triangle', isCorrect: false }
-          ]
-        }
+            { type: 'triangle', label: 'Triangle', isCorrect: false },
+          ],
+        },
       ];
 
       // Player positioned far before the gate zone
@@ -294,7 +302,7 @@ describe('shapeDash engine', () => {
         x: 100,
         y: GROUND_Y,
         velocityY: 0,
-        isOnGround: true
+        isOnGround: true,
       };
 
       const scrollOffset = 0;
@@ -313,9 +321,9 @@ describe('shapeDash engine', () => {
           shapes: [
             { type: 'circle', label: 'Circle', isCorrect: true },
             { type: 'square', label: 'Square', isCorrect: false },
-            { type: 'triangle', label: 'Triangle', isCorrect: false }
-          ]
-        }
+            { type: 'triangle', label: 'Triangle', isCorrect: false },
+          ],
+        },
       ];
 
       // Player positioned in the left gate
@@ -323,7 +331,7 @@ describe('shapeDash engine', () => {
         x: 500 - (GATE_WIDTH * 3 + GATE_SPACING * 2) / 2 + GATE_WIDTH / 2 - PLAYER_WIDTH / 2,
         y: GROUND_Y,
         velocityY: 0,
-        isOnGround: true
+        isOnGround: true,
       };
 
       const scrollOffset = 0;

@@ -1,6 +1,6 @@
 /**
  * Shared Components Index
- * 
+ *
  * Central export point for shared components.
  */
 

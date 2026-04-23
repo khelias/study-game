@@ -1,6 +1,6 @@
 /**
  * ShopModal Component
- * 
+ *
  * Modal for purchasing hearts with stars and buying stars (mocked as FREE for now).
  */
 
@@ -23,11 +23,11 @@ const MAX_HEARTS = 5;
 export const ShopModal: React.FC<ShopModalProps> = ({ onClose, openedFromNoHearts = false }) => {
   const t = useTranslation();
   const { formatText } = useProfileText();
-  const stars = useGameStore(state => state.stars);
-  const hearts = useGameStore(state => state.hearts);
-  const buyHeartsWithStars = useGameStore(state => state.buyHeartsWithStars);
-  const buyStars = useGameStore(state => state.buyStars);
-  const soundEnabled = useGameStore(state => state.soundEnabled);
+  const stars = useGameStore((state) => state.stars);
+  const hearts = useGameStore((state) => state.hearts);
+  const buyHeartsWithStars = useGameStore((state) => state.buyHeartsWithStars);
+  const buyStars = useGameStore((state) => state.buyStars);
+  const soundEnabled = useGameStore((state) => state.soundEnabled);
   const { playClick } = useGameAudio(soundEnabled);
 
   const canBuyHeart = stars >= HEART_COST_STARS && hearts < MAX_HEARTS;
@@ -49,24 +49,24 @@ export const ShopModal: React.FC<ShopModalProps> = ({ onClose, openedFromNoHeart
   };
 
   return (
-    <div 
+    <div
       className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-300"
-      style={{ 
-        position: 'fixed', 
-        top: 0, 
-        left: 0, 
-        right: 0, 
-        bottom: 0, 
+      style={{
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
         margin: 0,
         padding: '1rem',
         display: 'flex',
         alignItems: 'center',
-        justifyContent: 'center'
+        justifyContent: 'center',
       }}
       onClick={(e: React.MouseEvent<HTMLDivElement>) => e.target === e.currentTarget && onClose()}
     >
       <FocusTrap active={true}>
-        <div 
+        <div
           className="bg-white rounded-3xl p-6 max-w-md w-full shadow-2xl max-h-[90vh] overflow-y-auto"
           style={{ margin: '0 auto' }}
         >
@@ -93,7 +93,9 @@ export const ShopModal: React.FC<ShopModalProps> = ({ onClose, openedFromNoHeart
               <div className="bg-red-50 border-2 border-red-300 p-4 rounded-2xl">
                 <div className="flex items-center gap-2 mb-2">
                   <Heart size={20} className="text-red-500 fill-red-500" />
-                  <span className="font-bold text-red-700">{formatText(t.shop.noHeartsToPlay)}</span>
+                  <span className="font-bold text-red-700">
+                    {formatText(t.shop.noHeartsToPlay)}
+                  </span>
                 </div>
                 <p className="text-sm text-red-600">{formatText(t.shop.buyHeartsToContinue)}</p>
               </div>
@@ -113,7 +115,9 @@ export const ShopModal: React.FC<ShopModalProps> = ({ onClose, openedFromNoHeart
                   <Heart size={20} className="text-red-500 fill-red-500" />
                   <span className="font-bold text-slate-700">{formatText(t.shop.yourHearts)}</span>
                 </div>
-                <span className="text-2xl font-black text-red-700">{hearts}/{MAX_HEARTS}</span>
+                <span className="text-2xl font-black text-red-700">
+                  {hearts}/{MAX_HEARTS}
+                </span>
               </div>
             </div>
 
@@ -126,7 +130,7 @@ export const ShopModal: React.FC<ShopModalProps> = ({ onClose, openedFromNoHeart
               <p className="text-sm text-slate-600 mb-4">
                 {formatText(t.shop.buyHeartsDescription)}
               </p>
-              
+
               <div className="space-y-2">
                 <button
                   onClick={handleBuyHeart}
@@ -142,7 +146,8 @@ export const ShopModal: React.FC<ShopModalProps> = ({ onClose, openedFromNoHeart
                     <div className="text-left">
                       <div className="font-bold text-slate-800">{formatText(t.shop.buy1Heart)}</div>
                       <div className="text-sm text-slate-600">
-                        {formatText(t.shop.cost)}: <span className="font-bold text-yellow-700">{HEART_COST_STARS} ⭐</span>
+                        {formatText(t.shop.cost)}:{' '}
+                        <span className="font-bold text-yellow-700">{HEART_COST_STARS} ⭐</span>
                       </div>
                     </div>
                   </div>
@@ -150,7 +155,9 @@ export const ShopModal: React.FC<ShopModalProps> = ({ onClose, openedFromNoHeart
                     <span className="text-xs text-slate-500">{formatText(t.shop.maxHearts)}</span>
                   )}
                   {!canBuyHeart && stars < HEART_COST_STARS && (
-                    <span className="text-xs text-slate-500">{formatText(t.shop.notEnoughStars)}</span>
+                    <span className="text-xs text-slate-500">
+                      {formatText(t.shop.notEnoughStars)}
+                    </span>
                   )}
                 </button>
 
@@ -173,15 +180,23 @@ export const ShopModal: React.FC<ShopModalProps> = ({ onClose, openedFromNoHeart
                       <Heart size={24} className="text-red-500 fill-red-500" />
                       <div className="text-left">
                         <div className="font-bold text-slate-800">
-                          {formatText(t.shop.buyHeartsCount).replace('{count}', String(heartsNeeded))}
+                          {formatText(t.shop.buyHeartsCount).replace(
+                            '{count}',
+                            String(heartsNeeded),
+                          )}
                         </div>
                         <div className="text-sm text-slate-600">
-                          {formatText(t.shop.cost)}: <span className="font-bold text-yellow-700">{HEART_COST_STARS * heartsNeeded} ⭐</span>
+                          {formatText(t.shop.cost)}:{' '}
+                          <span className="font-bold text-yellow-700">
+                            {HEART_COST_STARS * heartsNeeded} ⭐
+                          </span>
                         </div>
                       </div>
                     </div>
                     {stars < HEART_COST_STARS * heartsNeeded && (
-                      <span className="text-xs text-slate-500">{formatText(t.shop.notEnoughStars)}</span>
+                      <span className="text-xs text-slate-500">
+                        {formatText(t.shop.notEnoughStars)}
+                      </span>
                     )}
                   </button>
                 )}
@@ -197,7 +212,7 @@ export const ShopModal: React.FC<ShopModalProps> = ({ onClose, openedFromNoHeart
               <p className="text-sm text-slate-600 mb-4">
                 {formatText(t.shop.buyStarsDescription)}
               </p>
-              
+
               <button
                 onClick={handleBuyStars}
                 className="w-full p-4 rounded-xl border-2 bg-yellow-50 border-yellow-300 hover:bg-yellow-100 hover:border-yellow-400 active:scale-95 transition-all flex items-center justify-between"
@@ -207,7 +222,8 @@ export const ShopModal: React.FC<ShopModalProps> = ({ onClose, openedFromNoHeart
                   <div className="text-left">
                     <div className="font-bold text-slate-800">{formatText(t.shop.buy50Stars)}</div>
                     <div className="text-sm text-slate-600">
-                      {formatText(t.shop.price)}: <span className="font-bold text-green-600">{formatText(t.shop.free)}</span>
+                      {formatText(t.shop.price)}:{' '}
+                      <span className="font-bold text-green-600">{formatText(t.shop.free)}</span>
                     </div>
                   </div>
                 </div>

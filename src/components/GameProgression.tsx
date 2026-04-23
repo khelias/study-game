@@ -18,7 +18,7 @@ export const GameProgressionCard: React.FC<GameProgressionCardProps> = ({ gameTy
   const successScore: number = calculateGameSuccessScore(stats, gameType);
   const recommendationLabel = formatText(t.progressionCard.recommendation);
   const successScoreLabel = formatText(t.progressionCard.successScore);
-  
+
   const getRecommendationIcon = (): React.ReactElement => {
     switch (recommendation.action) {
       case 'level_up':
@@ -31,7 +31,7 @@ export const GameProgressionCard: React.FC<GameProgressionCardProps> = ({ gameTy
         return <Award className="w-5 h-5 text-purple-600" />;
     }
   };
-  
+
   const getRecommendationColor = (): string => {
     switch (recommendation.priority) {
       case 'high':
@@ -42,7 +42,7 @@ export const GameProgressionCard: React.FC<GameProgressionCardProps> = ({ gameTy
         return 'bg-slate-50 border-slate-200';
     }
   };
-  
+
   return (
     <div className={`p-4 rounded-xl border-2 ${getRecommendationColor()} mb-4`}>
       <div className="flex items-center justify-between mb-2">
@@ -56,7 +56,7 @@ export const GameProgressionCard: React.FC<GameProgressionCardProps> = ({ gameTy
         </div>
       </div>
       <p className="text-sm text-slate-600">{formatText(recommendation.message)}</p>
-      
+
       {/* Progress bar */}
       <div className="mt-3 w-full h-2 bg-slate-200 rounded-full overflow-hidden">
         <div
@@ -74,7 +74,11 @@ interface LevelProgressIndicatorProps {
   progress: number;
 }
 
-export const LevelProgressIndicator: React.FC<LevelProgressIndicatorProps> = ({ current, next, progress }) => {
+export const LevelProgressIndicator: React.FC<LevelProgressIndicatorProps> = ({
+  current,
+  next,
+  progress,
+}) => {
   const t = useTranslation();
   const { formatText } = useProfileText();
   const progressPercentage: number = (progress / 5) * 100;
@@ -83,14 +87,18 @@ export const LevelProgressIndicator: React.FC<LevelProgressIndicatorProps> = ({ 
   const collectedLabel = formatText(
     t.progressionCard.starsCollectedLabel
       .replace('{current}', String(progress))
-      .replace('{total}', '5')
+      .replace('{total}', '5'),
   );
-  
+
   return (
     <div className="w-full max-w-md mx-auto p-4 bg-white rounded-xl border-2 border-slate-200 shadow-sm">
       <div className="flex items-center justify-between mb-2">
-        <span className="text-sm font-bold text-slate-600">{currentLabel}: {current}</span>
-        <span className="text-sm font-bold text-slate-600">{nextLabel}: {next}</span>
+        <span className="text-sm font-bold text-slate-600">
+          {currentLabel}: {current}
+        </span>
+        <span className="text-sm font-bold text-slate-600">
+          {nextLabel}: {next}
+        </span>
       </div>
       <div className="w-full h-4 bg-slate-200 rounded-full overflow-hidden">
         <div
@@ -98,9 +106,7 @@ export const LevelProgressIndicator: React.FC<LevelProgressIndicatorProps> = ({ 
           style={{ width: `${progressPercentage}%` }}
         />
       </div>
-      <div className="text-center mt-2 text-xs text-slate-500">
-        {collectedLabel}
-      </div>
+      <div className="text-center mt-2 text-xs text-slate-500">{collectedLabel}</div>
     </div>
   );
 };

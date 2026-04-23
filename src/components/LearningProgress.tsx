@@ -15,32 +15,35 @@ export const LearningProgress: React.FC<LearningProgressProps> = ({ stats, gameT
   const { formatText } = useProfileText();
   const gameStats: number = stats.gamesByType?.[gameType] || 0;
   const maxLevel: number = stats.maxLevels?.[gameType] || 1;
-  const accuracy: number = stats.gamesPlayed > 0
-    ? Math.round((stats.correctAnswers / (stats.correctAnswers + stats.wrongAnswers)) * 100)
-    : 0;
-  
+  const accuracy: number =
+    stats.gamesPlayed > 0
+      ? Math.round((stats.correctAnswers / (stats.correctAnswers + stats.wrongAnswers)) * 100)
+      : 0;
+
   // Calculate learning score
-  const learningScore: number = Math.min(100, Math.round(
-    (accuracy * 0.4) + 
-    (maxLevel * 5) + 
-    (gameStats * 2)
-  ));
-  
+  const learningScore: number = Math.min(
+    100,
+    Math.round(accuracy * 0.4 + maxLevel * 5 + gameStats * 2),
+  );
+
   interface LearningStage {
     label: string;
     emoji: string;
     color: string;
   }
-  
+
   const getLearningStage = (): LearningStage => {
-    if (learningScore >= 80) return { label: t.learningProgress.stages.master, emoji: '🏆', color: 'text-yellow-600' };
-    if (learningScore >= 60) return { label: t.learningProgress.stages.advanced, emoji: '⭐', color: 'text-blue-600' };
-    if (learningScore >= 40) return { label: t.learningProgress.stages.practicing, emoji: '📚', color: 'text-green-600' };
+    if (learningScore >= 80)
+      return { label: t.learningProgress.stages.master, emoji: '🏆', color: 'text-yellow-600' };
+    if (learningScore >= 60)
+      return { label: t.learningProgress.stages.advanced, emoji: '⭐', color: 'text-blue-600' };
+    if (learningScore >= 40)
+      return { label: t.learningProgress.stages.practicing, emoji: '📚', color: 'text-green-600' };
     return { label: t.learningProgress.stages.beginner, emoji: '🌱', color: 'text-slate-600' };
   };
-  
+
   const stage: LearningStage = getLearningStage();
-  
+
   return (
     <div className="bg-gradient-to-br from-purple-50 to-pink-50 rounded-2xl p-6 border-2 border-purple-200">
       <div className="flex items-center justify-between mb-4">
@@ -50,12 +53,14 @@ export const LearningProgress: React.FC<LearningProgressProps> = ({ stats, gameT
         </h3>
         <span className={`text-2xl ${stage.color}`}>{stage.emoji}</span>
       </div>
-      
+
       <div className="space-y-4">
         {/* Learning Score */}
         <div>
           <div className="flex justify-between items-center mb-2">
-            <span className="text-sm font-semibold text-slate-600">{formatText(t.learningProgress.scoreLabel)}</span>
+            <span className="text-sm font-semibold text-slate-600">
+              {formatText(t.learningProgress.scoreLabel)}
+            </span>
             <span className="text-xl font-black text-purple-700">{learningScore}%</span>
           </div>
           <div className="w-full h-3 bg-slate-200 rounded-full overflow-hidden">
@@ -68,26 +73,32 @@ export const LearningProgress: React.FC<LearningProgressProps> = ({ stats, gameT
             {stage.emoji} {formatText(stage.label)}
           </div>
         </div>
-        
+
         {/* Key Metrics */}
         <div className="grid grid-cols-3 gap-3">
           <div className="text-center bg-white/50 rounded-xl p-3">
             <Target size={20} className="text-green-600 mx-auto mb-1" />
             <div className="text-lg font-black text-slate-800">{accuracy}%</div>
-            <div className="text-xs text-slate-600">{formatText(t.learningProgress.metrics.accuracy)}</div>
+            <div className="text-xs text-slate-600">
+              {formatText(t.learningProgress.metrics.accuracy)}
+            </div>
           </div>
           <div className="text-center bg-white/50 rounded-xl p-3">
             <TrendingUp size={20} className="text-blue-600 mx-auto mb-1" />
             <div className="text-lg font-black text-slate-800">{maxLevel}</div>
-            <div className="text-xs text-slate-600">{formatText(t.learningProgress.metrics.level)}</div>
+            <div className="text-xs text-slate-600">
+              {formatText(t.learningProgress.metrics.level)}
+            </div>
           </div>
           <div className="text-center bg-white/50 rounded-xl p-3">
             <Award size={20} className="text-purple-600 mx-auto mb-1" />
             <div className="text-lg font-black text-slate-800">{gameStats}</div>
-            <div className="text-xs text-slate-600">{formatText(t.learningProgress.metrics.games)}</div>
+            <div className="text-xs text-slate-600">
+              {formatText(t.learningProgress.metrics.games)}
+            </div>
           </div>
         </div>
-        
+
         {/* Encouragement */}
         {learningScore >= 80 && (
           <div className="bg-yellow-100 border-2 border-yellow-300 rounded-xl p-3 text-center">
@@ -144,27 +155,29 @@ export const SkillBreakdown: React.FC<SkillBreakdownProps> = ({ stats }) => {
       icon: '🧩',
     },
   ];
-  
+
   const calculateSkillLevel = (skillGames: string[]): { totalGames: number; maxLevel: number } => {
     const totalGames: number = skillGames.reduce((sum, gameType) => {
       return sum + (stats.gamesByType?.[gameType] || 0);
     }, 0);
-    const maxLevel: number = Math.max(...skillGames.map(gt => stats.maxLevels?.[gt] || 1));
+    const maxLevel: number = Math.max(...skillGames.map((gt) => stats.maxLevels?.[gt] || 1));
     return { totalGames, maxLevel };
   };
-  
+
   return (
     <div className="space-y-4">
-      <h3 className="text-lg font-black text-slate-800 mb-4">{formatText(t.learningProgress.skillOverviewTitle)}</h3>
+      <h3 className="text-lg font-black text-slate-800 mb-4">
+        {formatText(t.learningProgress.skillOverviewTitle)}
+      </h3>
       {skills.map((skill, idx) => {
         const { totalGames, maxLevel } = calculateSkillLevel(skill.games);
-        const skillScore: number = Math.min(100, (totalGames * 5) + (maxLevel * 10));
+        const skillScore: number = Math.min(100, totalGames * 5 + maxLevel * 10);
         const summary = formatText(
           t.learningProgress.skillSummary
             .replace('{games}', String(totalGames))
-            .replace('{level}', String(maxLevel))
+            .replace('{level}', String(maxLevel)),
         );
-        
+
         return (
           <div key={idx} className="bg-white rounded-xl p-4 border-2 border-slate-200">
             <div className="flex items-center justify-between mb-3">
@@ -180,9 +193,7 @@ export const SkillBreakdown: React.FC<SkillBreakdownProps> = ({ stats }) => {
                 style={{ width: `${skillScore}%` }}
               />
             </div>
-            <div className="text-xs text-slate-500 mt-2">
-              {summary}
-            </div>
+            <div className="text-xs text-slate-500 mt-2">{summary}</div>
           </div>
         );
       })}

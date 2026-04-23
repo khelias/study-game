@@ -8,18 +8,21 @@ import { GameResultScreen } from './features/gameplay/GameResultScreen';
 import { GameRoute } from './features/routing/GameRoute';
 
 const App: React.FC = () => {
-  const gameState = usePlaySessionStore(state => state.gameState);
+  const gameState = usePlaySessionStore((state) => state.gameState);
 
   return (
     <ErrorBoundary>
       <Routes>
-        <Route path="/" element={
-          <>
-            {gameState === 'menu' && <MenuScreen />}
-            {gameState === 'playing' && <GameScreen />}
-            {gameState === 'game_over' && <GameResultScreen type="gameOver" />}
-          </>
-        } />
+        <Route
+          path="/"
+          element={
+            <>
+              {gameState === 'menu' && <MenuScreen />}
+              {gameState === 'playing' && <GameScreen />}
+              {gameState === 'game_over' && <GameResultScreen type="gameOver" />}
+            </>
+          }
+        />
         <Route path="/games/:gameSlug" element={<GameRoute />} />
       </Routes>
     </ErrorBoundary>

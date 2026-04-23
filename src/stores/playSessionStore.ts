@@ -1,5 +1,8 @@
 import { create } from 'zustand';
-import { createAdaptiveDifficulty, updateAdaptiveDifficulty as updateDifficulty } from '../engine/adaptiveDifficulty';
+import {
+  createAdaptiveDifficulty,
+  updateAdaptiveDifficulty as updateDifficulty,
+} from '../engine/adaptiveDifficulty';
 import type { Problem, PicturePairsCard } from '../types/game';
 import type { Notification, NotificationInput } from '../types/notification';
 
@@ -31,10 +34,10 @@ export interface PlaySessionStore {
   currentStreak: number;
   adaptiveDifficulty: AdaptiveDifficulty;
   levelProgress: LevelProgress | null; // Tracks progress toward next level
-  
+
   // New unified notification system
   notifications: Notification[];
-  
+
   bgClass: string;
   confetti: boolean;
   enhancedConfetti: boolean;
@@ -43,7 +46,7 @@ export interface PlaySessionStore {
   showHint: boolean;
   /** Set by route when entering a game for the first time (stats.gamesByType was 0); GameScreen auto-shows description then clears this */
   autoShowGameDescription: boolean;
-  
+
   // Actions
   startGame: (gameType: string, options?: { autoShowGameDescription?: boolean }) => void;
   setAutoShowGameDescription: (value: boolean) => void;
@@ -52,12 +55,12 @@ export interface PlaySessionStore {
   endGame: () => void;
   resumeGame: () => void; // Back to playing without resetting problem/score (e.g. after buying hearts)
   returnToMenu: () => void;
-  
+
   // New notification system actions
   addNotification: (notification: NotificationInput) => void;
   removeNotification: (id: string) => void;
   clearNotifications: () => void;
-  
+
   setBgClass: (bgClass: string) => void;
   setConfetti: (confetti: boolean) => void;
   setEnhancedConfetti: (enhanced: boolean) => void;
@@ -81,10 +84,10 @@ const initialState = {
   currentStreak: 0,
   adaptiveDifficulty: createAdaptiveDifficulty(),
   levelProgress: null as LevelProgress | null,
-  
+
   // New notification system
   notifications: [] as Notification[],
-  
+
   bgClass: 'bg-slate-50',
   confetti: false,
   enhancedConfetti: false,
@@ -96,7 +99,7 @@ const initialState = {
 
 export const usePlaySessionStore = create<PlaySessionStore>((set, get) => ({
   ...initialState,
-  
+
   // Actions
   startGame: (gameType: string, options?: { autoShowGameDescription?: boolean }) => {
     set({
@@ -124,12 +127,12 @@ export const usePlaySessionStore = create<PlaySessionStore>((set, get) => ({
   setAutoShowGameDescription: (value: boolean) => {
     set({ autoShowGameDescription: value });
   },
-  
+
   setProblem: (problem: Problem | null) => {
     // Clone nested arrays to ensure React detects changes
     if (problem) {
       const clonedProblem: Problem = { ...problem };
-      
+
       // Clone arrays that React might compare by reference
       if (problem.type === 'word_builder' && 'shuffled' in problem) {
         (clonedProblem as typeof problem).shuffled = [...(problem.shuffled || [])];
@@ -141,7 +144,9 @@ export const usePlaySessionStore = create<PlaySessionStore>((set, get) => ({
         (clonedProblem as typeof problem).cards = [...(problem.cards || [])];
       }
       if (problem.type === 'picture_pairs' && 'cards' in problem) {
-        (clonedProblem as typeof problem).cards = (problem as { cards: PicturePairsCard[] }).cards.map(c => ({ ...c }));
+        (clonedProblem as typeof problem).cards = (
+          problem as { cards: PicturePairsCard[] }
+        ).cards.map((c) => ({ ...c }));
       }
       if (problem.type === 'pattern' && 'sequence' in problem) {
         (clonedProblem as typeof problem).sequence = [...(problem.sequence || [])];
@@ -156,38 +161,45 @@ export const usePlaySessionStore = create<PlaySessionStore>((set, get) => ({
         (clonedProblem as typeof problem).options = [...(problem.options || [])];
       }
       if (problem.type === 'robo_path' && 'grid' in problem) {
-        (clonedProblem as typeof problem).grid = problem.grid.map(row => [...row]);
-        (clonedProblem as typeof problem).obstacles = problem.obstacles.map(obs => [...obs] as [number, number]);
+        (clonedProblem as typeof problem).grid = problem.grid.map((row) => [...row]);
+        (clonedProblem as typeof problem).obstacles = problem.obstacles.map(
+          (obs) => [...obs] as [number, number],
+        );
       }
       if (problem.type === 'math_snake' && 'snake' in problem) {
-        (clonedProblem as typeof problem).snake = problem.snake.map(pos => [...pos] as [number, number]);
+        (clonedProblem as typeof problem).snake = problem.snake.map(
+          (pos) => [...pos] as [number, number],
+        );
       }
       if (problem.type === 'battlelearn' && 'ships' in problem) {
         // Clone BattleLearn-specific arrays and cell grid
-        (clonedProblem as typeof problem).cellGrid = problem.cellGrid.map(row => [...row]);
-        (clonedProblem as typeof problem).revealed = problem.revealed.map(pos => [...pos] as [number, number]);
-        (clonedProblem as typeof problem).hits = problem.hits.map(pos => [...pos] as [number, number]);
+        (clonedProblem as typeof problem).cellGrid = problem.cellGrid.map((row) => [...row]);
+        (clonedProblem as typeof problem).revealed = problem.revealed.map(
+          (pos) => [...pos] as [number, number],
+        );
+        (clonedProblem as typeof problem).hits = problem.hits.map(
+          (pos) => [...pos] as [number, number],
+        );
         (clonedProblem as typeof problem).sunkShips = [...problem.sunkShips];
-        (clonedProblem as typeof problem).ships = problem.ships.map(ship => ({
+        (clonedProblem as typeof problem).ships = problem.ships.map((ship) => ({
           ...ship,
-          positions: ship.positions.map(pos => [...pos] as [number, number]),
+          positions: ship.positions.map((pos) => [...pos] as [number, number]),
         }));
       }
-      
+
       set({ problem: clonedProblem });
     } else {
       set({ problem: null });
     }
   },
 
-  
   submitAnswer: (isCorrect: boolean) => {
     const state = get();
     const newStreak = isCorrect ? state.currentStreak + 1 : 0;
-    
+
     set({ currentStreak: newStreak });
   },
-  
+
   endGame: () => {
     set({ gameState: 'game_over' });
   },
@@ -205,33 +217,33 @@ export const usePlaySessionStore = create<PlaySessionStore>((set, get) => ({
       notifications: [],
     });
   },
-  
+
   setBgClass: (bgClass: string) => {
     set({ bgClass });
   },
-  
+
   setConfetti: (confetti: boolean) => {
     set({ confetti });
   },
-  
+
   setEnhancedConfetti: (enhanced: boolean) => {
     set({ enhancedConfetti: enhanced });
   },
-  
+
   setParticleActive: (active: boolean) => {
     set({ particleActive: active });
   },
-  
+
   setShowHint: (show: boolean) => {
     set({ showHint: show });
   },
-  
+
   updateAdaptiveDifficulty: (isCorrect: boolean, responseTime?: number) => {
     const state = get();
     const updated = updateDifficulty(state.adaptiveDifficulty, isCorrect, responseTime || null);
     set({ adaptiveDifficulty: updated });
   },
-  
+
   recordLevelAnswer: (isCorrect: boolean) => {
     const state = get();
     if (!state.levelProgress) {
@@ -245,7 +257,7 @@ export const usePlaySessionStore = create<PlaySessionStore>((set, get) => ({
       });
       return;
     }
-    
+
     set({
       levelProgress: {
         ...state.levelProgress,
@@ -254,7 +266,7 @@ export const usePlaySessionStore = create<PlaySessionStore>((set, get) => ({
       },
     });
   },
-  
+
   resetLevelProgress: () => {
     set({
       levelProgress: {
@@ -264,19 +276,19 @@ export const usePlaySessionStore = create<PlaySessionStore>((set, get) => ({
       },
     });
   },
-  
+
   setScore: (score: number) => {
     set({ score });
   },
-  
+
   addScore: (points: number) => {
     set((state) => ({ score: state.score + points }));
   },
-  
+
   resetSessionState: () => {
     set(initialState);
   },
-  
+
   // New notification system actions
   addNotification: (notification: NotificationInput) => {
     const createdAt = Date.now();
@@ -285,13 +297,13 @@ export const usePlaySessionStore = create<PlaySessionStore>((set, get) => ({
       notifications: [...state.notifications, { ...notification, id, createdAt }],
     }));
   },
-  
+
   removeNotification: (id: string) => {
     set((state) => ({
       notifications: state.notifications.filter((n) => n.id !== id),
     }));
   },
-  
+
   clearNotifications: () => {
     set({ notifications: [] });
   },

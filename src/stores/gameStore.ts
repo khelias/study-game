@@ -1,7 +1,13 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { APP_KEY, PROFILES, GAME_CONFIG } from '../games/data';
-import { createStats, recordGameStart, recordAnswer as recordStatsAnswer, recordLevelUp as recordStatsLevelUp, recordScore } from '../engine/stats';
+import {
+  createStats,
+  recordGameStart,
+  recordAnswer as recordStatsAnswer,
+  recordLevelUp as recordStatsLevelUp,
+  recordScore,
+} from '../engine/stats';
 import { checkAchievements } from '../engine/achievements';
 import { getTranslations } from '../i18n';
 import { getAchievementCopy } from '../utils/achievementCopy';
@@ -14,14 +20,16 @@ interface AchievementData {
   icon: string;
 }
 
-
 // Build default levels for all profiles and game types
 const buildDefaultLevels = () => {
   const base: Record<string, Record<string, number>> = {};
-  (Object.keys(PROFILES) as ProfileType[]).forEach(pid => {
+  (Object.keys(PROFILES) as ProfileType[]).forEach((pid) => {
     const profile = PROFILES[pid];
     const start = profile.levelStart || 1;
-    base[pid] = Object.keys(GAME_CONFIG).reduce((acc, g) => ({ ...acc, [g]: start }), {} as Record<string, number>);
+    base[pid] = Object.keys(GAME_CONFIG).reduce(
+      (acc, g) => ({ ...acc, [g]: start }),
+      {} as Record<string, number>,
+    );
   });
   return base;
 };
@@ -48,7 +56,9 @@ export interface GameStore {
   // Actions
   setProfile: (profile: string) => void;
   setFavouriteGameIds: (ids: string[]) => void;
-  updateStats: (updater: (stats: ReturnType<typeof createStats>) => ReturnType<typeof createStats>) => void;
+  updateStats: (
+    updater: (stats: ReturnType<typeof createStats>) => ReturnType<typeof createStats>,
+  ) => void;
   recordAnswer: (isCorrect: boolean, points?: number) => { newAchievements: AchievementData[] };
   recordGameStart: (gameType: string) => { newAchievements: AchievementData[] };
   recordLevelUp: (gameType: string, newLevel: number) => { newAchievements: AchievementData[] };
@@ -93,121 +103,124 @@ export const useGameStore = create<GameStore>()(
           set({ profile: profile as ProfileType });
         }
       },
-      
+
       updateStats: (updater) => {
         const currentStats = get().stats;
         const newStats = updater(currentStats);
         set({ stats: newStats });
       },
-      
+
       recordAnswer: (isCorrect: boolean, points: number = 0) => {
         const state = get();
         let updatedStats = recordStatsAnswer(state.stats, isCorrect);
-        
+
         if (points > 0) {
           updatedStats = recordScore(updatedStats, points);
         }
-        
+
         // Check for new achievements
         const newAchievements = checkAchievements(updatedStats, state.unlockedAchievements);
         const t = getTranslations();
-        const achievementData: AchievementData[] = newAchievements.map(a => {
+        const achievementData: AchievementData[] = newAchievements.map((a) => {
           const copy = getAchievementCopy(t, a.id);
           return {
             id: a.id,
             title: copy.title,
             desc: copy.desc,
-            icon: a.icon
+            icon: a.icon,
           };
         });
-        
-        set({ 
+
+        set({
           stats: updatedStats,
-          unlockedAchievements: newAchievements.length > 0 
-            ? [...state.unlockedAchievements, ...newAchievements.map(a => a.id)]
-            : state.unlockedAchievements
+          unlockedAchievements:
+            newAchievements.length > 0
+              ? [...state.unlockedAchievements, ...newAchievements.map((a) => a.id)]
+              : state.unlockedAchievements,
         });
-        
+
         return { newAchievements: achievementData };
       },
-      
+
       recordGameStart: (gameType: string) => {
         const state = get();
         const updatedStats = recordGameStart(state.stats, gameType);
-        
+
         // Check for new achievements
         const newAchievements = checkAchievements(updatedStats, state.unlockedAchievements);
         const t = getTranslations();
-        const achievementData: AchievementData[] = newAchievements.map(a => {
+        const achievementData: AchievementData[] = newAchievements.map((a) => {
           const copy = getAchievementCopy(t, a.id);
           return {
             id: a.id,
             title: copy.title,
             desc: copy.desc,
-            icon: a.icon
+            icon: a.icon,
           };
         });
-        
-        set({ 
+
+        set({
           stats: updatedStats,
-          unlockedAchievements: newAchievements.length > 0 
-            ? [...state.unlockedAchievements, ...newAchievements.map(a => a.id)]
-            : state.unlockedAchievements
+          unlockedAchievements:
+            newAchievements.length > 0
+              ? [...state.unlockedAchievements, ...newAchievements.map((a) => a.id)]
+              : state.unlockedAchievements,
         });
-        
+
         return { newAchievements: achievementData };
       },
-      
+
       recordLevelUp: (gameType: string, newLevel: number) => {
         const state = get();
-        
+
         // Update levels
         const updatedLevels = {
           ...state.levels,
           [state.profile]: {
             ...state.levels[state.profile],
-            [gameType]: newLevel
-          }
+            [gameType]: newLevel,
+          },
         };
-        
+
         // Update stats
         const updatedStats = recordStatsLevelUp(state.stats, gameType, newLevel);
-        
+
         // Check for new achievements
         const newAchievements = checkAchievements(updatedStats, state.unlockedAchievements);
         const t = getTranslations();
-        const achievementData: AchievementData[] = newAchievements.map(a => {
+        const achievementData: AchievementData[] = newAchievements.map((a) => {
           const copy = getAchievementCopy(t, a.id);
           return {
             id: a.id,
             title: copy.title,
             desc: copy.desc,
-            icon: a.icon
+            icon: a.icon,
           };
         });
-        
-        set({ 
+
+        set({
           levels: updatedLevels,
           stats: updatedStats,
-          unlockedAchievements: newAchievements.length > 0 
-            ? [...state.unlockedAchievements, ...newAchievements.map(a => a.id)]
-            : state.unlockedAchievements
+          unlockedAchievements:
+            newAchievements.length > 0
+              ? [...state.unlockedAchievements, ...newAchievements.map((a) => a.id)]
+              : state.unlockedAchievements,
         });
-        
+
         return { newAchievements: achievementData };
       },
-      
+
       unlockAchievement: (id: string) => {
         const state = get();
         if (!state.unlockedAchievements.includes(id)) {
           set({ unlockedAchievements: [...state.unlockedAchievements, id] });
         }
       },
-      
+
       toggleSound: () => {
         set((state) => ({ soundEnabled: !state.soundEnabled }));
       },
-      
+
       resetGame: () => {
         const t = getTranslations();
         const confirmed = confirm(t.errors.confirmReset);
@@ -227,41 +240,42 @@ export const useGameStore = create<GameStore>()(
           });
         }
       },
-      
+
       earnStars: (count: number, _reason?: string) => {
         const state = get();
         const newStars = state.stars + count;
-        
+
         // Update stats with stars (for achievement tracking)
-        const updatedStats = { 
-          ...state.stats, 
-          collectedStars: newStars // Keep in stats for achievement compatibility
+        const updatedStats = {
+          ...state.stats,
+          collectedStars: newStars, // Keep in stats for achievement compatibility
         };
-        
+
         // Check for new achievements
         const newAchievements = checkAchievements(updatedStats, state.unlockedAchievements);
         const t = getTranslations();
-        const achievementData: AchievementData[] = newAchievements.map(a => {
+        const achievementData: AchievementData[] = newAchievements.map((a) => {
           const copy = getAchievementCopy(t, a.id);
           return {
             id: a.id,
             title: copy.title,
             desc: copy.desc,
-            icon: a.icon
+            icon: a.icon,
           };
         });
-        
-        set({ 
+
+        set({
           stars: newStars,
           stats: updatedStats,
-          unlockedAchievements: newAchievements.length > 0 
-            ? [...state.unlockedAchievements, ...newAchievements.map(a => a.id)]
-            : state.unlockedAchievements
+          unlockedAchievements:
+            newAchievements.length > 0
+              ? [...state.unlockedAchievements, ...newAchievements.map((a) => a.id)]
+              : state.unlockedAchievements,
         });
-        
+
         return { newAchievements: achievementData };
       },
-      
+
       spendStars: (count: number) => {
         const state = get();
         if (state.stars >= count) {
@@ -270,7 +284,7 @@ export const useGameStore = create<GameStore>()(
         }
         return false;
       },
-      
+
       spendHeart: () => {
         const state = get();
         if (state.hearts > 0) {
@@ -279,81 +293,81 @@ export const useGameStore = create<GameStore>()(
         }
         return false;
       },
-      
+
       addHeart: (count: number = 1) => {
         const state = get();
         const newHearts = Math.min(state.hearts + count, MAX_HEARTS);
         set({ hearts: newHearts });
       },
-      
+
       buyHeartsWithStars: (count: number) => {
         const state = get();
         const HEART_COST_STARS = 10; // 10 stars = 1 heart
         const totalCost = HEART_COST_STARS * count;
         const heartsCanAdd = Math.min(count, MAX_HEARTS - state.hearts);
-        
+
         if (state.stars >= totalCost && heartsCanAdd > 0) {
-          set({ 
+          set({
             stars: state.stars - totalCost,
-            hearts: Math.min(state.hearts + heartsCanAdd, MAX_HEARTS)
+            hearts: Math.min(state.hearts + heartsCanAdd, MAX_HEARTS),
           });
           return true;
         }
         return false;
       },
-      
+
       buyStars: (count: number) => {
         // Mocked as FREE for now - will be wired up to payment system later
         const state = get();
         set({ stars: state.stars + count });
       },
-      
+
       setScore: (score: number) => {
         set({ score });
       },
-      
+
       addScore: (points: number) => {
         set((state) => ({ score: state.score + points }));
       },
-      
+
       markTutorialSeen: () => {
         set({ hasSeenTutorial: true });
       },
-      
+
       setLevel: (gameType: string, level: number) => {
         const state = get();
         // Ensure level is at least 1
         const newLevel = Math.max(1, level);
-        
+
         // Update levels
         const updatedLevels = {
           ...state.levels,
           [state.profile]: {
             ...state.levels[state.profile],
-            [gameType]: newLevel
-          }
+            [gameType]: newLevel,
+          },
         };
-        
+
         set({ levels: updatedLevels });
       },
-      
+
       updateHighScore: (gameType: string, score: number) => {
         const state = get();
         const baseType = gameType.replace('_adv', '');
         const currentHighScore = state.highScores[baseType] || 0;
-        
+
         if (score > currentHighScore) {
           set({
             highScores: {
               ...state.highScores,
-              [baseType]: score
-            }
+              [baseType]: score,
+            },
           });
           return true; // New record
         }
         return false; // No new record
       },
-      
+
       getHighScore: (gameType: string) => {
         const state = get();
         const baseType = gameType.replace('_adv', '');
@@ -395,7 +409,7 @@ export const useGameStore = create<GameStore>()(
             hearts: DEFAULT_HEARTS,
             hasSeenTutorial: false,
           };
-          
+
           // Merge levels properly
           if (stateObj.levels && typeof stateObj.levels === 'object') {
             const template = buildDefaultLevels();
@@ -408,13 +422,13 @@ export const useGameStore = create<GameStore>()(
             });
             stateObj.levels = merged;
           }
-          
+
           // Migrate collectedStars to stars (Phase 1 consolidation)
           if ('collectedStars' in stateObj && typeof stateObj.collectedStars === 'number') {
             stateObj.stars = stateObj.collectedStars;
             delete stateObj.collectedStars;
           }
-          
+
           // Sync stars with stats.collectedStars for achievement compatibility
           const statsObj = stateObj.stats as Record<string, unknown> | undefined;
           if (statsObj && typeof stateObj.stars === 'number') {
@@ -423,7 +437,7 @@ export const useGameStore = create<GameStore>()(
             // Legacy: if stats has collectedStars but state doesn't have stars, migrate
             stateObj.stars = statsObj.collectedStars as number;
           }
-          
+
           // Migrate hearts: if hearts don't exist, set to default
           if (!('hearts' in stateObj) || typeof stateObj.hearts !== 'number') {
             stateObj.hearts = DEFAULT_HEARTS;
@@ -444,6 +458,6 @@ export const useGameStore = create<GameStore>()(
         }
         return persistedState;
       },
-    }
-  )
+    },
+  ),
 );

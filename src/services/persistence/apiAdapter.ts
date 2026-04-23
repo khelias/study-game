@@ -1,9 +1,9 @@
 /**
  * API Persistence Adapter
- * 
+ *
  * Implements persistence using a remote API backend.
  * This adapter will be fully implemented when the backend API is ready.
- * 
+ *
  * For now, this is a placeholder that throws errors to indicate
  * that API persistence is not yet available.
  */
@@ -22,21 +22,21 @@ interface ApiClient {
 
 /**
  * API Persistence Adapter
- * 
+ *
  * Saves/loads data via HTTP API calls to a backend server.
  * This enables cloud sync, multi-device support, and backup/recovery.
  */
 export class ApiAdapter implements PersistenceAdapter {
   constructor(
     private apiClient: ApiClient | null = null,
-    private basePath: string = '/user/data'
+    private basePath: string = '/user/data',
   ) {
     // For now, apiClient is null until API service layer is implemented
     if (!apiClient) {
       console.warn(
         'ApiAdapter initialized without ApiClient. ' +
-        'API persistence will not work until ApiClient is provided. ' +
-        'See section 2.3 of ARCHITECTURAL_REVIEW.md for API service layer implementation.'
+          'API persistence will not work until ApiClient is provided. ' +
+          'See section 2.3 of ARCHITECTURAL_REVIEW.md for API service layer implementation.',
       );
     }
   }
@@ -58,19 +58,14 @@ export class ApiAdapter implements PersistenceAdapter {
       throw new PersistenceError(
         'ApiClient not initialized. API persistence requires the API service layer (section 2.3).',
         key,
-        'save'
+        'save',
       );
     }
 
     try {
       await this.apiClient.put(`${this.basePath}/${key}`, data);
     } catch (error) {
-      throw new PersistenceError(
-        `Failed to save data to API for key: ${key}`,
-        key,
-        'save',
-        error
-      );
+      throw new PersistenceError(`Failed to save data to API for key: ${key}`, key, 'save', error);
     }
   }
 
@@ -84,7 +79,7 @@ export class ApiAdapter implements PersistenceAdapter {
       throw new PersistenceError(
         'ApiClient not initialized. API persistence requires the API service layer (section 2.3).',
         key,
-        'load'
+        'load',
       );
     }
 
@@ -96,12 +91,12 @@ export class ApiAdapter implements PersistenceAdapter {
       if (error && typeof error === 'object' && 'status' in error && error.status === 404) {
         return null;
       }
-      
+
       throw new PersistenceError(
         `Failed to load data from API for key: ${key}`,
         key,
         'load',
-        error
+        error,
       );
     }
   }
@@ -115,7 +110,7 @@ export class ApiAdapter implements PersistenceAdapter {
       throw new PersistenceError(
         'ApiClient not initialized. API persistence requires the API service layer (section 2.3).',
         key,
-        'delete'
+        'delete',
       );
     }
 
@@ -126,7 +121,7 @@ export class ApiAdapter implements PersistenceAdapter {
         `Failed to delete data from API for key: ${key}`,
         key,
         'delete',
-        error
+        error,
       );
     }
   }
@@ -141,7 +136,7 @@ export class ApiAdapter implements PersistenceAdapter {
       throw new PersistenceError(
         'ApiClient not initialized. Sync requires the API service layer (section 2.3).',
         'sync',
-        'sync'
+        'sync',
       );
     }
 
@@ -154,7 +149,7 @@ export class ApiAdapter implements PersistenceAdapter {
     throw new PersistenceError(
       'Sync not yet implemented. Will be available in hybrid persistence mode.',
       'sync',
-      'sync'
+      'sync',
     );
   }
 }

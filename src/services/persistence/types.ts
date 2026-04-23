@@ -1,6 +1,6 @@
 /**
  * Persistence Adapter Interface
- * 
+ *
  * Defines the contract for persistence adapters that can save/load data
  * from different storage backends (LocalStorage, API, etc.)
  */
@@ -43,7 +43,7 @@ export class PersistenceError extends Error {
     message: string,
     public readonly key: string,
     public readonly operation: 'save' | 'load' | 'delete' | 'sync',
-    public readonly cause?: unknown
+    public readonly cause?: unknown,
   ) {
     super(message);
     this.name = 'PersistenceError';

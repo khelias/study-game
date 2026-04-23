@@ -12,11 +12,11 @@ type StateUpdater<T> = Partial<T> | ((prev: T) => T);
  * @returns Tuple of [state, updateState, getState]
  */
 export const useGameState = <T extends Record<string, unknown>>(
-  initialState: T = {} as T
+  initialState: T = {} as T,
 ): [T, (updater: StateUpdater<T>) => void, () => T] => {
   const [state, setState] = useState<T>(initialState);
   const stateRef = useRef<T>(state);
-  
+
   // Update ref when state changes
   useEffect(() => {
     stateRef.current = state;
@@ -24,7 +24,7 @@ export const useGameState = <T extends Record<string, unknown>>(
 
   // Thread-safe state update
   const updateState = useCallback((updater: StateUpdater<T>) => {
-    setState(prev => {
+    setState((prev) => {
       const next = typeof updater === 'function' ? updater(prev) : { ...prev, ...updater };
       return next;
     });
@@ -69,7 +69,7 @@ export const useGameSession = (): {
   }, []);
 
   const recordAnswer = useCallback((isCorrect: boolean) => {
-    setSession(prev => {
+    setSession((prev) => {
       const newStreak = isCorrect ? prev.currentStreak + 1 : 0;
       return {
         ...prev,

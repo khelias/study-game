@@ -1,11 +1,11 @@
 /**
  * Persistence Service Layer
- * 
+ *
  * Provides an abstraction layer for data persistence that supports:
  * - LocalStorage (current/default)
  * - API backend (future)
  * - Hybrid mode (LocalStorage + API sync)
- * 
+ *
  * This service follows the adapter pattern, allowing easy switching
  * between different storage backends without changing application code.
  */
@@ -22,16 +22,16 @@ import { PersistenceService } from './persistenceService';
 /**
  * Default persistence service instance
  * Uses LocalStorageAdapter as the default for MVP
- * 
+ *
  * To switch to API persistence, create a new instance:
  * ```typescript
  * import { PersistenceService, ApiAdapter } from './services/persistence';
  * import { apiClient } from './services/api';
- * 
+ *
  * const apiAdapter = new ApiAdapter(apiClient);
  * const apiPersistenceService = new PersistenceService(apiAdapter);
  * ```
- * 
+ *
  * Or use a hybrid approach (LocalStorage + API sync):
  * ```typescript
  * // Use LocalStorage for immediate saves, sync to API in background

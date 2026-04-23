@@ -9,6 +9,7 @@ For architecturally significant decisions — including the target bounded-conte
 ## Technology Stack
 
 ### Core Technologies
+
 - **React 19.2** - UI framework
 - **TypeScript 5.9** - Type-safe JavaScript
 - **Vite 7.2** - Build tool and dev server
@@ -18,6 +19,7 @@ For architecturally significant decisions — including the target bounded-conte
 - **ESLint 9.39** - Code quality control
 
 ### Development Tools
+
 - **TypeScript ESLint** - TypeScript linting
 - **React Testing Library** - Component testing
 - **Happy DOM** - DOM implementation for tests
@@ -140,17 +142,20 @@ The project is clearly divided into different layers:
 ### 2. Feature-Based Structure
 
 Larger features are organized under `features/` folder:
+
 - Each feature is independent and contains all necessary components
 - This allows easy extension and testing
 
 ### 3. Modular Component Architecture
 
 Components are organized by purpose:
+
 - **`components/gameViews/`** - Individual game view components (one per game type)
 - **`components/shared/`** - Reusable components used across multiple features
 - **`components/`** - General-purpose UI components
 
 This modular structure makes it easy to:
+
 - Find specific game implementations
 - Reuse shared components
 - Maintain and test individual components
@@ -191,6 +196,7 @@ This modular structure makes it easy to:
 The project uses two main stores:
 
 #### `gameStore` (Persistent)
+
 - **Profile** - Selected age profile
 - **Levels** - Each game's level (per-game-type, per-profile)
 - **Stars** - Global currency (persistent, earned per level)
@@ -202,11 +208,13 @@ The project uses two main stores:
 **Persistence**: LocalStorage (Zustand persist middleware)
 
 **Progression Resources:**
+
 - **Stars**: Earned when completing levels (not per answer). Scale with game difficulty and level. Used as currency to buy hearts.
 - **Hearts**: Global resource (not game-specific). Wrong answers cost 1 heart. Can be purchased with stars (10 stars = 1 heart).
 - **Levels**: Automatically earned through performance (correct answers + accuracy). Not purchased with stars.
 
 #### `playSessionStore` (Session)
+
 - **Game state** - menu/playing/game_over
 - **Current problem** - Currently played problem
 - **Session data** - Score (cosmetic points)
@@ -229,16 +237,19 @@ User Action → Component → Hook/Store Action → State Update → Component R
 ### Core Modules
 
 #### `rng.ts` - Random Number Generation
+
 - Deterministic RNG (seeded)
 - Testable and reproducible
 - Used for problem generation
 
 #### `adaptiveDifficulty.ts` - Adaptive Difficulty
+
 - Tracks player performance
 - Automatically adjusts difficulty
 - Based on accuracy and answer streaks
 
 #### `progression.ts` - Progression Logic
+
 - **Level-up system**: Performance-based automatic level progression
   - Calculates level-up requirements (scaling: 5→7→10→12→15+ correct answers)
   - Checks if player should level up (correct answers + 80%+ accuracy)
@@ -250,29 +261,34 @@ User Action → Component → Hook/Store Action → State Update → Component R
   - Stars are currency (not spent on levels, used to buy hearts)
 
 #### `stats.ts` - Statistics
+
 - Game counting
 - Answer saving
 - Streak tracking
 - Level and score tracking
 
 #### `achievements.ts` - Achievements
+
 - Achievement unlocking
 - Condition checking
 - Duplicate unlocking prevention
 
 #### `answerHandler.ts` - Answer Processing
+
 - Pure business logic for processing game answers
 - Handles math snake and standard game types
 - Returns structured results for UI coordination
 - Testable and reusable
 
 #### `mathSnake.ts` - Math Snake Game Logic
+
 - Snake movement and collision detection
 - Apple spawning logic
 - Math challenge generation
 - Game state resolution
 
 #### `audio.ts` - Audio System
+
 - Sound playback
 - Audio settings management
 
@@ -281,66 +297,78 @@ User Action → Component → Hook/Store Action → State Update → Component R
 ### Game Logic Hooks
 
 #### `useAnswerHandler` - Answer Handling
+
 - Encapsulates answer processing logic
 - Coordinates between engine and UI
 - Handles achievements, scoring, and feedback
 - Manages game state transitions
 
 #### `useGameHints` - Hint Generation
+
 - Generates hints for different game types
 - Handles hint display logic
 - Game-type-specific hint content
 
 #### `useGameTips` - Tip Display
+
 - Manages tip display logic
 - Shows tips once per session
 - Allows manual tip replay
 - Responsive layout awareness
 
 #### `useGameEngine` - Game Engine
+
 - Problem generation
 - Answer validation
 - RNG access
 
 #### `useGameAudio` - Audio
+
 - Sound effect playback
 - Respects user preferences
 
 ### State Management Hooks
 
 #### `useGameState` - Game State
+
 - Unified game state access
 - Combines store selectors
 
 #### `useAchievements` - Achievements
+
 - Achievement tracking
 - Achievement display logic
 
 ## Game Data
 
 ### `games/data.ts`
+
 - Game configuration
 - Profiles
 - Categories
 - Word database
 
 ### `games/generators.ts`
+
 - Problem generation functions
 - Each game type has its own generation function
 - Difficulty progression
 
 ### `games/registry.ts`
+
 - Centralized game registry system
 - Enables zero-touch game addition
 - Supports dynamic game loading
 - Scales to 50+ games without code bloat
 
 ### `games/registrations.ts`
+
 - Auto-registration of all games
 - Runs automatically on import
 - Registers games with their components, generators, validators, and configs
 
 ### `games/validators.ts`
+
 - Answer validation functions for each game type
 - Pure functions that validate user answers
 - Type-safe validation logic
@@ -350,6 +378,7 @@ User Action → Component → Hook/Store Action → State Update → Component R
 ### Game Views
 
 Each game type has its own view component in `components/gameViews/`:
+
 - **BalanceScaleView** - Balance scale problems
 - **StandardGameView** - Sentence logic and letter match
 - **WordGameView** - Word builder
@@ -363,6 +392,7 @@ Each game type has its own view component in `components/gameViews/`:
 ### Shared Components
 
 Reusable components in `components/shared/`:
+
 - **LevelUpModal** - Level up celebration
 - **Confetti** - Confetti animation
 - **TimeDisplay** - Analog clock display
@@ -371,6 +401,7 @@ Reusable components in `components/shared/`:
 ### UI Components
 
 General-purpose components:
+
 - **GameHeader** - Game screen header with score, level, hearts, stars
 - **SettingsMenu** - Settings dropdown menu
 - **GameCard** - Game selection card
@@ -424,6 +455,7 @@ monetization/
 ### Feature Flags
 
 Features are defined with feature flags:
+
 - `all_games` - All games
 - `unlimited_play` - Unlimited play
 - `progress_tracking` - Progress tracking
@@ -433,6 +465,7 @@ Features are defined with feature flags:
 ### Future
 
 When monetization is needed, you can:
+
 - Add subscription tiers
 - Activate feature flags
 - Integrate payment systems
@@ -487,6 +520,7 @@ When monetization is needed, you can:
 The game registry system makes adding new games simple and scalable:
 
 1. **Add game configuration** `games/data.ts`
+
    ```typescript
    new_game: {
      id: 'new_game',
@@ -501,6 +535,7 @@ The game registry system makes adding new games simple and scalable:
    ```
 
 2. **Add generation logic** `games/generators.ts`
+
    ```typescript
    new_game: (level, rng, profile) => {
      // Generate problem
@@ -509,6 +544,7 @@ The game registry system makes adding new games simple and scalable:
    ```
 
 3. **Create validator** `games/validators.ts`
+
    ```typescript
    export const validateNewGame: AnswerValidator = (problem, userAnswer) => {
      if (problem.type !== 'new_game') return false;
@@ -517,17 +553,15 @@ The game registry system makes adding new games simple and scalable:
    ```
 
 4. **Create game view component** `components/gameViews/NewGameView.tsx`
+
    ```typescript
-   export const NewGameView: React.FC<NewGameViewProps> = ({ 
-     problem, 
-     onAnswer, 
-     soundEnabled 
-   }) => {
+   export const NewGameView: React.FC<NewGameViewProps> = ({ problem, onAnswer, soundEnabled }) => {
      // Game UI
    };
    ```
 
 5. **Register the game** `games/registrations.ts`
+
    ```typescript
    gameRegistry.register({
      id: 'new_game',
@@ -592,6 +626,7 @@ The game registry system makes adding new games simple and scalable:
 ### CI/CD
 
 GitHub Actions workflow:
+
 - Automatic build
 - Lint check
 - FTP deploy
@@ -616,6 +651,7 @@ GitHub Actions workflow:
 ## Conclusion
 
 The project is well-structured, extensible, and testable. The architecture supports:
+
 - ✅ Multi-language support (i18n)
 - ✅ Monetization system (structure)
 - ✅ Game registry system (scales to 50+ games)

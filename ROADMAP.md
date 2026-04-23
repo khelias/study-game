@@ -55,7 +55,7 @@ Today all four are welded together inside the `games/` folder. The roadmap's bac
 - **`Profile` is difficulty-tiered, not persona-typed.** `src/types/profile.ts` models an age/level bracket (`levelStart`, `difficultyOffset`, emoji). A "learner persona" concept that spans kid ↔ adult is missing.
 - **Skill ≡ Mechanic ≡ Content welding.** Specific content files are tied to specific games: `constellations.ts`, `puzzles.ts`, `syllableWords.ts`, `shapeShiftGrid.ts`, `sentenceTranslations.ts` in `src/games/`. Adding "fractions" or "Estonian river names" means writing code, not data.
 - **No server.** `apiAdapter.ts` is a TODO stub. No user identity beyond localStorage. No cross-device sync. No shared content distribution.
-- **No observability.** `src/utils/errorHandler.ts:17` comment: *"In production, you could send errors to error tracking service"*.
+- **No observability.** `src/utils/errorHandler.ts:17` comment: _"In production, you could send errors to error tracking service"_.
 - **No collection / economy layer.** Stars exist as an earned counter; there is no spending target, no inventory, no unlock catalog, no theme application system.
 - **Monetization scaffolding has never been exercised.** Feature flags are defined, nothing gates on them. Plumbing without a fixture.
 - **No E2E tests.** Unit coverage is strong on the engine; nothing verifies that a user journey end-to-end still works after refactors.
@@ -123,6 +123,7 @@ Each phase is **self-contained**: stopping after any of them leaves the project 
 **Goal.** Put the project in a shape where Phase 1's refactor is safe.
 
 **Scope.**
+
 - Decompose `GameScreen.tsx` into `GameScreenContainer` (state wiring) + `GameScreenView` (pure props) + one modal-host component. Target <200 LOC per file.
 - Add explicit `typecheck` npm script (`tsc --noEmit`), run in CI before build.
 - Add Prettier, enforce via ESLint plugin; single pass over repo.
@@ -131,10 +132,12 @@ Each phase is **self-contained**: stopping after any of them leaves the project 
 - Add Playwright (or Cypress) with three E2E flows: pick a profile, play one round of a representative game, earn stars. These become the refactor safety net.
 
 **Non-goals.**
+
 - No domain-model code changes yet. Only ADRs and safety net.
 - No backend work.
 
 **Done when.**
+
 - CI runs `lint`, `typecheck`, `test`, `e2e`, `build` — all green.
 - ADR-0001 and ADR-0002 merged.
 - `GameScreen.tsx` split and passing all tests at the new structure.
@@ -148,24 +151,28 @@ Each phase is **self-contained**: stopping after any of them leaves the project 
 **Goal.** Introduce the `Skill` and `ContentPack` entities; migrate existing games so that content is data, not code.
 
 **Scope.**
+
 - Define types for `Skill`, `ContentPack`, `ContentItem` in a new `src/curriculum/` directory.
 - Migrate existing inline content (`constellations.ts`, `puzzles.ts`, `syllableWords.ts`, `shapeShiftGrid.ts`, `sentenceTranslations.ts`, `generators.ts`) into ContentPacks, versioned, locale-tagged.
 - Introduce `LearnerProfile` and `SkillMastery` types. Adaptive difficulty in `engine/adaptiveDifficulty.ts` re-reads from `SkillMastery`, not from the old difficulty-tier profile.
 - `registrations.ts` entries become bindings: each game declares `{ mechanic, skillIds[], defaultContentPackId }`. Runtime picks the pack.
-- Update `ARCHITECTURE.md` section *Game Data* to describe the new model. Leave a migration note pointing to ADR-0001.
+- Update `ARCHITECTURE.md` section _Game Data_ to describe the new model. Leave a migration note pointing to ADR-0001.
 - Tests: every `Skill` must have at least one golden-path test asserting that its content flows into at least one mechanic without error.
 
 **Non-goals.**
+
 - No backend. Content packs ship as JSON files imported at build time.
 - No new games. No adult content yet. No theme collection yet.
 - No account system — `LearnerProfile` stays in localStorage.
 
 **Done when.**
+
 - Adding a new skill (e.g. `multiplication_1_10`) to the platform is a data-only change: create a ContentPack JSON, reference it in one registration binding. No engine or component code touched.
 - All 18 existing games still playable, still passing their tests.
 - Coverage on engine holds or improves.
 
 **Risks.**
+
 - Scope creep. The temptation will be to "finally fix" unrelated code while touching every file. Resist — that's Phase 0's job.
 - Migration loss. A mistranslation from the old data shape to `ContentPack` breaks a game silently. Mitigated by the E2E tests added in Phase 0.
 
@@ -178,6 +185,7 @@ Each phase is **self-contained**: stopping after any of them leaves the project 
 **Goal.** Server-backed learner profiles with cross-device sync; the `apiAdapter.ts` stub becomes real.
 
 **Scope.**
+
 - **Stack decision required** (see §5 — Open decisions). Default recommendation: backend in Java/Spring Boot with Postgres — matches the author's day-job expertise and gives the reference project its "real" spine. Alternative: Node/TS for single-language stack.
 - Server modeling only the Learner, Curriculum (read-only from packs), and Gameplay contexts at this stage. Meta-progression stays local until Phase 3.
 - Auth: magic-link email + JWT session. Token refresh on session start. No passwords; no social login in MVP. OIDC provider (Keycloak / Authentik / Zitadel) deferred unless we need SSO.
@@ -186,17 +194,20 @@ Each phase is **self-contained**: stopping after any of them leaves the project 
 - Observability baseline: structured logs via OpenTelemetry log exporter, `/actuator/health` (or equivalent) wired into Uptime Kuma.
 
 **Non-goals.**
+
 - No real-time multiplayer.
 - No CRDT / fancy conflict resolution. Last-write-wins is explicitly sufficient for a single-player learning game.
 - No content CMS. Content packs still ship in the client bundle at this stage.
 
 **Done when.**
+
 - A learner profile created on one device is visible on a second device within seconds of login.
 - Losing the backend (deliberately stopped) leaves the app playable offline; reconnection syncs.
 - Server exposes a typed OpenAPI (or equivalent) contract versioned in the repo.
 - New service in khe-homelab is monitored (Uptime Kuma + autoheal healthcheck) and backed up (`backup.sh`).
 
 **Risks.**
+
 - Auth infrastructure is the rabbit hole. Pick magic-link, enforce the scope, ship.
 - The Postgres schema for `SkillMastery` with rolling stats can grow unbounded. Cap rolling windows; plan for archival early.
 
@@ -209,6 +220,7 @@ Each phase is **self-contained**: stopping after any of them leaves the project 
 **Goal.** Deliver the meta-progression the product vision depends on: earn stars, unlock themes, apply them to the app.
 
 **Scope.**
+
 - New bounded context: `src/meta/` with `Wallet`, `Inventory`, `UnlockCatalog`, `ThemeCatalog`.
 - Theme application layer: a ThemeProvider that swaps CSS custom properties (color palette, background art reference, optional particle/decoration slot). Themes are data, not code.
 - Asset pipeline: themes bundled as assets in `public/themes/<theme-id>/` for MVP. CDN + dynamic loading only if bundle size becomes a real problem.
@@ -217,11 +229,13 @@ Each phase is **self-contained**: stopping after any of them leaves the project 
 - Server-side: `Inventory` syncs via Phase 2 backend. `Wallet` is authoritative server-side to prevent trivial tampering.
 
 **Non-goals.**
+
 - No real payment. Themes are earned, not bought with money, until Phase 6.
 - No user-generated themes.
 - No theme trading or social features.
 
 **Done when.**
+
 - A learner can earn, spend, own, and apply themes. Inventory persists and syncs.
 - Theme changes are instant and don't require a reload.
 - Adding a theme is a content change (JSON + asset drop), not a code change.
@@ -235,6 +249,7 @@ Each phase is **self-contained**: stopping after any of them leaves the project 
 **Goal.** Decouple content authorship from release cadence; align core skill packs to the Estonian national curriculum (põhikooli ainekava) for grades 1–6.
 
 **Scope.**
+
 - Server-side content storage — packs versioned, profiles pin a pack version, upgrade is explicit. Built-in editor UI is a stretch; JSON-schema-validated files served from the backend are sufficient to start.
 - Taxonomy: map every `Skill` to one or more curriculum nodes (subject → grade → topic → subtopic). Schema documented, not invented per pack.
 - Delivery: packs fetched over HTTP with caching, not bundled in the client. Offline mode keeps last-fetched pack available.
@@ -242,11 +257,13 @@ Each phase is **self-contained**: stopping after any of them leaves the project 
 - New skill coverage target: at least one complete pack per mandatory primary-school subject area (matemaatika, eesti keel, loodusõpetus, inimeseõpetus) at grade 1–3 level, pilot only.
 
 **Non-goals.**
+
 - No external authoring tool integration (Contentful, Strapi etc.) — out of scope for a homelab reference.
 - No school-facing admin (teachers, classrooms, reports) — that's a separate product.
 - No AI-generated content at this stage (Phase 6+ stretch).
 
 **Done when.**
+
 - Releasing new content (new skill or new pack version) is a server-side change only; clients pick it up on next session start.
 - At least one curriculum-aligned pack per target subject, peer-reviewed against the ainekava document.
 
@@ -259,16 +276,19 @@ Each phase is **self-contained**: stopping after any of them leaves the project 
 **Goal.** Activate the platform's second persona. Adult users are first-class citizens of the same codebase, not a parallel app.
 
 **Scope.**
+
 - Second UX register (theme + typography + motion scale), chosen by persona on profile creation. Mechanics identical; chrome different.
 - Adult-targeted content packs: Eesti jõed, Eesti ajalugu (tähtsamad sündmused), grammatika (käänded, pöörded), vanasõnad, üldteadmised. Start small — two or three well-crafted packs beat ten shallow ones.
 - Content selection UI for adults: no "choose a game" menu; instead "what do you want to practice today?" — entry point is the `Skill`, mechanic is the engine's call.
 - Session cadence for adults: shorter, sharper, spaced-repetition-flavored — longer intervals between the same skill, smaller sessions. Implementation is a parameter of `AdaptiveEngine`, not a new engine.
 
 **Non-goals.**
+
 - No separate product brand. Same app, same domain.
 - No corporate / tööandja features (dashboards, team leaderboards). Consumer-first.
 
 **Done when.**
+
 - A freshly created adult profile completes a meaningful first session in under 3 minutes, with no UI text that reads as infantilizing.
 - At least three adult-targeted content packs live.
 
@@ -281,6 +301,7 @@ Each phase is **self-contained**: stopping after any of them leaves the project 
 **Goal.** Make the project genuinely production-grade. Activate the monetization scaffolding in a form that is showcase-truthful, not performative.
 
 **Scope.**
+
 - **Observability.** OpenTelemetry end-to-end (frontend → backend → database), metrics exported to a local Prometheus, traces to a local Tempo/Jaeger, logs to Loki. Dashboards in the existing Grafana. If there is no existing Grafana, installing one is part of this phase.
 - **Error tracking.** Self-hosted GlitchTip or similar. Route frontend + backend errors.
 - **Paywall activation.** Pick one feature flag from `monetization/config.ts` to actually gate (e.g. `multiple_profiles` or `export_data`). Implement the gate end-to-end with a mock payment flow (no real Stripe charge). Document the full path in an ADR.
@@ -290,6 +311,7 @@ Each phase is **self-contained**: stopping after any of them leaves the project 
 - **Public architecture page.** A public `/architecture` route on the site rendering the ADRs and a live system diagram. This is where the project stops being "a game" and starts being "a reference project with a game in front of it".
 
 **Done when.**
+
 - An outage of the Postgres container is caught by Uptime Kuma and announced to Telegram within minutes.
 - A frontend runtime exception in production shows up in the error tracker with source maps and user context (pseudonymous).
 - The paywall blocks what it says it blocks; the mock payment flow correctly toggles the feature.

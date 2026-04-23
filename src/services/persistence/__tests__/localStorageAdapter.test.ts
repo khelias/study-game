@@ -16,7 +16,7 @@ describe('LocalStorageAdapter', () => {
   describe('save', () => {
     it('should save data to localStorage', async () => {
       await adapter.save(testKey, testData);
-      
+
       const stored = localStorage.getItem(testKey);
       expect(stored).toBeTruthy();
       expect(JSON.parse(stored!)).toEqual(testData);
@@ -30,7 +30,7 @@ describe('LocalStorageAdapter', () => {
         },
         date: new Date().toISOString(),
       };
-      
+
       await adapter.save(testKey, complexData);
       const loaded = await adapter.load<typeof complexData>(testKey);
       expect(loaded).toEqual(complexData);
@@ -44,7 +44,7 @@ describe('LocalStorageAdapter', () => {
       });
 
       await expect(adapter.save(testKey, testData)).rejects.toThrow(PersistenceError);
-      
+
       JSON.stringify = originalStringify;
     });
   });
@@ -52,7 +52,7 @@ describe('LocalStorageAdapter', () => {
   describe('load', () => {
     it('should load data from localStorage', async () => {
       localStorage.setItem(testKey, JSON.stringify(testData));
-      
+
       const loaded = await adapter.load<typeof testData>(testKey);
       expect(loaded).toEqual(testData);
     });
@@ -64,7 +64,7 @@ describe('LocalStorageAdapter', () => {
 
     it('should throw PersistenceError for corrupted data', async () => {
       localStorage.setItem(testKey, 'invalid json{');
-      
+
       await expect(adapter.load(testKey)).rejects.toThrow(PersistenceError);
     });
   });
@@ -72,9 +72,9 @@ describe('LocalStorageAdapter', () => {
   describe('delete', () => {
     it('should delete data from localStorage', async () => {
       localStorage.setItem(testKey, JSON.stringify(testData));
-      
+
       await adapter.delete(testKey);
-      
+
       expect(localStorage.getItem(testKey)).toBeNull();
     });
 

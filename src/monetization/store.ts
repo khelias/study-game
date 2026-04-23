@@ -1,6 +1,6 @@
 /**
  * Monetization store
- * 
+ *
  * This store manages monetization state using Zustand.
  * Currently, all features are free. The structure is ready
  * for future monetization implementation.
@@ -20,14 +20,10 @@ const createDefaultState = (): MonetizationState => ({
   subscription: {
     tier: 'free',
     isActive: true,
-    features: DEFAULT_MONETIZATION_CONFIG.features
-      .filter(f => f.enabled)
-      .map(f => f.id),
+    features: DEFAULT_MONETIZATION_CONFIG.features.filter((f) => f.enabled).map((f) => f.id),
   },
   purchasedItems: [],
-  availableFeatures: DEFAULT_MONETIZATION_CONFIG.features
-    .filter(f => f.enabled)
-    .map(f => f.id),
+  availableFeatures: DEFAULT_MONETIZATION_CONFIG.features.filter((f) => f.enabled).map((f) => f.id),
 });
 
 export interface MonetizationStore extends MonetizationState {
@@ -47,8 +43,8 @@ export const useMonetizationStore = create<MonetizationStore>()(
       setSubscription: (tier: SubscriptionTier, expiresAt?: number) => {
         const config = DEFAULT_MONETIZATION_CONFIG;
         const features = config.features
-          .filter(f => !f.requiresSubscription || f.requiresSubscription === tier)
-          .map(f => f.id);
+          .filter((f) => !f.requiresSubscription || f.requiresSubscription === tier)
+          .map((f) => f.id);
 
         set({
           subscription: {
@@ -73,7 +69,7 @@ export const useMonetizationStore = create<MonetizationStore>()(
       removePurchasedItem: (itemId: string) => {
         const state = get();
         set({
-          purchasedItems: state.purchasedItems.filter(id => id !== itemId),
+          purchasedItems: state.purchasedItems.filter((id) => id !== itemId),
         });
       },
 
@@ -93,6 +89,6 @@ export const useMonetizationStore = create<MonetizationStore>()(
         purchasedItems: state.purchasedItems,
         availableFeatures: state.availableFeatures,
       }),
-    }
-  )
+    },
+  ),
 );

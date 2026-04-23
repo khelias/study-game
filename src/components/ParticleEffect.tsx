@@ -19,7 +19,10 @@ interface ParticleEffectProps {
   active?: boolean;
 }
 
-export const ParticleEffect: React.FC<ParticleEffectProps> = ({ type = 'success', active = false }) => {
+export const ParticleEffect: React.FC<ParticleEffectProps> = ({
+  type = 'success',
+  active = false,
+}) => {
   const [particles, setParticles] = useState<Particle[]>([]);
 
   useEffect(() => {
@@ -56,7 +59,8 @@ export const ParticleEffect: React.FC<ParticleEffectProps> = ({ type = 'success'
   // Generate unique keyframe names for each particle with different offsets
   const keyframes: string = particles
     .map((particle) => {
-      const offsetX = particle.offsetX === '-' ? `-${particle.offsetXAmount}` : `${particle.offsetXAmount}`;
+      const offsetX =
+        particle.offsetX === '-' ? `-${particle.offsetXAmount}` : `${particle.offsetXAmount}`;
       return `
         @keyframes particle-${particle.id} {
           0% {

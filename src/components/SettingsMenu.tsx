@@ -1,6 +1,6 @@
 /**
  * SettingsMenu Component
- * 
+ *
  * Dropdown menu for game settings (consistent across MenuScreen and GameScreen).
  */
 
@@ -62,7 +62,9 @@ export const SettingsMenu: React.FC<SettingsMenuProps> = ({
             <span className="text-lg">🏅</span>
             <span>{formatText(t.menuSpecific.showAchievements)}</span>
             {unlockedAchievements.length > 0 && (
-              <span className="ml-auto text-sm font-bold text-purple-700">{unlockedAchievements.length}</span>
+              <span className="ml-auto text-sm font-bold text-purple-700">
+                {unlockedAchievements.length}
+              </span>
             )}
           </button>
           <div className="border-t border-slate-200" />
@@ -160,7 +162,9 @@ export const SettingsMenu: React.FC<SettingsMenuProps> = ({
             <VolumeX size={16} className="text-red-500" />
           )}
           <span>
-            {formatText(soundEnabled ? t.menuSpecific.toggleSoundOff : t.menuSpecific.toggleSoundOn)}
+            {formatText(
+              soundEnabled ? t.menuSpecific.toggleSoundOff : t.menuSpecific.toggleSoundOn,
+            )}
           </span>
         </button>
       </div>

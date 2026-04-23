@@ -10,35 +10,40 @@ interface AchievementsModalProps {
   onClose: () => void;
 }
 
-export const AchievementsModal: React.FC<AchievementsModalProps> = ({ unlockedAchievements, onClose }) => {
+export const AchievementsModal: React.FC<AchievementsModalProps> = ({
+  unlockedAchievements,
+  onClose,
+}) => {
   const t = useTranslation();
   const { formatText } = useProfileText();
   const allAchievements = Object.values(ACHIEVEMENTS);
   const unlockedSet: Set<string> = new Set(unlockedAchievements);
 
   return (
-    <div 
+    <div
       className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-300"
-      style={{ 
-        position: 'fixed', 
-        top: 0, 
-        left: 0, 
-        right: 0, 
-        bottom: 0, 
+      style={{
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
         margin: 0,
         padding: '1rem',
         display: 'flex',
         alignItems: 'center',
-        justifyContent: 'center'
+        justifyContent: 'center',
       }}
       onClick={(e: React.MouseEvent<HTMLDivElement>) => e.target === e.currentTarget && onClose()}
     >
-      <div 
+      <div
         className="bg-white rounded-3xl p-6 max-w-2xl w-full shadow-2xl max-h-[90vh] overflow-y-auto"
         style={{ margin: '0 auto' }}
       >
         <div className="flex justify-between items-center mb-6">
-          <h2 className="text-2xl font-black text-slate-800">{formatText(t.achievements.modalTitle)}</h2>
+          <h2 className="text-2xl font-black text-slate-800">
+            {formatText(t.achievements.modalTitle)}
+          </h2>
           <button
             onClick={onClose}
             className="p-2 rounded-full bg-slate-100 hover:bg-slate-200 transition-colors"
@@ -64,31 +69,38 @@ export const AchievementsModal: React.FC<AchievementsModalProps> = ({ unlockedAc
                 key={achievement.id}
                 className={`
                   p-4 rounded-xl border-2 transition-all
-                  ${isUnlocked
-                    ? 'bg-gradient-to-br from-yellow-50 to-orange-50 border-yellow-300 shadow-md'
-                    : 'bg-slate-50 border-slate-200 opacity-60'
+                  ${
+                    isUnlocked
+                      ? 'bg-gradient-to-br from-yellow-50 to-orange-50 border-yellow-300 shadow-md'
+                      : 'bg-slate-50 border-slate-200 opacity-60'
                   }
                 `}
               >
                 <div className="flex items-start gap-3">
-                  <div className={`
+                  <div
+                    className={`
                     text-4xl flex-shrink-0
                     ${isUnlocked ? '' : 'grayscale opacity-50'}
-                  `}>
+                  `}
+                  >
                     {achievement.icon}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <h3 className={`
+                    <h3
+                      className={`
                       font-black text-lg mb-1
                       ${isUnlocked ? 'text-slate-800' : 'text-slate-400'}
-                    `}>
+                    `}
+                    >
                       {formatText(copy.title)}
                       {isUnlocked && <span className="ml-2 text-yellow-500">✓</span>}
                     </h3>
-                    <p className={`
+                    <p
+                      className={`
                       text-sm
                       ${isUnlocked ? 'text-slate-600' : 'text-slate-400'}
-                    `}>
+                    `}
+                    >
                       {formatText(copy.desc)}
                     </p>
                   </div>

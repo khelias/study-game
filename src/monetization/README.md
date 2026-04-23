@@ -20,6 +20,7 @@ monetization/
 **All features are currently free!**
 
 Monetization is:
+
 - ✅ Structured
 - ✅ Type-safe
 - ✅ Testable
@@ -58,7 +59,7 @@ import { useHasFeature, useSubscriptionTier } from '../monetization/hooks';
 function MyComponent() {
   const hasPremium = useHasFeature('premium_games');
   const tier = useSubscriptionTier();
-  
+
   if (hasPremium) {
     // Show premium content
   }
@@ -71,11 +72,9 @@ function MyComponent() {
 import { useMonetizationStore } from '../monetization/store';
 
 function MyComponent() {
-  const hasFeature = useMonetizationStore(state => 
-    state.hasFeature('premium_games')
-  );
-  
-  const subscription = useMonetizationStore(state => state.subscription);
+  const hasFeature = useMonetizationStore((state) => state.hasFeature('premium_games'));
+
+  const subscription = useMonetizationStore((state) => state.subscription);
 }
 ```
 
@@ -84,11 +83,13 @@ function MyComponent() {
 When monetization needs to be activated:
 
 1. **Activate monetization** in `config.ts`:
+
    ```ts
-   enabled: true
+   enabled: true;
    ```
 
 2. **Add feature flags** that require subscription:
+
    ```ts
    {
      id: 'premium_games',
@@ -121,6 +122,7 @@ When monetization needs to be activated:
 ### Store
 
 Zustand store manages:
+
 - Subscription status
 - Purchased items
 - Available features
@@ -148,6 +150,7 @@ Zustand store manages:
 ## Future
 
 Possible extensions:
+
 - [ ] Subscription management
 - [ ] Payment integration
 - [ ] Analytics

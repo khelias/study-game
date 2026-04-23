@@ -14,7 +14,9 @@ interface TipButtonProps {
 export const TipButton: React.FC<TipButtonProps> = ({ onTip, soundEnabled, disabled = false }) => {
   const t = useTranslation();
   const { formatText } = useProfileText();
-  const label = formatText(disabled ? t.gameScreen.tipButton.unavailable : t.gameScreen.tipButton.show);
+  const label = formatText(
+    disabled ? t.gameScreen.tipButton.unavailable : t.gameScreen.tipButton.show,
+  );
 
   const handleClick = (): void => {
     if (disabled) return;
@@ -28,9 +30,10 @@ export const TipButton: React.FC<TipButtonProps> = ({ onTip, soundEnabled, disab
       disabled={disabled}
       className={`
         fixed bottom-4 left-4 p-4 rounded-full shadow-lg transition-all
-        ${disabled
-          ? 'bg-slate-200 text-slate-400 cursor-not-allowed'
-          : 'bg-blue-400 hover:bg-blue-500 text-white hover:scale-110 active:scale-95'
+        ${
+          disabled
+            ? 'bg-slate-200 text-slate-400 cursor-not-allowed'
+            : 'bg-blue-400 hover:bg-blue-500 text-white hover:scale-110 active:scale-95'
         }
       `}
       style={{ zIndex: Z_INDEX.HINTS }}

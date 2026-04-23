@@ -1,6 +1,6 @@
 /**
  * Answer Handler Engine
- * 
+ *
  * Pure business logic for processing game answers.
  * This module handles the core logic of what happens when a player answers correctly or incorrectly.
  * UI concerns (notifications, animations) are handled by the calling code.
@@ -38,7 +38,7 @@ export interface AnswerHandlerContext {
 export function processMathSnakeAnswer(context: AnswerHandlerContext): AnswerResult {
   const { isCorrect, problem, gameType, rng } = context;
   const baseGameType = gameType.replace('_adv', '');
-  
+
   if (baseGameType !== 'math_snake' || problem.type !== 'math_snake') {
     throw new Error('processMathSnakeAnswer called for non-math-snake game');
   }
@@ -88,7 +88,7 @@ export function processMathSnakeAnswer(context: AnswerHandlerContext): AnswerRes
 
 /**
  * Processes an answer for standard game types (non-math-snake)
- * 
+ *
  * Note: Level-up logic will be updated in Phase 3 (performance-based, not star-based)
  */
 export function processStandardAnswer(context: AnswerHandlerContext): AnswerResult {

@@ -25,7 +25,7 @@ import { useTranslation } from '../i18n/useTranslation';
 
 function MyComponent() {
   const t = useTranslation();
-  
+
   return (
     <div>
       <h1>{t.menu.title}</h1>
@@ -103,6 +103,7 @@ Translations are organized into logical categories:
 ## Type Safety
 
 All translations are type-safe. TypeScript ensures that:
+
 - All keys exist
 - Types are correct
 - There are no undefined references

@@ -52,6 +52,7 @@
 ```
 
 **Problems**:
+
 - 🔴 **5 separate UI sections** between header and grid
 - 🔴 **Eye travel distance**: Status → Instructions → Feedback → Grid → Question (if miss)
 - 🔴 **Layout shifts**: Feedback popping in/out, question card appearing
@@ -85,7 +86,7 @@
 └─────────────────────────────────────────────────────┘
 
         On miss, modal appears:
-        
+
         ┌───────────────────────────────┐
         │  ╔═══════════════════════════╗ │
         │  ║  GameProblemModal         ║ │
@@ -108,6 +109,7 @@
 ```
 
 **Improvements**:
+
 - ✅ **2 sections** (stats + grid) instead of 5
 - ✅ **Direct eye path**: Stats → Grid → Modal (on miss)
 - ✅ **No layout shifts**: Modal overlays, doesn't push content
@@ -120,46 +122,63 @@
 ### Status/Stats Display
 
 #### BEFORE
+
 ```tsx
-{/* Three separate elements showing status */}
+{
+  /* Three separate elements showing status */
+}
 <div className="flex items-center gap-1">
   <Target className="w-4 h-4" />
-  <span>Ships: {remaining}/{total}</span>  {/* Element 1 */}
-</div>
+  <span>
+    Ships: {remaining}/{total}
+  </span>{' '}
+  {/* Element 1 */}
+</div>;
 
-{gamePhase === 'shooting' && (
-  <div className="px-3 py-1 bg-green-100 border-2 border-green-500 
-                  rounded-full animate-pulse">
-    <span>Shot Ready</span>  {/* Element 2 - Phase indicator */}
-  </div>
-)}
+{
+  gamePhase === 'shooting' && (
+    <div
+      className="px-3 py-1 bg-green-100 border-2 border-green-500 
+                  rounded-full animate-pulse"
+    >
+      <span>Shot Ready</span> {/* Element 2 - Phase indicator */}
+    </div>
+  );
+}
 
 <div className="bg-gradient-to-r from-blue-50 to-cyan-50 border-2">
-  <p>Shoot a cell! If you miss, you must answer.</p>  {/* Element 3 - Instructions */}
-</div>
+  <p>Shoot a cell! If you miss, you must answer.</p> {/* Element 3 - Instructions */}
+</div>;
 ```
 
 **Issues**:
+
 - 3 separate containers
 - Redundant information (all saying "you can shoot")
 - Takes up significant vertical space
 - Phase indicator pulses (distracting)
 
 #### AFTER
+
 ```tsx
-{/* Single, clean stats display */}
-<GameStatsBar stats={[
-  {
-    id: 'ships',
-    icon: Target,
-    label: 'Ships',
-    value: `${remaining}/${total}`,
-    variant: remaining === 0 ? 'success' : 'default',
-  }
-]} />
+{
+  /* Single, clean stats display */
+}
+<GameStatsBar
+  stats={[
+    {
+      id: 'ships',
+      icon: Target,
+      label: 'Ships',
+      value: `${remaining}/${total}`,
+      variant: remaining === 0 ? 'success' : 'default',
+    },
+  ]}
+/>;
 ```
 
 **Benefits**:
+
 - Single container
 - Essential information only
 - Compact (saves ~120px vertical space)
@@ -168,42 +187,58 @@
 ### Feedback Display
 
 #### BEFORE
+
 ```tsx
-{/* Fixed-height container that shows/hides */}
-<div className="min-h-12">  {/* Always takes space */}
+{
+  /* Fixed-height container that shows/hides */
+}
+<div className="min-h-12">
+  {' '}
+  {/* Always takes space */}
   {showFeedback && (
-    <div className="px-4 py-2 bg-white border-2 border-blue-400 
-                    animate-in zoom-in">
-      {feedback}  {/* Pops in between sections */}
+    <div
+      className="px-4 py-2 bg-white border-2 border-blue-400 
+                    animate-in zoom-in"
+    >
+      {feedback} {/* Pops in between sections */}
     </div>
   )}
-</div>
+</div>;
 ```
 
 **Issues**:
+
 - Always reserves space (even when empty)
 - Animates in/out causing visual distraction
 - Located between instructions and grid
 - Separate from action context
 
 #### AFTER
+
 ```tsx
-{/* Integrated into modal */}
+{
+  /* Integrated into modal */
+}
 <GameProblemModal
   showFeedback={showFeedback}
   feedbackMessage={feedback}
   // ... other props
-/>
+/>;
 
-{/* Inside modal, within feedback area: */}
-{showFeedback && (
-  <div className="px-4 py-2 bg-blue-50 border-2 border-blue-300">
-    {feedbackMessage}  {/* Appears in context */}
-  </div>
-)}
+{
+  /* Inside modal, within feedback area: */
+}
+{
+  showFeedback && (
+    <div className="px-4 py-2 bg-blue-50 border-2 border-blue-300">
+      {feedbackMessage} {/* Appears in context */}
+    </div>
+  );
+}
 ```
 
 **Benefits**:
+
 - No reserved space in main layout
 - Feedback appears in context (within problem modal)
 - Only visible when relevant
@@ -212,32 +247,38 @@
 ### Problem Display
 
 #### BEFORE
+
 ```tsx
-{/* Conditional card below grid */}
-{gamePhase === 'answering' && (
-  <div className="w-full max-w-2xl animate-in slide-in-from-bottom">
-    <div className="bg-gradient-to-br from-yellow-50 to-orange-50 
-                    rounded-xl shadow-lg p-6">
-      <div className="flex items-center gap-2">
-        <Target className="w-5 h-5" />
-        <h3>Answer to Continue</h3>
-      </div>
-      
-      <p className="text-xl text-center">{question.prompt}</p>
-      
-      <div className="grid grid-cols-2 gap-3">
-        {question.options.map((option, index) => (
-          <button onClick={() => handleOptionSelect(index)}>
-            {option}
-          </button>
-        ))}
+{
+  /* Conditional card below grid */
+}
+{
+  gamePhase === 'answering' && (
+    <div className="w-full max-w-2xl animate-in slide-in-from-bottom">
+      <div
+        className="bg-gradient-to-br from-yellow-50 to-orange-50 
+                    rounded-xl shadow-lg p-6"
+      >
+        <div className="flex items-center gap-2">
+          <Target className="w-5 h-5" />
+          <h3>Answer to Continue</h3>
+        </div>
+
+        <p className="text-xl text-center">{question.prompt}</p>
+
+        <div className="grid grid-cols-2 gap-3">
+          {question.options.map((option, index) => (
+            <button onClick={() => handleOptionSelect(index)}>{option}</button>
+          ))}
+        </div>
       </div>
     </div>
-  </div>
-)}
+  );
+}
 ```
 
 **Issues**:
+
 - Appears below grid (far from action)
 - Slides in from bottom (layout shift)
 - Player's eyes at top, question at bottom
@@ -245,8 +286,11 @@
 - Long travel distance to answer
 
 #### AFTER
+
 ```tsx
-{/* Centered modal overlay */}
+{
+  /* Centered modal overlay */
+}
 <GameProblemModal
   isOpen={gamePhase === 'answering'}
   title="Answer to Continue"
@@ -258,10 +302,11 @@
   showFeedback={showFeedback}
   feedbackMessage={feedback}
   icon={<Target />}
-/>
+/>;
 ```
 
 **Benefits**:
+
 - Appears centered (visible regardless of scroll)
 - Overlays grid (no layout shift)
 - Modal backdrop focuses attention
@@ -301,7 +346,7 @@
 4. Player answers (eyes barely move - modal is centered)
 5. **Feedback shows** in modal
 6. If correct:
-    - Modal **fades out**
+   - Modal **fades out**
 7. Player can shoot again (grid never moved)
 
 **Total visual changes**: ~3-4 elements moving/changing
@@ -312,6 +357,7 @@
 ### Component Count
 
 **BEFORE**:
+
 - Status container (1)
 - Phase badge (1, conditional)
 - Instructions bar (1)
@@ -323,6 +369,7 @@
 - **Total**: 35-48 components rendered
 
 **AFTER**:
+
 - Stats bar (1)
 - Stats badges (1-2, based on phase)
 - Grid container (1)
@@ -336,6 +383,7 @@
 ### Re-render Optimization
 
 **BEFORE**: Phase changes trigger:
+
 - Status bar update
 - Phase badge update
 - Instructions update
@@ -344,6 +392,7 @@
 - Layout reflow (for question card)
 
 **AFTER**: Phase changes trigger:
+
 - Stats bar update (single component)
 - Modal mount/unmount (no layout reflow)
 
@@ -352,11 +401,13 @@
 ### Keyboard Navigation
 
 **BEFORE**:
+
 - Focus moves through: Status → Instructions → Grid → (if miss) → Question options
 - Tab order changes dynamically when question appears
 - No focus trap in question card
 
 **AFTER**:
+
 - Focus moves through: Stats → Grid → (if miss) → Modal (focus trapped)
 - Modal auto-focuses first option
 - Escape key closes modal (if dismissible)
@@ -365,6 +416,7 @@
 ### Screen Reader Experience
 
 **BEFORE**:
+
 ```
 [User clicks grid]
 Screen reader: "Button, cell 2-3"
@@ -377,6 +429,7 @@ Screen reader: "Button, 6"
 ```
 
 **AFTER**:
+
 ```
 [User clicks grid]
 Screen reader: "Button, cell 2-3"
@@ -388,6 +441,7 @@ Screen reader: "Button, 6, option 1 of 4"
 ```
 
 **Improvements**:
+
 - Clear dialog role
 - Auto-focus on first option
 - Option count announced
@@ -398,6 +452,7 @@ Screen reader: "Button, 6, option 1 of 4"
 ### Viewport Usage
 
 **BEFORE**:
+
 ```
 Portrait phone (375px × 667px viewport):
 
@@ -413,6 +468,7 @@ With question: 920px (significant scrolling)
 ```
 
 **AFTER**:
+
 ```
 Portrait phone (375px × 667px viewport):
 
@@ -425,6 +481,7 @@ Modal: Overlay (doesn't affect layout)
 ```
 
 **Benefits**:
+
 - Grid is 40px taller (14% larger)
 - No scrolling needed
 - Modal uses padding effectively
@@ -433,11 +490,13 @@ Modal: Overlay (doesn't affect layout)
 ### Touch Targets
 
 **BEFORE**:
+
 - Question buttons: 48px tall, at bottom of screen
 - Requires scrolling to see all options
 - Thumb reach: Poor (bottom of scrolled area)
 
 **AFTER**:
+
 - Modal buttons: 64px tall, centered on screen
 - No scrolling needed
 - Thumb reach: Excellent (modal is centered)
@@ -455,12 +514,14 @@ Modal: Overlay (doesn't affect layout)
 ### Complexity
 
 **BEFORE**:
+
 - 8 state variables
 - 5 conditional rendering sections
 - Manual feedback timing management
 - Manual phase indicator logic
 
 **AFTER**:
+
 - 7 state variables (feedback integrated)
 - 3 conditional rendering sections
 - GameProblemModal handles timing
@@ -469,27 +530,37 @@ Modal: Overlay (doesn't affect layout)
 ### Maintainability
 
 **BEFORE**:
+
 ```tsx
-{/* Hard to find and update feedback logic */}
+{
+  /* Hard to find and update feedback logic */
+}
 <div className="mb-4 w-full max-w-2xl min-h-12">
   {showFeedback && (
-    <div className="px-4 py-2 bg-white border-2 border-blue-400 
+    <div
+      className="px-4 py-2 bg-white border-2 border-blue-400 
                     rounded-lg shadow-lg text-base sm:text-lg 
-                    font-bold animate-in zoom-in duration-200 text-center">
+                    font-bold animate-in zoom-in duration-200 text-center"
+    >
       {feedback}
     </div>
   )}
-</div>
+</div>;
 
-{/* Hard to find and update question logic */}
-{!gameState.gameWon && gamePhase === 'answering' && (
-  <div className="w-full max-w-2xl animate-in slide-in-from-bottom duration-300">
-    {/* 30+ lines of question card JSX */}
-  </div>
-)}
+{
+  /* Hard to find and update question logic */
+}
+{
+  !gameState.gameWon && gamePhase === 'answering' && (
+    <div className="w-full max-w-2xl animate-in slide-in-from-bottom duration-300">
+      {/* 30+ lines of question card JSX */}
+    </div>
+  );
+}
 ```
 
 **AFTER**:
+
 ```tsx
 {/* Clear, reusable components */}
 <GameStatsBar stats={stats} />
@@ -506,6 +577,7 @@ Modal: Overlay (doesn't affect layout)
 ### Before: Custom Implementation Each Time
 
 Each game needs to implement:
+
 - Custom question card layout
 - Custom feedback positioning
 - Custom stat displays
@@ -517,6 +589,7 @@ Each game needs to implement:
 ### After: Shared Components
 
 Each game uses:
+
 ```tsx
 import { GameProblemModal, GameStatsBar } from '../shared';
 ```
@@ -527,20 +600,21 @@ import { GameProblemModal, GameStatsBar } from '../shared';
 
 ## Summary of Improvements
 
-| Aspect | Before | After | Improvement |
-|--------|--------|-------|-------------|
-| **UI Sections** | 5 | 2 | 60% reduction |
-| **Vertical Space (mobile)** | 700px+ | 424px | 40% less scrolling |
-| **Components** | 35-48 | 28-41 | 15-20% fewer |
-| **Code Lines** | 364 | 248 | 32% reduction |
-| **Attention Shifts** | 4-5 | 2 | 50-60% fewer |
-| **Layout Shifts** | 3 (feedback, phase, question) | 0 | 100% eliminated |
-| **Accessibility** | Basic | Enhanced | Focus trap, ARIA |
-| **Reusability** | 0 games | All games | ∞% better |
+| Aspect                      | Before                        | After     | Improvement        |
+| --------------------------- | ----------------------------- | --------- | ------------------ |
+| **UI Sections**             | 5                             | 2         | 60% reduction      |
+| **Vertical Space (mobile)** | 700px+                        | 424px     | 40% less scrolling |
+| **Components**              | 35-48                         | 28-41     | 15-20% fewer       |
+| **Code Lines**              | 364                           | 248       | 32% reduction      |
+| **Attention Shifts**        | 4-5                           | 2         | 50-60% fewer       |
+| **Layout Shifts**           | 3 (feedback, phase, question) | 0         | 100% eliminated    |
+| **Accessibility**           | Basic                         | Enhanced  | Focus trap, ARIA   |
+| **Reusability**             | 0 games                       | All games | ∞% better          |
 
 ## Conclusion
 
 The redesigned BattleLearn:
+
 - ✅ **Cleaner**: 60% fewer UI sections
 - ✅ **Focused**: Grid is the star, not buried in chrome
 - ✅ **Stable**: No layout shifts or content jumping

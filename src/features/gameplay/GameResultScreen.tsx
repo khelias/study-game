@@ -1,11 +1,11 @@
 /**
  * GameResultScreen Component
- * 
+ *
  * Generic result screen for various game completion states:
  * - victory: Player won the game (e.g., BattleLearn all ships sunk)
  * - perfect: Player achieved perfect score (e.g., RoboPath optimal path)
  * - gameOver: Player ran out of hearts
- * 
+ *
  * Replaces the old GameOverScreen with a more flexible, reusable approach.
  */
 
@@ -28,8 +28,8 @@ interface GameResultScreenProps {
   customMessage?: string; // Optional custom message
 }
 
-export const GameResultScreen: React.FC<GameResultScreenProps> = ({ 
-  type, 
+export const GameResultScreen: React.FC<GameResultScreenProps> = ({
+  type,
   onContinue,
   onRetry,
   customMessage,
@@ -37,13 +37,13 @@ export const GameResultScreen: React.FC<GameResultScreenProps> = ({
   const navigate = useNavigate();
   const t = useTranslation();
   const { formatText } = useProfileText();
-  const score = usePlaySessionStore(state => state.score);
-  const soundEnabled = useGameStore(state => state.soundEnabled);
-  const gameType = usePlaySessionStore(state => state.gameType);
-  const returnToMenu = usePlaySessionStore(state => state.returnToMenu);
-  const resumeGame = usePlaySessionStore(state => state.resumeGame);
-  const getHighScore = useGameStore(state => state.getHighScore);
-  const hearts = useGameStore(state => state.hearts);
+  const score = usePlaySessionStore((state) => state.score);
+  const soundEnabled = useGameStore((state) => state.soundEnabled);
+  const gameType = usePlaySessionStore((state) => state.gameType);
+  const returnToMenu = usePlaySessionStore((state) => state.returnToMenu);
+  const resumeGame = usePlaySessionStore((state) => state.resumeGame);
+  const getHighScore = useGameStore((state) => state.getHighScore);
+  const hearts = useGameStore((state) => state.hearts);
   const { playClick } = useGameAudio(soundEnabled);
   const [showShop, setShowShop] = useState(false);
 
@@ -80,12 +80,16 @@ export const GameResultScreen: React.FC<GameResultScreenProps> = ({
       iconGradient: 'from-yellow-300 via-yellow-400 to-amber-400',
       iconShadow: 'shadow-[0_0_28px_rgba(250,204,21,0.6)]',
       title: formatText((t.roboPath?.perfect ?? 'Perfect!') as string),
-      message: customMessage || formatText((t.roboPath?.perfectMessage ?? 'You found the optimal solution!') as string),
+      message:
+        customMessage ||
+        formatText((t.roboPath?.perfectMessage ?? 'You found the optimal solution!') as string),
       primaryButton: formatText(t.roboPath?.continueButton || 'Next Level'),
       primaryAction: onContinue,
       primaryGradient: 'from-sky-400 via-blue-500 to-indigo-500',
       primaryShadow: 'shadow-blue-500/40 hover:shadow-blue-400/60',
-      secondaryButton: onRetry ? formatText(t.roboPath?.tryAgainButton || 'Try Again') : formatText(t.game.returnToMenu),
+      secondaryButton: onRetry
+        ? formatText(t.roboPath?.tryAgainButton || 'Try Again')
+        : formatText(t.game.returnToMenu),
       secondaryAction: onRetry,
       showScore: true,
     },
@@ -95,19 +99,25 @@ export const GameResultScreen: React.FC<GameResultScreenProps> = ({
       iconShadow: 'shadow-[0_0_24px_rgba(244,114,182,0.45)]',
       title: formatText(t.game.gameOver),
       message: customMessage || formatText(t.game.scoreMessage.replace('{score}', String(score))),
-      primaryButton: hearts > 0 
-        ? formatText(t.game.continue) 
-        : formatText(t.shop?.getMoreHearts || 'Get More Hearts'),
-      primaryAction: hearts > 0 && gameType ? () => {
-        playClick();
-        resumeGame(); // Continue from same problem/score, no reset
-      } : undefined, // No hearts: open shop modal instead
-      primaryGradient: hearts > 0 
-        ? 'from-sky-400 via-blue-500 to-indigo-500'
-        : 'from-pink-400 via-rose-500 to-red-500',
-      primaryShadow: hearts > 0 
-        ? 'shadow-blue-500/40 hover:shadow-blue-400/60'
-        : 'shadow-rose-500/40 hover:shadow-rose-400/60',
+      primaryButton:
+        hearts > 0
+          ? formatText(t.game.continue)
+          : formatText(t.shop?.getMoreHearts || 'Get More Hearts'),
+      primaryAction:
+        hearts > 0 && gameType
+          ? () => {
+              playClick();
+              resumeGame(); // Continue from same problem/score, no reset
+            }
+          : undefined, // No hearts: open shop modal instead
+      primaryGradient:
+        hearts > 0
+          ? 'from-sky-400 via-blue-500 to-indigo-500'
+          : 'from-pink-400 via-rose-500 to-red-500',
+      primaryShadow:
+        hearts > 0
+          ? 'shadow-blue-500/40 hover:shadow-blue-400/60'
+          : 'shadow-rose-500/40 hover:shadow-rose-400/60',
       secondaryButton: formatText(t.game.returnToMenu),
       showScore: true,
       showHeartWarning: hearts === 0,
@@ -143,17 +153,16 @@ export const GameResultScreen: React.FC<GameResultScreenProps> = ({
 
   return (
     <div className="fixed inset-0 flex items-center justify-center px-4 bg-slate-50/95 backdrop-blur-sm animate-in fade-in z-50">
-      {showShop && (
-        <ShopModal
-          onClose={() => setShowShop(false)}
-          openedFromNoHearts={true}
-        />
-      )}
+      {showShop && <ShopModal onClose={() => setShowShop(false)} openedFromNoHearts={true} />}
       <div className="w-full max-w-md my-auto">
-        <div className={`relative rounded-3xl bg-white shadow-2xl border-2 ${themeBorder} px-6 py-8 sm:px-8 sm:py-10`}>
+        <div
+          className={`relative rounded-3xl bg-white shadow-2xl border-2 ${themeBorder} px-6 py-8 sm:px-8 sm:py-10`}
+        >
           {/* Single focal block: icon + title + message (no duplicate pill) */}
           <div className="flex flex-col items-center text-center mb-6">
-            <div className={`w-20 h-20 sm:w-24 sm:h-24 rounded-2xl bg-gradient-to-br ${currentConfig.iconGradient} ${currentConfig.iconShadow} flex items-center justify-center mb-4`}>
+            <div
+              className={`w-20 h-20 sm:w-24 sm:h-24 rounded-2xl bg-gradient-to-br ${currentConfig.iconGradient} ${currentConfig.iconShadow} flex items-center justify-center mb-4`}
+            >
               <span className="text-4xl sm:text-5xl" aria-hidden="true">
                 {currentConfig.icon}
               </span>
@@ -161,9 +170,7 @@ export const GameResultScreen: React.FC<GameResultScreenProps> = ({
             <h2 className="text-xl sm:text-2xl font-black text-slate-900 mb-2">
               {currentConfig.title}
             </h2>
-            <p className="text-sm text-slate-600 max-w-xs mx-auto">
-              {currentConfig.message}
-            </p>
+            <p className="text-sm text-slate-600 max-w-xs mx-auto">{currentConfig.message}</p>
             {/* Optional game name only when it adds context (e.g. not when title already says "Game Over") */}
             {type !== 'gameOver' && headerTitle && (
               <p className="mt-2 text-xs font-medium text-slate-500 uppercase tracking-wide">
@@ -188,9 +195,7 @@ export const GameResultScreen: React.FC<GameResultScreenProps> = ({
                 <div className="text-[0.65rem] sm:text-xs uppercase tracking-wide text-slate-500 mb-1">
                   {formatText(t.game.score)}
                 </div>
-                <div className="text-2xl sm:text-3xl font-black text-slate-900">
-                  {score}
-                </div>
+                <div className="text-2xl sm:text-3xl font-black text-slate-900">{score}</div>
               </div>
               <div
                 className={[

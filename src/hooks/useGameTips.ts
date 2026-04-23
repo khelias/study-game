@@ -1,6 +1,6 @@
 /**
  * useGameTips Hook
- * 
+ *
  * Encapsulates tip generation and display logic for different game types.
  */
 
@@ -19,72 +19,75 @@ export function useGameTips(
   problem: unknown,
   notifications: Notification[],
   addNotification: (notification: { type: 'tip'; message: string }) => void,
-  isCompactLayout: boolean
+  isCompactLayout: boolean,
 ): UseGameTipsResult {
   const t = useTranslation();
   const tipShownOnceRef = useRef(false);
   const currentTipIndexRef = useRef<number>(0);
   const [canReopenTip, setCanReopenTip] = useState(false);
 
-  const getTipsForGame = useCallback((type: string): string[] => {
-    const baseType = type.replace('_adv', '');
-    switch (baseType) {
-      case 'word_builder':
-        return [...t.gameScreen.tips.word_builder];
-      case 'syllable_builder':
-        return [...t.gameScreen.tips.syllable_builder];
-      case 'pattern':
-        return [...t.gameScreen.tips.pattern];
-      case 'sentence_logic':
-        return [...t.gameScreen.tips.sentence_logic];
-      case 'memory_math':
-        return [...t.gameScreen.tips.memory_math];
-      case 'picture_pairs':
-        return [...t.gameScreen.tips.picture_pairs];
-      case 'balance_scale':
-        return [...t.gameScreen.tips.balance_scale];
-      case 'robo_path':
-        return [...t.gameScreen.tips.robo_path];
-      case 'math_snake':
-        return [...t.gameScreen.tips.math_snake];
-      case 'time_match':
-        return [...t.gameScreen.tips.time_match];
-      case 'letter_match':
-        return [...t.gameScreen.tips.letter_match];
-      case 'unit_conversion':
-        return [...t.gameScreen.tips.unit_conversion];
-      case 'compare_sizes':
-        return [...t.gameScreen.tips.compare_sizes];
-      case 'shape_shift':
-        return [...t.gameScreen.tips.shape_shift];
-      case 'star_mapper':
-        return [...t.gameScreen.tips.star_mapper];
-      case 'word_cascade':
-        return [...t.gameScreen.tips.word_cascade];
-      case 'shape_dash':
-        return [...t.gameScreen.tips.shape_dash];
-      default:
-        return [];
-    }
-  }, [t]);
+  const getTipsForGame = useCallback(
+    (type: string): string[] => {
+      const baseType = type.replace('_adv', '');
+      switch (baseType) {
+        case 'word_builder':
+          return [...t.gameScreen.tips.word_builder];
+        case 'syllable_builder':
+          return [...t.gameScreen.tips.syllable_builder];
+        case 'pattern':
+          return [...t.gameScreen.tips.pattern];
+        case 'sentence_logic':
+          return [...t.gameScreen.tips.sentence_logic];
+        case 'memory_math':
+          return [...t.gameScreen.tips.memory_math];
+        case 'picture_pairs':
+          return [...t.gameScreen.tips.picture_pairs];
+        case 'balance_scale':
+          return [...t.gameScreen.tips.balance_scale];
+        case 'robo_path':
+          return [...t.gameScreen.tips.robo_path];
+        case 'math_snake':
+          return [...t.gameScreen.tips.math_snake];
+        case 'time_match':
+          return [...t.gameScreen.tips.time_match];
+        case 'letter_match':
+          return [...t.gameScreen.tips.letter_match];
+        case 'unit_conversion':
+          return [...t.gameScreen.tips.unit_conversion];
+        case 'compare_sizes':
+          return [...t.gameScreen.tips.compare_sizes];
+        case 'shape_shift':
+          return [...t.gameScreen.tips.shape_shift];
+        case 'star_mapper':
+          return [...t.gameScreen.tips.star_mapper];
+        case 'word_cascade':
+          return [...t.gameScreen.tips.word_cascade];
+        case 'shape_dash':
+          return [...t.gameScreen.tips.shape_dash];
+        default:
+          return [];
+      }
+    },
+    [t],
+  );
 
   const handleTipReplay = useCallback(() => {
     if (!gameType) return;
-    const hasTipNotification = notifications.some(n => n.type === 'tip');
+    const hasTipNotification = notifications.some((n) => n.type === 'tip');
     if (hasTipNotification) return;
-    
+
     const gameTypeBase = gameType.replace('_adv', '');
     const tips = getTipsForGame(gameTypeBase);
-    
+
     if (tips.length === 0) return;
-    
+
     // Get next tip in cycle
     const tipMessage = tips[currentTipIndexRef.current];
     if (!tipMessage) return;
-    
+
     // Move to next tip for next time (cycle back to 0 if at end)
     currentTipIndexRef.current = (currentTipIndexRef.current + 1) % tips.length;
-    
+
     addNotification({
       type: 'tip',
       message: tipMessage,
@@ -105,7 +108,7 @@ export function useGameTips(
       return;
     }
 
-    const hasTipNotification = notifications.some(n => n.type === 'tip');
+    const hasTipNotification = notifications.some((n) => n.type === 'tip');
 
     if (!tipShownOnceRef.current && !hasTipNotification) {
       const gameTypeBase = gameType.replace('_adv', '');

@@ -1,13 +1,13 @@
 /**
  * Internationalization (i18n) system
- * 
+ *
  * This module provides a simple, type-safe i18n system for the application.
  * It supports multiple languages and is designed to be easily extensible.
- * 
+ *
  * Usage:
  * ```tsx
  * import { useTranslation } from '../i18n';
- * 
+ *
  * function MyComponent() {
  *   const t = useTranslation();
  *   return <div>{t.menu.title}</div>;
@@ -33,12 +33,12 @@ const DEFAULT_LOCALE: SupportedLocale = 'et';
 // Get locale from localStorage or browser, fallback to default
 function getStoredLocale(): SupportedLocale {
   if (typeof window === 'undefined') return DEFAULT_LOCALE;
-  
+
   const stored = localStorage.getItem('app_locale') as SupportedLocale | null;
   if (stored && (stored === 'et' || stored === 'en')) {
     return stored;
   }
-  
+
   return DEFAULT_LOCALE;
 }
 
@@ -63,14 +63,14 @@ export function setLocale(locale: SupportedLocale): void {
     console.warn(`Unsupported locale: ${String(locale)}, falling back to default`);
     locale = DEFAULT_LOCALE;
   }
-  
+
   currentLocale = locale;
   if (typeof window !== 'undefined') {
     localStorage.setItem('app_locale', locale);
   }
-  
+
   // Notify listeners
-  localeChangeListeners.forEach(listener => listener());
+  localeChangeListeners.forEach((listener) => listener());
 }
 
 /**
@@ -82,7 +82,7 @@ export function getTranslations(): Translations {
 
 /**
  * React hook for translations
- * 
+ *
  * @example
  * ```tsx
  * const t = useTranslation();

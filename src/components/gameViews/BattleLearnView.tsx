@@ -31,7 +31,11 @@ function isWaterCell(type: BattleLearnCellType): boolean {
 
 interface BattleLearnViewProps {
   problem: BattleLearnProblem;
-  onAnswer: (isCorrect: boolean, shouldShowAchievement?: () => boolean, options?: { skipHeartDeduction?: boolean }) => void;
+  onAnswer: (
+    isCorrect: boolean,
+    shouldShowAchievement?: () => boolean,
+    options?: { skipHeartDeduction?: boolean },
+  ) => void;
   soundEnabled: boolean;
   gameType?: string;
   stars?: number;
@@ -53,7 +57,7 @@ export const BattleLearnView: React.FC<BattleLearnViewProps> = ({
   endGame,
 }) => {
   const t = useTranslation();
-  const setProblem = usePlaySessionStore(state => state.setProblem);
+  const setProblem = usePlaySessionStore((state) => state.setProblem);
   const configKey = gameType ?? 'battlelearn';
   const paidHints = GAME_CONFIG[configKey]?.paidHints ?? [];
 
@@ -88,7 +92,7 @@ export const BattleLearnView: React.FC<BattleLearnViewProps> = ({
   // Sync board state from problem if it has been updated externally
   useEffect(() => {
     const isNewGame = problem.uid !== currentUid && problem.revealed.length === 0;
-    
+
     if (isNewGame) {
       // Complete reset for new game
       setGameState({
@@ -114,7 +118,7 @@ export const BattleLearnView: React.FC<BattleLearnViewProps> = ({
       setCurrentUid(problem.uid);
       setEliminatedIndices([]);
       // Sync board state to ensure any external updates are reflected
-      setGameState(prev => ({
+      setGameState((prev) => ({
         ...prev,
         cellGrid: problem.cellGrid,
         revealed: problem.revealed,
@@ -183,7 +187,8 @@ export const BattleLearnView: React.FC<BattleLearnViewProps> = ({
           }
         }
         if (unrevealedShipPositions.length === 0) return;
-        const [row, col] = unrevealedShipPositions[Math.floor(Math.random() * unrevealedShipPositions.length)]!;
+        const [row, col] =
+          unrevealedShipPositions[Math.floor(Math.random() * unrevealedShipPositions.length)]!;
         const shipsCopy = JSON.parse(JSON.stringify(ships)) as Ship[];
         const result = applyShot(shipsCopy, revealed, row, col);
         const newRevealed = [...revealed, [row, col]];
@@ -210,22 +215,31 @@ export const BattleLearnView: React.FC<BattleLearnViewProps> = ({
         if (gameWon) setTimeout(() => playSound('success', soundEnabled), 500);
       }
     },
-    [gameState, problem, question.correctIndex, question.options, eliminatedIndices, spendStars, soundEnabled, setProblem]
+    [
+      gameState,
+      problem,
+      question.correctIndex,
+      question.options,
+      eliminatedIndices,
+      spendStars,
+      soundEnabled,
+      setProblem,
+    ],
   );
 
   const handleOptionSelect = (index: number) => {
     if (gamePhase !== 'answering' || gameState.gameWon) return;
-    
+
     playSound('click', soundEnabled);
     setSelectedOption(index);
-    
+
     const isCorrect = index === question.correctIndex;
-    
+
     if (isCorrect) {
       // Mark problem cell as answered immediately so it shows 💧 (survives parent re-renders)
       const cellToMark = pendingProblemCell;
       if (cellToMark) {
-        setAnsweredProblemCells(prev => [...prev, `${cellToMark[0]},${cellToMark[1]}`]);
+        setAnsweredProblemCells((prev) => [...prev, `${cellToMark[0]},${cellToMark[1]}`]);
         setPendingProblemCell(null);
       }
       resetStrikes(); // Correct answer zeros strikes
@@ -247,14 +261,17 @@ export const BattleLearnView: React.FC<BattleLearnViewProps> = ({
 
   const handleCellClick = (row: number, col: number) => {
     if (gamePhase !== 'shooting' || gameState.gameWon) return;
-    
+
     const isRevealed = gameState.revealed.some(([r, c]) => r === row && c === col);
     if (isRevealed) return;
-    
+
     playSound('click', soundEnabled);
-    
+
     const cellType = gameState.cellGrid[row]?.[col] ?? 'empty';
-    const newRevealed: Array<[number, number]> = [...gameState.revealed, [row, col] as [number, number]];
+    const newRevealed: Array<[number, number]> = [
+      ...gameState.revealed,
+      [row, col] as [number, number],
+    ];
     let newHits = gameState.hits;
     let newSunkShips = gameState.sunkShips;
     let gameWon = gameState.gameWon;
@@ -263,7 +280,9 @@ export const BattleLearnView: React.FC<BattleLearnViewProps> = ({
     if (cellType === 'ship') {
       const result = applyShot(shipsCopy, gameState.revealed, row, col);
       newHits = result.hit ? [...gameState.hits, [row, col] as [number, number]] : gameState.hits;
-      newSunkShips = result.sunkShipId ? [...gameState.sunkShips, result.sunkShipId] : gameState.sunkShips;
+      newSunkShips = result.sunkShipId
+        ? [...gameState.sunkShips, result.sunkShipId]
+        : gameState.sunkShips;
       gameWon = checkWinCondition(shipsCopy);
       playSound('success', soundEnabled);
       if (result.sunkShipId) {
@@ -287,7 +306,7 @@ export const BattleLearnView: React.FC<BattleLearnViewProps> = ({
       playSound(cellType === 'star' || cellType === 'heart' ? 'success' : 'click', soundEnabled);
     }
 
-    setGameState(prev => ({
+    setGameState((prev) => ({
       ...prev,
       ships: shipsCopy,
       revealed: newRevealed,
@@ -315,7 +334,7 @@ export const BattleLearnView: React.FC<BattleLearnViewProps> = ({
   const renderGrid = () => {
     const { gridSize, cellGrid } = gameState;
     const sunkShipPositions = new Set<string>();
-    gameState.ships.forEach(ship => {
+    gameState.ships.forEach((ship) => {
       if (isShipSunk(ship)) {
         ship.positions.forEach(([r, c]) => sunkShipPositions.add(`${r},${c}`));
       }
@@ -324,7 +343,9 @@ export const BattleLearnView: React.FC<BattleLearnViewProps> = ({
 
     const getRevealedWaterContent = (r: number, c: number) => {
       const type = cellGrid[r]?.[c] ?? 'empty';
-      return type === 'problem' && !answeredSet.has(`${r},${c}`) ? CELL_EMOJI.problem : CELL_EMOJI.water;
+      return type === 'problem' && !answeredSet.has(`${r},${c}`)
+        ? CELL_EMOJI.problem
+        : CELL_EMOJI.water;
     };
 
     return (
@@ -342,7 +363,10 @@ export const BattleLearnView: React.FC<BattleLearnViewProps> = ({
           ))}
         </div>
         <div className="flex-1">
-          <div className="grid mb-1" style={{ gridTemplateColumns: `repeat(${gridSize}, minmax(0, 1fr))` }}>
+          <div
+            className="grid mb-1"
+            style={{ gridTemplateColumns: `repeat(${gridSize}, minmax(0, 1fr))` }}
+          >
             {COLUMN_LABELS.slice(0, gridSize).map((label) => (
               <div
                 key={`col-${label}`}
@@ -352,46 +376,59 @@ export const BattleLearnView: React.FC<BattleLearnViewProps> = ({
               </div>
             ))}
           </div>
-          
-          <div className="grid gap-2" style={{ gridTemplateColumns: `repeat(${gridSize}, minmax(0, 1fr))` }}>
+
+          <div
+            className="grid gap-2"
+            style={{ gridTemplateColumns: `repeat(${gridSize}, minmax(0, 1fr))` }}
+          >
             {Array.from({ length: gridSize }, (_, row) =>
               Array.from({ length: gridSize }, (_, col) => {
                 const posKey = `${row},${col}`;
                 const isRevealed = gameState.revealed.some(([r, c]) => r === row && c === col);
                 const isHit = gameState.hits.some(([r, c]) => r === row && c === col);
                 const isSunkShipPosition = sunkShipPositions.has(posKey);
-                
-                let cellClass = 'w-full h-full border border-gray-300 rounded flex items-center justify-center text-2xl font-bold transition-all duration-200';
+
+                let cellClass =
+                  'w-full h-full border border-gray-300 rounded flex items-center justify-center text-2xl font-bold transition-all duration-200';
                 let cellContent = '';
-                
+
                 if (isSunkShipPosition) {
-                  cellClass += ' bg-gradient-to-br from-amber-700 to-red-900 shadow-xl text-white ring-2 ring-amber-400 ring-offset-1';
+                  cellClass +=
+                    ' bg-gradient-to-br from-amber-700 to-red-900 shadow-xl text-white ring-2 ring-amber-400 ring-offset-1';
                   cellContent = CELL_EMOJI.sunk;
                 } else if (!isRevealed) {
-                  cellClass += ' bg-gradient-to-br from-blue-400 to-blue-600 hover:from-blue-500 hover:to-blue-700 shadow-md hover:shadow-xl cursor-pointer transform hover:-translate-y-0.5 transition-all';
+                  cellClass +=
+                    ' bg-gradient-to-br from-blue-400 to-blue-600 hover:from-blue-500 hover:to-blue-700 shadow-md hover:shadow-xl cursor-pointer transform hover:-translate-y-0.5 transition-all';
                   if (gamePhase === 'shooting' && !gameState.gameWon) cellClass += ' animate-pulse';
                 } else if (isHit) {
-                  cellClass += ' bg-gradient-to-br from-orange-400 to-red-500 shadow-lg text-white animate-battlelearn-hit';
+                  cellClass +=
+                    ' bg-gradient-to-br from-orange-400 to-red-500 shadow-lg text-white animate-battlelearn-hit';
                   cellContent = CELL_EMOJI.hit;
                 } else {
                   cellClass += ' bg-gradient-to-br from-slate-200 to-slate-300 text-blue-600';
                   cellContent = getRevealedWaterContent(row, col);
                 }
-                
+
                 return (
                   <div
                     key={`${row}-${col}`}
                     className={cellClass}
                     onClick={() => handleCellClick(row, col)}
-                    style={{ 
+                    style={{
                       aspectRatio: '1/1',
-                      cursor: gamePhase === 'shooting' && !isSunkShipPosition && !isRevealed && !gameState.gameWon ? 'pointer' : 'default'
+                      cursor:
+                        gamePhase === 'shooting' &&
+                        !isSunkShipPosition &&
+                        !isRevealed &&
+                        !gameState.gameWon
+                          ? 'pointer'
+                          : 'default',
                     }}
                   >
                     {cellContent}
                   </div>
                 );
-              })
+              }),
             )}
           </div>
         </div>
@@ -425,7 +462,13 @@ export const BattleLearnView: React.FC<BattleLearnViewProps> = ({
     <div className="w-full flex flex-col items-center px-4 py-6 animate-in fade-in duration-300">
       {/* Misses (strikes) – small circles above play area, same as Word Cascade */}
       {!gameState.gameWon && (
-        <div className="flex items-center gap-1 mb-2" aria-label={t.battlelearn.strikesAriaLabel?.replace('{count}', String(triesLeft)) ?? `${triesLeft} water hits before heart`}>
+        <div
+          className="flex items-center gap-1 mb-2"
+          aria-label={
+            t.battlelearn.strikesAriaLabel?.replace('{count}', String(triesLeft)) ??
+            `${triesLeft} water hits before heart`
+          }
+        >
           {Array.from({ length: STRIKES_BEFORE_HEART }).map((_, i) => (
             <span
               key={i}
@@ -466,12 +509,17 @@ export const BattleLearnView: React.FC<BattleLearnViewProps> = ({
       {/* Same hint area as other games: shooting = grid hints, answering = eliminate only */}
       {paidHints.length > 0 && (
         <PaidHintButtons
-          hints={gamePhase === 'shooting' ? paidHints.filter((h) => h.id !== 'eliminate') : paidHints.filter((h) => h.id === 'eliminate')}
+          hints={
+            gamePhase === 'shooting'
+              ? paidHints.filter((h) => h.id !== 'eliminate')
+              : paidHints.filter((h) => h.id === 'eliminate')
+          }
           stars={stars}
           onHintClick={handlePaidHint}
           disabled={
             gameState.gameWon ||
-            (gamePhase === 'answering' && (selectedOption !== null || eliminatedIndices.length >= question.options.length - 1))
+            (gamePhase === 'answering' &&
+              (selectedOption !== null || eliminatedIndices.length >= question.options.length - 1))
           }
         />
       )}

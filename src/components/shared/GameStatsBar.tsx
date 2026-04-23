@@ -1,13 +1,13 @@
 /**
  * GameStatsBar Component
- * 
+ *
  * A flexible, reusable component for displaying game-specific statistics.
  * Used across multiple games to show contextual information like:
  * - Ships remaining (BattleLearn)
  * - Apples until math (MathSnake)
  * - Phase indicators
  * - Progress counters
- * 
+ *
  * Design Philosophy:
  * - Compact and unobtrusive
  * - Horizontally scrollable on mobile

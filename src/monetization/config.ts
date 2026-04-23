@@ -1,6 +1,6 @@
 /**
  * Monetization configuration
- * 
+ *
  * This file contains the configuration for the monetization system.
  * Currently, all features are free. This structure allows easy
  * addition of premium features in the future.

@@ -1,4 +1,12 @@
-export type SoundType = 'correct' | 'wrong' | 'click' | 'win' | 'tap' | 'success' | 'error' | 'connect';
+export type SoundType =
+  | 'correct'
+  | 'wrong'
+  | 'click'
+  | 'win'
+  | 'tap'
+  | 'success'
+  | 'error'
+  | 'connect';
 
 let audioContext: AudioContext | null = null;
 
@@ -8,7 +16,9 @@ let audioContext: AudioContext | null = null;
  */
 const getAudioContext = (): AudioContext | null => {
   if (!audioContext) {
-    const AudioCtor = window.AudioContext || (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
+    const AudioCtor =
+      window.AudioContext ||
+      (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
     if (AudioCtor) {
       audioContext = new AudioCtor();
     }

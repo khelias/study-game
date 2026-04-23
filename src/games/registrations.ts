@@ -1,13 +1,13 @@
 /**
  * Game Registrations
- * 
+ *
  * This file registers all games with the game registry.
  * To add a new game:
  * 1. Create the game view component
  * 2. Create the generator function
  * 3. Create the validator function
  * 4. Add registration here
- * 
+ *
  * Games are automatically registered when this module is imported.
  */
 
@@ -56,7 +56,7 @@ import {
 
 /**
  * Register all games with the registry
- * 
+ *
  * This function is called automatically when the module is imported.
  */
 function registerAllGames(): void {

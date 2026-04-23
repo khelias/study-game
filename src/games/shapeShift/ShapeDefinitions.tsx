@@ -48,7 +48,9 @@ export const SHAPE_COLORS: Record<string, { fill: string; stroke: string; stroke
 
 const DEFAULT_STYLE = { fill: '#64748b', stroke: '#334155', strokeWidth: 2 };
 
-export const getShapeStyle = (colorName: string): { fill: string; stroke: string; strokeWidth: number } => {
+export const getShapeStyle = (
+  colorName: string,
+): { fill: string; stroke: string; strokeWidth: number } => {
   return SHAPE_COLORS[colorName] ?? DEFAULT_STYLE;
 };
 
@@ -78,7 +80,7 @@ export const PieceSvg: React.FC<PieceSvgProps> = ({
       style={{
         transform: `rotate(${rotation}deg)`,
         opacity,
-        overflow: 'visible' // Allow shadow to spill
+        overflow: 'visible', // Allow shadow to spill
       }}
     >
       <path

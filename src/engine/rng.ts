@@ -32,21 +32,21 @@ export const getRandom = <T>(arr: T[], rng: RngFunction = Math.random): T | null
  */
 export const uid = (rng: RngFunction = Math.random): string => {
   const parts: string[] = [];
-  
+
   // Use multiple RNG calls for better entropy
   for (let i = 0; i < 4; i++) {
-    const intVal = Math.floor(rng() * 0xFFFFFF);
+    const intVal = Math.floor(rng() * 0xffffff);
     parts.push(intVal.toString(36));
   }
-  
+
   let combined = parts.join('');
-  
+
   // Ensure minimum length
   let attempts = 0;
   while (combined.length < 9 && attempts < 10) {
-    combined += Math.floor(rng() * 0xFFFFFF).toString(36);
+    combined += Math.floor(rng() * 0xffffff).toString(36);
     attempts++;
   }
-  
+
   return combined.slice(0, 11) || Math.random().toString(36).substring(2, 11);
 };

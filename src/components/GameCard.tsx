@@ -26,32 +26,35 @@ interface GameCardProps {
   highScore?: number; // Optional high score to display
 }
 
-export const GameCard: React.FC<GameCardProps> = ({ 
-  gameConfig, 
-  level, 
-  onClick, 
+export const GameCard: React.FC<GameCardProps> = ({
+  gameConfig,
+  level,
+  onClick,
   isLocked = false,
   progress = null,
   badge = null,
   delay = 0,
-  highScore
+  highScore,
 }) => {
   const t = useTranslation();
   const { formatText } = useProfileText();
   const IconComponent = useMemo(
     () => gameConfig.iconComponent || DefaultIcon,
-    [gameConfig.iconComponent]
+    [gameConfig.iconComponent],
   );
-  
+
   // Get translated title and description (assert string for i18n key access)
-  const gameTitle: string = (t.games[gameConfig.id as keyof typeof t.games]?.title ?? gameConfig.title) as string;
-  const gameDesc: string = (t.games[gameConfig.id as keyof typeof t.games]?.desc ?? gameConfig.desc) as string;
-  const difficultyText = gameConfig.difficulty 
-    ? (t.difficulty[gameConfig.difficulty as keyof typeof t.difficulty] ?? gameConfig.difficulty) as string
+  const gameTitle: string = (t.games[gameConfig.id as keyof typeof t.games]?.title ??
+    gameConfig.title) as string;
+  const gameDesc: string = (t.games[gameConfig.id as keyof typeof t.games]?.desc ??
+    gameConfig.desc) as string;
+  const difficultyText = gameConfig.difficulty
+    ? ((t.difficulty[gameConfig.difficulty as keyof typeof t.difficulty] ??
+        gameConfig.difficulty) as string)
     : null;
   const levelLabel = formatText(t.game.level);
   const ariaLabel = `${formatText(gameTitle)} - ${formatText(gameDesc)} - ${levelLabel} ${level}`;
-  
+
   return (
     <FadeIn delay={delay}>
       <button
@@ -72,36 +75,48 @@ export const GameCard: React.FC<GameCardProps> = ({
             ✨ {formatText(badge)}
           </div>
         )}
-        
+
         {/* Icon */}
-        <div className={`
+        <div
+          className={`
           relative p-5 rounded-2xl transition-all duration-300
           group-hover:rotate-12 group-hover:scale-125
           bg-gradient-to-br ${gameConfig.theme.iconBg} 
           shadow-md group-hover:shadow-xl
           ${gameConfig.theme.text}
-        `}>
+        `}
+        >
           <div className="absolute inset-0 bg-gradient-to-br from-white/20 to-transparent rounded-2xl"></div>
           <IconComponent size={36} className="relative z-10" />
         </div>
-        
+
         {/* Content */}
         <div className="text-left flex-1 min-w-0">
-          <h3 className={`text-xl font-black ${gameConfig.theme.text} flex items-center gap-2 mb-1 truncate`}>
+          <h3
+            className={`text-xl font-black ${gameConfig.theme.text} flex items-center gap-2 mb-1 truncate`}
+          >
             {formatText(gameTitle)}
             {isLocked && <span className="text-sm">🔒</span>}
           </h3>
-          <p className="text-sm font-semibold text-slate-600 mb-2 truncate">{formatText(gameDesc)}</p>
-          
+          <p className="text-sm font-semibold text-slate-600 mb-2 truncate">
+            {formatText(gameDesc)}
+          </p>
+
           {/* Difficulty badge and High Score */}
           <div className="mt-1 flex items-center gap-2 flex-wrap">
             {gameConfig.difficulty && difficultyText && (
-              <span className={`
+              <span
+                className={`
                 text-xs font-bold px-2 py-0.5 rounded-full
-                ${gameConfig.difficulty === 'easy' ? 'bg-green-100 text-green-700' :
-                  gameConfig.difficulty === 'medium' ? 'bg-yellow-100 text-yellow-700' :
-                  'bg-red-100 text-red-700'}
-              `}>
+                ${
+                  gameConfig.difficulty === 'easy'
+                    ? 'bg-green-100 text-green-700'
+                    : gameConfig.difficulty === 'medium'
+                      ? 'bg-yellow-100 text-yellow-700'
+                      : 'bg-red-100 text-red-700'
+                }
+              `}
+              >
                 {formatText(difficultyText)}
               </span>
             )}
@@ -111,7 +126,7 @@ export const GameCard: React.FC<GameCardProps> = ({
               </span>
             )}
           </div>
-          
+
           {/* Progress bar */}
           {progress && (
             <div className="mt-2 w-full h-1.5 bg-slate-200 rounded-full overflow-hidden">
@@ -122,19 +137,21 @@ export const GameCard: React.FC<GameCardProps> = ({
             </div>
           )}
         </div>
-        
+
         {/* Level indicator */}
         <div className="flex flex-col items-end gap-1 flex-shrink-0">
-          <span className="text-xs font-bold text-slate-500 tracking-wider">{formatText(t.level)}</span>
-          <div className={`
+          <span className="text-xs font-bold text-slate-500 tracking-wider">
+            {formatText(t.level)}
+          </span>
+          <div
+            className={`
             w-16 h-16 rounded-2xl flex items-center justify-center
             bg-gradient-to-br ${gameConfig.theme.iconBg}
             border-4 ${gameConfig.theme.border}
             shadow-lg group-hover:scale-110 transition-transform
-          `}>
-            <span className={`text-3xl font-black ${gameConfig.theme.text}`}>
-              {level}
-            </span>
+          `}
+          >
+            <span className={`text-3xl font-black ${gameConfig.theme.text}`}>{level}</span>
           </div>
         </div>
       </button>

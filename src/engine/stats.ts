@@ -16,7 +16,7 @@ export const createStats = (): Stats => ({
   totalTimePlayed: 0, // in seconds
   lastPlayed: null,
   collectedStars: 0, // Stars collected for narrative purposes
-  maxSnakeLength: 0 // Maximum snake length achieved in math snake
+  maxSnakeLength: 0, // Maximum snake length achieved in math snake
 });
 
 /**
@@ -40,9 +40,9 @@ export const recordGameStart = (stats: Stats, gameType: string): Stats => {
     gamesPlayed: stats.gamesPlayed + 1,
     gamesByType: {
       ...stats.gamesByType,
-      [gameType]: (stats.gamesByType[gameType] || 0) + 1
+      [gameType]: (stats.gamesByType[gameType] || 0) + 1,
     },
-    lastPlayed: Date.now()
+    lastPlayed: Date.now(),
   });
 };
 
@@ -55,10 +55,10 @@ export const recordGameStart = (stats: Stats, gameType: string): Stats => {
 export const recordAnswer = (stats: Stats, isCorrect: boolean): Stats => {
   const newStreak = isCorrect ? stats.currentStreak + 1 : 0;
   return updateStats(stats, {
-    [isCorrect ? 'correctAnswers' : 'wrongAnswers']: 
+    [isCorrect ? 'correctAnswers' : 'wrongAnswers']:
       stats[isCorrect ? 'correctAnswers' : 'wrongAnswers'] + 1,
     currentStreak: newStreak,
-    maxStreak: Math.max(stats.maxStreak, newStreak)
+    maxStreak: Math.max(stats.maxStreak, newStreak),
   });
 };
 
@@ -73,8 +73,8 @@ export const recordLevelUp = (stats: Stats, gameType: string, newLevel: number):
   return updateStats(stats, {
     maxLevels: {
       ...stats.maxLevels,
-      [gameType]: Math.max(stats.maxLevels[gameType] || 0, newLevel)
-    }
+      [gameType]: Math.max(stats.maxLevels[gameType] || 0, newLevel),
+    },
   });
 };
 
@@ -86,6 +86,6 @@ export const recordLevelUp = (stats: Stats, gameType: string, newLevel: number):
  */
 export const recordScore = (stats: Stats, points: number): Stats => {
   return updateStats(stats, {
-    totalScore: stats.totalScore + points
+    totalScore: stats.totalScore + points,
   });
 };

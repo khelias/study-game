@@ -16,38 +16,41 @@ export const TutorialModal: React.FC<TutorialModalProps> = ({ onClose }) => {
   const t = useTranslation();
   const [currentStep, setCurrentStep] = useState<number>(0);
 
-  const TUTORIAL_STEPS: TutorialStep[] = useMemo(() => [
-    {
-      title: t.tutorial.welcome.title,
-      content: t.tutorial.welcome.content,
-      emoji: '👋'
-    },
-    {
-      title: t.tutorial.selectAge.title,
-      content: t.tutorial.selectAge.content,
-      emoji: '👶'
-    },
-    {
-      title: t.tutorial.selectGame.title,
-      content: t.tutorial.selectGame.content,
-      emoji: '🎪'
-    },
-    {
-      title: t.tutorial.answerCorrectly.title,
-      content: t.tutorial.answerCorrectly.content,
-      emoji: '⭐'
-    },
-    {
-      title: t.tutorial.beCareful.title,
-      content: t.tutorial.beCareful.content,
-      emoji: '❤️'
-    },
-    {
-      title: t.tutorial.collectAchievements.title,
-      content: t.tutorial.collectAchievements.content,
-      emoji: '🏅'
-    }
-  ], [t]);
+  const TUTORIAL_STEPS: TutorialStep[] = useMemo(
+    () => [
+      {
+        title: t.tutorial.welcome.title,
+        content: t.tutorial.welcome.content,
+        emoji: '👋',
+      },
+      {
+        title: t.tutorial.selectAge.title,
+        content: t.tutorial.selectAge.content,
+        emoji: '👶',
+      },
+      {
+        title: t.tutorial.selectGame.title,
+        content: t.tutorial.selectGame.content,
+        emoji: '🎪',
+      },
+      {
+        title: t.tutorial.answerCorrectly.title,
+        content: t.tutorial.answerCorrectly.content,
+        emoji: '⭐',
+      },
+      {
+        title: t.tutorial.beCareful.title,
+        content: t.tutorial.beCareful.content,
+        emoji: '❤️',
+      },
+      {
+        title: t.tutorial.collectAchievements.title,
+        content: t.tutorial.collectAchievements.content,
+        emoji: '🏅',
+      },
+    ],
+    [t],
+  );
 
   const nextStep = (): void => {
     if (currentStep < TUTORIAL_STEPS.length - 1) {
@@ -67,19 +70,19 @@ export const TutorialModal: React.FC<TutorialModalProps> = ({ onClose }) => {
   const isLast: boolean = currentStep === TUTORIAL_STEPS.length - 1;
 
   return (
-    <div 
+    <div
       className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/70 backdrop-blur-sm p-4 animate-in fade-in duration-300"
-      style={{ 
-        position: 'fixed', 
-        top: 0, 
-        left: 0, 
-        right: 0, 
-        bottom: 0, 
+      style={{
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
         margin: 0,
         padding: '1rem',
         display: 'flex',
         alignItems: 'center',
-        justifyContent: 'center'
+        justifyContent: 'center',
       }}
       onClick={(e: React.MouseEvent<HTMLDivElement>) => {
         // Close when clicking on background
@@ -88,7 +91,7 @@ export const TutorialModal: React.FC<TutorialModalProps> = ({ onClose }) => {
         }
       }}
     >
-      <div 
+      <div
         className="bg-white rounded-3xl p-8 max-w-md w-full shadow-2xl text-center relative"
         style={{ margin: '0 auto' }}
       >
@@ -106,7 +109,7 @@ export const TutorialModal: React.FC<TutorialModalProps> = ({ onClose }) => {
         <div className="text-7xl mb-4 animate-bounce">{step.emoji}</div>
         <h2 className="text-3xl font-black text-slate-800 mb-4">{step.title}</h2>
         <p className="text-lg text-slate-600 mb-8 leading-relaxed">{step.content}</p>
-        
+
         <div className="flex items-center justify-center gap-2 mb-6">
           {TUTORIAL_STEPS.map((_, i) => (
             <div
@@ -131,9 +134,7 @@ export const TutorialModal: React.FC<TutorialModalProps> = ({ onClose }) => {
           <button
             onClick={nextStep}
             className={`flex-1 py-3 px-4 rounded-xl font-bold text-white transition-colors flex items-center justify-center gap-2 ${
-              isLast
-                ? 'bg-green-500 hover:bg-green-600'
-                : 'bg-blue-500 hover:bg-blue-600'
+              isLast ? 'bg-green-500 hover:bg-green-600' : 'bg-blue-500 hover:bg-blue-600'
             }`}
           >
             {isLast ? t.tutorial.startGame : t.tutorial.next}

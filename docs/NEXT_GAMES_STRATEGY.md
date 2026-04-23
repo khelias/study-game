@@ -1,6 +1,7 @@
 # Next Games Strategy: Analysis & Roadmap
 
 This document provides a thorough analysis of Smart Games’ current lineup, gaps, and a prioritized roadmap. It incorporates:
+
 - **Educational gaps** (memory, counting, sorting, rhyme, listening, shapes, money, etc.)
 - **Adult profile mode** (new audience and difficulty tier)
 - **Platformer / rhythm / reflex games** (Geometry Dash–style, “one more try” engagement)
@@ -11,12 +12,12 @@ This document provides a thorough analysis of Smart Games’ current lineup, gap
 
 ### 1.1 Categories & Games
 
-| Category   | Description              | Games |
-|-----------|---------------------------|--------|
-| **Language** | Words, letters, sentences | Word Master, Word Cascade, Syllable Master, Sentence Detective, Letter Detective (5) |
-| **Math**     | Calculations, measurements | Number Snake, Units, Number Compare, BattleLearn, Scales, Clock Game (6) |
-| **Logic**    | Patterns, programming     | Pattern Train, Robo Path, Star Mapper, Shape Shift (4) |
-| **Memory**   | Memory games              | Math Memory (1) |
+| Category     | Description                | Games                                                                                |
+| ------------ | -------------------------- | ------------------------------------------------------------------------------------ |
+| **Language** | Words, letters, sentences  | Word Master, Word Cascade, Syllable Master, Sentence Detective, Letter Detective (5) |
+| **Math**     | Calculations, measurements | Number Snake, Units, Number Compare, BattleLearn, Scales, Clock Game (6)             |
+| **Logic**    | Patterns, programming      | Pattern Train, Robo Path, Star Mapper, Shape Shift (4)                               |
+| **Memory**   | Memory games               | Math Memory (1)                                                                      |
 
 **Total: 16 games.** Most are turn-based or level-by-level; one arcade-style (Word Cascade).
 
@@ -44,28 +45,34 @@ There is **no** dedicated reflex/rhythm/platformer game yet.
 ### 2.1 Educational Gaps (by category)
 
 **Memory**
+
 - Only one game (Math Memory). Missing: classic **picture/emoji pairs**, **sequence memory** (“repeat the order”), **“what was missing?”**.
 
 **Math**
+
 - No **pure counting** (“how many?” / count objects). BattleLearn has some; a short counting game would round out number sense for 5–6yo.
 - No **money** game (coins, “how much?”). Optional but common in kids’ apps.
 - **Geometry**: Shape Shift is spatial; no **“name the shape”** or **sides/corners** for early geometry.
 
 **Language**
+
 - No **rhyme / same sound** (phonics).
 - No **listening-first** (“hear the word, choose the answer”) for literacy and accessibility.
 
 **Logic**
+
 - No **sorting / classification** (e.g. animals vs plants, by size/color).
 - No **simple maze / pathfinding** (Robo Path is programming; a “get from A to B” maze is lighter).
 - No **“which one is different?”** / visual discrimination (Letter Detective is letter-based; a visual version would add variety).
 
 **New category (optional)**
+
 - **Science / nature**: e.g. living vs non-living, seasons, simple facts. Optional; can be folded into Logic or a future category.
 
 ### 2.2 Engagement & Genre Gaps
 
 **Platformer / rhythm / reflex (Geometry Dash–style)**
+
 - **Why it matters**: High “one more try” engagement, clear difficulty curve, and satisfaction from execution (timing, reflexes). Fits “boring is a bug” and can attract older players and adults.
 - **Fit in Smart Games**:
   - **Option A – Pure reflex**: Runner/platformer with obstacles; success = motor skills + persistence. No explicit curriculum; still “smart” via planning and pattern recognition.
@@ -74,6 +81,7 @@ There is **no** dedicated reflex/rhythm/platformer game yet.
 - **Technical**: New category (e.g. **“Arcade”** or **“Reflex”**), real-time loop, collision/timing, possibly level editor or predefined levels. More engine work than a quiz-style game but reuses existing UI/audio/progression.
 
 **Summary**
+
 - **Educational**: Prioritize 1–2 memory games, 1 counting game, then sorting, rhyme/listening, shapes, money, maze, visual discrimination as capacity allows.
 - **Engagement**: Add at least one **platformer/rhythm/reflex** game (flagship for “adult” and “one more try”); can start with a simple runner or rhythm prototype.
 
@@ -89,13 +97,13 @@ There is **no** dedicated reflex/rhythm/platformer game yet.
 
 ### 3.2 Design Options
 
-| Aspect | Option 1 – Difficulty tier | Option 2 – Full separation |
-|--------|----------------------------|-----------------------------|
-| **Profile** | Add `ProfileType: 'adult'` | Same |
-| **Level start** | e.g. `levelStart: 5`, `difficultyOffset: 4` (harder from first level) | Same, or per-game overrides |
+| Aspect              | Option 1 – Difficulty tier                                                                   | Option 2 – Full separation                                                                   |
+| ------------------- | -------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------- |
+| **Profile**         | Add `ProfileType: 'adult'`                                                                   | Same                                                                                         |
+| **Level start**     | e.g. `levelStart: 5`, `difficultyOffset: 4` (harder from first level)                        | Same, or per-game overrides                                                                  |
 | **Game visibility** | Most games `['starter','advanced','adult']`; some `['advanced','adult']` or `['adult']` only | Adult-only games (e.g. platformer) in `allowedProfiles: ['adult']` or `['advanced','adult']` |
-| **Copy / UI** | Add `profiles.adult` in i18n (label “Teen & Adult” or “Adult”), same menu pattern | Same |
-| **Progression** | Separate `levels['adult']` (already supported by `buildDefaultLevels()` and store) | Same |
+| **Copy / UI**       | Add `profiles.adult` in i18n (label “Teen & Adult” or “Adult”), same menu pattern            | Same                                                                                         |
+| **Progression**     | Separate `levels['adult']` (already supported by `buildDefaultLevels()` and store)           | Same                                                                                         |
 
 **Recommendation**: Add **one new profile** `adult` with higher `levelStart` and `difficultyOffset`. New games (e.g. platformer) can be `['adult']` or `['advanced','adult']` initially; existing games can add `'adult'` to `allowedProfiles` so adults see the full catalog at harder default difficulty.
 
@@ -165,12 +173,12 @@ There is **no** dedicated reflex/rhythm/platformer game yet.
 
 ### 5.2 Possible implementations (by effort)
 
-| Idea | Type | Educational link | Effort |
-|------|------|------------------|--------|
-| **Obstacle runner** | Platformer/reflex | Optional: “answer to open gate” | Medium (collision, levels) |
-| **Rhythm taps** | Rhythm | Syllables per beat, or counting beats | Medium (beat detection, patterns) |
-| **Endless dodge** | Reflex | None | Lower (single lane, spawn obstacles) |
-| **Pattern runner** | Reflex + pattern | “Jump when shape matches” (reuse Pattern Train logic) | Medium |
+| Idea                | Type              | Educational link                                      | Effort                               |
+| ------------------- | ----------------- | ----------------------------------------------------- | ------------------------------------ |
+| **Obstacle runner** | Platformer/reflex | Optional: “answer to open gate”                       | Medium (collision, levels)           |
+| **Rhythm taps**     | Rhythm            | Syllables per beat, or counting beats                 | Medium (beat detection, patterns)    |
+| **Endless dodge**   | Reflex            | None                                                  | Lower (single lane, spawn obstacles) |
+| **Pattern runner**  | Reflex + pattern  | “Jump when shape matches” (reuse Pattern Train logic) | Medium                               |
 
 ### 5.3 Technical alignment with current stack
 
@@ -183,14 +191,14 @@ There is **no** dedicated reflex/rhythm/platformer game yet.
 
 ## 6. Summary Table: What to Focus On Next
 
-| Priority | Item | Rationale |
-|----------|------|-----------|
-| 1 | **Adult profile** | Unlocks new audience and justifies harder/arcade content; small, contained change. |
-| 2 | **One new memory game** (e.g. Picture Pairs) | Balances Memory category; reuses assets; clear pedagogy. |
-| 3 | **One counting or sorting game** | Fills math/logic gap; good for 5+ and 7+. |
-| 4 | **One platformer/rhythm/reflex game** | Differentiation, “one more try” engagement, flagship for adult mode. |
-| 5 | **Rhyme or listening game** | Strengthens language; accessibility. |
-| 6 | **More memory variants, shape name, money, maze** | As capacity allows; round out catalog. |
+| Priority | Item                                              | Rationale                                                                          |
+| -------- | ------------------------------------------------- | ---------------------------------------------------------------------------------- |
+| 1        | **Adult profile**                                 | Unlocks new audience and justifies harder/arcade content; small, contained change. |
+| 2        | **One new memory game** (e.g. Picture Pairs)      | Balances Memory category; reuses assets; clear pedagogy.                           |
+| 3        | **One counting or sorting game**                  | Fills math/logic gap; good for 5+ and 7+.                                          |
+| 4        | **One platformer/rhythm/reflex game**             | Differentiation, “one more try” engagement, flagship for adult mode.               |
+| 5        | **Rhyme or listening game**                       | Strengthens language; accessibility.                                               |
+| 6        | **More memory variants, shape name, money, maze** | As capacity allows; round out catalog.                                             |
 
 ---
 

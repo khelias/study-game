@@ -1,10 +1,10 @@
-import js from '@eslint/js'
-import globals from 'globals'
-import reactHooks from 'eslint-plugin-react-hooks'
-import reactRefresh from 'eslint-plugin-react-refresh'
-import tseslint from 'typescript-eslint'
-import eslintConfigPrettier from 'eslint-config-prettier/flat'
-import { defineConfig, globalIgnores } from 'eslint/config'
+import js from '@eslint/js';
+import globals from 'globals';
+import reactHooks from 'eslint-plugin-react-hooks';
+import reactRefresh from 'eslint-plugin-react-refresh';
+import tseslint from 'typescript-eslint';
+import eslintConfigPrettier from 'eslint-config-prettier/flat';
+import { defineConfig, globalIgnores } from 'eslint/config';
 
 export default defineConfig([
   globalIgnores(['dist', 'vitest.config.ts']),
@@ -48,7 +48,10 @@ export default defineConfig([
       },
     },
     rules: {
-      '@typescript-eslint/no-unused-vars': ['error', { varsIgnorePattern: '^[A-Z_]', argsIgnorePattern: '^_' }],
+      '@typescript-eslint/no-unused-vars': [
+        'error',
+        { varsIgnorePattern: '^[A-Z_]', argsIgnorePattern: '^_' },
+      ],
       '@typescript-eslint/no-explicit-any': 'error',
     },
   },
@@ -60,9 +63,12 @@ export default defineConfig([
       '@typescript-eslint/no-unsafe-call': 'off',
       '@typescript-eslint/no-unsafe-return': 'off',
       '@typescript-eslint/no-unsafe-argument': 'off',
-      '@typescript-eslint/no-unused-vars': ['error', { varsIgnorePattern: '^[A-Z_]', argsIgnorePattern: '^_' }],
+      '@typescript-eslint/no-unused-vars': [
+        'error',
+        { varsIgnorePattern: '^[A-Z_]', argsIgnorePattern: '^_' },
+      ],
     },
   },
   // Disable ESLint rules that conflict with Prettier formatting. Must be last so it overrides prior configs.
   eslintConfigPrettier,
-])
+]);
