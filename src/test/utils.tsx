@@ -1,5 +1,6 @@
 import { ReactElement } from 'react';
 import { render, RenderOptions } from '@testing-library/react';
+import type { Stats } from '../types/stats';
 
 // Custom render function that includes common providers if needed
 export function customRender(ui: ReactElement, options?: Omit<RenderOptions, 'wrapper'>) {
@@ -10,7 +11,7 @@ export function customRender(ui: ReactElement, options?: Omit<RenderOptions, 'wr
 export { customRender as render };
 
 // Test data factories
-export const createTestStats = (overrides = {}) => ({
+export const createTestStats = (overrides: Partial<Stats> = {}): Stats => ({
   gamesPlayed: 0,
   correctAnswers: 0,
   wrongAnswers: 0,
@@ -21,7 +22,7 @@ export const createTestStats = (overrides = {}) => ({
   gamesByType: {},
   totalTimePlayed: 0,
   lastPlayed: null,
-  stars: 0,
+  collectedStars: 0,
   maxSnakeLength: 0,
   ...overrides,
 });

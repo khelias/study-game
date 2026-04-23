@@ -2332,7 +2332,7 @@ function generateCountShipsQuestion(
 }
 
 function generateSimpleAddition(
-  level: number,
+  _level: number,
   rng: RngFunction,
 ): { prompt: string; correctAnswer: number } {
   const t = getTranslations();
@@ -2345,7 +2345,7 @@ function generateSimpleAddition(
 }
 
 function generateSimpleSubtraction(
-  level: number,
+  _level: number,
   rng: RngFunction,
 ): { prompt: string; correctAnswer: number } {
   const t = getTranslations();
@@ -2358,7 +2358,7 @@ function generateSimpleSubtraction(
 }
 
 function generateGreaterThanQuestion(
-  level: number,
+  _level: number,
   rng: RngFunction,
 ): { prompt: string; correctAnswer: number } {
   const t = getTranslations();
@@ -2372,7 +2372,7 @@ function generateGreaterThanQuestion(
 }
 
 function generateLessThanQuestion(
-  level: number,
+  _level: number,
   rng: RngFunction,
 ): { prompt: string; correctAnswer: number } {
   const t = getTranslations();
@@ -2388,7 +2388,7 @@ function generateLessThanQuestion(
 // Starter Profile Question Generators (Level 4-6: Subtraction/addition)
 
 function generateAmmunitionQuestion(
-  level: number,
+  _level: number,
   rng: RngFunction,
 ): { prompt: string; correctAnswer: number } {
   const t = getTranslations();
@@ -2401,7 +2401,7 @@ function generateAmmunitionQuestion(
 }
 
 function generateMissingNumber(
-  level: number,
+  _level: number,
   rng: RngFunction,
 ): { prompt: string; correctAnswer: number } {
   const t = getTranslations();
@@ -2415,7 +2415,7 @@ function generateMissingNumber(
 }
 
 function generateMissingNumberSub(
-  level: number,
+  _level: number,
   rng: RngFunction,
 ): { prompt: string; correctAnswer: number } {
   const t = getTranslations();
@@ -2429,7 +2429,7 @@ function generateMissingNumberSub(
 }
 
 function generateTimeProblem(
-  level: number,
+  _level: number,
   rng: RngFunction,
 ): { prompt: string; correctAnswer: number } {
   const t = getTranslations();
@@ -2443,7 +2443,7 @@ function generateTimeProblem(
 }
 
 function generateCoinProblem(
-  level: number,
+  _level: number,
   rng: RngFunction,
 ): { prompt: string; correctAnswer: number } {
   const t = getTranslations();
@@ -2456,7 +2456,7 @@ function generateCoinProblem(
 }
 
 function generateCountObjectsQuestion(
-  level: number,
+  _level: number,
   rng: RngFunction,
 ): { prompt: string; correctAnswer: number } {
   const t = getTranslations();
@@ -2475,7 +2475,7 @@ function generateCountObjectsQuestion(
 }
 
 function generateLogicPuzzle(
-  level: number,
+  _level: number,
   rng: RngFunction,
 ): { prompt: string; correctAnswer: string } {
   const t = getTranslations();
@@ -2490,7 +2490,7 @@ function generateLogicPuzzle(
 }
 
 function generateWordProblem1(
-  level: number,
+  _level: number,
   rng: RngFunction,
 ): { prompt: string; correctAnswer: number } {
   const t = getTranslations();
@@ -2503,7 +2503,7 @@ function generateWordProblem1(
 }
 
 function generateWordProblem2(
-  level: number,
+  _level: number,
   rng: RngFunction,
 ): { prompt: string; correctAnswer: number } {
   const t = getTranslations();
@@ -2516,7 +2516,7 @@ function generateWordProblem2(
 }
 
 function generateTwoStepProblem(
-  level: number,
+  _level: number,
   rng: RngFunction,
 ): { prompt: string; correctAnswer: number } {
   const t = getTranslations();
@@ -2532,7 +2532,7 @@ function generateTwoStepProblem(
 // Starter Profile Question Generators (Level 7+: Coordinates/logic)
 
 function generateNavigateQuestion(
-  level: number,
+  _level: number,
   rng: RngFunction,
   gridSize: number,
 ): { prompt: string; correctAnswer: string } {
@@ -2584,7 +2584,7 @@ function generateNavigateQuestion(
 }
 
 function generateSequenceQuestion(
-  level: number,
+  _level: number,
   rng: RngFunction,
 ): { prompt: string; correctAnswer: number } {
   const t = getTranslations();
@@ -2605,7 +2605,7 @@ function generateSequenceQuestion(
 }
 
 function generateAreaProblem(
-  level: number,
+  _level: number,
   rng: RngFunction,
 ): { prompt: string; correctAnswer: number } {
   const t = getTranslations();
@@ -2618,7 +2618,7 @@ function generateAreaProblem(
 }
 
 function generatePerimeterProblem(
-  level: number,
+  _level: number,
   rng: RngFunction,
 ): { prompt: string; correctAnswer: number } {
   const t = getTranslations();
@@ -2633,7 +2633,7 @@ function generatePerimeterProblem(
 // Advanced Profile Question Generators (Level 1-5)
 
 function generatePatternQuestion(
-  level: number,
+  _level: number,
   rng: RngFunction,
 ): { prompt: string; correctAnswer: number } {
   const t = getTranslations();
@@ -2656,7 +2656,7 @@ function generatePatternQuestion(
 }
 
 function generateDistanceQuestion(
-  level: number,
+  _level: number,
   rng: RngFunction,
   gridSize: number,
 ): { prompt: string; correctAnswer: number } {
@@ -2696,7 +2696,7 @@ function generateDistanceQuestion(
 }
 
 function generateWordProblem3(
-  level: number,
+  _level: number,
   rng: RngFunction,
 ): { prompt: string; correctAnswer: number } {
   const t = getTranslations();
@@ -2711,7 +2711,7 @@ function generateWordProblem3(
 // Advanced Profile Question Generators (Level 6-10)
 
 function generateMultiMoveQuestion(
-  level: number,
+  _level: number,
   rng: RngFunction,
   gridSize: number,
 ): { prompt: string; correctAnswer: string } {
@@ -2738,7 +2738,7 @@ function generateMultiMoveQuestion(
 }
 
 function generateFleetMultiplyQuestion(
-  level: number,
+  _level: number,
   rng: RngFunction,
 ): { prompt: string; correctAnswer: number } {
   const t = getTranslations();
@@ -2751,7 +2751,7 @@ function generateFleetMultiplyQuestion(
 }
 
 function generateFormationCount(
-  level: number,
+  _level: number,
   rng: RngFunction,
 ): { prompt: string; correctAnswer: number } {
   const t = getTranslations();
@@ -2767,7 +2767,7 @@ function generateFormationCount(
 // Advanced Profile Question Generators (Level 11+)
 
 function generateVectorAddition(
-  level: number,
+  _level: number,
   rng: RngFunction,
 ): { prompt: string; correctAnswer: number } {
   const t = getTranslations();

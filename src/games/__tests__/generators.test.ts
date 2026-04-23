@@ -8,6 +8,9 @@ import type {
   MathSnakeProblem,
   CompareSizesProblem,
   PicturePairsProblem,
+  StarMapperProblem,
+  ShapeShiftProblem,
+  BattleLearnProblem,
 } from '../../types/game';
 
 describe('Generators', () => {
@@ -670,7 +673,7 @@ describe('Generators', () => {
       const rng = createRng(12345);
       const generator = Generators.star_mapper;
       if (!generator) throw new Error('star_mapper generator not found');
-      const problem = generator(1, rng, 'starter');
+      const problem = generator(1, rng, 'starter') as StarMapperProblem;
 
       expect(problem.type).toBe('star_mapper');
       expect(problem.constellation).toBeDefined();
@@ -685,8 +688,8 @@ describe('Generators', () => {
       const generator = Generators.star_mapper;
       if (!generator) throw new Error('star_mapper generator not found');
 
-      const problem1 = generator(1, rng, 'starter');
-      const problem2 = generator(2, rng, 'starter');
+      const problem1 = generator(1, rng, 'starter') as StarMapperProblem;
+      const problem2 = generator(2, rng, 'starter') as StarMapperProblem;
 
       expect(problem1.mode).toBe('trace');
       expect(problem2.mode).toBe('trace');
@@ -698,8 +701,8 @@ describe('Generators', () => {
       const generator = Generators.star_mapper;
       if (!generator) throw new Error('star_mapper generator not found');
 
-      const problem3 = generator(3, rng, 'starter');
-      const problem5 = generator(5, rng, 'starter');
+      const problem3 = generator(3, rng, 'starter') as StarMapperProblem;
+      const problem5 = generator(5, rng, 'starter') as StarMapperProblem;
 
       expect(problem3.mode).toBe('build');
       expect(problem5.mode).toBe('build');
@@ -711,8 +714,8 @@ describe('Generators', () => {
       const generator = Generators.star_mapper;
       if (!generator) throw new Error('star_mapper generator not found');
 
-      const problem6 = generator(6, rng, 'starter');
-      const problem8 = generator(8, rng, 'starter');
+      const problem6 = generator(6, rng, 'starter') as StarMapperProblem;
+      const problem8 = generator(8, rng, 'starter') as StarMapperProblem;
 
       expect(problem6.mode).toBe('identify');
       expect(problem8.mode).toBe('identify');
@@ -726,8 +729,8 @@ describe('Generators', () => {
       const generator = Generators.star_mapper;
       if (!generator) throw new Error('star_mapper generator not found');
 
-      const problem9 = generator(9, rng, 'starter');
-      const problem11 = generator(11, rng, 'starter');
+      const problem9 = generator(9, rng, 'starter') as StarMapperProblem;
+      const problem11 = generator(11, rng, 'starter') as StarMapperProblem;
 
       expect(problem9.mode).toBe('expert');
       expect(problem11.mode).toBe('expert');
@@ -738,7 +741,7 @@ describe('Generators', () => {
       const rng = createRng(12345);
       const generator = Generators.star_mapper;
       if (!generator) throw new Error('star_mapper generator not found');
-      const problem = generator(1, rng, 'starter');
+      const problem = generator(1, rng, 'starter') as StarMapperProblem;
 
       // Check constellation has required properties
       expect(problem.constellation.id).toBeDefined();
@@ -761,8 +764,8 @@ describe('Generators', () => {
       const generator = Generators.star_mapper;
       if (!generator) throw new Error('star_mapper generator not found');
 
-      const problem1 = generator(1, rng1, 'starter');
-      const problem7 = generator(7, rng2, 'starter');
+      const problem1 = generator(1, rng1, 'starter') as StarMapperProblem;
+      const problem7 = generator(7, rng2, 'starter') as StarMapperProblem;
 
       // Level 1 should be easy, level 7+ should potentially be harder
       expect(['easy', 'medium', 'hard']).toContain(problem1.constellation.difficulty);
@@ -775,7 +778,7 @@ describe('Generators', () => {
       const rng = createRng(12345);
       const generator = Generators.shape_shift;
       if (!generator) throw new Error('shape_shift generator not found');
-      const problem = generator(1, rng, 'starter');
+      const problem = generator(1, rng, 'starter') as ShapeShiftProblem;
 
       expect(problem.type).toBe('shape_shift');
       expect(problem.mode).toBeDefined();
@@ -790,9 +793,9 @@ describe('Generators', () => {
       const generator = Generators.shape_shift;
       if (!generator) throw new Error('shape_shift generator not found');
 
-      const problem1 = generator(1, rng, 'starter');
-      const problem2 = generator(2, rng, 'starter');
-      const problem3 = generator(3, rng, 'starter');
+      const problem1 = generator(1, rng, 'starter') as ShapeShiftProblem;
+      const problem2 = generator(2, rng, 'starter') as ShapeShiftProblem;
+      const problem3 = generator(3, rng, 'starter') as ShapeShiftProblem;
 
       expect(problem1.mode).toBe('match');
       expect(problem2.mode).toBe('match');
@@ -804,9 +807,9 @@ describe('Generators', () => {
       const generator = Generators.shape_shift;
       if (!generator) throw new Error('shape_shift generator not found');
 
-      const problem4 = generator(4, rng, 'starter');
-      const problem5 = generator(5, rng, 'starter');
-      const problem6 = generator(6, rng, 'starter');
+      const problem4 = generator(4, rng, 'starter') as ShapeShiftProblem;
+      const problem5 = generator(5, rng, 'starter') as ShapeShiftProblem;
+      const problem6 = generator(6, rng, 'starter') as ShapeShiftProblem;
 
       expect(problem4.mode).toBe('rotate');
       expect(problem5.mode).toBe('rotate');
@@ -818,8 +821,8 @@ describe('Generators', () => {
       const generator = Generators.shape_shift;
       if (!generator) throw new Error('shape_shift generator not found');
 
-      const problem7 = generator(7, rng, 'starter');
-      const problem10 = generator(10, rng, 'starter');
+      const problem7 = generator(7, rng, 'starter') as ShapeShiftProblem;
+      const problem10 = generator(10, rng, 'starter') as ShapeShiftProblem;
 
       expect(problem7.mode).toBe('build');
       expect(problem10.mode).toBe('build');
@@ -830,7 +833,7 @@ describe('Generators', () => {
       const generator = Generators.shape_shift;
       if (!generator) throw new Error('shape_shift generator not found');
 
-      const problem11 = generator(11, rng, 'starter');
+      const problem11 = generator(11, rng, 'starter') as ShapeShiftProblem;
 
       expect(problem11.mode).toBe('expert');
     });
@@ -840,7 +843,7 @@ describe('Generators', () => {
       const generator = Generators.shape_shift;
       if (!generator) throw new Error('shape_shift generator not found');
 
-      const problem = generator(11, rng, 'starter');
+      const problem = generator(11, rng, 'starter') as ShapeShiftProblem;
       const decoyPieces = problem.pieces.filter((p) => p.isDecoy);
 
       expect(decoyPieces.length).toBeGreaterThan(0);
@@ -851,7 +854,7 @@ describe('Generators', () => {
       const generator = Generators.shape_shift;
       if (!generator) throw new Error('shape_shift generator not found');
 
-      const problem = generator(1, rng, 'starter');
+      const problem = generator(1, rng, 'starter') as ShapeShiftProblem;
 
       problem.pieces.forEach((piece) => {
         expect(piece.currentPosition).toBeNull();
@@ -863,7 +866,7 @@ describe('Generators', () => {
       const generator = Generators.shape_shift;
       if (!generator) throw new Error('shape_shift generator not found');
 
-      const problem = generator(1, rng, 'starter');
+      const problem = generator(1, rng, 'starter') as ShapeShiftProblem;
 
       expect(problem.mode).toBe('match');
       problem.pieces.forEach((piece) => {
@@ -879,7 +882,7 @@ describe('Generators', () => {
       const rng = createRng(12345);
       const generator = Generators.battlelearn;
       if (!generator) throw new Error('battlelearn generator not found');
-      const problem = generator(1, rng, 'starter');
+      const problem = generator(1, rng, 'starter') as BattleLearnProblem;
 
       expect(problem.type).toBe('battlelearn');
       expect(problem.gridSize).toBeGreaterThan(0);
@@ -904,7 +907,7 @@ describe('Generators', () => {
       const rng = createRng(12345);
       const generator = Generators.battlelearn;
       if (!generator) throw new Error('battlelearn generator not found');
-      const problem = generator(1, rng, 'starter');
+      const problem = generator(1, rng, 'starter') as BattleLearnProblem;
 
       const correctAnswer = problem.question.options[problem.question.correctIndex];
       expect(correctAnswer).toBeDefined();
@@ -917,8 +920,8 @@ describe('Generators', () => {
       const generator = Generators.battlelearn;
       if (!generator) throw new Error('battlelearn generator not found');
 
-      const problem1 = generator(1, rng1, 'starter');
-      const problem2 = generator(1, rng2, 'starter');
+      const problem1 = generator(1, rng1, 'starter') as BattleLearnProblem;
+      const problem2 = generator(1, rng2, 'starter') as BattleLearnProblem;
 
       expect(problem1.ships).toEqual(problem2.ships);
       expect(problem1.cellGrid).toEqual(problem2.cellGrid);
@@ -931,8 +934,8 @@ describe('Generators', () => {
       const generator = Generators.battlelearn;
       if (!generator) throw new Error('battlelearn generator not found');
 
-      const problem1 = generator(1, rng1, 'starter');
-      const problem10 = generator(10, rng2, 'starter');
+      const problem1 = generator(1, rng1, 'starter') as BattleLearnProblem;
+      const problem10 = generator(10, rng2, 'starter') as BattleLearnProblem;
 
       // Higher level should have more or longer ships
       const totalLength1 = problem1.ships.reduce((sum, ship) => sum + ship.length, 0);
@@ -947,7 +950,7 @@ describe('Generators', () => {
       const generator = Generators.battlelearn;
       if (!generator) throw new Error('battlelearn generator not found');
       const rng = createRng(12345);
-      const problem = generator(1, rng, 'advanced');
+      const problem = generator(1, rng, 'advanced') as BattleLearnProblem;
       expect(problem.type).toBe('battlelearn');
       expect(problem.gridSize).toBeGreaterThanOrEqual(5);
       expect(problem.ships).toBeInstanceOf(Array);
@@ -961,8 +964,8 @@ describe('Generators', () => {
       if (!generator) throw new Error('battlelearn generator not found');
       const rng1 = createRng(12345);
       const rng2 = createRng(12345);
-      const starterProblem = generator(1, rng1, 'starter');
-      const advancedProblem = generator(1, rng2, 'advanced');
+      const starterProblem = generator(1, rng1, 'starter') as BattleLearnProblem;
+      const advancedProblem = generator(1, rng2, 'advanced') as BattleLearnProblem;
       expect(advancedProblem.gridSize).toBeGreaterThan(starterProblem.gridSize);
     });
 
@@ -972,7 +975,7 @@ describe('Generators', () => {
       const questions = new Set<string>();
       for (let seed = 0; seed < 20; seed++) {
         const rng = createRng(seed);
-        const problem = generator(5, rng, 'advanced');
+        const problem = generator(5, rng, 'advanced') as BattleLearnProblem;
         questions.add(problem.question.prompt);
       }
       expect(questions.size).toBeGreaterThan(1);
@@ -983,8 +986,8 @@ describe('Generators', () => {
       if (!generator) throw new Error('battlelearn generator not found');
       const rng1 = createRng(12345);
       const rng2 = createRng(54321);
-      const problem1 = generator(1, rng1, 'advanced');
-      const problem10 = generator(10, rng2, 'advanced');
+      const problem1 = generator(1, rng1, 'advanced') as BattleLearnProblem;
+      const problem10 = generator(10, rng2, 'advanced') as BattleLearnProblem;
       expect(problem10.gridSize).toBeGreaterThanOrEqual(problem1.gridSize);
       expect(problem10.ships.length).toBeGreaterThanOrEqual(problem1.ships.length);
     });
@@ -995,7 +998,7 @@ describe('Generators', () => {
       const questions = new Set<string>();
       for (let seed = 0; seed < 50; seed++) {
         const rng = createRng(seed);
-        const problem = generator(5, rng, 'advanced');
+        const problem = generator(5, rng, 'advanced') as BattleLearnProblem;
         questions.add(problem.question.prompt);
       }
       expect(questions.size).toBeGreaterThanOrEqual(5);
@@ -1013,7 +1016,7 @@ describe('Generators', () => {
       const questions = new Set<string>();
       for (let seed = 0; seed < 30; seed++) {
         const rng = createRng(seed);
-        const problem = generator(2, rng, 'starter');
+        const problem = generator(2, rng, 'starter') as BattleLearnProblem;
         questions.add(problem.question.prompt);
       }
 
@@ -1028,7 +1031,7 @@ describe('Generators', () => {
       const questions = new Set<string>();
       for (let seed = 0; seed < 30; seed++) {
         const rng = createRng(seed);
-        const problem = generator(5, rng, 'starter');
+        const problem = generator(5, rng, 'starter') as BattleLearnProblem;
         questions.add(problem.question.prompt);
       }
 
@@ -1043,7 +1046,7 @@ describe('Generators', () => {
       const questions = new Set<string>();
       for (let seed = 0; seed < 30; seed++) {
         const rng = createRng(seed);
-        const problem = generator(8, rng, 'starter');
+        const problem = generator(8, rng, 'starter') as BattleLearnProblem;
         questions.add(problem.question.prompt);
       }
 
@@ -1057,7 +1060,7 @@ describe('Generators', () => {
 
       for (let level = 1; level <= 10; level++) {
         const rng = createRng(level);
-        const problem = generator(level, rng, 'starter');
+        const problem = generator(level, rng, 'starter') as BattleLearnProblem;
 
         // No bilingual format
         expect(problem.question.prompt).not.toContain(' / ');
