@@ -1,0 +1,58 @@
+/*
+ * Overrides and utilities scoped to the game screen.
+ *
+ * The animation rules below intentionally override the duration / easing
+ * defined globally in `src/index.css`. The timing here was tuned to the
+ * gameplay feedback loop (shorter, snappier) whereas the global defaults
+ * are tuned to menu / passive UI. If a future consolidation is desired,
+ * reconcile these values with `index.css` and delete this override set.
+ */
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+@keyframes pulse-slow {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+}
+.animate-pulse-slow {
+  animation: pulse-slow 2s infinite ease-in-out;
+}
+
+.animate-bounce-short {
+  animation: bounce-short 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+@keyframes bounce-short {
+  0%,
+  100% {
+    transform: translateY(0) scale(1);
+  }
+  50% {
+    transform: translateY(-15px) scale(1.05);
+  }
+}
+
+@keyframes star-collect {
+  0% {
+    transform: scale(0) rotate(0deg);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1.2) rotate(180deg);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1) rotate(360deg);
+    opacity: 1;
+  }
+}
+.animate-star-collect {
+  animation: star-collect 0.5s ease-out;
+}
