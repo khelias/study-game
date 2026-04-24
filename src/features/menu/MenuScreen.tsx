@@ -620,7 +620,10 @@ export const MenuScreen: React.FC = () => {
           <footer className="w-full pt-6 pb-4 text-center text-[0.7rem] tracking-wider font-light text-slate-400">
             Self-hosted in Tallinn
             <span className="mx-2 opacity-50">·</span>
-            <a href="/privacy" className="text-slate-400 hover:text-slate-600 transition-colors no-underline">
+            <a
+              href="/privacy"
+              className="text-slate-400 hover:text-slate-600 transition-colors no-underline"
+            >
               Privacy
             </a>
           </footer>
