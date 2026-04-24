@@ -180,27 +180,16 @@ export const MenuScreen: React.FC = () => {
         {/* Header - Matches GameHeader exactly, starts from top */}
         <div className="w-full bg-white/90 backdrop-blur-md border-b-2 sm:border-b-4 border-slate-200 sticky top-0 z-40 shadow-sm flex-shrink-0">
           <div className="w-full max-w-2xl mx-auto flex items-center justify-between gap-2 sm:gap-3 px-2 sm:px-4 p-2 sm:p-2.5 min-h-[56px] sm:min-h-[64px]">
-            {/* Left: App Icon + Stars */}
+            {/* Left: App Icon (back to games.khe.ee) + Stars */}
             <div className="flex items-center gap-2 flex-shrink-0">
-              <button
-                onClick={() => {
-                  playClick();
-                  // Reset menu to default state
-                  setExpandedCategories({});
-                  setShowFavourites(favouriteGameIds.length > 0);
-                  setShowStats(false);
-                  setShowAchievements(false);
-                  setShowShop(false);
-                  setShowSettingsMenu(false);
-                  // Scroll menu content to top
-                  scrollContainerRef.current?.scrollTo({ top: 0, behavior: 'smooth' });
-                }}
+              <a
+                href="/"
                 className="bg-slate-100 hover:bg-slate-200 p-2 rounded-lg transition-colors active:scale-90 flex items-center justify-center"
-                aria-label="Smart Games"
-                title="Smart Games"
+                aria-label="Back to games.khe.ee"
+                title="Back to games.khe.ee"
               >
                 <SmartGamesLogo />
-              </button>
+              </a>
               <ResourceBadge
                 type="stars"
                 value={stars}
@@ -626,6 +615,15 @@ export const MenuScreen: React.FC = () => {
               );
             })}
           </div>
+
+          {/* Shared footer — matches launcher (games.khe.ee) and adventure */}
+          <footer className="w-full pt-6 pb-4 text-center text-[0.7rem] tracking-wider font-light text-slate-400">
+            Self-hosted in Tallinn
+            <span className="mx-2 opacity-50">·</span>
+            <a href="/privacy" className="text-slate-400 hover:text-slate-600 transition-colors no-underline">
+              Privacy
+            </a>
+          </footer>
         </div>
       </div>
     </div>
