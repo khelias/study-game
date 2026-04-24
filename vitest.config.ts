@@ -8,7 +8,9 @@ export default defineConfig({
     globals: true,
     environment: 'happy-dom',
     setupFiles: ['./src/test/setup.ts'],
-    exclude: ['node_modules/', 'dist/', 'e2e/'],
+    // Vitest replaces (not merges) default excludes when this is set, so restate
+    // the defaults with glob prefixes; bare "node_modules/" does not match nested paths.
+    exclude: ['**/node_modules/**', '**/dist/**', '**/e2e/**'],
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json', 'html'],

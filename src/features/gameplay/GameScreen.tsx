@@ -1,64 +1,41 @@
-/**
- * GameScreen Component (Refactored)
- *
- * Main game screen component. Orchestrates game play, UI, and state management.
- * This refactored version uses extracted hooks and components for better scalability.
- */
-
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Loader2 } from 'lucide-react';
 import { useGameStore } from '../../stores/gameStore';
 import { usePlaySessionStore } from '../../stores/playSessionStore';
 import { useGameEngine } from '../../hooks/useGameEngine';
 import { useGameAudio } from '../../hooks/useGameAudio';
 import { useAnswerHandler } from '../../hooks/useAnswerHandler';
 import { useGameTips } from '../../hooks/useGameTips';
-import { GameRenderer } from './GameRenderer';
-import { GameOverlayBadges } from './GameOverlayBadges';
-import { GameDescriptionModal } from './GameDescriptionModal';
-import { Confetti } from '../../components/shared/Confetti';
-import { NotificationSystem } from '../../components/NotificationSystem';
-import { TipButton } from '../../components/TipButton';
-import { EnhancedConfetti } from '../../components/EnhancedAnimations';
-import { ParticleEffect } from '../../components/ParticleEffect';
-import { GameHeader } from '../../components/GameHeader';
+import { useMathSnakeMovement } from '../../hooks/useMathSnakeMovement';
+import { useGameScreenEffects } from '../../hooks/useGameScreenEffects';
+import { useUnlockedAchievementCopies } from '../../hooks/useUnlockedAchievementCopies';
 import { SettingsMenu } from '../../components/SettingsMenu';
-import { StatsModal } from '../modals/StatsModal';
-import { AchievementsModal } from '../modals/AchievementsModal';
-import { ShopModal } from '../modals/ShopModal';
-import { LevelSelectorModal } from '../modals/LevelSelectorModal';
-import { moveMathSnake } from '../../engine/mathSnake';
 import { calculateLevelUpRequirement } from '../../engine/progression';
-import { ACHIEVEMENTS } from '../../engine/achievements';
-import { getAchievementCopy } from '../../utils/achievementCopy';
-import { useTranslation } from '../../i18n/useTranslation';
 import { GAME_CONFIG } from '../../games/data';
-import type { Direction, ProfileType } from '../../types/game';
-import type { AchievementUnlock } from '../../types/achievement';
+import type { ProfileType } from '../../types/game';
+import { GameScreenView } from './GameScreenView';
+import { GameScreenModalHost } from './GameScreenModalHost';
 import './gameScreen.css';
 
 export const GameScreen: React.FC = () => {
   const navigate = useNavigate();
 
-  // Global state
+  // Persistent store
   const profile = useGameStore((state) => state.profile);
   const profileId = profile as ProfileType;
   const levels = useGameStore((state) => state.levels);
+  const stars = useGameStore((state) => state.stars);
+  const hearts = useGameStore((state) => state.hearts);
+  const stats = useGameStore((state) => state.stats);
   const soundEnabled = useGameStore((state) => state.soundEnabled);
   const toggleSound = useGameStore((state) => state.toggleSound);
   const setLevel = useGameStore((state) => state.setLevel);
-  const addGlobalScore = useGameStore((state) => state.addScore);
-  const updateStats = useGameStore((state) => state.updateStats);
-  const updateHighScore = useGameStore((state) => state.updateHighScore);
+  const spendStars = useGameStore((state) => state.spendStars);
+  const spendHeart = useGameStore((state) => state.spendHeart);
 
-  // Session state
+  // Session store
   const gameType = usePlaySessionStore((state) => state.gameType);
   const problem = usePlaySessionStore((state) => state.problem);
-  const stars = useGameStore((state) => state.stars); // Persistent currency (for display in menu)
-  const spendStars = useGameStore((state) => state.spendStars); // For shape_shift star hints
-  const spendHeart = useGameStore((state) => state.spendHeart);
-  const hearts = useGameStore((state) => state.hearts); // Persistent global resource
   const score = usePlaySessionStore((state) => state.score);
   const levelProgress = usePlaySessionStore((state) => state.levelProgress);
   const bgClass = usePlaySessionStore((state) => state.bgClass);
@@ -66,71 +43,36 @@ export const GameScreen: React.FC = () => {
   const enhancedConfetti = usePlaySessionStore((state) => state.enhancedConfetti);
   const particleActive = usePlaySessionStore((state) => state.particleActive);
   const adaptiveDifficulty = usePlaySessionStore((state) => state.adaptiveDifficulty);
-  const gameStartTime = usePlaySessionStore((state) => state.gameStartTime);
   const notifications = usePlaySessionStore((state) => state.notifications);
-  const autoShowGameDescription = usePlaySessionStore((state) => state.autoShowGameDescription);
-  const setAutoShowGameDescription = usePlaySessionStore(
-    (state) => state.setAutoShowGameDescription,
-  );
-
-  // Session actions
   const setProblem = usePlaySessionStore((state) => state.setProblem);
   const returnToMenu = usePlaySessionStore((state) => state.returnToMenu);
   const setEnhancedConfetti = usePlaySessionStore((state) => state.setEnhancedConfetti);
-  // Stars are now persistent (gameStore.stars), no reset needed
   const endGame = usePlaySessionStore((state) => state.endGame);
-  const addScore = usePlaySessionStore((state) => state.addScore);
   const addNotification = usePlaySessionStore((state) => state.addNotification);
   const removeNotification = usePlaySessionStore((state) => state.removeNotification);
+  const resetLevelProgress = usePlaySessionStore((state) => state.resetLevelProgress);
 
-  // Hooks
-  const { generateUniqueProblemForGame, getRng } = useGameEngine();
+  // Composite hooks
+  const { generateUniqueProblemForGame } = useGameEngine();
   const { playClick } = useGameAudio(soundEnabled);
   const { handleAnswer: handleAnswerBase } = useAnswerHandler();
+  const handleMathSnakeMove = useMathSnakeMovement();
+  const { ids: unlockedAchievementIds, enriched: unlockedAchievements } =
+    useUnlockedAchievementCopies();
 
-  // Wrap handleAnswer to check achievement state and pass through options (e.g. skipHeartDeduction)
-  const handleAnswer = (
-    isCorrect: boolean,
-    shouldShowAchievement?: () => boolean,
-    options?: { skipHeartDeduction?: boolean },
-  ) => {
-    handleAnswerBase(isCorrect, shouldShowAchievement ?? (() => !achievementShown), options);
-  };
-
+  // Local UI state
   const [isCompactLayout, setIsCompactLayout] = useState(false);
   const [showGameDescription, setShowGameDescription] = useState(false);
-  const hasAutoShownDescriptionRef = useRef(false);
   const [showSettingsMenu, setShowSettingsMenu] = useState(false);
   const [showStats, setShowStats] = useState(false);
   const [showAchievements, setShowAchievements] = useState(false);
   const [showShop, setShowShop] = useState(false);
   const [showLevelSelector, setShowLevelSelector] = useState(false);
+  const hasAutoShownDescriptionRef = useRef(false);
   const settingsMenuRef = useRef<HTMLDivElement>(null);
 
-  // Get stats and achievements for modals
-  const stats = useGameStore((state) => state.stats);
-  const unlockedAchievementIds = useGameStore((state) => state.unlockedAchievements);
-  const t = useTranslation();
-
-  // Convert achievement IDs to AchievementUnlock objects
-  const unlockedAchievements: AchievementUnlock[] = unlockedAchievementIds
-    .map((id) => {
-      const achievement = ACHIEVEMENTS[id];
-      if (!achievement) return null;
-      const copy = getAchievementCopy(t, achievement.id);
-      return {
-        id: achievement.id,
-        title: copy.title,
-        desc: copy.desc,
-        icon: achievement.icon,
-      };
-    })
-    .filter((a): a is AchievementUnlock => a !== null);
-
-  // Track achievement notifications - compute directly from notifications
   const achievementShown = notifications.some((n) => n.type === 'achievement');
 
-  // Use tips hook
   const { handleTipReplay, canReopenTip } = useGameTips(
     gameType,
     problem,
@@ -139,185 +81,97 @@ export const GameScreen: React.FC = () => {
     isCompactLayout,
   );
 
-  // Settings menu click outside handler
-  useEffect(() => {
-    if (!showSettingsMenu) return;
-    const handleClickOutside = (event: MouseEvent) => {
-      if (settingsMenuRef.current && !settingsMenuRef.current.contains(event.target as Node)) {
-        setShowSettingsMenu(false);
-      }
-    };
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, [showSettingsMenu]);
-
-  // Responsive layout detection
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-    const media = window.matchMedia('(max-width: 639px)');
-    const update = (): void => setIsCompactLayout(media.matches);
-    update();
-    if (typeof media.addEventListener === 'function') {
-      media.addEventListener('change', update);
-      return () => media.removeEventListener('change', update);
-    }
-    media.addListener(update);
-    return () => media.removeListener(update);
-  }, []);
-
-  // Generate initial problem on mount
-  useEffect(() => {
-    if (gameType && !problem) {
-      const currentLevel = levels[profile]?.[gameType] || 1;
-      const newProblem = generateUniqueProblemForGame(
-        gameType,
-        currentLevel,
-        profile,
-        adaptiveDifficulty,
-      );
-      setProblem(newProblem);
-    }
-  }, [
-    gameType,
-    problem,
-    levels,
-    profile,
-    adaptiveDifficulty,
+  useGameScreenEffects({
+    showSettingsMenu,
+    settingsMenuRef,
+    setShowSettingsMenu,
+    setIsCompactLayout,
+    showGameDescription,
+    setShowGameDescription,
+    hasAutoShownDescriptionRef,
     generateUniqueProblemForGame,
-    setProblem,
-  ]);
+    playClick,
+  });
 
-  // Reset level progress only on fresh start (no problem yet). Do not reset when resuming from game over.
-  const resetLevelProgress = usePlaySessionStore((state) => state.resetLevelProgress);
-  useEffect(() => {
-    if (gameType && !problem) {
-      resetLevelProgress();
-    }
-  }, [gameType, problem, resetLevelProgress]);
-
-  // Auto-show game description when route set autoShowGameDescription (first time entering this game type).
-  // Defer open to next frame so modal opens after first paint (fixes iOS). Do not cancel rAF in cleanup: clearing the flag re-runs this effect and would cancel the scheduled open.
-  useEffect(() => {
-    if (!gameType || !problem || !autoShowGameDescription || hasAutoShownDescriptionRef.current)
-      return;
-    hasAutoShownDescriptionRef.current = true;
-    setAutoShowGameDescription(false);
-    requestAnimationFrame(() => {
-      setShowGameDescription(true);
-    });
-  }, [gameType, problem, autoShowGameDescription, setAutoShowGameDescription]);
-
-  useEffect(() => {
-    const handleEscape = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && showGameDescription) {
-        playClick();
-        setShowGameDescription(false);
-      }
-    };
-    if (showGameDescription) {
-      document.addEventListener('keydown', handleEscape);
-      return () => document.removeEventListener('keydown', handleEscape);
-    }
-    return undefined;
-  }, [showGameDescription, playClick]);
-
-  // Handle math snake movement
-  const handleMathSnakeMove = (direction: Direction) => {
-    if (!gameType || !problem || problem.type !== 'math_snake') return;
-    const baseType = gameType.replace('_adv', '');
-    if (baseType !== 'math_snake') return;
-    if (problem.math) return;
-    const currentLevel = levels[profile]?.[gameType] || 1;
-    const rng = getRng();
-
-    const wasEatingNormalApple = problem.apple?.kind === 'normal';
-
-    const result = moveMathSnake(problem, direction, currentLevel, rng, profileId);
-    if (result.collision) {
-      const finalSnakeLength = problem.snake.length;
-      updateStats((stats) => ({
-        ...stats,
-        maxSnakeLength: Math.max(stats.maxSnakeLength || 0, finalSnakeLength),
-      }));
-
-      // High score is already updated on each score increase, no need to update here
-      endGame();
-      if (gameStartTime) {
-        const playTime = Math.floor((Date.now() - gameStartTime) / 1000);
-        updateStats((stats) => ({
-          ...stats,
-          totalTimePlayed: stats.totalTimePlayed + playTime,
-        }));
-      }
-      return;
-    }
-
-    const currentSnakeLength = result.problem.snake.length;
-    updateStats((stats) => ({
-      ...stats,
-      maxSnakeLength: Math.max(stats.maxSnakeLength || 0, currentSnakeLength),
-    }));
-
-    if (wasEatingNormalApple && !result.problem.math) {
-      const applePoints = 5;
-      addScore(applePoints);
-      addGlobalScore(applePoints);
-
-      // Update high score after adding apple points
-      const newScore = score + applePoints;
-      updateHighScore(gameType, newScore);
-    }
-
-    setProblem(result.problem);
+  // Wrap handleAnswer so games can opt into skipHeartDeduction and the underlying
+  // handler can check whether an achievement popup is already visible.
+  const handleAnswer = (
+    isCorrect: boolean,
+    shouldShowAchievement?: () => boolean,
+    options?: { skipHeartDeduction?: boolean },
+  ): void => {
+    handleAnswerBase(isCorrect, shouldShowAchievement ?? (() => !achievementShown), options);
   };
 
-  // Handle notification dismissal
-  const handleNotificationDismiss = (id: string) => {
+  const handleNotificationDismiss = (id: string): void => {
     const notification = notifications.find((n) => n.id === id);
     removeNotification(id);
-
-    // Level-up: next problem and level record are already handled by levelUpOnDismiss in useAnswerHandler.
+    // Level-up: next problem and level record are handled by levelUpOnDismiss in useAnswerHandler.
     // Do not call handleNextLevel() here or we would set the problem twice and double-record level up.
-    if (notification?.type === 'levelUp') {
-      return;
-    }
+    if (notification?.type === 'levelUp') return;
   };
 
-  if (!gameType) {
-    return null;
-  }
+  const handleLevelChange = (newLevel: number): void => {
+    if (!gameType) return;
+    setLevel(gameType, newLevel);
+    resetLevelProgress();
+    const newProblem = generateUniqueProblemForGame(
+      gameType,
+      newLevel,
+      profileId,
+      adaptiveDifficulty,
+    );
+    setProblem(newProblem);
+    setShowLevelSelector(false);
+  };
+
+  const handleReturnToMenu = (): void => {
+    playClick();
+    void navigate('/', { replace: true });
+    void returnToMenu();
+  };
+
+  if (!gameType) return null;
 
   const currentLevel = levels[profile]?.[gameType] ?? 1;
-  const baseType = gameType.replace('_adv', '');
-  const isMathSnake = baseType === 'math_snake';
+
+  const settingsMenuSlot = (
+    <SettingsMenu
+      soundEnabled={soundEnabled}
+      onToggleSound={() => {
+        playClick();
+        toggleSound();
+      }}
+      onReturnToMenu={handleReturnToMenu}
+      onClose={() => setShowSettingsMenu(false)}
+      onShowAchievements={() => setShowAchievements(true)}
+      onShowStats={() => setShowStats(true)}
+      onShowShop={() => setShowShop(true)}
+      unlockedAchievements={unlockedAchievements}
+      isGameScreen={true}
+    />
+  );
 
   return (
-    <div
-      className={`min-h-screen font-sans flex flex-col ${bgClass} transition-colors duration-500 select-none overflow-hidden`}
-    >
-      {confetti && <Confetti />}
-      {enhancedConfetti && (
-        <EnhancedConfetti active={enhancedConfetti} onComplete={() => setEnhancedConfetti(false)} />
-      )}
-      <ParticleEffect type="success" active={particleActive} />
-
-      <NotificationSystem notifications={notifications} onDismiss={handleNotificationDismiss} />
-
-      <GameHeader
+    <>
+      <GameScreenView
+        bgClass={bgClass}
+        confetti={confetti}
+        enhancedConfetti={enhancedConfetti}
+        particleActive={particleActive}
+        onEnhancedConfettiComplete={() => setEnhancedConfetti(false)}
+        notifications={notifications}
+        onNotificationDismiss={handleNotificationDismiss}
         score={score}
         stars={stars}
         hearts={hearts}
         levelProgress={levelProgress}
         levelUpRequirement={calculateLevelUpRequirement(currentLevel)}
         showLevelProgress={GAME_CONFIG[gameType]?.levelUpStrategy !== 'onGameWin'}
-        particleActive={particleActive}
-        onReturnToMenu={() => {
-          playClick();
-          void navigate('/', { replace: true });
-          void returnToMenu();
-        }}
+        showSettingsMenu={showSettingsMenu}
+        settingsMenuRef={settingsMenuRef as React.RefObject<HTMLDivElement>}
+        settingsMenuSlot={settingsMenuSlot}
+        onReturnToMenu={handleReturnToMenu}
         onSettingsClick={() => {
           setShowSettingsMenu(!showSettingsMenu);
           playClick();
@@ -326,119 +180,46 @@ export const GameScreen: React.FC = () => {
           setShowShop(true);
           playClick();
         }}
-        showSettingsMenu={showSettingsMenu}
-        settingsMenuRef={settingsMenuRef as React.RefObject<HTMLDivElement>}
-      >
-        <SettingsMenu
-          soundEnabled={soundEnabled}
-          onToggleSound={() => {
-            playClick();
-            toggleSound();
-          }}
-          onReturnToMenu={() => {
-            playClick();
-            void navigate('/', { replace: true });
-            void returnToMenu();
-          }}
-          onClose={() => setShowSettingsMenu(false)}
-          onShowAchievements={() => setShowAchievements(true)}
-          onShowStats={() => setShowStats(true)}
-          onShowShop={() => setShowShop(true)}
-          unlockedAchievements={unlockedAchievements}
-          isGameScreen={true}
-        />
-      </GameHeader>
+        currentLevel={currentLevel}
+        gameType={gameType}
+        onLevelBadgeClick={() => setShowLevelSelector(true)}
+        onGameNameClick={() => {
+          playClick();
+          setShowGameDescription(true);
+        }}
+        problem={problem}
+        soundEnabled={soundEnabled}
+        spendStars={spendStars}
+        spendHeart={spendHeart}
+        endGame={endGame}
+        onAnswer={handleAnswer}
+        onMove={handleMathSnakeMove}
+        onTipReplay={handleTipReplay}
+        canReopenTip={canReopenTip}
+      />
 
-      <div className="flex-1 flex flex-col items-center p-4 max-w-2xl mx-auto w-full relative pt-14 sm:pt-16">
-        <GameOverlayBadges
-          level={currentLevel}
-          gameType={gameType}
-          score={score}
-          onLevelClick={() => setShowLevelSelector(true)}
-          onGameNameClick={() => {
-            playClick();
-            setShowGameDescription(true);
-          }}
-        />
-
-        {!problem ? (
-          <Loader2 className="animate-spin mt-20 text-slate-400" size={48} />
-        ) : (
-          <div key={problem.uid} className="w-full flex justify-center pb-8">
-            <GameRenderer
-              key={
-                problem
-                  ? `${problem.type}-${problem.uid}-${'target' in problem ? problem.target : ''}`
-                  : 'no-problem'
-              }
-              gameType={gameType}
-              problem={problem}
-              onAnswer={handleAnswer}
-              onMove={isMathSnake ? handleMathSnakeMove : undefined}
-              soundEnabled={soundEnabled}
-              level={currentLevel}
-              stars={stars}
-              spendStars={spendStars}
-              spendHeart={spendHeart}
-              endGame={endGame}
-            />
-
-            <TipButton
-              onTip={handleTipReplay}
-              soundEnabled={soundEnabled}
-              disabled={!canReopenTip}
-            />
-          </div>
-        )}
-      </div>
-
-      {/* Modals */}
-      {showStats && (
-        <StatsModal
-          stats={stats}
-          unlockedAchievements={unlockedAchievements}
-          onClose={() => setShowStats(false)}
-        />
-      )}
-      {showAchievements && (
-        <AchievementsModal
-          unlockedAchievements={unlockedAchievementIds}
-          onClose={() => setShowAchievements(false)}
-        />
-      )}
-      {showShop && (
-        <ShopModal onClose={() => setShowShop(false)} openedFromNoHearts={hearts <= 0} />
-      )}
-      {showLevelSelector && gameType && (
-        <LevelSelectorModal
-          currentLevel={currentLevel}
-          gameType={gameType}
-          onClose={() => setShowLevelSelector(false)}
-          onLevelChange={(newLevel) => {
-            setLevel(gameType, newLevel);
-            // Reset level progress and regenerate problem for new level
-            resetLevelProgress();
-            const newProblem = generateUniqueProblemForGame(
-              gameType,
-              newLevel,
-              profileId,
-              adaptiveDifficulty,
-            );
-            setProblem(newProblem);
-            setShowLevelSelector(false);
-          }}
-        />
-      )}
-
-      {showGameDescription && gameType && (
-        <GameDescriptionModal
-          gameType={gameType}
-          onClose={() => {
-            playClick();
-            setShowGameDescription(false);
-          }}
-        />
-      )}
-    </div>
+      <GameScreenModalHost
+        showStats={showStats}
+        stats={stats}
+        unlockedAchievements={unlockedAchievements}
+        onCloseStats={() => setShowStats(false)}
+        showAchievements={showAchievements}
+        unlockedAchievementIds={unlockedAchievementIds}
+        onCloseAchievements={() => setShowAchievements(false)}
+        showShop={showShop}
+        heartsAtZero={hearts <= 0}
+        onCloseShop={() => setShowShop(false)}
+        showLevelSelector={showLevelSelector}
+        currentLevel={currentLevel}
+        gameType={gameType}
+        onCloseLevelSelector={() => setShowLevelSelector(false)}
+        onLevelChange={handleLevelChange}
+        showGameDescription={showGameDescription}
+        onCloseGameDescription={() => {
+          playClick();
+          setShowGameDescription(false);
+        }}
+      />
+    </>
   );
 };
