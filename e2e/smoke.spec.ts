@@ -81,8 +81,12 @@ test.describe('smart games — smoke', () => {
 
     // Click any answer. Whether correct or wrong, the engine calls recordAnswer
     // which increments stats.correctAnswers or stats.wrongAnswers. We only care
-    // that the answer-handling path runs end-to-end.
-    await answerBtn.click();
+    // that the answer-handling path runs end-to-end. `force: true` because
+    // useGameTips fires a non-auto-dismissing tip notification at the bottom of
+    // the viewport that can overlap the answer grid on slower CI runners
+    // (AUTO_DISMISS.tip === false). This test is about the handler wiring, not
+    // pointer-event addressability.
+    await answerBtn.click({ force: true });
 
     // Poll persisted zustand state for the stat increment. Keeps the assertion
     // independent of RNG (we don't know whether the click was correct) and
