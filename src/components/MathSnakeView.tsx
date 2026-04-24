@@ -29,7 +29,12 @@ export const MathSnakeView: React.FC<MathSnakeViewProps> = ({
 }) => {
   const t = useTranslation();
   const baseType = gameType?.replace('_adv', '') ?? 'math_snake';
-  const paidHints = GAME_CONFIG[baseType]?.paidHints ?? [];
+  const gameConfig = GAME_CONFIG[baseType];
+  const paidHints = gameConfig?.paidHints ?? [];
+  const visualTheme = gameConfig?.visualTheme;
+  const normalEmoji = visualTheme?.normalCollectibleEmoji ?? '🍎';
+  const challengeEmoji = visualTheme?.challengeCollectibleEmoji ?? '🧮';
+  const isCosmic = visualTheme?.background === 'cosmic';
   const [status, setStatus] = useState<'idle' | 'correct' | 'wrong'>('idle');
   const [justAte, setJustAte] = useState(false);
   const [selectedOption, setSelectedOption] = useState<number | null>(null);
@@ -281,7 +286,7 @@ export const MathSnakeView: React.FC<MathSnakeViewProps> = ({
                     'drop-shadow(0 0 8px rgba(59, 130, 246, 0.6)) drop-shadow(0 0 12px rgba(59, 130, 246, 0.4))',
                 }}
               >
-                🧮
+                {challengeEmoji}
               </div>
             ) : (
               <div
@@ -292,7 +297,7 @@ export const MathSnakeView: React.FC<MathSnakeViewProps> = ({
                     'drop-shadow(0 0 6px rgba(239, 68, 68, 0.5)) drop-shadow(0 0 10px rgba(239, 68, 68, 0.3))',
                 }}
               >
-                🍎
+                {normalEmoji}
               </div>
             )}
           </div>
@@ -489,8 +494,12 @@ export const MathSnakeView: React.FC<MathSnakeViewProps> = ({
     );
   };
 
-  // Calculate level theme colors
+  // Calculate level theme colors. Cosmic theme (multiplication_snake et al)
+  // replaces pastel level gradient with a starry night background.
   const getLevelTheme = (lvl: number) => {
+    if (isCosmic) {
+      return { bg: 'from-indigo-950 via-slate-900 to-violet-950', border: 'border-indigo-400/40' };
+    }
     if (lvl <= 2)
       return { bg: 'from-blue-50 via-cyan-50 to-emerald-50', border: 'border-blue-300/60' };
     if (lvl <= 4)

@@ -12,6 +12,7 @@ import { useGameEngine } from './useGameEngine';
 import { useGameAudio } from './useGameAudio';
 import { useProfileText } from './useProfileText';
 import { processAnswer } from '../engine/answerHandler';
+import { isSnakeGameType } from '../engine/mathSnake';
 import { getRandomEncouragement } from '../components/FeedbackSystem';
 import { GAME_CONFIG } from '../games/data';
 import { useTranslation } from '../i18n/useTranslation';
@@ -181,7 +182,7 @@ export function useAnswerHandler(): UseAnswerHandlerResult {
         if (levelUpStrategy === 'onGameWin') {
           // Victory screen already shown by the game; no second (level-up) popup. Go straight to next game.
           setBgClass('bg-slate-50');
-          if (baseGameType !== 'math_snake') {
+          if (!isSnakeGameType(gameType)) {
             const newProblem = generateUniqueProblemForGame(
               baseGameType,
               newLevel,
@@ -212,7 +213,7 @@ export function useAnswerHandler(): UseAnswerHandlerResult {
               message: formatText(t.levelUp.greatWork),
               levelUpOnDismiss: () => {
                 setBgClass('bg-slate-50');
-                if (baseGameType !== 'math_snake') {
+                if (!isSnakeGameType(gameType)) {
                   const newProblem = generateUniqueProblemForGame(
                     baseGameType,
                     newLevel,
@@ -280,7 +281,7 @@ export function useAnswerHandler(): UseAnswerHandlerResult {
         const levelForNextProblem = shouldLevelUp ? currentLevel + 1 : currentLevel;
 
         // Don't generate new problem immediately if we just leveled up (let level-up animation play)
-        if (!shouldLevelUp && !result.updatedProblem && baseGameType !== 'math_snake') {
+        if (!shouldLevelUp && !result.updatedProblem && !isSnakeGameType(gameType)) {
           // Generate new problem for standard games (only if not leveling up)
           setTimeout(() => {
             setBgClass('bg-slate-50');
@@ -314,9 +315,9 @@ export function useAnswerHandler(): UseAnswerHandlerResult {
         }
         // If leveling up, new problem will be generated after level-up animation completes (handled above)
 
-        // Track max snake length for math snake
+        // Track max snake length for any snake-family game
         if (
-          baseGameType === 'math_snake' &&
+          isSnakeGameType(gameType) &&
           result.updatedProblem &&
           result.updatedProblem.type === 'math_snake'
         ) {
@@ -350,7 +351,7 @@ export function useAnswerHandler(): UseAnswerHandlerResult {
         });
 
         setBgClass('bg-red-50');
-        setShowHint(baseGameType !== 'math_snake'); // Show hint for non-math-snake games
+        setShowHint(!isSnakeGameType(gameType)); // Show hint for non-snake games
 
         const didSpendHeart = result.shouldDecrementHearts && !options?.skipHeartDeduction;
         if (didSpendHeart) {
@@ -363,7 +364,7 @@ export function useAnswerHandler(): UseAnswerHandlerResult {
           if (didSpendHeart && result.updatedProblem) {
             setProblem(result.updatedProblem);
           }
-          if (baseGameType === 'math_snake' && problem.type === 'math_snake') {
+          if (isSnakeGameType(gameType) && problem.type === 'math_snake') {
             const finalSnakeLength = problem.snake.length;
             updateStats((stats) => ({
               ...stats,
@@ -387,7 +388,7 @@ export function useAnswerHandler(): UseAnswerHandlerResult {
           () => {
             setBgClass('bg-slate-50');
           },
-          baseGameType === 'math_snake' ? 600 : 1500,
+          isSnakeGameType(gameType) ? 600 : 1500,
         );
       }
 

@@ -345,11 +345,14 @@ describe('Generators', () => {
     });
   });
 
-  describe('math_snake', () => {
-    it('should generate valid math snake problem', () => {
+  describe('snake family (math_snake engine)', () => {
+    // All snake games share MathSnakeView + mathSnake engine. Each registration
+    // is a distinct generator bound to its own pack. One representative
+    // generator is enough to verify the engine integration.
+    it('addition_snake generates a valid math snake problem', () => {
       const rng = createRng(4242);
-      const generator = Generators.math_snake;
-      if (!generator) throw new Error('math_snake generator not found');
+      const generator = Generators.addition_snake;
+      if (!generator) throw new Error('addition_snake generator not found');
       const problem = generator(2, rng, 'starter') as MathSnakeProblem;
 
       expect(problem.type).toBe('math_snake');
@@ -358,12 +361,14 @@ describe('Generators', () => {
       expect(problem.apple).not.toBeNull();
       expect(problem.math).toBeNull();
       expect(problem.applesUntilMath).toBeGreaterThan(0);
+      // Pack threaded through: specs must be present on the problem state.
+      expect(problem.specs.length).toBeGreaterThan(0);
     });
 
-    it('should keep apples inside the grid and off the snake', () => {
+    it('multiplication_snake keeps apples inside the grid and off the snake', () => {
       const rng = createRng(4242);
-      const generator = Generators.math_snake;
-      if (!generator) throw new Error('math_snake generator not found');
+      const generator = Generators.multiplication_snake;
+      if (!generator) throw new Error('multiplication_snake generator not found');
       const problem = generator(3, rng, 'starter') as MathSnakeProblem;
 
       const snakeSet = new Set(problem.snake.map(([x, y]) => `${x},${y}`));

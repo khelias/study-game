@@ -37,6 +37,7 @@ src/
 │   ├── gameplay/        # GameScreen (container) + GameScreenView + GameScreenModalHost + game-screen children
 │   ├── menu/            # MenuScreen
 │   └── modals/          # Stats / Achievements / Shop / LevelSelector modals
+├── curriculum/          # Skills + ContentPacks (what is learned + its data)
 ├── games/               # Game registry + data + generators + validators
 ├── hooks/               # Reusable React hooks (useGameEngine, useAnswerHandler, …)
 ├── i18n/                # Type-safe translations (see src/i18n/README.md)
@@ -128,10 +129,25 @@ The registry pattern makes game additions data-driven: no switch statements outs
 - **`games/data.ts`** — `GAME_CONFIG` (per-game UI metadata, difficulty, category, `allowedProfiles`, `levelUpStrategy`), `PROFILES`, `CATEGORIES`, curated word database.
 - **`games/generators.ts`** — one generator function per game type; produces the next `Problem` given `(level, rng, profile)`.
 - **`games/validators.ts`** — one validator per game type; pure `(problem, userAnswer) → boolean`.
-- **`games/registry.ts`** — centralized registry; games register themselves as `{ id, component, generator, config, validator, allowedProfiles }`.
-- **`games/registrations.ts`** — imports everything and calls `gameRegistry.register(...)` for all 18 games. Module side effect on import.
+- **`games/registry.ts`** — centralized registry; games register themselves as `{ id, component, generator, config, validator, allowedProfiles, skillIds?, contentPackId? }`. `skillIds` + `contentPackId` are present on curriculum-migrated bindings (Phase 1).
+- **`games/registrations.ts`** — imports everything and calls `gameRegistry.register(...)` for all 18 games. Module side effect on import. Imports `src/curriculum/` first so pack lookups resolve deterministically.
 
-Game-type-specific content files (`constellations.ts`, `puzzles.ts`, `syllableWords.ts`, `shapeShiftGrid.ts`, `sentenceTranslations.ts`) currently live alongside `generators.ts` — this is the **Skill × Mechanic × Content welding** called out as debt in ROADMAP §2. Phase 1 migrates them into `ContentPack` shapes per ADR-0001.
+Game-type-specific content files (`puzzles.ts`, `shapeShiftGrid.ts`, `sentenceTranslations.ts`) still live alongside `generators.ts` — this is the **Skill × Mechanic × Content welding** called out as debt in ROADMAP §2. Three migrations have landed: constellations → `ASTRONOMY_VISIBLE_FROM_ESTONIA_PACK` (Slice 1), syllables → `LANGUAGE_SYLLABIFICATION_{ET,EN}_PACK` (Slice 2), and math_snake's equation pool → `MATH_MIXED_BASICS_PACK` + `MATH_MULTIPLICATION_1_5_PACK` (Slice 3 — first `one mechanic, multiple bindings` case; `multiplication_snake` reuses MathSnakeView + engine with a focused ×1–5 pack and a cosmic visual theme). Three shapes of pack consumption now exist:
+
+- **Static single-pack**: binding sets `contentPackId`; generator calls `getPackItems(id)`. Used by `star_mapper`.
+- **Multi-locale skill**: binding sets only `skillIds`; generator calls `getPackItemsForLocale(skillId, locale)`. Used by `syllable_builder`.
+- **Procedural DSL pack**: pack items are spec-recipes, not static instances. The engine owns range-scaling logic; specs carry op kind + optional per-spec overrides. Used by `math_snake` (mixed specs) and `multiplication_snake` (mul-only specs, factor range [2,5]). Multiple bindings point to different packs → appear as distinct cards in the menu using the same underlying component.
+
+## Curriculum (skills + content packs)
+
+`src/curriculum/` owns the Curriculum bounded context from ADR-0001. Mechanics consume packs via bindings; they do not import content files directly.
+
+- **`curriculum/types.ts`** — `Skill`, `ContentPack<TItem>`, `LocaleCode`, `SkillId`, `ContentPackId`. JSON-serializable by design so packs can later move to a content CMS (ROADMAP Phase 4).
+- **`curriculum/registry.ts`** — `skillRegistry` + `contentPackRegistry` singletons. `getPackItems<T>(id)` resolves a pack by id; `getPackItemsForLocale<T>(skillId, locale)` resolves the right pack when a skill has one pack per locale (falls back to any pack of the skill if the locale match is missing).
+- **`curriculum/skills/`** — one file per subject, registering `Skill` taxonomy entries.
+- **`curriculum/packs/<subject>/<pack>.ts`** — a `ContentPack<TItem>` export plus pack-scoped helper lookups (e.g. `getConstellationById(items, id)`). Helpers take `items` explicitly so the pack module stays stateless.
+- **`curriculum/packs/math/types.ts`** — re-exports the `ArithmeticSpec` / `EquationOp` DSL types from `src/types/game.ts`. Math packs are lists of specs (op + optional per-spec overrides), consumed by the `math_snake` engine which owns level-based range scaling.
+- **`curriculum/index.ts`** — imports every skill + pack for side-effect registration. Any module that calls `getPackItems` must import this first (mechanics do so via `games/registrations.ts`).
 
 ## Component architecture
 
@@ -282,6 +298,44 @@ WCAG 2.1 AA is the baseline:
 - Focus trap in modals (`src/components/AccessibilityHelpers.tsx`).
 - `prefers-reduced-motion` respected by animated elements.
 - High-contrast support via Tailwind's color palette.
+
+## Snake mechanic audit (Phase 1 Slice 3b)
+
+When the snake family expanded from one card to six, a dedicated audit of
+`MathSnakeView` + `mathSnake` engine + movement/answer hooks ran. Two critical
+routing bugs were found and fixed; several smaller issues + v2 opportunities
+are listed here as the next natural slice boundaries.
+
+### Fixed in this slice (critical)
+
+- **Movement hook hardcoded `baseType !== 'math_snake'`** (`useMathSnakeMovement.ts:30`): all new snake bindings would have been silently non-interactive — arrow keys produced no movement. Replaced with suffix match `endsWith('_snake')` plus a shared `isSnakeGameType(gameType)` helper in `engine/mathSnake.ts`.
+- **Answer routing hardcoded `baseGameType === 'math_snake'`** (`engine/answerHandler.ts:187`, `hooks/useAnswerHandler.ts` × 6 call sites): new snake games would have fallen through to `processStandardAnswer`, awarding 10 points per correct answer instead of the snake's "math = stars, apples = points" model, and skipping the snake-specific length/collision stat tracking. Replaced with `isSnakeGameType(gameType)`.
+- **Subtraction missing-minuend capped at 15 / 20** (`engine/mathSnake.ts` `sub_missing_minuend`): hardcoded `Math.min(15, maxVal - 1)` / `Math.min(20, maxVal - b)` prevented a "within 100" pack from producing facts like `? − 45 = 30`. Replaced with range bounds driven by the pack's `valueRange`.
+
+### Open (medium) — known smells, not blockers
+
+- **Growth model rewards eating math apples regardless of correctness.** Normal apple +1 length, math apple eaten +1, correct answer +2 more (total +3), wrong answer 0 (hearts handle it). A kid who doesn't care about hearts can farm length by guessing. Proposed: wrong answer shrinks snake by 1 (or at minimum: no growth on eat until answer resolves).
+- **Score model measures exploration, not math performance.** High score = how many normal apples eaten. "Got 8/10 multiplication facts right" is not persisted or visible.
+- **No end-of-session summary.** Snake dies → game ends silently. Kid never sees "you answered 12 facts, 3 were hard — keep practicing 7×8, 6×9". Loss of learning-loop closure.
+- **Snake body hard-coded emerald green.** `getSegmentColors` returns Tailwind emerald gradients regardless of visual theme. On the cosmic (multiplication) card the green snake clashes with the indigo/purple background. Palette should flow from `GameConfig.visualTheme`.
+- **Grid size static at 7×7, speed static one-step-per-input.** Traditional snake scales both with score; this one doesn't. Missing progression dimension within a session.
+- **Wraparound + self-collision can feel unfair.** Snake wraps at edges, then crashes into its own body appearing "from nowhere". Mobile/touch input makes this worse.
+
+### Open (low) — polish
+
+- **Menu crowding after 6 snake cards.** Math category is now snake-heavy (6 of ~10). Group visually ("Snake family" sub-section) or collapse variants into a tier selector on one card.
+- **Accessibility.** No ARIA labels for snake segments, apple state, or modal. Screen readers cannot announce gameplay. Keyboard-only works (arrow + WASD); no alternate input for users who can't use keyboard.
+- **`MathSnakeProblem.specs` on the problem state.** Same reference duplicated into every generated problem. Acceptable (session store is in-memory) but cleaner to resolve from pack registry via binding id at challenge time.
+
+### v2 opportunities — would materially lift the game
+
+- **Per-fact mastery tracking.** The killer feature for drill games. Track which facts the kid nails and which they keep missing; weight generator toward weak facts and surface a mastery grid ("25 squares, X green, Y yellow, Z red"). This is the single change that turns snake from "a game with math" into "math drill that actually uses data to teach". Fits the Learner-context `SkillMastery` ADR-0002 already planned for Phase 1.
+- **Theme-aware snake palette.** Pull all snake visuals (body gradient, eye color, glow, particle color) from `GameConfig.visualTheme`. Cosmic → purple+silver snake on starfield; addition → leafy-green garden snake; subtraction → orange autumn snake. One code change, six distinct-feeling games.
+- **Session summary screen.** At game-over modal: stats for this run (facts attempted, accuracy, hardest fact, streak), plus "best snake length" trophy. Closes the loop, gives kid a reason to retry.
+- **Streak-based session progression.** Every 5-correct streak: grid grows by 1, snake speed tick slightly (if movement autoadvances later), or a "bonus planet" appears. Classic variable-reward loop that makes snake games sticky.
+- **Daily challenge pack.** Every day, a generated "daily practice" picks 10 weakest facts across all packs, presents as a sub-challenge. Drives return visits without requiring a backend.
+
+Each of these is a natural subsequent slice. Mastery tracking is the biggest pedagogical lift; theme-aware palette is the biggest visual-polish win per-hour-of-work; session summary is the simplest and most impactful "retention" change.
 
 ## Deployment
 

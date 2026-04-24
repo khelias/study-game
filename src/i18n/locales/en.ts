@@ -553,10 +553,35 @@ export const en = {
         'Look where the obstacles are!',
         'Try it step by step!',
       ],
-      math_snake: [
-        'Move calmly and avoid the walls!',
-        'Math apples can grow or shrink the snake!',
-        'Plan your path before you move!',
+      addition_snake: [
+        'Every problem is addition, sum up to 20!',
+        'Do it in your head or on your fingers — whatever is easier.',
+        '6 + 7 = 6 + 4 + 3 = 10 + 3 = 13. Always reach 10 first.',
+      ],
+      addition_big_snake: [
+        'Addition up to 100 — tens and ones!',
+        '37 + 25: add tens first (30+20=50), then ones (7+5=12), total 62.',
+        'Round up to 10 and fix later: 29 + 16 ≈ 30 + 16 = 46, minus 1 = 45.',
+      ],
+      subtraction_snake: [
+        'Every problem is subtraction up to 20.',
+        'Check your answer by adding: 12 − 5 = 7, because 5 + 7 = 12.',
+        'The question mark means a missing number — find it.',
+      ],
+      subtraction_big_snake: [
+        'Subtraction up to 100 — think in tens.',
+        '63 − 28: take 20 first (= 43), then 8 (= 35).',
+        'If the subtrahend is larger, regroup: 50 − 34 = 50 − 30 − 4 = 20 − 4 = 16.',
+      ],
+      multiplication_snake: [
+        'Every question is multiplication — factors 2 through 5!',
+        'A planet means a multiplication challenge: solve it before moving on!',
+        'Think in rows: 3 × 4 = three rows of four planets.',
+      ],
+      multiplication_big_snake: [
+        'The full times table — factors 2 through 10!',
+        "7 × 8 is the hardest: if you forget, 7 × 10 = 70, minus 7 × 2 = 14, that's 56.",
+        'Doubling helps: 6 × 8 = 2 × (3 × 8) = 2 × 24 = 48.',
       ],
       time_match: [
         'Look at the clock hands!',
@@ -809,11 +834,46 @@ export const en = {
         'You see a clock showing hours and minutes. Choose the correct time from four options (e.g. "3 o\'clock" or "half past 4"). The hour is the bigger hand, the minute the smaller.',
       hintEliminateCost: 'Remove one wrong time ({cost}⭐)',
     },
-    math_snake: {
-      title: 'NUMBER SNAKE',
-      desc: 'Feed the snake with equations',
+    addition_snake: {
+      title: 'ADDITION SNAKE',
+      desc: 'Addition within 20',
       gameDescription:
-        'Move with the arrow keys and eat apples – the snake grows. Some apples have a math question: solve it and choose the right answer. A wrong answer shortens the snake.',
+        'Move with the arrow keys and eat apples – the snake grows. Apples carry addition facts (e.g. 6 + 7) with sums up to 20. Pick the right answer from four.',
+      hintEliminateCost: 'Remove one wrong ({cost}⭐)',
+    },
+    addition_big_snake: {
+      title: 'BIG ADDITION SNAKE',
+      desc: 'Addition within 100',
+      gameDescription:
+        'Same snake, bigger numbers. Addition up to 100. Good once the small addition snake feels easy.',
+      hintEliminateCost: 'Remove one wrong ({cost}⭐)',
+    },
+    subtraction_snake: {
+      title: 'SUBTRACTION SNAKE',
+      desc: 'Subtraction within 20',
+      gameDescription:
+        'A snake whose apples carry subtraction facts up to 20. Missing-number variants appear too (? − 5 = 3). Pick the right answer from four.',
+      hintEliminateCost: 'Remove one wrong ({cost}⭐)',
+    },
+    subtraction_big_snake: {
+      title: 'BIG SUBTRACTION SNAKE',
+      desc: 'Subtraction within 100',
+      gameDescription:
+        'Larger subtraction snake up to 100. Aimed at 3rd grade once the small subtraction snake feels easy.',
+      hintEliminateCost: 'Remove one wrong ({cost}⭐)',
+    },
+    multiplication_snake: {
+      title: 'MULTIPLICATION SNAKE',
+      desc: 'Times table 1–5',
+      gameDescription:
+        'Fly a cosmic snake across the stars and eat planets! Each planet is a multiplication (e.g. 3 × 4). Pick the right answer from four. Factors 2–5, aimed at 2nd grade.',
+      hintEliminateCost: 'Remove one wrong ({cost}⭐)',
+    },
+    multiplication_big_snake: {
+      title: 'BIG MULTIPLICATION SNAKE',
+      desc: 'Times table 1–10',
+      gameDescription:
+        'The full times table with factors 2 through 10. Galaxy snake for harder facts — the 3rd-grade target.',
       hintEliminateCost: 'Remove one wrong ({cost}⭐)',
     },
     compare_sizes: {

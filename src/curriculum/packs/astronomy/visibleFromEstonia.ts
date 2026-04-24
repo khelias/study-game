@@ -1,15 +1,20 @@
 /**
- * Constellation Database
+ * Content pack: constellations visible from Estonia (59°N).
  *
  * Star positions are normalized to a 0–100 viewBox (x right, y down).
- * Shapes follow the classic line-drawing patterns (e.g. Big Dipper bowl + handle).
+ * Shapes follow classic line-drawing patterns (e.g. Big Dipper bowl + handle).
  * Difficulty: easy = 8, medium = 7 more (15 total), hard = 1 more (16 total).
- * Visible from Estonia (59°N); mix of circumpolar and seasonal.
+ * Mix of circumpolar and seasonal constellations.
+ *
+ * Consumed by the `star_mapper` mechanic. Other mechanics (future: quiz,
+ * match) can also bind to the same pack via `ASTRONOMY_VISIBLE_CONSTELLATIONS_SKILL`.
  */
 
-import type { Constellation } from '../types/game';
+import type { ContentPack } from '../../types';
+import type { Constellation } from '../../../types/game';
+import { ASTRONOMY_VISIBLE_CONSTELLATIONS_SKILL } from '../../skills/astronomy';
 
-export const CONSTELLATIONS: Constellation[] = [
+const ITEMS: readonly Constellation[] = [
   {
     id: 'ursa_major',
     nameEn: 'Big Dipper',
@@ -399,33 +404,48 @@ export const CONSTELLATIONS: Constellation[] = [
   },
 ];
 
+export const ASTRONOMY_VISIBLE_FROM_ESTONIA_PACK: ContentPack<Constellation> = {
+  id: 'astronomy.visible_from_estonia',
+  skillId: ASTRONOMY_VISIBLE_CONSTELLATIONS_SKILL.id,
+  locale: 'et',
+  version: '1.0.0',
+  title: {
+    et: 'Tähtkujud Eesti taevas',
+    en: 'Constellations visible from Estonia',
+  },
+  items: ITEMS,
+};
+
 const DIFFICULTY_ORDER: Record<'easy' | 'medium' | 'hard', number> = {
   easy: 1,
   medium: 2,
   hard: 3,
 };
 
-/**
- * Get constellations by exact difficulty (for tests / identify options).
- */
+/** Get constellations by exact difficulty (for tests / identify options). */
 export function getConstellationsByDifficulty(
+  items: readonly Constellation[],
   difficulty: 'easy' | 'medium' | 'hard',
 ): Constellation[] {
-  return CONSTELLATIONS.filter((c) => c.difficulty === difficulty);
+  return items.filter((c) => c.difficulty === difficulty);
 }
 
 /**
- * Get constellations available for a difficulty level (includes easier ones).
+ * Get constellations available at a difficulty level (includes easier ones).
  * easy → 8, medium → 15 (easy+medium), hard → 16 (all).
  */
-export function getConstellationsForLevel(difficulty: 'easy' | 'medium' | 'hard'): Constellation[] {
+export function getConstellationsForLevel(
+  items: readonly Constellation[],
+  difficulty: 'easy' | 'medium' | 'hard',
+): Constellation[] {
   const level = DIFFICULTY_ORDER[difficulty];
-  return CONSTELLATIONS.filter((c) => DIFFICULTY_ORDER[c.difficulty] <= level);
+  return items.filter((c) => DIFFICULTY_ORDER[c.difficulty] <= level);
 }
 
-/**
- * Get constellation by ID
- */
-export function getConstellationById(id: string): Constellation | undefined {
-  return CONSTELLATIONS.find((c) => c.id === id);
+/** Get a constellation by id from a pack's items. */
+export function getConstellationById(
+  items: readonly Constellation[],
+  id: string,
+): Constellation | undefined {
+  return items.find((c) => c.id === id);
 }

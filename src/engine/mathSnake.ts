@@ -1,6 +1,12 @@
 import { PROFILES } from '../games/data';
 import { uid } from './rng';
-import type { Direction, MathSnakeProblem, ProfileType, RngFunction } from '../types/game';
+import type {
+  ArithmeticSpec,
+  Direction,
+  MathSnakeProblem,
+  ProfileType,
+  RngFunction,
+} from '../types/game';
 
 interface MathChallenge {
   equation: string;
@@ -15,6 +21,16 @@ interface SpawnResult {
 }
 
 const profileMeta = (profileId: ProfileType) => PROFILES[profileId] || PROFILES.starter;
+
+/**
+ * Snake game-type predicate. All snake-family registrations (addition_snake,
+ * multiplication_snake, …) share this engine + MathSnakeView. Any routing
+ * logic keyed on game type must match ALL of them, not the literal string
+ * 'math_snake' (which no longer exists as a binding after Phase 1 Slice 3b).
+ */
+export const isSnakeGameType = (gameType: string): boolean => {
+  return gameType.replace('_adv', '').endsWith('_snake');
+};
 
 const randomInt = (min: number, max: number, rng: RngFunction): number => {
   if (max <= min) return min;
@@ -104,83 +120,104 @@ const spawnApple = (
   };
 };
 
-type EquationKind =
-  | 'add_result' // a + b = ?
-  | 'add_missing' // a + ? = c  or  ? + b = c
-  | 'sub_result' // a - b = ?
-  | 'sub_missing_minuend' // ? - b = c
-  | 'sub_missing_subtrahend' // a - ? = c
-  | 'mul_result' // a × b = ?
-  | 'mul_missing'; // a × ? = c
-
-const generateEquation = (level: number, rng: RngFunction, harder: boolean) => {
+/** Default additive range when a spec doesn't override it. Scales with level. */
+const defaultValueRange = (level: number, harder: boolean): [number, number] => {
   const baseMax = level <= 2 ? 10 : level <= 4 ? 15 : level <= 6 ? 20 : level <= 10 ? 30 : 50;
-  const maxValue = Math.min(100, baseMax + (harder ? 15 : 0));
+  return [4, Math.min(100, baseMax + (harder ? 15 : 0))];
+};
 
-  const pool: EquationKind[] = ['add_result'];
-  if (level >= 2) pool.push('add_missing');
-  if (level >= 4) {
-    pool.push('sub_result', 'sub_missing_minuend');
-  }
-  if (level >= 5) pool.push('sub_missing_subtrahend', 'mul_result');
-  if (level >= 6) pool.push('mul_missing');
+/** Default multiplication factor range when a spec doesn't override it. */
+const defaultFactorRange = (level: number): [number, number] => {
+  return [2, level <= 8 ? 5 : 10];
+};
 
-  const kind = pool[randomInt(0, pool.length - 1, rng)]!;
+/**
+ * Resolve one concrete equation from a spec at a given level.
+ *
+ * Per-spec `factorRange` / `valueRange` override the engine's level-scaled
+ * defaults. `maxValue` returned here feeds distractor generation — it always
+ * reflects the *additive* scale (so distractor spread stays sensible even
+ * when the equation is multiplicative).
+ */
+const materializeEquation = (
+  spec: ArithmeticSpec,
+  level: number,
+  rng: RngFunction,
+  harder: boolean,
+) => {
+  const [minVal, maxVal] = spec.valueRange ?? defaultValueRange(level, harder);
+  const [minFactor, maxFactor] = spec.factorRange ?? defaultFactorRange(level);
 
-  switch (kind) {
+  switch (spec.op) {
     case 'add_result': {
-      const sum = randomInt(4, maxValue, rng);
+      const sum = randomInt(minVal, maxVal, rng);
       const a = randomInt(1, sum - 1, rng);
       const b = sum - a;
-      return { equation: `${a} + ${b}`, answer: a + b, maxValue };
+      return { equation: `${a} + ${b}`, answer: a + b, maxValue: maxVal };
     }
     case 'add_missing': {
-      const c = randomInt(4, maxValue, rng);
+      const c = randomInt(minVal, maxVal, rng);
       const a = randomInt(1, c - 1, rng);
       const answer = c - a;
       if (rng() > 0.5) {
-        return { equation: `${a} + ? = ${c}`, answer, maxValue };
+        return { equation: `${a} + ? = ${c}`, answer, maxValue: maxVal };
       }
       const b = randomInt(1, c - 1, rng);
-      return { equation: `? + ${b} = ${c}`, answer: c - b, maxValue };
+      return { equation: `? + ${b} = ${c}`, answer: c - b, maxValue: maxVal };
     }
     case 'sub_result': {
-      const a = randomInt(4, maxValue, rng);
+      const a = randomInt(minVal, maxVal, rng);
       const b = randomInt(1, Math.max(1, a - 1), rng);
-      return { equation: `${a} - ${b}`, answer: a - b, maxValue };
+      return { equation: `${a} - ${b}`, answer: a - b, maxValue: maxVal };
     }
     case 'sub_missing_minuend': {
-      const b = randomInt(1, Math.min(15, maxValue - 1), rng);
-      const c = randomInt(0, Math.min(20, maxValue - b), rng);
+      // Both b and c respect the pack's valueRange — no hard cap that would
+      // prevent a "within 100" pack from producing 70 - 25 = 45.
+      const b = randomInt(1, Math.max(1, maxVal - 1), rng);
+      const c = randomInt(0, Math.max(0, maxVal - b), rng);
       const answer = b + c;
-      return { equation: `? - ${b} = ${c}`, answer, maxValue };
+      return { equation: `? - ${b} = ${c}`, answer, maxValue: maxVal };
     }
     case 'sub_missing_subtrahend': {
-      const a = randomInt(5, maxValue, rng);
+      const a = randomInt(Math.max(5, minVal), maxVal, rng);
       const c = randomInt(0, Math.max(0, a - 1), rng);
       const answer = a - c;
-      return { equation: `${a} - ? = ${c}`, answer, maxValue };
+      return { equation: `${a} - ? = ${c}`, answer, maxValue: maxVal };
     }
     case 'mul_result': {
-      const maxFactor = level <= 8 ? 5 : 10;
-      const a = randomInt(2, maxFactor, rng);
-      const b = randomInt(2, maxFactor, rng);
-      return { equation: `${a} × ${b}`, answer: a * b, maxValue };
+      const a = randomInt(minFactor, maxFactor, rng);
+      const b = randomInt(minFactor, maxFactor, rng);
+      return { equation: `${a} × ${b}`, answer: a * b, maxValue: maxVal };
     }
     case 'mul_missing': {
-      const a = randomInt(2, level <= 8 ? 5 : 10, rng);
-      const b = randomInt(2, level <= 8 ? 5 : 10, rng);
+      const a = randomInt(minFactor, maxFactor, rng);
+      const b = randomInt(minFactor, maxFactor, rng);
       const c = a * b;
-      return { equation: `${a} × ? = ${c}`, answer: b, maxValue };
+      return { equation: `${a} × ? = ${c}`, answer: b, maxValue: maxVal };
     }
-    default:
-      return (() => {
-        const sum = randomInt(4, maxValue, rng);
-        const a = randomInt(1, sum - 1, rng);
-        const b = sum - a;
-        return { equation: `${a} + ${b}`, answer: a + b, maxValue };
-      })();
   }
+};
+
+/**
+ * Pick a spec from the pool that's unlocked at this level, then materialize
+ * an equation from it. Falls back to add_result if the pool is empty at this
+ * level (shouldn't happen if packs declare at least one spec with unlockLevel
+ * ≤ 1, which every real pack does).
+ */
+const generateEquation = (
+  specs: readonly ArithmeticSpec[],
+  level: number,
+  rng: RngFunction,
+  harder: boolean,
+) => {
+  const pool = specs.filter((s) => (s.unlockLevel ?? 1) <= level);
+  const chosen = pool[randomInt(0, Math.max(0, pool.length - 1), rng)];
+  if (chosen) return materializeEquation(chosen, level, rng, harder);
+  const [minVal, maxVal] = defaultValueRange(level, harder);
+  const sum = randomInt(minVal, maxVal, rng);
+  const a = randomInt(1, sum - 1, rng);
+  const b = sum - a;
+  return { equation: `${a} + ${b}`, answer: a + b, maxValue: maxVal };
 };
 
 const buildOptions = (
@@ -211,13 +248,14 @@ const buildOptions = (
 };
 
 const createMathChallenge = (
+  specs: readonly ArithmeticSpec[],
   level: number,
   rng: RngFunction,
   profile: ProfileType,
 ): MathChallenge => {
   const meta = profileMeta(profile);
   const harder = meta.difficultyOffset > 0;
-  const { equation, answer, maxValue } = generateEquation(level, rng, harder);
+  const { equation, answer, maxValue } = generateEquation(specs, level, rng, harder);
   const optionCount = 4; // Always 4 options for consistent layout
   const options = buildOptions(answer, optionCount, level, rng, maxValue);
   return { equation, answer, options };
@@ -254,6 +292,7 @@ const wrapPosition = (pos: [number, number], gridSize: number): [number, number]
 };
 
 export const createMathSnakeProblem = (
+  specs: readonly ArithmeticSpec[],
   level: number,
   rng: RngFunction = Math.random,
   profile: ProfileType = 'starter',
@@ -271,6 +310,7 @@ export const createMathSnakeProblem = (
     apple: spawn.apple,
     applesUntilMath: spawn.applesUntilMath,
     math: null,
+    specs,
     uid: uid(rng),
   };
 };
@@ -336,7 +376,7 @@ export const moveMathSnake = (
   }
 
   const nextCountdown = getRandomCountdown(rng);
-  const challenge = createMathChallenge(level, rng, profile);
+  const challenge = createMathChallenge(problem.specs, level, rng, profile);
   return {
     problem: {
       ...problem,

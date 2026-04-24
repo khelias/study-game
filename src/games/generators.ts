@@ -1,6 +1,18 @@
 import { ALPHABET, WORD_DB, WORD_DB_EN, SCENE_DB, PROFILES } from './data';
-import { SYLLABLE_WORDS } from './syllableWords';
-import { CONSTELLATIONS, getConstellationsForLevel } from './constellations';
+import { getPackItems, getPackItemsForLocale } from '../curriculum';
+import {
+  getConstellationsForLevel,
+  ASTRONOMY_VISIBLE_FROM_ESTONIA_PACK,
+} from '../curriculum/packs/astronomy/visibleFromEstonia';
+import { LANGUAGE_SYLLABIFICATION_SKILL } from '../curriculum/skills/language';
+import type { SyllableWord } from '../curriculum/packs/language/types';
+import { MATH_ADDITION_WITHIN_20_PACK } from '../curriculum/packs/math/addition_within_20';
+import { MATH_ADDITION_WITHIN_100_PACK } from '../curriculum/packs/math/addition_within_100';
+import { MATH_SUBTRACTION_WITHIN_20_PACK } from '../curriculum/packs/math/subtraction_within_20';
+import { MATH_SUBTRACTION_WITHIN_100_PACK } from '../curriculum/packs/math/subtraction_within_100';
+import { MATH_MULTIPLICATION_1_5_PACK } from '../curriculum/packs/math/multiplication_1_5';
+import { MATH_MULTIPLICATION_1_10_PACK } from '../curriculum/packs/math/multiplication_1_10';
+import type { ArithmeticSpec } from '../curriculum/packs/math/types';
 import { PUZZLES } from './puzzles';
 import { getRandom, uid } from '../engine/rng';
 import { getLocale, getTranslations } from '../i18n/index';
@@ -610,8 +622,59 @@ export const Generators: Record<string, GeneratorFunction> = {
     };
   },
 
-  math_snake: (level: number, rng: RngFunction = Math.random, profile: ProfileType = 'starter') => {
-    return createMathSnakeProblem(level, rng, profile);
+  // Each snake generator resolves its own focused pack. One mechanic, many skills.
+  addition_snake: (
+    level: number,
+    rng: RngFunction = Math.random,
+    profile: ProfileType = 'starter',
+  ) => {
+    const specs = getPackItems<ArithmeticSpec>(MATH_ADDITION_WITHIN_20_PACK.id);
+    return createMathSnakeProblem(specs, level, rng, profile);
+  },
+
+  addition_big_snake: (
+    level: number,
+    rng: RngFunction = Math.random,
+    profile: ProfileType = 'starter',
+  ) => {
+    const specs = getPackItems<ArithmeticSpec>(MATH_ADDITION_WITHIN_100_PACK.id);
+    return createMathSnakeProblem(specs, level, rng, profile);
+  },
+
+  subtraction_snake: (
+    level: number,
+    rng: RngFunction = Math.random,
+    profile: ProfileType = 'starter',
+  ) => {
+    const specs = getPackItems<ArithmeticSpec>(MATH_SUBTRACTION_WITHIN_20_PACK.id);
+    return createMathSnakeProblem(specs, level, rng, profile);
+  },
+
+  subtraction_big_snake: (
+    level: number,
+    rng: RngFunction = Math.random,
+    profile: ProfileType = 'starter',
+  ) => {
+    const specs = getPackItems<ArithmeticSpec>(MATH_SUBTRACTION_WITHIN_100_PACK.id);
+    return createMathSnakeProblem(specs, level, rng, profile);
+  },
+
+  multiplication_snake: (
+    level: number,
+    rng: RngFunction = Math.random,
+    profile: ProfileType = 'starter',
+  ) => {
+    const specs = getPackItems<ArithmeticSpec>(MATH_MULTIPLICATION_1_5_PACK.id);
+    return createMathSnakeProblem(specs, level, rng, profile);
+  },
+
+  multiplication_big_snake: (
+    level: number,
+    rng: RngFunction = Math.random,
+    profile: ProfileType = 'starter',
+  ) => {
+    const specs = getPackItems<ArithmeticSpec>(MATH_MULTIPLICATION_1_10_PACK.id);
+    return createMathSnakeProblem(specs, level, rng, profile);
   },
 
   sentence_logic: (
@@ -1114,7 +1177,7 @@ export const Generators: Record<string, GeneratorFunction> = {
     profile: ProfileType = 'starter',
   ): SyllableBuilderProblem => {
     const locale = getLocale();
-    const words = SYLLABLE_WORDS[locale] ?? SYLLABLE_WORDS.et;
+    const words = getPackItemsForLocale<SyllableWord>(LANGUAGE_SYLLABIFICATION_SKILL.id, locale);
     // Filter by level - higher levels have longer words
     const meta = profileMeta(profile);
     // Smoother progression: Level 1-2 = 2 syllables, Level 3-5 = 3 syllables, Level 6+ = 3-4 syllables
@@ -1520,7 +1583,8 @@ export const Generators: Record<string, GeneratorFunction> = {
             ? 'identify'
             : 'expert';
 
-    const pool = getConstellationsForLevel(difficulty);
+    const allConstellations = getPackItems<Constellation>(ASTRONOMY_VISIBLE_FROM_ESTONIA_PACK.id);
+    const pool = getConstellationsForLevel(allConstellations, difficulty);
     const picked = getRandom(pool, rng);
     const constellation = picked ?? pool[0];
     if (!constellation) {
@@ -1532,7 +1596,10 @@ export const Generators: Record<string, GeneratorFunction> = {
       mode === 'expert' ? generateDistractorStars(constellation, rng, effectiveLevel) : [];
 
     // Generate options for identify mode
-    const options = mode === 'identify' ? generateIdentifyOptions(constellation, rng) : undefined;
+    const options =
+      mode === 'identify'
+        ? generateIdentifyOptions(allConstellations, constellation, rng)
+        : undefined;
 
     return {
       type: 'star_mapper',
@@ -3097,9 +3164,13 @@ function generateDistractorStars(
  * Helper function to generate identify mode options
  * Returns 4 constellation IDs: 1 correct + 3 wrong options
  */
-function generateIdentifyOptions(correct: Constellation, rng: RngFunction): string[] {
+function generateIdentifyOptions(
+  pool: readonly Constellation[],
+  correct: Constellation,
+  rng: RngFunction,
+): string[] {
   // Get wrong options from other constellations
-  const allConstellations = CONSTELLATIONS.filter((c: Constellation) => c.id !== correct.id);
+  const allConstellations = pool.filter((c: Constellation) => c.id !== correct.id);
 
   // Fisher-Yates shuffle
   const shuffled = [...allConstellations];

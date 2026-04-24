@@ -553,10 +553,35 @@ export const et = {
         'Vaata, kus on takistused!',
         'Proovi sammhaaval!',
       ],
-      math_snake: [
-        'Liigu rahulikult ja väldi seinu!',
-        'Matemaatika õun annab boonuse või vähendab pikkust!',
-        'Planeeri, millist rada mööda õunani jõuda!',
+      addition_snake: [
+        'Kõik tehted on liitmine, summa kuni 20!',
+        'Mõtle peast või sõrmedega – kuidas mugavam!',
+        '6 + 7 = 6 + 4 + 3 = 10 + 3 = 13. Jõua alati 10-ni.',
+      ],
+      addition_big_snake: [
+        'Liitmine kuni 100 – kümned ja ühed!',
+        '37 + 25: liida esmalt kümned (30+20=50), siis ühed (7+5=12), kokku 62.',
+        'Ümarda arvud 10-ni ja siis paranda: 29 + 16 ≈ 30 + 16 = 46, miinus 1 = 45.',
+      ],
+      subtraction_snake: [
+        'Kõik tehted on lahutamine kuni 20.',
+        'Kontrolli vastust liitmisega: 12 − 5 = 7, sest 5 + 7 = 12.',
+        'Küsimärk tähendab puuduvat arvu – leia see.',
+      ],
+      subtraction_big_snake: [
+        'Lahutamine kuni 100 – mõtle kümnete kaupa.',
+        '63 − 28: lahuta esmalt 20 (= 43), siis 8 (= 35).',
+        'Kui lahutaja on suurem, kasuta ümberarvestust: 50 − 34 = 50 − 30 − 4 = 20 − 4 = 16.',
+      ],
+      multiplication_snake: [
+        'Kõik ülesanded on korrutamine – faktorid 2 kuni 5!',
+        'Planeet tähendab korrutustehet: lahenda enne kui edasi lähed!',
+        'Mõtle ridades: 3 × 4 = kolm rida, neli tähte reas.',
+      ],
+      multiplication_big_snake: [
+        'Kogu korrutustabel – faktorid 2 kuni 10!',
+        '7 × 8 on raskeim: kui ununeb, siis 7 × 10 = 70, miinus 7 × 2 = 14, kokku 56.',
+        'Topeltamine aitab: 6 × 8 = 2 × (3 × 8) = 2 × 24 = 48.',
       ],
       time_match: [
         'Vaata kella osuteid!',
@@ -809,11 +834,46 @@ export const et = {
         'Näed kella, mis näitab tundi ja minuteid. Vali õige kellaaeg neljast valikust (nt "kell 3" või "pool 4"). Tund on suurem number, minut väiksem.',
       hintEliminateCost: 'Eemalda üks vale aeg ({cost}⭐)',
     },
-    math_snake: {
-      title: 'NUMBRIMADU',
-      desc: 'Sööda madu tehetega',
+    addition_snake: {
+      title: 'LIITMISUSS',
+      desc: 'Liitmine kuni 20',
       gameDescription:
-        'Liigu nooleklahvidega ja söö õunu – madu kasvab. Mõnel õunal on matemaatikaülesanne: lahenda tehe ja vali õige vastus. Vale vastus lühendab madu.',
+        'Liigu nooleklahvidega ja söö õunu – madu kasvab. Õuntel on liitmistehted (nt 6 + 7) summadega kuni 20. Vali õige vastus neljast.',
+      hintEliminateCost: 'Eemalda üks vale ({cost}⭐)',
+    },
+    addition_big_snake: {
+      title: 'SUUR LIITMISUSS',
+      desc: 'Liitmine kuni 100',
+      gameDescription:
+        'Sama madu, suuremad arvud. Liitmistehted kuni 100. Sobib, kui väike liitmisuss tundub liiga lihtne.',
+      hintEliminateCost: 'Eemalda üks vale ({cost}⭐)',
+    },
+    subtraction_snake: {
+      title: 'LAHUTUSUSS',
+      desc: 'Lahutamine kuni 20',
+      gameDescription:
+        'Madu, mille õuntel on lahutamistehted kuni 20. Esinevad ka puuduva arvuga ülesanded (? − 5 = 3). Vali õige vastus neljast.',
+      hintEliminateCost: 'Eemalda üks vale ({cost}⭐)',
+    },
+    subtraction_big_snake: {
+      title: 'SUUR LAHUTUSUSS',
+      desc: 'Lahutamine kuni 100',
+      gameDescription:
+        'Suurem lahutamise madu kuni 100. Sobib 3. klassi lapsele, kes väikse juba hästi oskab.',
+      hintEliminateCost: 'Eemalda üks vale ({cost}⭐)',
+    },
+    multiplication_snake: {
+      title: 'KORRUTUSUSS',
+      desc: 'Korrutustabel 1–5',
+      gameDescription:
+        'Juhi kosmose-ussi tähtedel ja söö planeete! Iga planeet on korrutamine (nt 3 × 4). Vali õige vastus neljast. Faktorid 2–5, sobib 2. klassile.',
+      hintEliminateCost: 'Eemalda üks vale ({cost}⭐)',
+    },
+    multiplication_big_snake: {
+      title: 'SUUR KORRUTUSUSS',
+      desc: 'Korrutustabel 1–10',
+      gameDescription:
+        'Kogu korrutustabel faktoritega 2 kuni 10. Galaktika-madu raskematele tehetele – 3. klassi eesmärk.',
       hintEliminateCost: 'Eemalda üks vale ({cost}⭐)',
     },
     compare_sizes: {

@@ -50,16 +50,17 @@ describe('Progression Engine (Phase 3)', () => {
     it('should return 2 for medium games', () => {
       expect(getGameBaseStarReward('memory_math')).toBe(2);
       expect(getGameBaseStarReward('robo_path')).toBe(2);
-      expect(getGameBaseStarReward('math_snake')).toBe(2);
+      expect(getGameBaseStarReward('multiplication_snake')).toBe(2);
     });
 
     it('should return 3 for hard games', () => {
       expect(getGameBaseStarReward('balance_scale')).toBe(3);
       expect(getGameBaseStarReward('time_match')).toBe(3);
+      expect(getGameBaseStarReward('multiplication_big_snake')).toBe(3);
     });
 
     it('should handle game types for star reward', () => {
-      expect(getGameBaseStarReward('math_snake')).toBe(2);
+      expect(getGameBaseStarReward('addition_snake')).toBe(1);
       expect(getGameBaseStarReward('balance_scale')).toBe(3);
     });
   });

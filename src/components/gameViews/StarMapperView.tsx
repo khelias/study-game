@@ -8,7 +8,11 @@
 import React, { useState, useMemo, useRef, useCallback, useEffect } from 'react';
 import { playSound } from '../../engine/audio';
 import { useTranslation } from '../../i18n/useTranslation';
-import { getConstellationById } from '../../games/constellations';
+import { getPackItems } from '../../curriculum';
+import {
+  ASTRONOMY_VISIBLE_FROM_ESTONIA_PACK,
+  getConstellationById,
+} from '../../curriculum/packs/astronomy/visibleFromEstonia';
 import { GAME_CONFIG } from '../../games/data';
 import { usePlaySessionStore } from '../../stores/playSessionStore';
 import { PaidHintButtons } from '../shared';
@@ -599,38 +603,44 @@ export const StarMapperView: React.FC<StarMapperViewProps> = ({
       )}
 
       {/* Identify mode options - always in same place, no content between game area and options */}
-      {problem.mode === 'identify' && problem.options && (
-        <div className="grid grid-cols-2 gap-4 sm:gap-5 w-full max-w-2xl mt-6">
-          {problem.options.map((optionId) => {
-            const constellation = getConstellationById(optionId);
-            if (!constellation) return null;
+      {problem.mode === 'identify' &&
+        problem.options &&
+        (() => {
+          const allConstellations = getPackItems<typeof problem.constellation>(
+            ASTRONOMY_VISIBLE_FROM_ESTONIA_PACK.id,
+          );
+          return (
+            <div className="grid grid-cols-2 gap-4 sm:gap-5 w-full max-w-2xl mt-6">
+              {problem.options.map((optionId) => {
+                const constellation = getConstellationById(allConstellations, optionId);
+                if (!constellation) return null;
 
-            const nameFromT = (t.starMapper.constellations as Record<string, { name?: string }>)[
-              optionId
-            ]?.name;
-            const displayName = nameFromT ?? constellation.nameEt;
+                const nameFromT = (
+                  t.starMapper.constellations as Record<string, { name?: string }>
+                )[optionId]?.name;
+                const displayName = nameFromT ?? constellation.nameEt;
 
-            const isSelected = selectedOption === optionId;
-            const isCorrect = optionId === problem.correctAnswer;
-            const showResult = status !== 'idle';
-            const canClick = status === 'idle' || (status === 'wrong' && isCorrect);
+                const isSelected = selectedOption === optionId;
+                const isCorrect = optionId === problem.correctAnswer;
+                const showResult = status !== 'idle';
+                const canClick = status === 'idle' || (status === 'wrong' && isCorrect);
 
-            return (
-              <button
-                key={optionId}
-                type="button"
-                disabled={!canClick}
-                onPointerUp={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  if (e.button !== 0 && e.pointerType !== 'touch') return;
-                  handleIdentifyClick(optionId);
-                }}
-                onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                }}
-                className={`
+                return (
+                  <button
+                    key={optionId}
+                    type="button"
+                    disabled={!canClick}
+                    onPointerUp={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      if (e.button !== 0 && e.pointerType !== 'touch') return;
+                      handleIdentifyClick(optionId);
+                    }}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                    }}
+                    className={`
                   relative px-5 py-4 rounded-2xl border-b-4
                   text-base sm:text-lg font-bold flex items-center justify-center
                   transition-all duration-200 shadow-xl min-h-[4rem]
@@ -644,20 +654,21 @@ export const StarMapperView: React.FC<StarMapperViewProps> = ({
                           : 'bg-slate-200 border-slate-300 text-slate-400 opacity-40'
                   }
                 `}
-              >
-                {/* Shimmer effect on hover - pointer-events-none so tap goes to button */}
-                {status === 'idle' && (
-                  <div
-                    className="absolute inset-0 pointer-events-none bg-gradient-to-r from-transparent via-white/30 to-transparent opacity-0 hover:opacity-100 transition-opacity rounded-2xl"
-                    style={{ transform: 'translateX(-100%)', animation: 'shimmer 2s infinite' }}
-                  />
-                )}
-                <span className="text-center relative z-10">{displayName}</span>
-              </button>
-            );
-          })}
-        </div>
-      )}
+                  >
+                    {/* Shimmer effect on hover - pointer-events-none so tap goes to button */}
+                    {status === 'idle' && (
+                      <div
+                        className="absolute inset-0 pointer-events-none bg-gradient-to-r from-transparent via-white/30 to-transparent opacity-0 hover:opacity-100 transition-opacity rounded-2xl"
+                        style={{ transform: 'translateX(-100%)', animation: 'shimmer 2s infinite' }}
+                      />
+                    )}
+                    <span className="text-center relative z-10">{displayName}</span>
+                  </button>
+                );
+              })}
+            </div>
+          );
+        })()}
 
       {/* Paid Hint Buttons (only for connect modes, not identify) */}
       {typeof spendStars === 'function' &&

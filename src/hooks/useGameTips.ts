@@ -46,8 +46,18 @@ export function useGameTips(
           return [...t.gameScreen.tips.balance_scale];
         case 'robo_path':
           return [...t.gameScreen.tips.robo_path];
-        case 'math_snake':
-          return [...t.gameScreen.tips.math_snake];
+        case 'addition_snake':
+          return [...t.gameScreen.tips.addition_snake];
+        case 'addition_big_snake':
+          return [...t.gameScreen.tips.addition_big_snake];
+        case 'subtraction_snake':
+          return [...t.gameScreen.tips.subtraction_snake];
+        case 'subtraction_big_snake':
+          return [...t.gameScreen.tips.subtraction_big_snake];
+        case 'multiplication_snake':
+          return [...t.gameScreen.tips.multiplication_snake];
+        case 'multiplication_big_snake':
+          return [...t.gameScreen.tips.multiplication_big_snake];
         case 'time_match':
           return [...t.gameScreen.tips.time_match];
         case 'letter_match':

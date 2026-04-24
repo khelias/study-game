@@ -53,6 +53,22 @@ export interface PaidHint {
   labelKey: string; // translation key for label (e.g., 'games.shape_shift.hintOutlineCost')
 }
 
+/**
+ * Per-game visual overrides. Opt-in, game-specific; a game without this
+ * object uses its view's built-in defaults. Added in Phase 1 Slice 3 so
+ * two bindings sharing the same component (e.g. math_snake + multiplication_snake
+ * both use MathSnakeView) can diverge visually without the view having to know
+ * the gameType at the API level.
+ */
+export interface VisualTheme {
+  /** Emoji for regular (growth) apples / collectibles. Default per view. */
+  normalCollectibleEmoji?: string;
+  /** Emoji for special (challenge-triggering) apples / collectibles. */
+  challengeCollectibleEmoji?: string;
+  /** Background flavor; each view interprets which CSS it applies. */
+  background?: 'default' | 'cosmic';
+}
+
 export interface GameConfig {
   id: string;
   title: string;
@@ -65,6 +81,7 @@ export interface GameConfig {
   category: string;
   levelUpStrategy?: LevelUpStrategy; // Optional - defaults to 'standard'
   paidHints?: PaidHint[]; // Optional star-based hints
+  visualTheme?: VisualTheme; // Optional per-game visual overrides
 }
 
 // Word object for word-based games
@@ -211,6 +228,26 @@ export interface RoboPathProblem extends BaseProblem {
   coins?: Array<[number, number]>;
 }
 
+// Math snake — arithmetic DSL shared between engine and curriculum/packs/math
+export type EquationOp =
+  | 'add_result'
+  | 'add_missing'
+  | 'sub_result'
+  | 'sub_missing_minuend'
+  | 'sub_missing_subtrahend'
+  | 'mul_result'
+  | 'mul_missing';
+
+export interface ArithmeticSpec {
+  op: EquationOp;
+  /** Minimum engine level at which this spec becomes available. Defaults to 1. */
+  unlockLevel?: number;
+  /** Override multiplication factor range (caps engine's level scaling). */
+  factorRange?: [number, number];
+  /** Override add/sub value range (caps engine's level scaling). */
+  valueRange?: [number, number];
+}
+
 // Math snake problem
 export interface MathSnakeProblem extends BaseProblem {
   type: 'math_snake';
@@ -220,6 +257,8 @@ export interface MathSnakeProblem extends BaseProblem {
   apple: { id: string; kind: 'normal' | 'math'; pos: [number, number] } | null;
   applesUntilMath: number;
   math: { equation: string; answer: number; options: number[] } | null;
+  /** Spec pool that drives `createMathChallenge`. Supplied at problem creation. */
+  specs: readonly ArithmeticSpec[];
 }
 
 // Time match problem

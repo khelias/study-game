@@ -27,7 +27,9 @@ export const useMathSnakeMovement = (): ((direction: Direction) => void) | undef
 
   if (!gameType) return undefined;
   const baseType = gameType.replace('_adv', '');
-  if (baseType !== 'math_snake') return undefined;
+  // All snake-family games (addition_snake, multiplication_snake, …) share
+  // MathSnakeView + mathSnake engine. Treat any *_snake id as a snake game.
+  if (!baseType.endsWith('_snake')) return undefined;
 
   return (direction: Direction): void => {
     if (!problem || problem.type !== 'math_snake') return;

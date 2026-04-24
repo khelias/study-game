@@ -10,6 +10,7 @@
 
 import type { ComponentType } from 'react';
 import type { GameConfig, Problem, GeneratorFunction, ProfileType, Direction } from '../types/game';
+import type { ContentPackId, SkillId } from '../curriculum/types';
 
 /**
  * Props that all game view components must accept
@@ -53,6 +54,20 @@ export interface GameRegistryEntry {
 
   /** Profiles that can play this game */
   allowedProfiles: ProfileType[];
+
+  /**
+   * Curriculum skills this binding practices. Optional during Phase 1
+   * migration — mechanics that still import content directly can omit it.
+   * Populated for mechanics whose content has moved into `src/curriculum/`.
+   */
+  skillIds?: SkillId[];
+
+  /**
+   * Content pack consumed by this binding's generator. Optional for the
+   * same Phase 1 migration reason. When set, the generator can resolve it
+   * via `getPackItems(id)` from `src/curriculum/`.
+   */
+  contentPackId?: ContentPackId;
 }
 
 /**

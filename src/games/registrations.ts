@@ -14,6 +14,26 @@
 import { gameRegistry } from './registry';
 import { GAME_CONFIG } from './data';
 import { Generators } from './generators';
+// Side-effect import: registers skills + content packs before any mechanic binding
+// below references them by id.
+import '../curriculum';
+import { ASTRONOMY_VISIBLE_CONSTELLATIONS_SKILL } from '../curriculum/skills/astronomy';
+import { ASTRONOMY_VISIBLE_FROM_ESTONIA_PACK } from '../curriculum/packs/astronomy/visibleFromEstonia';
+import { LANGUAGE_SYLLABIFICATION_SKILL } from '../curriculum/skills/language';
+import {
+  MATH_ADDITION_WITHIN_20_SKILL,
+  MATH_ADDITION_WITHIN_100_SKILL,
+  MATH_SUBTRACTION_WITHIN_20_SKILL,
+  MATH_SUBTRACTION_WITHIN_100_SKILL,
+  MATH_MULTIPLICATION_1_TO_5_SKILL,
+  MATH_MULTIPLICATION_1_TO_10_SKILL,
+} from '../curriculum/skills/math';
+import { MATH_ADDITION_WITHIN_20_PACK } from '../curriculum/packs/math/addition_within_20';
+import { MATH_ADDITION_WITHIN_100_PACK } from '../curriculum/packs/math/addition_within_100';
+import { MATH_SUBTRACTION_WITHIN_20_PACK } from '../curriculum/packs/math/subtraction_within_20';
+import { MATH_SUBTRACTION_WITHIN_100_PACK } from '../curriculum/packs/math/subtraction_within_100';
+import { MATH_MULTIPLICATION_1_5_PACK } from '../curriculum/packs/math/multiplication_1_5';
+import { MATH_MULTIPLICATION_1_10_PACK } from '../curriculum/packs/math/multiplication_1_10';
 import {
   BalanceScaleView,
   StandardGameView,
@@ -90,7 +110,10 @@ function registerAllGames(): void {
     });
   }
 
-  // Syllable Builder
+  // Syllable Builder — curriculum-backed binding.
+  // Mechanic: order scrambled syllables into the correct word.
+  // Content: LANGUAGE_SYLLABIFICATION_SKILL has one pack per locale (et, en);
+  // the generator resolves the right one at runtime via getPackItemsForLocale.
   const syllableBuilderConfig = GAME_CONFIG.syllable_builder;
   const syllableBuilderGenerator = Generators.syllable_builder;
   if (syllableBuilderConfig && syllableBuilderGenerator) {
@@ -101,6 +124,7 @@ function registerAllGames(): void {
       config: syllableBuilderConfig,
       validator: validateSyllableBuilder,
       allowedProfiles: syllableBuilderConfig.allowedProfiles,
+      skillIds: [LANGUAGE_SYLLABIFICATION_SKILL.id],
     });
   }
 
@@ -174,17 +198,105 @@ function registerAllGames(): void {
     });
   }
 
-  // Math Snake
-  const mathSnakeConfig = GAME_CONFIG.math_snake;
-  const mathSnakeGenerator = Generators.math_snake;
-  if (mathSnakeConfig && mathSnakeGenerator) {
+  // -------------------------------------------------------------------------
+  // Snake family — one mechanic (MathSnakeView + mathSnake engine), many skills.
+  // Each binding is a distinct menu card bound to a focused ArithmeticSpec pack.
+  // Add a new operation / range by writing one pack + one binding; no engine code.
+  // -------------------------------------------------------------------------
+
+  // Addition kuni 20
+  const additionSnakeConfig = GAME_CONFIG.addition_snake;
+  const additionSnakeGenerator = Generators.addition_snake;
+  if (additionSnakeConfig && additionSnakeGenerator) {
     gameRegistry.register({
-      id: 'math_snake',
+      id: 'addition_snake',
       component: MathSnakeView,
-      generator: mathSnakeGenerator,
-      config: mathSnakeConfig,
+      generator: additionSnakeGenerator,
+      config: additionSnakeConfig,
       validator: validateMathSnake,
-      allowedProfiles: mathSnakeConfig.allowedProfiles,
+      allowedProfiles: additionSnakeConfig.allowedProfiles,
+      skillIds: [MATH_ADDITION_WITHIN_20_SKILL.id],
+      contentPackId: MATH_ADDITION_WITHIN_20_PACK.id,
+    });
+  }
+
+  // Addition kuni 100
+  const additionBigSnakeConfig = GAME_CONFIG.addition_big_snake;
+  const additionBigSnakeGenerator = Generators.addition_big_snake;
+  if (additionBigSnakeConfig && additionBigSnakeGenerator) {
+    gameRegistry.register({
+      id: 'addition_big_snake',
+      component: MathSnakeView,
+      generator: additionBigSnakeGenerator,
+      config: additionBigSnakeConfig,
+      validator: validateMathSnake,
+      allowedProfiles: additionBigSnakeConfig.allowedProfiles,
+      skillIds: [MATH_ADDITION_WITHIN_100_SKILL.id],
+      contentPackId: MATH_ADDITION_WITHIN_100_PACK.id,
+    });
+  }
+
+  // Subtraction kuni 20
+  const subtractionSnakeConfig = GAME_CONFIG.subtraction_snake;
+  const subtractionSnakeGenerator = Generators.subtraction_snake;
+  if (subtractionSnakeConfig && subtractionSnakeGenerator) {
+    gameRegistry.register({
+      id: 'subtraction_snake',
+      component: MathSnakeView,
+      generator: subtractionSnakeGenerator,
+      config: subtractionSnakeConfig,
+      validator: validateMathSnake,
+      allowedProfiles: subtractionSnakeConfig.allowedProfiles,
+      skillIds: [MATH_SUBTRACTION_WITHIN_20_SKILL.id],
+      contentPackId: MATH_SUBTRACTION_WITHIN_20_PACK.id,
+    });
+  }
+
+  // Subtraction kuni 100
+  const subtractionBigSnakeConfig = GAME_CONFIG.subtraction_big_snake;
+  const subtractionBigSnakeGenerator = Generators.subtraction_big_snake;
+  if (subtractionBigSnakeConfig && subtractionBigSnakeGenerator) {
+    gameRegistry.register({
+      id: 'subtraction_big_snake',
+      component: MathSnakeView,
+      generator: subtractionBigSnakeGenerator,
+      config: subtractionBigSnakeConfig,
+      validator: validateMathSnake,
+      allowedProfiles: subtractionBigSnakeConfig.allowedProfiles,
+      skillIds: [MATH_SUBTRACTION_WITHIN_100_SKILL.id],
+      contentPackId: MATH_SUBTRACTION_WITHIN_100_PACK.id,
+    });
+  }
+
+  // Multiplication 1–5 — cosmic theme, 2. klass
+  const multiplicationSnakeConfig = GAME_CONFIG.multiplication_snake;
+  const multiplicationSnakeGenerator = Generators.multiplication_snake;
+  if (multiplicationSnakeConfig && multiplicationSnakeGenerator) {
+    gameRegistry.register({
+      id: 'multiplication_snake',
+      component: MathSnakeView,
+      generator: multiplicationSnakeGenerator,
+      config: multiplicationSnakeConfig,
+      validator: validateMathSnake,
+      allowedProfiles: multiplicationSnakeConfig.allowedProfiles,
+      skillIds: [MATH_MULTIPLICATION_1_TO_5_SKILL.id],
+      contentPackId: MATH_MULTIPLICATION_1_5_PACK.id,
+    });
+  }
+
+  // Multiplication 1–10 — cosmic theme, 3. klass
+  const multiplicationBigSnakeConfig = GAME_CONFIG.multiplication_big_snake;
+  const multiplicationBigSnakeGenerator = Generators.multiplication_big_snake;
+  if (multiplicationBigSnakeConfig && multiplicationBigSnakeGenerator) {
+    gameRegistry.register({
+      id: 'multiplication_big_snake',
+      component: MathSnakeView,
+      generator: multiplicationBigSnakeGenerator,
+      config: multiplicationBigSnakeConfig,
+      validator: validateMathSnake,
+      allowedProfiles: multiplicationBigSnakeConfig.allowedProfiles,
+      skillIds: [MATH_MULTIPLICATION_1_TO_10_SKILL.id],
+      contentPackId: MATH_MULTIPLICATION_1_10_PACK.id,
     });
   }
 
@@ -258,7 +370,9 @@ function registerAllGames(): void {
     });
   }
 
-  // Star Mapper
+  // Star Mapper — curriculum-backed binding.
+  // Mechanic: trace / build / identify constellation shapes.
+  // Content: ASTRONOMY_VISIBLE_FROM_ESTONIA_PACK (constellations visible from 59°N).
   const starMapperConfig = GAME_CONFIG.star_mapper;
   const starMapperGenerator = Generators.star_mapper;
   if (starMapperConfig && starMapperGenerator) {
@@ -269,6 +383,8 @@ function registerAllGames(): void {
       config: starMapperConfig,
       validator: validateStarMapper,
       allowedProfiles: starMapperConfig.allowedProfiles,
+      skillIds: [ASTRONOMY_VISIBLE_CONSTELLATIONS_SKILL.id],
+      contentPackId: ASTRONOMY_VISIBLE_FROM_ESTONIA_PACK.id,
     });
   }
 

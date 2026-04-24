@@ -6,7 +6,7 @@
  * UI concerns (notifications, animations) are handled by the calling code.
  */
 
-import { resolveMathSnakeAnswer } from './mathSnake';
+import { isSnakeGameType, resolveMathSnakeAnswer } from './mathSnake';
 import type { Problem, RngFunction } from '../types/game';
 
 export interface AnswerResult {
@@ -37,10 +37,9 @@ export interface AnswerHandlerContext {
  */
 export function processMathSnakeAnswer(context: AnswerHandlerContext): AnswerResult {
   const { isCorrect, problem, gameType, rng } = context;
-  const baseGameType = gameType.replace('_adv', '');
 
-  if (baseGameType !== 'math_snake' || problem.type !== 'math_snake') {
-    throw new Error('processMathSnakeAnswer called for non-math-snake game');
+  if (!isSnakeGameType(gameType) || problem.type !== 'math_snake') {
+    throw new Error('processMathSnakeAnswer called for non-snake game');
   }
 
   // Points only come from eating apples, not from answering math questions
@@ -184,7 +183,7 @@ export function processAnswer(context: AnswerHandlerContext): AnswerResult {
   const { gameType, problem } = context;
   const baseGameType = gameType.replace('_adv', '');
 
-  if (baseGameType === 'math_snake' && problem.type === 'math_snake') {
+  if (isSnakeGameType(gameType) && problem.type === 'math_snake') {
     return processMathSnakeAnswer(context);
   }
 
