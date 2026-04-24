@@ -2,567 +2,249 @@
 
 ## Overview
 
-**Smart Games** is an educational web game built with extensible, testable, and well-structured architecture. This document describes the project architecture, design principles, and best practices.
-
-For architecturally significant decisions — including the target bounded-context decomposition that supersedes parts of this document as Phase 1 work lands — see [`docs/adr/`](docs/adr/README.md). The product and technical roadmap lives in [`ROADMAP.md`](ROADMAP.md).
+**Smart Games** is an educational web platform built as an extensible, testable reference codebase with a real product on top. This document describes the **current** code structure. The **target** structure — five bounded contexts, persona-agnostic learner profile, backend-backed sync — is captured in [`docs/adr/`](docs/adr/README.md) and the phased plan in [`ROADMAP.md`](ROADMAP.md). Parts of this document describe code that will be restructured as Phase 1 lands; where that is the case the section notes it and points at the ADR.
 
 ## Technology Stack
 
-### Core Technologies
+### Core
 
-- **React 19.2** - UI framework
-- **TypeScript 5.9** - Type-safe JavaScript
-- **Vite 7.2** - Build tool and dev server
-- **Zustand 4.5** - State management
-- **Tailwind CSS 3.4** - Utility-first CSS framework
-- **Vitest 1.6** - Testing framework
-- **ESLint 9.39** - Code quality control
+- **React** 19.2 — UI.
+- **TypeScript** 5.9 — strict mode, `noUncheckedIndexedAccess`, no implicit `any`.
+- **Vite** 7.2 — build + dev server.
+- **Zustand** 4.5 — state.
+- **Tailwind CSS** 3.4 — styling.
+- **React Router** 7 — client routing.
 
-### Development Tools
+### Testing & quality
 
-- **TypeScript ESLint** - TypeScript linting
-- **React Testing Library** - Component testing
-- **Happy DOM** - DOM implementation for tests
+- **Vitest** 1.6 with **Happy DOM** 20, **React Testing Library** 16.
+- **Playwright** 1.59 — E2E.
+- **ESLint** 9 with typescript-eslint 8 and `eslint-config-prettier`.
+- **Prettier** 3 — formatting; checked in CI.
 
-## Project Structure
+## Project structure
+
+Directory-level map; file-level details live in the code, not here.
 
 ```
 src/
-├── components/          # React components
-│   ├── gameViews/      # Individual game view components
-│   │   ├── BalanceScaleView.tsx
-│   │   ├── StandardGameView.tsx
-│   │   ├── WordGameView.tsx
-│   │   ├── SyllableGameView.tsx
-│   │   ├── PatternTrainView.tsx
-│   │   ├── MemoryGameView.tsx
-│   │   ├── RoboPathView.tsx
-│   │   ├── TimeGameView.tsx
-│   │   ├── UnitConversionView.tsx
-│   │   └── index.ts
-│   ├── shared/         # Shared/reusable components
-│   │   ├── LevelUpModal.tsx
-│   │   ├── Confetti.tsx
-│   │   ├── TimeDisplay.tsx
-│   │   ├── SvgWeight.tsx
-│   │   └── index.ts
-│   ├── AccessibilityHelpers.tsx
-│   ├── FeedbackSystem.tsx
-│   ├── GameCard.tsx
-│   ├── GameHeader.tsx
-│   ├── SettingsMenu.tsx
-│   └── ...
-├── engine/             # Game engine (core logic)
-│   ├── __tests__/      # Engine tests
-│   ├── achievements.ts
-│   ├── adaptiveDifficulty.ts
-│   ├── answerHandler.ts # Answer processing logic
-│   ├── audio.ts
-│   ├── errorBoundary.tsx
-│   ├── mathSnake.ts
-│   ├── progression.ts
-│   ├── rng.ts
-│   └── stats.ts
-├── features/           # Feature-based structure
-│   ├── gameplay/       # Game functions
-│   │   ├── GameOverScreen.tsx
-│   │   ├── GameRenderer.tsx
-│   │   └── GameScreen.tsx
-│   ├── menu/          # Menu functions
-│   │   └── MenuScreen.tsx
-│   └── modals/        # Modal components
-│       ├── AchievementsModal.tsx
-│       ├── StatsModal.tsx
-│       └── TutorialModal.tsx
-├── games/             # Game data and logic
-│   ├── __tests__/
-│   ├── data.ts        # Game configuration
-│   ├── generators.ts  # Problem generation
-│   ├── registry.ts     # Game registry system
-│   ├── registrations.ts # Game auto-registration
-│   └── validators.ts  # Answer validation functions
-├── hooks/             # React hooks
-│   ├── __tests__/
-│   ├── useAchievements.ts
-│   ├── useAnswerHandler.ts # Answer handling logic
-│   ├── useGameAudio.ts
-│   ├── useGameEngine.ts
-│   ├── useGameHints.ts    # Hint generation logic
-│   ├── useGameState.ts
-│   ├── useGameTips.ts     # Tip display logic
-│   ├── useLocalStorage.ts
-│   └── useProfileText.ts
-├── i18n/              # Internationalization
-│   ├── locales/       # Translations
-│   │   ├── et.ts      # Estonian (default)
-│   │   └── en.ts      # English
-│   ├── index.ts       # i18n core
-│   └── useTranslation.tsx
-├── monetization/      # Monetization system (for future)
-│   ├── config.ts
-│   ├── hooks.ts
-│   ├── store.ts
-│   └── types.ts
-├── stores/            # Zustand stores
-│   ├── __tests__/
-│   ├── gameStore.ts   # Main game state
-│   └── playSessionStore.ts  # Session state
-├── types/             # TypeScript types
-│   ├── achievement.ts
-│   ├── game.ts
-│   ├── notification.ts
-│   ├── profile.ts
-│   └── stats.ts
-├── utils/             # Utilities
-│   ├── __tests__/
-│   ├── achievementCopy.ts
-│   ├── errorHandler.ts
-│   ├── performance.ts
-│   ├── performanceOptimizations.ts
-│   ├── unitConversion.ts
-│   └── zIndex.ts
-├── test/              # Test utilities
-│   ├── setup.ts
-│   └── utils.tsx
-├── App.tsx            # Main component
-└── main.tsx           # Entry point
+├── components/          # UI components
+│   ├── gameViews/       # One view component per registered game (see registrations.ts)
+│   ├── shared/          # Cross-game UI primitives (GameProblemModal, GameStatsBar, etc.)
+│   └── *.tsx            # Top-level: GameHeader, SettingsMenu, GameCard, NotificationSystem, …
+├── engine/              # Pure game logic (deterministic, UI-independent, 76% covered)
+├── features/            # Screen-level composition
+│   ├── gameplay/        # GameScreen (container) + GameScreenView + GameScreenModalHost + game-screen children
+│   ├── menu/            # MenuScreen
+│   └── modals/          # Stats / Achievements / Shop / LevelSelector modals
+├── games/               # Game registry + data + generators + validators
+├── hooks/               # Reusable React hooks (useGameEngine, useAnswerHandler, …)
+├── i18n/                # Type-safe translations (see src/i18n/README.md)
+├── monetization/        # Feature-flag + tier scaffolding (inert; see src/monetization/README.md)
+├── services/persistence # Adapter boundary for future backend sync
+├── stores/              # Zustand: gameStore (persistent) + playSessionStore (session)
+├── types/               # Shared type definitions
+├── utils/               # Cross-cutting helpers
+├── test/                # Vitest setup + utilities
+├── App.tsx
+└── main.tsx
+
+docs/
+├── adr/                 # Architecture Decision Records (authoritative)
+├── shared-components.md # Cookbook for GameProblemModal + GameStatsBar
+e2e/                     # Playwright specs
+.github/workflows/       # ci.yml (quality gate) + deploy.yml (self-hosted runner → homelab)
 ```
 
-## Architecture Principles
+## Architecture principles
 
-### 1. Separation of Concerns
+1. **Separation of concerns.** Presentation (`components/`, `features/`), business logic (`engine/`), state (`stores/`), data/config (`games/data.ts`), persistence boundary (`services/persistence/`). The engine layer has no React or browser dependencies.
+2. **Feature-first composition.** Whole-screen flows live in `features/<feature>/`, each owning its own components, screens, and modals.
+3. **Container / view split.** Stateful containers read stores and own handlers; view components take props. The gameplay screen is the canonical example — see [Gameplay screen composition](#gameplay-screen-composition).
+4. **Type safety end-to-end.** Strict TypeScript, exhaustive unions, no `any`. Exhaustiveness is enforced at generator and validator boundaries.
+5. **Testability as a first-class property.** The engine is unit-tested without DOM; components are tested with RTL; user journeys are covered by Playwright.
+6. **i18n and monetization as orthogonal layers.** All user-facing strings route through `useTranslation`. Monetization primitives exist but are inert — they activate in ROADMAP Phase 6.
 
-The project is clearly divided into different layers:
+See [ADR-0001](docs/adr/0001-bounded-contexts.md) for the target bounded-context decomposition that these principles converge toward.
 
-- **Presentation Layer** (`components/`, `features/`) - UI components
-- **Business Logic Layer** (`engine/`, `games/`) - Business logic
-- **State Management Layer** (`stores/`) - State management
-- **Data Layer** (`games/data.ts`) - Data and configuration
+## State management
 
-### 2. Feature-Based Structure
+Two Zustand stores with well-defined responsibilities.
 
-Larger features are organized under `features/` folder:
+### `gameStore` (persistent, `localStorage`)
 
-- Each feature is independent and contains all necessary components
-- This allows easy extension and testing
+Owns cross-session state: `profile`, per-`profile`-per-game `levels`, global `stars`, global `hearts` (capped at 5), cosmetic `score`, `stats`, unlocked achievement IDs, sound preferences. Actions: `spendStars`, `spendHeart`, `updateStats`, `updateHighScore`, `setLevel`, `addScore`, `toggleSound`, profile management. Zustand `persist` middleware serializes to `localStorage`.
 
-### 3. Modular Component Architecture
+### `playSessionStore` (in-memory, per play)
 
-Components are organized by purpose:
+Owns session state: current `gameType`, `problem`, `score`, `levelProgress`, `bgClass`, confetti/particle flags, `adaptiveDifficulty` snapshot, notifications queue, `gameStartTime`. Actions: `setProblem`, `addScore`, `addNotification` / `removeNotification`, `endGame`, `returnToMenu`, `resetLevelProgress`, `updateAdaptiveDifficulty`. Discarded on menu return.
 
-- **`components/gameViews/`** - Individual game view components (one per game type)
-- **`components/shared/`** - Reusable components used across multiple features
-- **`components/`** - General-purpose UI components
+The split is load-bearing: persistent data survives reloads but is free of transient UI noise; session data disappears automatically when the play ends. ADR-0002 retargets the persistent half: the `profile`→`levels` matrix migrates to `LearnerProfile.skillMastery[skillId].level` once the Curriculum context lands in Phase 1.
 
-This modular structure makes it easy to:
-
-- Find specific game implementations
-- Reuse shared components
-- Maintain and test individual components
-- Add new games without touching existing code
-
-### 4. Type Safety
-
-- All files use TypeScript
-- Strict type checking (`strict: true`)
-- Types are defined in `types/` folder
-- No `any` types (ESLint rule)
-
-### 5. Testability
-
-- **Engine tests** - Critical business logic is tested
-- **Component tests** - UI components are tested
-- **Test coverage** - 70%+ threshold
-- **Deterministic tests** - Seeded RNG
-
-### 6. Internationalization (i18n)
-
-- Translation system is ready for multiple languages
-- All strings are separated into translation files
-- Type-safe translations
-- Easy addition of new languages
-
-### 7. Monetization Ready
-
-- Monetization structure is ready
-- Feature flags system
-- Subscription tiers
-- All features are currently free
-
-## State Management
-
-### Zustand Stores
-
-The project uses two main stores:
-
-#### `gameStore` (Persistent)
-
-- **Profile** - Selected age profile
-- **Levels** - Each game's level (per-game-type, per-profile)
-- **Stars** - Global currency (persistent, earned per level)
-- **Hearts** - Global lives (persistent, max 5, can be bought with stars)
-- **Statistics** - Game statistics
-- **Achievements** - Unlocked achievements
-- **Settings** - Sound, score, etc.
-
-**Persistence**: LocalStorage (Zustand persist middleware)
-
-**Progression Resources:**
-
-- **Stars**: Earned when completing levels (not per answer). Scale with game difficulty and level. Used as currency to buy hearts.
-- **Hearts**: Global resource (not game-specific). Wrong answers cost 1 heart. Can be purchased with stars (10 stars = 1 heart).
-- **Levels**: Automatically earned through performance (correct answers + accuracy). Not purchased with stars.
-
-#### `playSessionStore` (Session)
-
-- **Game state** - menu/playing/game_over
-- **Current problem** - Currently played problem
-- **Session data** - Score (cosmetic points)
-- **Level progress** - Tracks correct/total answers for current level
-- **Adaptive difficulty** - Session difficulty level
-- **Notifications** - In-game notifications
-
-**Persistence**: Not saved (only during session)
-
-**Note**: Stars and hearts moved to `gameStore` (global, persistent). Session only tracks level progress and score.
-
-### State Flow
+### Flow
 
 ```
-User Action → Component → Hook/Store Action → State Update → Component Re-render
+User input → component handler → store action → store update
+                                              → subscribed component re-render
+                                              → effect (e.g. persistence, notification)
 ```
 
-## Game Engine
+## Game engine
 
-### Core Modules
+Pure, deterministic modules in `src/engine/`. All are UI-independent, ~76% test coverage.
 
-#### `rng.ts` - Random Number Generation
+| Module                  | Responsibility                                                                     |
+| ----------------------- | ---------------------------------------------------------------------------------- |
+| `rng.ts`                | Seeded deterministic RNG, `createRng(seed)`.                                       |
+| `adaptiveDifficulty.ts` | `(recentAccuracy, streaks) → effectiveLevel` adjustment.                           |
+| `progression.ts`        | Level-up requirement curve (5→7→10→12→15+), star rewards, level-up predicate.      |
+| `achievements.ts`       | Static `ACHIEVEMENTS` table + unlock condition checks.                             |
+| `stats.ts`              | Stats aggregation (answers, streaks, play time, highest levels, max snake length). |
+| `answerHandler.ts`      | Pure answer-processing logic; used by `useAnswerHandler`.                          |
+| `mathSnake.ts`          | Snake movement, collision, apple spawning, math-challenge resolution.              |
+| `shapeDash.ts`          | Shape-Dash physics primitives (AABB, obstacle bounds, checkpoint detection).       |
+| `audio.ts`              | Sound effects API; respects `soundEnabled` from store.                             |
+| `errorBoundary.tsx`     | React error boundary used in root composition.                                     |
 
-- Deterministic RNG (seeded)
-- Testable and reproducible
-- Used for problem generation
+## Custom hooks
 
-#### `adaptiveDifficulty.ts` - Adaptive Difficulty
+Top-level hooks in `src/hooks/`. All are idiomatic React hooks — they either encapsulate effect orchestration or derive data from stores.
 
-- Tracks player performance
-- Automatically adjusts difficulty
-- Based on accuracy and answer streaks
+- **`useGameEngine`** — owns the active-problem-key deduplication history; exposes `generateUniqueProblemForGame`, `validateAnswer`, `getRng`.
+- **`useAnswerHandler`** — answer → score/stats/achievement pipeline; coordinates engine + both stores.
+- **`useGameAudio`** — gated sound playback driven by `soundEnabled`.
+- **`useGameTips`** — tip/hint surfacing based on game state.
+- **`useGameHints`** — generates game-type-specific hint content.
+- **`useMathSnakeMovement`** — returns the directional-input handler for Math Snake games (extracted from `GameScreen`; returns `undefined` for non-snake games).
+- **`useGameScreenEffects`** — bundles six gameplay-screen lifecycle effects (settings-click-outside, compact-layout query, initial problem generation, level-progress reset, auto-open game description, escape-to-close).
+- **`useUnlockedAchievementCopies`** — reads unlocked-achievement IDs and enriches them with i18n copy; returns both raw IDs and enriched `AchievementUnlock[]`.
+- **`useWrongStrikes`** — consecutive-wrong tracking used by games with crash-on-N-wrong mechanics.
+- **`useAchievements`**, **`useGameState`**, **`useProfileText`**, **`useLocalStorage`** — smaller utility hooks.
 
-#### `progression.ts` - Progression Logic
+## Game data and registry
 
-- **Level-up system**: Performance-based automatic level progression
-  - Calculates level-up requirements (scaling: 5→7→10→12→15+ correct answers)
-  - Checks if player should level up (correct answers + 80%+ accuracy)
-  - Prevents players from being stuck at easy levels
-- **Star reward system**: Currency earned per level completion
-  - Game-specific base rewards (easy: 1, medium: 2, hard: 3 stars)
-  - Level-scaling multiplier (1.0x to 2.5x based on level)
-  - Perfect level bonus (extra stars for 100% accuracy)
-  - Stars are currency (not spent on levels, used to buy hearts)
+The registry pattern makes game additions data-driven: no switch statements outside `src/games/`.
 
-#### `stats.ts` - Statistics
+- **`games/data.ts`** — `GAME_CONFIG` (per-game UI metadata, difficulty, category, `allowedProfiles`, `levelUpStrategy`), `PROFILES`, `CATEGORIES`, curated word database.
+- **`games/generators.ts`** — one generator function per game type; produces the next `Problem` given `(level, rng, profile)`.
+- **`games/validators.ts`** — one validator per game type; pure `(problem, userAnswer) → boolean`.
+- **`games/registry.ts`** — centralized registry; games register themselves as `{ id, component, generator, config, validator, allowedProfiles }`.
+- **`games/registrations.ts`** — imports everything and calls `gameRegistry.register(...)` for all 18 games. Module side effect on import.
 
-- Game counting
-- Answer saving
-- Streak tracking
-- Level and score tracking
+Game-type-specific content files (`constellations.ts`, `puzzles.ts`, `syllableWords.ts`, `shapeShiftGrid.ts`, `sentenceTranslations.ts`) currently live alongside `generators.ts` — this is the **Skill × Mechanic × Content welding** called out as debt in ROADMAP §2. Phase 1 migrates them into `ContentPack` shapes per ADR-0001.
 
-#### `achievements.ts` - Achievements
+## Component architecture
 
-- Achievement unlocking
-- Condition checking
-- Duplicate unlocking prevention
+### Game views
 
-#### `answerHandler.ts` - Answer Processing
+One view per registered game in `src/components/gameViews/`. Each receives `{ problem, onAnswer, soundEnabled, level, stars, spendStars, spendHeart, endGame, onMove? }` via `GameRenderer` and renders the game UI. Current views:
 
-- Pure business logic for processing game answers
-- Handles math snake and standard game types
-- Returns structured results for UI coordination
-- Testable and reusable
+`BalanceScaleView`, `BattleLearnView`, `MemoryGameView`, `PatternTrainView`, `PicturePairsView`, `RoboPathView`, `ShapeDashView`, `ShapeShiftView`, `StandardGameView` (covers sentence_logic + letter_match), `StarMapperView`, `SyllableGameView`, `TimeGameView`, `UnitConversionView`, `WordCascadeView`, `WordGameView`. `MathSnakeView` and `CompareSizesView` live one level up in `src/components/`.
 
-#### `mathSnake.ts` - Math Snake Game Logic
+### Shared components
 
-- Snake movement and collision detection
-- Apple spawning logic
-- Math challenge generation
-- Game state resolution
+Cross-game UI primitives in `src/components/shared/`:
 
-#### `audio.ts` - Audio System
+- `GameProblemModal` — pauses gameplay to show a multiple-choice question. Used by BattleLearn + MathSnake. See [`docs/shared-components.md`](docs/shared-components.md).
+- `GameStatsBar` — renders game-specific counters above the global `GameHeader`.
+- `LevelUpModal`, `FeedbackModal` — celebration / feedback surfaces.
+- `PaidHintButtons`, `ResourceBadge`, `ResourceDisplay` — economy UI.
+- `Confetti`, `TimeDisplay`, `SvgWeight` — one-off display primitives.
+- `KHEIcon`, `SmartGamesLogo` — brand assets.
 
-- Sound playback
-- Audio settings management
+### Top-level components
 
-## Custom Hooks
+`GameHeader`, `GameCard`, `SettingsMenu`, `NotificationSystem` (with prioritized hero/level-up/achievement/standard slots), `FeedbackSystem`, `TipButton`, `ParticleEffect`, `EnhancedAnimations`, `MathSnakeView`, `CompareSizesView`, `StatsDashboard`, `AccessibilityHelpers`.
 
-### Game Logic Hooks
+## Gameplay screen composition
 
-#### `useAnswerHandler` - Answer Handling
-
-- Encapsulates answer processing logic
-- Coordinates between engine and UI
-- Handles achievements, scoring, and feedback
-- Manages game state transitions
-
-#### `useGameHints` - Hint Generation
-
-- Generates hints for different game types
-- Handles hint display logic
-- Game-type-specific hint content
-
-#### `useGameTips` - Tip Display
-
-- Manages tip display logic
-- Shows tips once per session
-- Allows manual tip replay
-- Responsive layout awareness
-
-#### `useGameEngine` - Game Engine
-
-- Problem generation
-- Answer validation
-- RNG access
-
-#### `useGameAudio` - Audio
-
-- Sound effect playback
-- Respects user preferences
-
-### State Management Hooks
-
-#### `useGameState` - Game State
-
-- Unified game state access
-- Combines store selectors
-
-#### `useAchievements` - Achievements
-
-- Achievement tracking
-- Achievement display logic
-
-## Game Data
-
-### `games/data.ts`
-
-- Game configuration
-- Profiles
-- Categories
-- Word database
-
-### `games/generators.ts`
-
-- Problem generation functions
-- Each game type has its own generation function
-- Difficulty progression
-
-### `games/registry.ts`
-
-- Centralized game registry system
-- Enables zero-touch game addition
-- Supports dynamic game loading
-- Scales to 50+ games without code bloat
-
-### `games/registrations.ts`
-
-- Auto-registration of all games
-- Runs automatically on import
-- Registers games with their components, generators, validators, and configs
-
-### `games/validators.ts`
-
-- Answer validation functions for each game type
-- Pure functions that validate user answers
-- Type-safe validation logic
-
-## Component Architecture
-
-### Game Views
-
-Each game type has its own view component in `components/gameViews/`:
-
-- **BalanceScaleView** - Balance scale problems
-- **StandardGameView** - Sentence logic and letter match
-- **WordGameView** - Word builder
-- **SyllableGameView** - Syllable builder
-- **PatternTrainView** - Pattern recognition
-- **MemoryGameView** - Memory math matching
-- **RoboPathView** - Robot path programming
-- **TimeGameView** - Time matching
-- **UnitConversionView** - Unit conversion
-
-### Shared Components
-
-Reusable components in `components/shared/`:
-
-- **LevelUpModal** - Level up celebration
-- **Confetti** - Confetti animation
-- **TimeDisplay** - Analog clock display
-- **SvgWeight** - SVG weight for balance scale
-
-### UI Components
-
-General-purpose components:
-
-- **GameHeader** - Game screen header with score, level, hearts, stars
-- **SettingsMenu** - Settings dropdown menu
-- **GameCard** - Game selection card
-- **FeedbackSystem** - Feedback and notifications
-- **NotificationSystem** - Unified notification display
-
-## Internationalization (i18n)
-
-### Structure
+`src/features/gameplay/` is the canonical container-view split and the result of ROADMAP Phase 0's debt paydown:
 
 ```
-i18n/
-├── locales/
-│   ├── et.ts    # Estonian (default)
-│   └── en.ts    # English
-├── index.ts     # Core i18n logic
-└── useTranslation.tsx  # React hook
+GameScreen.tsx (container, ≤ ~230 LOC)
+├── reads gameStore + playSessionStore (via flat per-field selectors)
+├── owns local UI state (5 modal open/close flags, 2 refs, compact-layout)
+├── composes useGameEngine, useGameAudio, useAnswerHandler, useGameTips,
+│            useMathSnakeMovement, useGameScreenEffects,
+│            useUnlockedAchievementCopies
+├── defines handlers (handleAnswer, handleLevelChange, handleReturnToMenu,
+│                      handleNotificationDismiss) and the settingsMenuSlot JSX
+│
+├── <GameScreenView {...}/>         — pure view: background, overlays,
+│                                     GameHeader, overlay badges, GameRenderer,
+│                                     TipButton
+└── <GameScreenModalHost {...}/>    — pure modal shell: Stats / Achievements /
+                                      Shop / LevelSelector / GameDescription
 ```
 
-### Usage
+Child components in the same folder: `GameRenderer` (looks up the view from the registry), `GameOverlayBadges`, `GameDescriptionModal`, `GameOverScreen`, `GameResultScreen`.
 
-```tsx
-import { useTranslation } from '../i18n/useTranslation';
+This layout is the template for any future screen-level refactor: container owns wiring, views take props, modal orchestration is isolated, and heavy side-effect orchestration goes into named hooks.
 
-function MyComponent() {
-  const t = useTranslation();
-  return <div>{t.menu.title}</div>;
-}
-```
+## Internationalization
 
-### Adding a New Language
-
-1. Create new file `locales/XX.ts`
-2. Add language to `SupportedLocale` type
-3. Add translations to `translations` object
+Type-safe system in `src/i18n/`. Current locales: Estonian (default) and English. See [`src/i18n/README.md`](src/i18n/README.md) for structure, usage, and how to add a locale. The `useTranslation` hook returns a strongly-typed translations object; a new key missing from any locale is a compile error.
 
 ## Monetization
 
-### Structure
-
-Monetization system is ready, but currently all features are free.
-
-```
-monetization/
-├── types.ts      # TypeScript types
-├── config.ts     # Configuration
-├── store.ts      # Zustand store
-└── hooks.ts      # React hooks
-```
-
-### Feature Flags
-
-Features are defined with feature flags:
-
-- `all_games` - All games
-- `unlimited_play` - Unlimited play
-- `progress_tracking` - Progress tracking
-- `achievements` - Achievements
-- etc.
-
-### Future
-
-When monetization is needed, you can:
-
-- Add subscription tiers
-- Activate feature flags
-- Integrate payment systems
+Feature-flag + tier scaffolding in `src/monetization/`, intentionally inert. No user-facing feature reads these flags today. See [`src/monetization/README.md`](src/monetization/README.md). Activation is ROADMAP Phase 6 work; ADR-0001 names this the **Entitlement** bounded context.
 
 ## Testing
 
-### Test Structure
+### Layers
 
-- **Engine tests** - Critical logic
-- **Component tests** - UI components
-- **Utility tests** - Utilities
+- **Engine unit tests** (`src/engine/__tests__/`) — deterministic, no DOM. 76% coverage target 80%+.
+- **Hook + utility tests** — `src/hooks/__tests__/`, `src/utils/__tests__/`, `src/stores/__tests__/`.
+- **Component tests** — colocated `__tests__/` folders using Happy DOM + React Testing Library.
+- **End-to-end** (`e2e/`) — Playwright smoke suite: menu loads with profile switcher and game cards, profile selection toggles visually, game-card click navigates to the game route, balance-scale answer records in stats.
 
-### Test Coverage
+### Principles
 
-- **Engine**: 76.58% (goal: 80%+)
-- **Components**: 100%
-- **Overall**: Focused on critical functionality
+- Behavior, not implementation.
+- Deterministic (seeded RNG).
+- Fast: unit suite runs under 2 seconds, E2E under 5.
+- AAA pattern (Arrange-Act-Assert).
 
-### Testing Philosophy
+### Commands
 
-- **Behavior, not implementation** - Tests check what code does
-- **Fast and isolated** - Tests run quickly
-- **Deterministic** - Seeded RNG
-- **AAA pattern** - Arrange-Act-Assert
+See [`README.md` → Testing & quality gates](README.md#testing--quality-gates).
 
-## Code Quality
+## Code quality
 
-### ESLint
+Enforced by CI. Every push to `main` runs the full gate; PRs are expected to land green.
 
-- **Strict rules** - Strict rules
-- **TypeScript ESLint** - Type checking
-- **React hooks** - Hooks rules
-- **No unused vars** - Unused variables
-
-### TypeScript
-
-- **Strict mode** - Strict type checking
-- **No any** - Doesn't allow `any` types
-- **No unused locals** - Doesn't allow unused variables
-- **No unchecked indexed access** - Safe array access
-
-### Code Style
-
-- **Consistent naming** - Consistent naming
-- **Comments** - Documented functions
-- **Type safety** - Type-safe code
+- **ESLint** 9 with typescript-eslint and `eslint-config-prettier`.
+- **TypeScript** strict mode: `strict: true`, `noUncheckedIndexedAccess`, no implicit `any`, no unused locals/parameters. Dedicated `npm run typecheck` script runs `tsc --noEmit` before build.
+- **Prettier** — single source of formatting; `npm run format` writes, `npm run format:check` verifies (CI uses the latter).
+- **Import discipline** — conventions enforced by reviewers; ADR-0001 anticipates an eventual ESLint import-restriction rule at context boundaries.
 
 ## Extensibility
 
-### Adding a New Game
+### Adding a new game
 
-The game registry system makes adding new games simple and scalable:
+This is a zero-touch-on-`GameRenderer` operation thanks to the registry.
 
-1. **Add game configuration** `games/data.ts`
-
-   ```typescript
+1. **Config** — add entry to `src/games/data.ts` `GAME_CONFIG`:
+   ```ts
    new_game: {
      id: 'new_game',
      title: 'NEW GAME',
      theme: THEME.blue,
      icon: 'Icon',
-     desc: 'Game description',
+     desc: 'Short description',
      allowedProfiles: ['starter'],
      difficulty: 'easy',
-     category: 'logic'
+     category: 'logic',
    }
    ```
-
-2. **Add generation logic** `games/generators.ts`
-
-   ```typescript
-   new_game: (level, rng, profile) => {
-     // Generate problem
-     return { type: 'new_game', ... };
-   }
+2. **Generator** — add to `src/games/generators.ts`:
+   ```ts
+   new_game: (level, rng, profile) => ({ type: 'new_game', ... })
    ```
-
-3. **Create validator** `games/validators.ts`
-
-   ```typescript
-   export const validateNewGame: AnswerValidator = (problem, userAnswer) => {
-     if (problem.type !== 'new_game') return false;
-     return userAnswer === problem.answer;
-   };
-   ```
-
-4. **Create game view component** `components/gameViews/NewGameView.tsx`
-
-   ```typescript
-   export const NewGameView: React.FC<NewGameViewProps> = ({ problem, onAnswer, soundEnabled }) => {
-     // Game UI
-   };
-   ```
-
-5. **Register the game** `games/registrations.ts`
-
-   ```typescript
+3. **Validator** — add to `src/games/validators.ts` as a pure `(problem, userAnswer) → boolean`.
+4. **View** — create `src/components/gameViews/NewGameView.tsx`, receive the standard props (`problem`, `onAnswer`, `soundEnabled`, `level`, `stars`, `spendStars`, `spendHeart`, `endGame`).
+5. **Register** — append to `src/games/registrations.ts`:
+   ```ts
    gameRegistry.register({
      id: 'new_game',
      component: NewGameView,
@@ -572,95 +254,50 @@ The game registry system makes adding new games simple and scalable:
      allowedProfiles: GAME_CONFIG.new_game.allowedProfiles,
    });
    ```
+6. **i18n** — add strings to `src/i18n/locales/et.ts` **and** `en.ts`. A missing key is a compile error.
+7. **Tests** — unit tests for the generator and validator in colocated `__tests__/` folders; extend the Playwright smoke suite if the mechanic is genuinely new.
 
-6. **Add translations** `i18n/locales/et.ts` and `en.ts`
+Phase 1 changes this contract: the registration becomes a `{ mechanic, compatibleSkills[], defaultContentPackId }` binding rather than a bundled config+generator+validator entry. Until then, the procedure above is correct.
 
-**Note:** No need to modify `GameRenderer.tsx` anymore! The registry automatically handles game rendering.
+### Adding a locale
 
-### Adding a New Feature
-
-1. **Create feature folder** `features/new-feature/`
-2. **Add necessary components**
-3. **Add state management** (if needed)
-4. **Add tests**
-
-### Adding a New Language
-
-1. **Create translation file** `i18n/locales/XX.ts`
-2. **Add language** to `SupportedLocale` type
-3. **Add translations** to `translations` object
+See [`src/i18n/README.md`](src/i18n/README.md).
 
 ## Performance
 
-### Optimizations
+Practical defaults, not premature optimization:
 
-- **React.memo** - Component memoization
-- **useCallback** - Function memoization
-- **useMemo** - Value memoization
-- **Code splitting** - Vite automatic code splitting
-- **Lazy loading** - When needed
-
-### Performance Utilities
-
-- `utils/performance.ts` - Performance utilities
-- `utils/performanceOptimizations.ts` - Optimizations
+- `React.memo` / `useCallback` / `useMemo` used where profiling showed real wins (game views, heavy animated components).
+- Vite automatic code splitting at route boundaries.
+- `src/utils/performance.ts` — debounce + throttle helpers.
+- `src/utils/performanceOptimizations.ts` — device detection for motion-scale tuning.
+- The build warns when any chunk exceeds 500 kB gzipped; current main bundle is ~191 kB gzipped.
 
 ## Accessibility
 
-### WCAG 2.1 AA Compliance
+WCAG 2.1 AA is the baseline:
 
-- **Keyboard navigation** - Keyboard support
-- **Screen reader support** - ARIA labels
-- **Focus management** - Focus management
-- **Reduced motion** - Animation control
-- **High contrast** - High contrast
+- Keyboard navigation (Escape closes modals, Enter/Space on interactive targets, Tab order audited).
+- ARIA labels on decorative and interactive elements; screen-reader-only text via `.sr-only`.
+- Focus trap in modals (`src/components/AccessibilityHelpers.tsx`).
+- `prefers-reduced-motion` respected by animated elements.
+- High-contrast support via Tailwind's color palette.
 
 ## Deployment
 
-### Build Process
+Two-workflow setup in `.github/workflows/`:
 
-1. **Lint** - Code quality check
-2. **Build** - Vite build
-3. **Test** - Run tests (if needed)
+- **`ci.yml`** — quality gate on every push and PR: lint, typecheck, format check, unit tests, build, and a separate Playwright E2E job.
+- **`deploy.yml`** — on push to `main` only, runs on a self-hosted runner on the homelab VM: builds, then `cp -r dist/* /srv/data/games/study/` into the directory nginx serves as `games.khe.ee/study/`.
 
-### CI/CD
+There is no runtime backend today; Phase 2 adds one per ROADMAP §4.
 
-GitHub Actions workflow:
+## Where this document stops
 
-- Automatic build
-- Lint check
-- FTP deploy
+What this document **does not** cover:
 
-## Future Plans
+- Phased implementation plan and sequencing → [`ROADMAP.md`](ROADMAP.md).
+- Target domain model (bounded contexts) and learner identity → [`docs/adr/0001-bounded-contexts.md`](docs/adr/0001-bounded-contexts.md), [`docs/adr/0002-learner-profile.md`](docs/adr/0002-learner-profile.md).
+- Module-level specifics → [`src/i18n/README.md`](src/i18n/README.md), [`src/monetization/README.md`](src/monetization/README.md), [`docs/shared-components.md`](docs/shared-components.md).
 
-### Possible Extensions
-
-1. **Multi-language support** - ✅ Ready (i18n system)
-2. **Monetization** - ✅ Structure ready
-3. **Backend integration** - Possible in future
-4. **Multiplayer** - Possible in future
-5. **Analytics** - Possible in future
-
-### Improvements
-
-- Increase test coverage (80%+ engine)
-- Add more accessibility features
-- Optimize performance
-- Add more games
-
-## Conclusion
-
-The project is well-structured, extensible, and testable. The architecture supports:
-
-- ✅ Multi-language support (i18n)
-- ✅ Monetization system (structure)
-- ✅ Game registry system (scales to 50+ games)
-- ✅ Extensibility
-- ✅ Testability
-- ✅ Code quality
-- ✅ Accessibility
-- ✅ Scalable component architecture
-- ✅ Modular game views
-- ✅ Zero-touch game addition
-
-Everything is ready for future development and expansion!
+When this document and an ADR disagree, the ADR wins.

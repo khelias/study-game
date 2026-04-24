@@ -1,6 +1,6 @@
-# Quick Start Guide - Generalized Game UI
+# Shared Game UI Components
 
-## For Developers: How to Use These Components
+Cookbook for the two cross-game UI primitives in `src/components/shared/`: `GameProblemModal` (pauses gameplay to show a multiple-choice question) and `GameStatsBar` (renders game-specific counters on top of the global `GameHeader`). Both ship today in BattleLearn and MathSnake; use them when a new game needs either pattern.
 
 ### 1. GameProblemModal - When Your Game Has Questions
 
@@ -65,6 +65,8 @@ interface GameProblemModalProps {
   variant?: 'default' | 'compact'; // Size variant
   icon?: React.ReactNode; // Icon next to title
   onClose?: () => void; // Optional close handler
+  eliminatedIndices?: number[]; // Paid-hint: render these options as eliminated
+  children?: React.ReactNode; // Footer slot (e.g. paid-hint buttons)
 }
 
 // Note: The modal shows visual feedback through button colors (green/red).
@@ -442,17 +444,10 @@ const stats: GameStat[] = [{ id: 'counter', value: debouncedValue }];
 />
 ```
 
-### 10. Migration Priority
+### 10. Where to apply these patterns
 
-1. **High Priority**: Games with conditional problems (BattleLearn ✅, MathSnake)
-2. **Medium Priority**: Games with stats needs (WordCascade, StarMapper)
-3. **Low Priority**: Games working well (StandardGameView, TimeGame)
-4. **Not Recommended**: Visual puzzles (MemoryGame, RoboPath, ShapeShift)
+Use `GameProblemModal` when a game has **conditional problems** (mechanic pauses for an answer): BattleLearn ✓ shipped, MathSnake is a natural next candidate. Avoid it for visual puzzles where the board itself is the problem (MemoryGame, RoboPath, ShapeShift) — adding a modal would hurt flow.
 
-### Need Help?
+Use `GameStatsBar` for game-specific counters that belong above the global `GameHeader` (ships remaining, apple count, moves used). Skip it for games whose state is already communicated by the board or by `GameHeader`.
 
-See detailed docs:
-
-- `GAME_UI_REDESIGN.md` - Full analysis and patterns
-- `BATTLELEARN_COMPARISON.md` - Before/after comparison
-- Component files - `src/components/shared/GameProblemModal.tsx` and `GameStatsBar.tsx`
+The component source files (`src/components/shared/GameProblemModal.tsx`, `src/components/shared/GameStatsBar.tsx`) are the authoritative reference; TypeScript types document the full prop surface.

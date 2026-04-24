@@ -41,24 +41,25 @@ Today all four are welded together inside the `games/` folder. The roadmap's bac
 
 - Pure engine layer (`src/engine/`): `rng.ts`, `adaptiveDifficulty.ts`, `progression.ts`, `achievements.ts`, `stats.ts` — deterministic, testable, UI-independent. 76% coverage.
 - Declarative game registry — 18 games registered via `src/games/registrations.ts`, `src/games/registry.ts`. Extension pattern proven.
-- TypeScript strict mode, ESLint with `no-explicit-any`, 23 test files in `__tests__/` dirs colocated with code.
+- TypeScript strict mode (`noUncheckedIndexedAccess`, no implicit `any`), ESLint with `no-explicit-any`, Prettier enforced in CI, colocated `__tests__/` throughout.
 - State split: persistent `gameStore` + session `playSessionStore` in `src/stores/`.
 - Persistence adapter pattern already scaffolded (`src/services/persistence/`: `apiAdapter.ts` + `localStorageAdapter.ts` behind `persistenceService.ts`).
 - i18n scaffolding live (`src/i18n/locales/{et,en}.ts`).
 - Monetization scaffolding live (`src/monetization/` — feature flags, tiers, hooks, no active gates).
-- CI/CD: GitHub Actions → FTP → `games.khe.ee/study/`. See `.github/workflows/deploy.yml`.
-- `ARCHITECTURE.md` (628 lines) documents intent, not just shape.
+- CI/CD: GitHub Actions quality gate (lint / typecheck / format-check / unit / E2E / build) plus self-hosted-runner deploy → `games.khe.ee/study/`. See `.github/workflows/ci.yml` + `deploy.yml`.
+- Playwright E2E safety net: four smoke scenarios covering menu load, profile switching, game navigation, balance-scale answer → stats.
+- Gameplay screen refactored into container + pure view + modal host (`src/features/gameplay/GameScreen.tsx` + `GameScreenView.tsx` + `GameScreenModalHost.tsx`) with heavy side-effect orchestration extracted into named hooks (`useMathSnakeMovement`, `useGameScreenEffects`, `useUnlockedAchievementCopies`).
+- ADRs recorded: [ADR-0001](docs/adr/0001-bounded-contexts.md) (five bounded contexts), [ADR-0002](docs/adr/0002-learner-profile.md) (persona-agnostic learner identity).
+- `ARCHITECTURE.md` documents current shape; supersession by ADRs is explicit where relevant.
 
 ### What is debt
 
-- **`src/features/gameplay/GameScreen.tsx` is a God component** (~591 LOC, 20+ Zustand selectors, modal coordination mixed with game logic). Decompose before scaling features.
-- **`Profile` is difficulty-tiered, not persona-typed.** `src/types/profile.ts` models an age/level bracket (`levelStart`, `difficultyOffset`, emoji). A "learner persona" concept that spans kid ↔ adult is missing.
-- **Skill ≡ Mechanic ≡ Content welding.** Specific content files are tied to specific games: `constellations.ts`, `puzzles.ts`, `syllableWords.ts`, `shapeShiftGrid.ts`, `sentenceTranslations.ts` in `src/games/`. Adding "fractions" or "Estonian river names" means writing code, not data.
+- **`Profile` is difficulty-tiered, not persona-typed.** `src/types/profile.ts` models an age/level bracket (`levelStart`, `difficultyOffset`, emoji). ADR-0002 defines the target `LearnerProfile` shape but the code has not migrated — this is Phase 1 work.
+- **Skill ≡ Mechanic ≡ Content welding.** Specific content files are tied to specific games: `constellations.ts`, `puzzles.ts`, `syllableWords.ts`, `shapeShiftGrid.ts`, `sentenceTranslations.ts` in `src/games/`. Adding "fractions" or "Estonian river names" means writing code, not data. This is the primary Phase 1 target.
 - **No server.** `apiAdapter.ts` is a TODO stub. No user identity beyond localStorage. No cross-device sync. No shared content distribution.
-- **No observability.** `src/utils/errorHandler.ts:17` comment: _"In production, you could send errors to error tracking service"_.
+- **No observability.** `src/utils/errorHandler.ts` comment: _"In production, you could send errors to error tracking service"_.
 - **No collection / economy layer.** Stars exist as an earned counter; there is no spending target, no inventory, no unlock catalog, no theme application system.
 - **Monetization scaffolding has never been exercised.** Feature flags are defined, nothing gates on them. Plumbing without a fixture.
-- **No E2E tests.** Unit coverage is strong on the engine; nothing verifies that a user journey end-to-end still works after refactors.
 
 ---
 
@@ -350,3 +351,4 @@ Named so they don't creep in quietly:
 ## 7. Change log
 
 - **2026-04-23** — Initial draft. Five bounded contexts and six phases proposed. Awaiting decision on backend stack and auth provider before Phase 2.
+- **2026-04-23** — Phase 0 landed. ADR-0001 + ADR-0002 written; Prettier + typecheck tooling added; CI quality gate (`ci.yml`) wired; Playwright E2E safety net (four scenarios) shipped; `GameScreen.tsx` decomposed into container + view + modal host with three new named hooks. §2 "What is solid / debt" updated to match. Docs cleanup: deleted obsolete `GAME_UI_REDESIGN.md`, `BATTLELEARN_COMPARISON.md`, `NEXT_GAMES_STRATEGY.md`, `shape-dash-collision-analysis.md`; moved `QUICK_START_GUIDE.md` → `docs/shared-components.md`.

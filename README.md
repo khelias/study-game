@@ -1,463 +1,97 @@
-# Smart Games 🎮
+# Smart Games
 
-Educational web game for children aged 5-8, helping them practice reading, math, and logic in a playful way.
+Learning platform built around the idea that a single engine can serve both a 7-year-old practicing multiplication and an adult practicing Estonian river names — one codebase, one account model, two UX registers. Today the catalog is 18 small games in Estonian curriculum areas (reading, math, logic, memory) with adaptive difficulty. The next milestones are decoupling skill/mechanic/content, adding a backend, and activating an adult UX register. See [`ROADMAP.md`](./ROADMAP.md) for phases and scope; see [`ARCHITECTURE.md`](./ARCHITECTURE.md) for current structure; see [`docs/adr/`](./docs/adr/) for the bounded-context and learner-profile decisions that supersede parts of the older architecture as they land.
 
-## 📋 Contents
+Live at [games.khe.ee/study/](https://games.khe.ee/study/).
 
-- [Overview](#overview)
-- [Features](#features)
+## Contents
+
 - [Games](#games)
-- [Installation](#installation)
-- [Usage](#usage)
-- [Development](#development)
-- [Project Structure](#project-structure)
-- [Technologies](#technologies)
+- [Running locally](#running-locally)
+- [Testing & quality gates](#testing--quality-gates)
+- [Deployment](#deployment)
+- [Internationalization](#internationalization)
+- [Further reading](#further-reading)
 
-## 🎯 Overview
+## Games
 
-**Smart Games** is an interactive educational game offering 14 different games across two age profiles:
+The platform ships 18 games across four categories. Each game is registered declaratively in `src/games/registrations.ts`; mechanic + content + skill are currently coupled in `src/games/` (Phase 1 work splits them — see ROADMAP §4).
 
-- **5+ (Starter)** - For preschoolers and 1st grade beginners
-- **1st Grade+ (Advanced)** - For more experienced students
+| Category     | Games                                                                             |
+| ------------ | --------------------------------------------------------------------------------- |
+| **Language** | Word Master, Word Cascade, Syllable Master, Sentence Detective, Letter Detective  |
+| **Math**     | Math Snake, Unit Conversion, Size Compare, Balance Scale, Clock Game, BattleLearn |
+| **Logic**    | Pattern Train, Robo Path, Star Mapper, Shape Shift, Shape Dash                    |
+| **Memory**   | Math Memory, Picture Pairs                                                        |
 
-The game uses adaptive difficulty that automatically adjusts task complexity based on player performance.
+Game visibility per profile is controlled by `GAME_CONFIG[].allowedProfiles` in `src/games/data.ts`. Two profiles ship today: `starter` (ages 5+) and `advanced` (1st grade+). An `adult` persona is the target of ROADMAP Phase 5 and ADR-0002 — the current age-tier `Profile` model is deprecated-in-design but not yet migrated in code.
 
-## ✨ Features
+### Adaptive difficulty
 
-### 🎮 Games
+The engine nudges effective level based on recent accuracy and response time, not raw level selection:
 
-#### Starter profile (5+)
+- **Harder:** accuracy > 80% **and** ≥ 3 consecutive correct → effective level rises.
+- **Easier:** accuracy < 50% **or** ≥ 3 consecutive wrong → effective level falls.
 
-1. **WORD MASTER** - Building words from letters
-2. **SYLLABLE MASTER** - Building words from syllables
-3. **PATTERN TRAIN** - Pattern recognition and continuation
-4. **SENTENCE DETECTIVE** - Logical thinking practice
-5. **MATH MEMORY** - Math memory game
-6. **ROBO PATH** - Programming basics
-7. **LETTER DETECTIVE** - Letter recognition
-8. **SIZE COMPARE** - Compare object sizes (bigger/smaller/equal)
+Currently per-profile-per-game. ADR-0002 retargets this to per-skill via `SkillMastery` in Phase 1.
 
-#### Advanced profile (1st grade+)
+### Progression & economy
 
-1. **BALANCE SCALE** - Mathematical logic practice
-2. **CLOCK GAME** - Learning to tell time
-3. **MATH MEMORY** (enhanced) - Harder math tasks
-4. **ROBO PATH** (enhanced) - More complex programming tasks
-5. **SENTENCE DETECTIVE** (enhanced) - More complex logic tasks
-6. **PATTERN TRAIN** (enhanced) - More complex patterns
-7. **LETTER DETECTIVE** (enhanced) - More complex letter tasks
-8. **SIZE COMPARE** (enhanced) - More complex comparisons with symbols
+- **Levels** are performance-earned, never purchased. Level-up requires correct answers + 80%+ accuracy; requirements scale (5 → 7 → 10 → 12 → 15+).
+- **Stars** are awarded on level-up (1–3 base, scaled by level up to 2.5×, plus perfect-clear bonus). They are spent on hearts (10 stars = 1 heart, max 5).
+- **Hearts** are a global resource; wrong answers cost one; zero hearts ends the session.
+- **Achievements** are cosmetic unlocks tracked in `src/engine/achievements.ts`.
 
-### 🌟 Key Enhancements
+All state persists in LocalStorage via `gameStore`. Per-session state (problem, score, level progress, notifications) lives in `playSessionStore`. Neither syncs across devices yet — Phase 2 work.
 
-- **Adaptive difficulty** - The game tracks player performance and automatically adjusts difficulty
-- **Progression system** - Automatic level progression based on performance. Earn stars when you level up, use stars to buy hearts
-- **Level system** - Levels automatically increase as you demonstrate mastery (performance-based, not purchased)
-- **Star currency** - Earn stars when completing levels. Stars scale with game difficulty and level. Use stars to buy hearts
-- **Hearts system** - Global hearts that persist across games. Wrong answers cost hearts. Buy more hearts with stars
-- **Achievement system** - Medals and achievements encourage continued play (bragging rights)
-- **Points system** - Cosmetic points for fun and achievements
-- **Statistics** - Detailed tracking of games played, accuracy, and progress
-- **Educational tips** - Instructions and hints for playing games
-- **Enhanced feedback** - Diverse encouragement and positive feedback
-- **Accessibility** - WCAG 2.1 AA compliance, keyboard support, screen reader support
-- **Responsive design** - Works on all devices (computer, tablet, phone)
-- **Internationalization** - Supports Estonian (default) and English with easy language switching
+## Running locally
 
-## 🚀 Installation
-
-### Requirements
-
-- **Node.js** 18 or newer
-- **npm** or **yarn** package manager
-
-### Steps
-
-1. **Clone repository**
-
-   ```bash
-   git clone https://github.com/khelias/study-game.git
-   cd study-game
-   ```
-
-2. **Install dependencies**
-
-   ```bash
-   npm install
-   ```
-
-3. **Run development server**
-
-   ```bash
-   npm run dev
-   ```
-
-   The game opens in browser at `http://localhost:5173`
-
-4. **Build for production**
-   ```bash
-   npm run build
-   ```
-   Build result is in `dist/` folder.
-
-### Automatic Deploy to FTP Server
-
-The project uses GitHub Actions CI/CD workflow that automatically builds and uploads the application to FTP server on every `main` branch push.
-
-**Setup:**
-
-1. Go to GitHub repository → Settings → Secrets and variables → Actions
-2. Add the following secrets:
-   - `FTP_SERVER` - FTP server address (e.g., `ftp.example.com`)
-   - `FTP_USERNAME` - FTP username
-   - `FTP_PASSWORD` - FTP password
-3. Change `server-dir` value in `.github/workflows/deploy.yml` file according to your FTP server structure
-
-**Manual execution:**
-Workflow can also be run manually from GitHub Actions page.
-
-## 💻 Usage
-
-### Development mode
+Requires **Node.js 24+** and **npm**.
 
 ```bash
-npm run dev
+git clone <your-fork-url>
+cd study-game
+npm install
+npm run dev       # http://localhost:5173
 ```
 
-### Production version
+Production build:
 
 ```bash
-npm run build
-npm run preview
+npm run build     # output: dist/
+npm run preview   # serve dist/ locally
 ```
 
-### Testing
+## Testing & quality gates
 
-The project uses **Vitest** testing framework with **React Testing Library**.
+The quality gate is enforced in [`.github/workflows/ci.yml`](.github/workflows/ci.yml): lint, typecheck, format check, unit tests, build, and a separate Playwright E2E job. Every commit to `main` must pass all of these.
 
-```bash
-# Run tests in watch mode
-npm run test
+| Command                 | Purpose                                                                     |
+| ----------------------- | --------------------------------------------------------------------------- |
+| `npm run lint`          | ESLint 9 + typescript-eslint                                                |
+| `npm run typecheck`     | `tsc --noEmit` (strict mode, `noUncheckedIndexedAccess`, no implicit `any`) |
+| `npm run format:check`  | Prettier check (run `npm run format` to write)                              |
+| `npm run test`          | Vitest in watch mode                                                        |
+| `npm run test:run`      | Vitest once (used in CI)                                                    |
+| `npm run test:coverage` | With V8 coverage — thresholds 70% across the board                          |
+| `npm run test:e2e`      | Playwright E2E (headless Chromium)                                          |
+| `npm run test:e2e:ui`   | Playwright interactive UI mode                                              |
+| `npm run build`         | Vite production build                                                       |
 
-# Run tests once
-npm run test:run
+Current state: 23 unit test files, 359 tests; engine coverage 76% (target 80%+). Playwright smoke suite covers menu load, profile switching, game navigation, and a balance-scale round including the answer → stats recording path. The E2E suite is the refactor safety net required by ROADMAP Phase 0.
 
-# Run tests with UI (requires @vitest/ui installation)
-npm run test:ui
+## Deployment
 
-# Run tests with coverage
-npm run test:coverage
-```
+GitHub Actions deploys `main` to `games.khe.ee/study/` via a self-hosted runner on the homelab VM ([`.github/workflows/deploy.yml`](.github/workflows/deploy.yml)): build on the runner, then `cp -r dist/* /srv/data/games/study/` into the directory the khe-homelab nginx container already serves. No runtime server component today. Backend + sync is ROADMAP Phase 2.
 
-**Test Coverage:**
+## Internationalization
 
-- Engine (critical logic): 76.58% ✅
-- Tested components: 100% ✅
-- Testing goals: Engine 80%+, Components 60%+
+Two locales ship: Estonian (default) and English. See [`src/i18n/README.md`](src/i18n/README.md) for the type-safe translation system. All user-facing strings go through `useTranslation`; direct literals in JSX are a lint-adjacent smell.
 
-### Code quality
+## Further reading
 
-```bash
-npm run lint
-```
-
-## 🔧 Development
-
-### Project Structure
-
-The project follows a feature-based architecture with clear separation of concerns:
-
-- **`src/components/`** - React UI components (game views, shared components)
-- **`src/engine/`** - Pure business logic (RNG, scoring, progression, achievements)
-- **`src/features/`** - Feature workflows (gameplay, menu, modals)
-- **`src/games/`** - Game data, generators, and registry system
-- **`src/hooks/`** - Custom React hooks for game logic
-- **`src/stores/`** - Zustand state management (persistent & session)
-- **`src/i18n/`** - Internationalization system
-
-For detailed project structure and architecture, see [ARCHITECTURE.md](./ARCHITECTURE.md).
-
-### Adding a New Game
-
-The game registry system makes adding new games simple and scalable. No need to modify `GameRenderer.tsx` anymore!
-
-**Quick steps:**
-
-1. Add game configuration to `src/games/data.ts`
-2. Add generator function to `src/games/generators.ts`
-3. Create validator in `src/games/validators.ts`
-4. Create game view component in `src/components/gameViews/`
-5. Register the game in `src/games/registrations.ts`
-6. Add translations to `src/i18n/locales/`
-
-For detailed instructions with code examples, see [ARCHITECTURE.md - Adding a New Game](./ARCHITECTURE.md#adding-a-new-game).
-
-### Adaptive Difficulty
-
-The game uses adaptive difficulty that works as follows:
-
-- **Increasing difficulty:**
-  - Accuracy > 80% + 3+ consecutive correct answers
-  - Raises effective level
-
-- **Decreasing difficulty:**
-  - Accuracy < 50% or 3+ consecutive wrong answers
-  - Lowers effective level
-
-### State Management
-
-The game uses:
-
-- **Zustand** - State management library
-- **LocalStorage** - Saving progress and statistics (via `gameStore`)
-- **Session state** - Temporary game state (via `playSessionStore`)
-- **Custom hooks** - Specialized hooks for game logic:
-  - `useAnswerHandler` - Answer processing and game state coordination
-  - `useGameHints` - Hint generation for different game types
-  - `useGameTips` - Tip display management
-  - `useGameEngine` - Problem generation and validation
-  - `useGameAudio` - Sound effect management
-
-## 🎨 Technologies
-
-### Frontend
-
-- **React 19.2** - UI framework
-- **TypeScript 5.9** - Type-safe JavaScript
-- **Vite 7.2** - Build tool and dev server
-- **Tailwind CSS 3.4** - CSS framework
-- **Lucide React** - Icons
-- **Zustand 4.5** - State management
-
-### Development Tools
-
-- **ESLint** - Code quality control
-- **PostCSS** - CSS processing
-- **Autoprefixer** - CSS vendor prefixes
-- **Vitest** - Testing framework
-
-### Accessibility
-
-- **WCAG 2.1 AA** compliance
-- **Keyboard navigation** (ESC, Enter, Tab)
-- **Screen reader support** (ARIA labels)
-- **Focus management**
-- **Reduced motion support**
-- **High contrast support**
-
-## 📊 Statistics and Progression
-
-### Progression System
-
-**Levels:**
-
-- Automatically earned through gameplay (performance-based)
-- Level up when you demonstrate mastery (correct answers + 80%+ accuracy)
-- Requirements scale with level (5→7→10→12→15+ correct answers)
-- Controls game difficulty/complexity
-
-**Stars (Currency):**
-
-- Earned when completing levels (not per answer)
-- Rewards scale with game difficulty (easy: 1, medium: 2, hard: 3 base stars)
-- Rewards scale with level (1.0x to 2.5x multiplier)
-- Perfect level completion gives bonus stars
-- Use stars to buy hearts in the shop
-
-**Hearts (Lives):**
-
-- Global resource that persists across games
-- Wrong answers cost 1 heart
-- Game ends when hearts reach 0
-- Buy more hearts with stars (10 stars = 1 heart)
-- Maximum 5 hearts
-
-**Points:**
-
-- Cosmetic points earned per correct answer
-- Used for achievements and bragging rights
-- No gameplay impact
-
-**Achievements:**
-
-- Unlocked through various accomplishments
-- Bragging rights and progress tracking
-
-### Statistics Tracking
-
-The game tracks:
-
-- Number of games played
-- Correct/wrong answers
-- Best streak
-- Highest levels per game
-- Play time
-- Total stars earned
-- Hearts available
-- Points (cosmetic)
-- Unlocked achievements
-
-All data is saved to LocalStorage and persists across browser sessions.
-
-## 🧪 Testing
-
-### Testing Philosophy
-
-The project follows best testing practices:
-
-- **Behavior, not implementation** - Tests check what code does, not how
-- **Fast and isolated** - Tests run quickly (under 10 seconds) and don't depend on each other
-- **Deterministic** - Tests use seeded RNG for predictability
-- **AAA pattern** - Tests follow Arrange-Act-Assert structure
-
-### Test Suite
-
-#### Engine Tests (Unit Tests)
-
-Highest priority tests for critical business logic:
-
-- **rng.test.ts** (16 tests)
-  - Deterministic random number generation
-  - Seeded RNG consistency
-  - Array element selection
-  - Unique ID generation
-
-- **stats.test.ts** (25 tests)
-  - Statistics creation and updating
-  - Game counting
-  - Answer saving and streaks
-  - Level and score tracking
-
-- **achievements.test.ts** (19 tests)
-  - Achievement unlocking
-  - Achievement condition checking
-  - Duplicate unlocking prevention
-
-- **adaptiveDifficulty.test.ts** (28 tests)
-  - Difficulty adjustment based on performance
-  - Consecutive correct/wrong answers
-  - Difficulty limits
-
-- **progression.test.ts** (26 tests)
-  - Optimal difficulty calculation
-  - Progression recommendations
-  - Success score calculation
-
-#### Game Logic Tests
-
-- **generators.test.ts** (20 tests)
-  - Problem generation (balance_scale, word_builder, pattern)
-  - Difficulty progression
-  - Seeded RNG consistency
-  - Answer validation logic
-
-#### Component Tests (Integration Tests)
-
-- **GameCard.test.tsx** (13 tests)
-  - Game info display
-  - Click handling
-  - Locked state handling
-  - Progress display
-
-- **StatsModal.test.tsx** (10 tests)
-  - Statistics display
-  - Close button functionality
-  - Achievement rendering
-
-- **AchievementsModal.test.tsx** (14 tests)
-  - Locked/unlocked achievement display
-  - Progress display
-
-#### Utility Tests
-
-- **performance.test.ts** (16 tests)
-  - Debounce function
-  - Throttle function
-  - Device detection utilities
-
-### Running Tests
-
-```bash
-# Watch mode (for development)
-npm run test
-
-# Once (for CI)
-npm run test:run
-
-# With coverage report
-npm run test:coverage
-
-# With UI (interactive)
-npm run test:ui
-```
-
-### Coverage Goals
-
-- **Engine**: 80%+ (achieved: 76.58%) ✅
-- **Tested Components**: 100% ✅
-- **Overall**: Focused on critical functionality
-
-### Adding a New Test
-
-1. Create test file in `__tests__` folder
-2. Use consistent naming: `<component>.test.tsx` or `<module>.test.ts`
-3. Use test utilities: `src/test/utils.tsx`
-4. Follow AAA pattern (Arrange-Act-Assert)
-5. Add descriptive test names
-
-**Example:**
-
-```typescript
-import { describe, it, expect } from 'vitest';
-import { createRng } from '../rng';
-
-describe('createRng', () => {
-  it('should create deterministic RNG with seed', () => {
-    // Arrange
-    const rng1 = createRng(12345);
-    const rng2 = createRng(12345);
-
-    // Act
-    const values1 = [rng1(), rng1(), rng1()];
-    const values2 = [rng2(), rng2(), rng2()];
-
-    // Assert
-    expect(values1).toEqual(values2);
-  });
-});
-```
-
-## 🎯 Educational Value
-
-The game develops:
-
-- **Reading** - Letter, syllable, and word practice
-- **Math** - Calculations, logic, telling time
-- **Logic** - Pattern recognition, programming basics
-- **Memory** - Memory games
-
-## 🌍 Internationalization
-
-The game supports multiple languages:
-
-- **Estonian** (default) - `et.ts`
-- **English** - `en.ts`
-
-Language can be changed from the menu. All user-facing strings are translated through the i18n system.
-
-## 🐛 Reporting Issues
-
-If you find a bug or want to suggest something, please open an [issue on GitHub](https://github.com/khelias/study-game/issues).
-
-## 📝 Changes
-
-See [CHANGELOG.md](CHANGELOG.md) file for all changes.
-
-## 📄 License
-
-Private project - all rights reserved.
-
----
-
-**Version:** 2.2  
-**Created:** 2026
+- [`ROADMAP.md`](./ROADMAP.md) — living product & technical roadmap (phases, non-goals, open decisions).
+- [`ARCHITECTURE.md`](./ARCHITECTURE.md) — current code structure; bounded-context target in [`docs/adr/0001-bounded-contexts.md`](docs/adr/0001-bounded-contexts.md).
+- [`docs/adr/`](./docs/adr/) — Architecture Decision Records.
+- [`docs/shared-components.md`](./docs/shared-components.md) — cookbook for `GameProblemModal` and `GameStatsBar`.
+- [`src/i18n/README.md`](src/i18n/README.md), [`src/monetization/README.md`](src/monetization/README.md) — module-level docs.
