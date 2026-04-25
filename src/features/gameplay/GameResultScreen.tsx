@@ -18,6 +18,7 @@ import { useProfileText } from '../../hooks/useProfileText';
 import { useGameAudio } from '../../hooks/useGameAudio';
 import { ShopModal } from '../modals/ShopModal';
 import { GAME_CONFIG } from '../../games/data';
+import { isSnakeGameType } from '../../engine/mathSnake';
 
 export type GameResultType = 'victory' | 'perfect' | 'gameOver';
 
@@ -42,6 +43,7 @@ export const GameResultScreen: React.FC<GameResultScreenProps> = ({
   const gameType = usePlaySessionStore((state) => state.gameType);
   const returnToMenu = usePlaySessionStore((state) => state.returnToMenu);
   const resumeGame = usePlaySessionStore((state) => state.resumeGame);
+  const setProblem = usePlaySessionStore((state) => state.setProblem);
   const getHighScore = useGameStore((state) => state.getHighScore);
   const hearts = useGameStore((state) => state.hearts);
   const { playClick } = useGameAudio(soundEnabled);
@@ -107,7 +109,10 @@ export const GameResultScreen: React.FC<GameResultScreenProps> = ({
         hearts > 0 && gameType
           ? () => {
               playClick();
-              resumeGame(); // Continue from same problem/score, no reset
+              if (isSnakeGameType(gameType)) {
+                setProblem(null);
+              }
+              resumeGame();
             }
           : undefined, // No hearts: open shop modal instead
       primaryGradient:

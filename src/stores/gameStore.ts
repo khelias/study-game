@@ -37,7 +37,7 @@ const buildDefaultLevels = () => {
 const MAX_HEARTS = 5;
 const DEFAULT_HEARTS = 3;
 
-const DEFAULT_FAVOURITE_GAME_IDS = ['battlelearn', 'word_cascade', 'math_snake'];
+const DEFAULT_FAVOURITE_GAME_IDS = ['battlelearn', 'word_cascade', 'addition_snake'];
 
 export interface GameStore {
   // State

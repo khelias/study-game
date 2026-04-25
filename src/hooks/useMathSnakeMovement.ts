@@ -16,6 +16,7 @@ export const useMathSnakeMovement = (): ((direction: Direction) => void) | undef
   const updateStats = useGameStore((state) => state.updateStats);
   const updateHighScore = useGameStore((state) => state.updateHighScore);
   const addGlobalScore = useGameStore((state) => state.addScore);
+  const spendHeart = useGameStore((state) => state.spendHeart);
 
   const gameType = usePlaySessionStore((state) => state.gameType);
   const problem = usePlaySessionStore((state) => state.problem);
@@ -49,6 +50,7 @@ export const useMathSnakeMovement = (): ((direction: Direction) => void) | undef
         ...s,
         maxSnakeLength: Math.max(s.maxSnakeLength || 0, finalSnakeLength),
       }));
+      spendHeart();
       endGame();
       if (gameStartTime) {
         const playTime = Math.floor((Date.now() - gameStartTime) / 1000);
