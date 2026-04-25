@@ -55,11 +55,32 @@ const oppositeDirection: Record<Direction, Direction> = {
   RIGHT: 'LEFT',
 };
 
+/**
+ * Grid starts small and expands within a session as the player racks up a
+ * streak of correct math answers. Classical Snake scales the play-field with
+ * progress; this one ties expansion to correct answers (not raw score) so
+ * "growing the world" is a reward for *learning*, not for farming normal
+ * apples. The grid never shrinks — losing a streak freezes the current size.
+ */
+export const SNAKE_MIN_GRID_SIZE = 7;
+export const SNAKE_MAX_GRID_SIZE = 10;
+export const SNAKE_STREAK_MILESTONE = 5;
+
 const getMathSnakeGridSizeForLevel = (
   _level: number,
   _profile: ProfileType = 'starter',
 ): number => {
-  return 7;
+  return SNAKE_MIN_GRID_SIZE;
+};
+
+/**
+ * Grow the grid by one cell in each dimension, up to the cap. Existing snake
+ * segments and the current apple keep their coordinates (no remapping needed
+ * — expansion only adds cells at the right/bottom edges).
+ */
+export const expandSnakeGrid = (problem: MathSnakeProblem): MathSnakeProblem => {
+  if (problem.gridSize >= SNAKE_MAX_GRID_SIZE) return problem;
+  return { ...problem, gridSize: problem.gridSize + 1 };
 };
 
 const getRandomCountdown = (rng: RngFunction): number => randomInt(2, 3, rng);
@@ -269,26 +290,19 @@ const normalizeDirection = (current: Direction, next: Direction): Direction => {
   return next;
 };
 
-const isCollision = (
-  _gridSize: number, // Not used anymore (wraparound handles walls)
+const isOutOfBounds = (pos: [number, number], gridSize: number): boolean => {
+  const [x, y] = pos;
+  return x < 0 || x >= gridSize || y < 0 || y >= gridSize;
+};
+
+const isSelfCollision = (
   snake: Array<[number, number]>,
   nextHead: [number, number],
   ignoreTail: boolean,
 ): boolean => {
-  // Only check self-collision, not walls (wraparound handles walls)
   const snakeBody = ignoreTail ? snake.slice(0, Math.max(0, snake.length - 1)) : snake;
   const snakeSet = new Set(snakeBody.map(([sx, sy]) => `${sx},${sy}`));
   return snakeSet.has(`${nextHead[0]},${nextHead[1]}`);
-};
-
-const wrapPosition = (pos: [number, number], gridSize: number): [number, number] => {
-  let [x, y] = pos;
-  // Wrap around if out of bounds
-  if (x < 0) x = gridSize - 1;
-  if (x >= gridSize) x = 0;
-  if (y < 0) y = gridSize - 1;
-  if (y >= gridSize) y = 0;
-  return [x, y];
 };
 
 export const createMathSnakeProblem = (
@@ -329,24 +343,30 @@ export const moveMathSnake = (
   const direction = normalizeDirection(problem.direction, inputDirection);
   const [dx, dy] = directionVectors[direction];
   const head = problem.snake[0] ?? [0, 0];
-  const rawNextHead: [number, number] = [head[0] + dx, head[1] + dy];
+  const nextHead: [number, number] = [head[0] + dx, head[1] + dy];
 
-  // Wrap around if out of bounds
-  const nextHead = wrapPosition(rawNextHead, problem.gridSize);
+  // Walls kill (classical Snake). Wraparound was removed in the Phase 1 Slice
+  // 3b+ snake audit — with wraparound, the snake reappeared on the opposite
+  // edge and could crash into its own tail "from nowhere", which felt unfair
+  // especially on touch input.
+  if (isOutOfBounds(nextHead, problem.gridSize)) {
+    return { problem, collision: true };
+  }
 
   const apple = problem.apple;
   const isApple = apple && apple.pos[0] === nextHead[0] && apple.pos[1] === nextHead[1];
-  const willGrow = Boolean(isApple);
+  // A math apple is a challenge trigger, not food — the snake only grows
+  // when the player answers correctly (see resolveMathSnakeAnswer). That's
+  // why willGrow is false for math apples here.
+  const willGrow = Boolean(isApple && apple?.kind === 'normal');
 
-  // Only check self-collision (wraparound handles walls)
-  if (isCollision(problem.gridSize, problem.snake, nextHead, !willGrow)) {
+  if (isSelfCollision(problem.snake, nextHead, !willGrow)) {
     return { problem, collision: true };
   }
 
   let nextSnake = [nextHead, ...problem.snake];
 
-  // All apples make the snake grow immediately
-  if (!isApple) {
+  if (!willGrow) {
     nextSnake = nextSnake.slice(0, Math.max(1, nextSnake.length - 1));
   }
 
@@ -399,15 +419,17 @@ export const resolveMathSnakeAnswer = (
     return { problem, gameOver: false };
   }
 
-  // Math apple: +2 if correct, no change if wrong (hearts system handles wrong answers)
+  // Math apple is a question trigger, not food — moveMathSnake no longer
+  // grows the snake when a math apple is eaten, so the entire reward lives
+  // here. Correct answer: +2 segments. Wrong answer: no length change
+  // (hearts system + shrinking streak handle the fail). Net growth per math
+  // apple: +2 if correct, 0 if wrong — no "farming" by guessing.
   let nextSnake = problem.snake;
   if (isCorrect) {
-    // Add 2 segments for correct math answer
     const tail = problem.snake[problem.snake.length - 1] ?? problem.snake[0] ?? [0, 0];
     const secondLast = problem.snake[problem.snake.length - 2] ?? tail;
     nextSnake = [...problem.snake, secondLast, tail];
   }
-  // Wrong answer: no change to snake length (hearts system handles it)
 
   const spawn = spawnApple(problem.gridSize, nextSnake, problem.applesUntilMath, rng);
 

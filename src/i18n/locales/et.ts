@@ -161,6 +161,16 @@ export const et = {
     noHeartsLeft: 'Südamed on otsas! Külasta poodi, et saada rohkem.',
     highScore: 'Parim tulemus',
     newRecord: 'Uus rekord!',
+    snakeSummary: {
+      title: 'Selle mängu kokkuvõte',
+      maxLength: 'Pikim uss',
+      accuracy: 'Täpsus',
+      bestStreak: 'Parim seeria',
+      factsAttempted: 'Tehteid',
+      hardestFacts: 'Need tehted vajavad veel harjutamist',
+      noMistakes: 'Mitte ühtegi viga — tubli!',
+      noFactsAttempted: 'Sa ei jõudnud ühegi tehteni — proovi uuesti!',
+    },
   },
 
   // Stats

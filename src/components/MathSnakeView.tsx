@@ -4,7 +4,192 @@ import { useTranslation } from '../i18n/useTranslation';
 import { ControlPad } from './ControlPad';
 import { GameProblemModal, PaidHintButtons } from './shared';
 import { GAME_CONFIG } from '../games/data';
-import type { Direction, MathSnakeProblem } from '../types/game';
+import type { Direction, MathSnakeProblem, SnakePalette } from '../types/game';
+
+interface SnakePaletteTokens {
+  head: { gradient: string; border: string; shadow: string };
+  body: {
+    even: { gradient: string; border: string; shadow: string };
+    odd: { gradient: string; border: string; shadow: string };
+  };
+  tail: { gradient: string; border: string; shadow: string };
+  tailTip: { gradient: string };
+  glowRing: string;
+  plusOneText: string;
+}
+
+/**
+ * Tailwind class lookups keyed by snake palette family. Pre-3b the snake was
+ * hardcoded emerald everywhere; on the cosmic multiplication card a green
+ * snake clashed with the indigo / violet background. Each binding now picks
+ * its own family and these tokens drive head, body segments, tail, glow ring,
+ * particle text colour. Tail tip and second body row use a darker shade so
+ * snake reads as a 3D ribbon, not a flat run of identical squares.
+ */
+const SNAKE_PALETTES: Record<SnakePalette, SnakePaletteTokens> = {
+  emerald: {
+    head: {
+      gradient: 'from-emerald-300 via-emerald-500 to-emerald-700',
+      border: 'border-emerald-800/70',
+      shadow: '0 4px 8px rgba(16,185,129,0.5), inset 0 1px 2px rgba(255,255,255,0.7)',
+    },
+    body: {
+      even: {
+        gradient: 'from-emerald-300 via-emerald-400 to-emerald-500',
+        border: 'border-emerald-600/50',
+        shadow: '0 2px 4px rgba(16,185,129,0.4)',
+      },
+      odd: {
+        gradient: 'from-emerald-500 via-emerald-600 to-emerald-700',
+        border: 'border-emerald-800/50',
+        shadow: '0 2px 4px rgba(16,185,129,0.5)',
+      },
+    },
+    tail: {
+      gradient: 'from-emerald-400 via-emerald-500 to-emerald-600',
+      border: 'border-emerald-700/50',
+      shadow: '0 2px 4px rgba(16,185,129,0.3)',
+    },
+    tailTip: { gradient: 'from-emerald-600 via-emerald-700 to-emerald-800' },
+    glowRing: 'border-emerald-400',
+    plusOneText: 'text-emerald-600',
+  },
+  teal: {
+    head: {
+      gradient: 'from-teal-300 via-teal-500 to-teal-700',
+      border: 'border-teal-800/70',
+      shadow: '0 4px 8px rgba(20,184,166,0.5), inset 0 1px 2px rgba(255,255,255,0.7)',
+    },
+    body: {
+      even: {
+        gradient: 'from-teal-300 via-teal-400 to-teal-500',
+        border: 'border-teal-600/50',
+        shadow: '0 2px 4px rgba(20,184,166,0.4)',
+      },
+      odd: {
+        gradient: 'from-teal-500 via-teal-600 to-teal-700',
+        border: 'border-teal-800/50',
+        shadow: '0 2px 4px rgba(20,184,166,0.5)',
+      },
+    },
+    tail: {
+      gradient: 'from-teal-400 via-teal-500 to-teal-600',
+      border: 'border-teal-700/50',
+      shadow: '0 2px 4px rgba(20,184,166,0.3)',
+    },
+    tailTip: { gradient: 'from-teal-600 via-teal-700 to-teal-800' },
+    glowRing: 'border-teal-400',
+    plusOneText: 'text-teal-600',
+  },
+  orange: {
+    head: {
+      gradient: 'from-orange-300 via-orange-500 to-orange-700',
+      border: 'border-orange-800/70',
+      shadow: '0 4px 8px rgba(249,115,22,0.5), inset 0 1px 2px rgba(255,255,255,0.7)',
+    },
+    body: {
+      even: {
+        gradient: 'from-orange-300 via-orange-400 to-orange-500',
+        border: 'border-orange-600/50',
+        shadow: '0 2px 4px rgba(249,115,22,0.4)',
+      },
+      odd: {
+        gradient: 'from-orange-500 via-orange-600 to-orange-700',
+        border: 'border-orange-800/50',
+        shadow: '0 2px 4px rgba(249,115,22,0.5)',
+      },
+    },
+    tail: {
+      gradient: 'from-orange-400 via-orange-500 to-orange-600',
+      border: 'border-orange-700/50',
+      shadow: '0 2px 4px rgba(249,115,22,0.3)',
+    },
+    tailTip: { gradient: 'from-orange-600 via-orange-700 to-orange-800' },
+    glowRing: 'border-orange-400',
+    plusOneText: 'text-orange-600',
+  },
+  pink: {
+    head: {
+      gradient: 'from-pink-300 via-pink-500 to-pink-700',
+      border: 'border-pink-800/70',
+      shadow: '0 4px 8px rgba(236,72,153,0.5), inset 0 1px 2px rgba(255,255,255,0.7)',
+    },
+    body: {
+      even: {
+        gradient: 'from-pink-300 via-pink-400 to-pink-500',
+        border: 'border-pink-600/50',
+        shadow: '0 2px 4px rgba(236,72,153,0.4)',
+      },
+      odd: {
+        gradient: 'from-pink-500 via-pink-600 to-pink-700',
+        border: 'border-pink-800/50',
+        shadow: '0 2px 4px rgba(236,72,153,0.5)',
+      },
+    },
+    tail: {
+      gradient: 'from-pink-400 via-pink-500 to-pink-600',
+      border: 'border-pink-700/50',
+      shadow: '0 2px 4px rgba(236,72,153,0.3)',
+    },
+    tailTip: { gradient: 'from-pink-600 via-pink-700 to-pink-800' },
+    glowRing: 'border-pink-400',
+    plusOneText: 'text-pink-600',
+  },
+  indigo: {
+    head: {
+      gradient: 'from-indigo-300 via-indigo-500 to-indigo-700',
+      border: 'border-indigo-900/70',
+      shadow: '0 4px 8px rgba(99,102,241,0.55), inset 0 1px 2px rgba(255,255,255,0.7)',
+    },
+    body: {
+      even: {
+        gradient: 'from-indigo-300 via-indigo-400 to-indigo-500',
+        border: 'border-indigo-600/50',
+        shadow: '0 2px 4px rgba(99,102,241,0.45)',
+      },
+      odd: {
+        gradient: 'from-indigo-500 via-indigo-600 to-indigo-700',
+        border: 'border-indigo-800/50',
+        shadow: '0 2px 4px rgba(99,102,241,0.55)',
+      },
+    },
+    tail: {
+      gradient: 'from-indigo-400 via-indigo-500 to-indigo-600',
+      border: 'border-indigo-700/50',
+      shadow: '0 2px 4px rgba(99,102,241,0.35)',
+    },
+    tailTip: { gradient: 'from-indigo-600 via-indigo-700 to-indigo-800' },
+    glowRing: 'border-indigo-300',
+    plusOneText: 'text-indigo-300',
+  },
+  purple: {
+    head: {
+      gradient: 'from-purple-300 via-purple-500 to-purple-700',
+      border: 'border-purple-900/70',
+      shadow: '0 4px 8px rgba(168,85,247,0.55), inset 0 1px 2px rgba(255,255,255,0.7)',
+    },
+    body: {
+      even: {
+        gradient: 'from-purple-300 via-purple-400 to-purple-500',
+        border: 'border-purple-600/50',
+        shadow: '0 2px 4px rgba(168,85,247,0.45)',
+      },
+      odd: {
+        gradient: 'from-purple-500 via-purple-600 to-purple-700',
+        border: 'border-purple-800/50',
+        shadow: '0 2px 4px rgba(168,85,247,0.55)',
+      },
+    },
+    tail: {
+      gradient: 'from-purple-400 via-purple-500 to-purple-600',
+      border: 'border-purple-700/50',
+      shadow: '0 2px 4px rgba(168,85,247,0.35)',
+    },
+    tailTip: { gradient: 'from-purple-600 via-purple-700 to-purple-800' },
+    glowRing: 'border-purple-300',
+    plusOneText: 'text-purple-300',
+  },
+};
 
 interface MathSnakeViewProps {
   problem: MathSnakeProblem;
@@ -35,8 +220,12 @@ export const MathSnakeView: React.FC<MathSnakeViewProps> = ({
   const normalEmoji = visualTheme?.normalCollectibleEmoji ?? '🍎';
   const challengeEmoji = visualTheme?.challengeCollectibleEmoji ?? '🧮';
   const isCosmic = visualTheme?.background === 'cosmic';
+  const palette = SNAKE_PALETTES[visualTheme?.snakePalette ?? 'emerald'];
   const [status, setStatus] = useState<'idle' | 'correct' | 'wrong'>('idle');
   const [justAte, setJustAte] = useState(false);
+  /** Delta of last growth event — drives the +N popover so a correct math
+      answer (length +2) doesn't mis-render as "+1" like a normal apple. */
+  const [lastGrowth, setLastGrowth] = useState(0);
   const [selectedOption, setSelectedOption] = useState<number | null>(null);
   const [eliminatedOptions, setEliminatedOptions] = useState<number[]>([]);
   const eliminatedRef = useRef<number[]>([]);
@@ -54,11 +243,15 @@ export const MathSnakeView: React.FC<MathSnakeViewProps> = ({
     eliminatedRef.current = [];
   }, [problem.uid, problem.math]);
 
-  // Detect when snake eats and trigger animation
+  // Detect when snake eats and trigger animation. Capture the actual delta
+  // so the +N popover renders accurately (normal apple = +1, correct math
+  // answer = +2). Math apple eating itself produces no length change post-3b
+  // and so the effect simply doesn't fire there.
   useEffect(() => {
-    if (problem.snake.length > prevSnakeLengthRef.current) {
+    const delta = problem.snake.length - prevSnakeLengthRef.current;
+    if (delta > 0) {
       prevSnakeLengthRef.current = problem.snake.length;
-      // Use setTimeout to defer state update and avoid cascading renders
+      setLastGrowth(delta);
       const ateTimer = setTimeout(() => setJustAte(true), 0);
       const resetTimer = setTimeout(() => setJustAte(false), 400);
       return () => {
@@ -163,33 +356,9 @@ export const MathSnakeView: React.FC<MathSnakeViewProps> = ({
   };
 
   const getSegmentColors = (index: number, isHead: boolean, isTail: boolean) => {
-    if (isHead) {
-      return {
-        gradient: 'from-emerald-300 via-emerald-500 to-emerald-700',
-        border: 'border-emerald-800/70',
-        shadow: '0 4px 8px rgba(16,185,129,0.5), inset 0 1px 2px rgba(255,255,255,0.7)',
-      };
-    }
-    if (isTail) {
-      return {
-        gradient: 'from-emerald-400 via-emerald-500 to-emerald-600',
-        border: 'border-emerald-700/50',
-        shadow: '0 2px 4px rgba(16,185,129,0.3)',
-      };
-    }
-    // Alternating pattern for body segments
-    const isEven = index % 2 === 0;
-    return isEven
-      ? {
-          gradient: 'from-emerald-300 via-emerald-400 to-emerald-500',
-          border: 'border-emerald-600/50',
-          shadow: '0 2px 4px rgba(16,185,129,0.4)',
-        }
-      : {
-          gradient: 'from-emerald-500 via-emerald-600 to-emerald-700',
-          border: 'border-emerald-800/50',
-          shadow: '0 2px 4px rgba(16,185,129,0.5)',
-        };
+    if (isHead) return palette.head;
+    if (isTail) return palette.tail;
+    return index % 2 === 0 ? palette.body.even : palette.body.odd;
   };
 
   const renderCell = (x: number, y: number): React.ReactNode => {
@@ -327,7 +496,7 @@ export const MathSnakeView: React.FC<MathSnakeViewProps> = ({
             })}
             {isTail && (
               <div
-                className="absolute rounded-full bg-gradient-to-br from-emerald-600 via-emerald-700 to-emerald-800 shadow-sm"
+                className={`absolute rounded-full bg-gradient-to-br ${palette.tailTip.gradient} shadow-sm`}
                 style={{
                   ...tailTipStyle(),
                   width: 'clamp(0.5rem, 2vw, 0.75rem)',
@@ -347,7 +516,7 @@ export const MathSnakeView: React.FC<MathSnakeViewProps> = ({
                 {/* Glow ring when eating */}
                 {justAte && (
                   <div
-                    className="absolute rounded-full border-4 border-emerald-400 animate-ping"
+                    className={`absolute rounded-full border-4 ${palette.glowRing} animate-ping`}
                     style={{
                       width: 'clamp(2rem, 8vw, 3.5rem)',
                       height: 'clamp(2rem, 8vw, 3.5rem)',
@@ -355,13 +524,12 @@ export const MathSnakeView: React.FC<MathSnakeViewProps> = ({
                   />
                 )}
                 <div
-                  className="absolute rounded-full bg-gradient-to-br from-emerald-300 via-emerald-500 to-emerald-700 border-2 border-emerald-800/70 transition-transform duration-200"
+                  className={`absolute rounded-full bg-gradient-to-br ${palette.head.gradient} border-2 ${palette.head.border} transition-transform duration-200`}
                   style={{
                     width: 'clamp(1.25rem, 5vw, 2rem)',
                     height: 'clamp(1.25rem, 5vw, 2rem)',
                     transform: `rotate(${headRotation()}) ${justAte && segment && segment.index < 3 ? 'scale(1.15)' : ''}`,
-                    boxShadow:
-                      '0 4px 8px rgba(16,185,129,0.5), inset 0 1px 2px rgba(255,255,255,0.7)',
+                    boxShadow: palette.head.shadow,
                   }}
                 >
                   {/* Shine/highlight overlay on head */}
@@ -423,17 +591,20 @@ export const MathSnakeView: React.FC<MathSnakeViewProps> = ({
                     />
                   )}
                 </div>
-                {/* +1 indicator when eating */}
-                {justAte && (
+                {/* +N indicator when the snake actually grew. Normal apple
+                    = +1; correct math answer = +2. Math apple eating itself
+                    triggers no growth (it's a challenge trigger, not food)
+                    so this never renders during a pending modal. */}
+                {justAte && lastGrowth > 0 && (
                   <div
-                    className="absolute font-bold text-emerald-600 animate-ping"
+                    className={`absolute font-bold ${palette.plusOneText} animate-ping`}
                     style={{
                       top: 'clamp(-1rem, -4vw, -1.5rem)',
                       left: 'clamp(-0.5rem, -2vw, -0.75rem)',
                       fontSize: 'clamp(0.75rem, 3vw, 1rem)',
                     }}
                   >
-                    +1
+                    +{lastGrowth}
                   </div>
                 )}
                 {/* Sparkle particles when eating */}

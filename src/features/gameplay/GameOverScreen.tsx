@@ -7,6 +7,8 @@ import { useProfileText } from '../../hooks/useProfileText';
 import { useGameAudio } from '../../hooks/useGameAudio';
 import { GAME_CONFIG, CATEGORIES } from '../../games/data';
 import { gameIdToSlug } from '../../utils/gameSlug';
+import { isSnakeGameType } from '../../engine/mathSnake';
+import { SnakeSessionSummary } from './SnakeSessionSummary';
 
 export const GameOverScreen: React.FC = () => {
   const navigate = useNavigate();
@@ -16,6 +18,7 @@ export const GameOverScreen: React.FC = () => {
   const soundEnabled = useGameStore((state) => state.soundEnabled);
   const gameType = usePlaySessionStore((state) => state.gameType);
   const returnToMenu = usePlaySessionStore((state) => state.returnToMenu);
+  const snakeSessionStats = usePlaySessionStore((state) => state.snakeSessionStats);
   const getHighScore = useGameStore((state) => state.getHighScore);
   const { playClick } = useGameAudio(soundEnabled);
   const scoreMessage = formatText(t.game.scoreMessage.replace('{score}', String(score)));
@@ -79,6 +82,11 @@ export const GameOverScreen: React.FC = () => {
             </h2>
             <p className="text-sm sm:text-base text-slate-600">{scoreMessage}</p>
           </div>
+
+          {/* Snake-family session summary (max length, accuracy, hardest facts) */}
+          {gameType && isSnakeGameType(gameType) && (
+            <SnakeSessionSummary stats={snakeSessionStats} />
+          )}
 
           {/* Score + high score */}
           <div className="grid grid-cols-2 gap-3 mb-6">

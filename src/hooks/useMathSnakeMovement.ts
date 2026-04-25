@@ -24,6 +24,7 @@ export const useMathSnakeMovement = (): ((direction: Direction) => void) | undef
   const setProblem = usePlaySessionStore((state) => state.setProblem);
   const addScore = usePlaySessionStore((state) => state.addScore);
   const endGame = usePlaySessionStore((state) => state.endGame);
+  const trackSnakeLength = usePlaySessionStore((state) => state.trackSnakeLength);
 
   if (!gameType) return undefined;
   const baseType = gameType.replace('_adv', '');
@@ -43,6 +44,7 @@ export const useMathSnakeMovement = (): ((direction: Direction) => void) | undef
 
     if (result.collision) {
       const finalSnakeLength = problem.snake.length;
+      trackSnakeLength(finalSnakeLength);
       updateStats((s) => ({
         ...s,
         maxSnakeLength: Math.max(s.maxSnakeLength || 0, finalSnakeLength),
@@ -59,6 +61,7 @@ export const useMathSnakeMovement = (): ((direction: Direction) => void) | undef
     }
 
     const currentSnakeLength = result.problem.snake.length;
+    trackSnakeLength(currentSnakeLength);
     updateStats((s) => ({
       ...s,
       maxSnakeLength: Math.max(s.maxSnakeLength || 0, currentSnakeLength),

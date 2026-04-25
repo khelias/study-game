@@ -1,6 +1,13 @@
 import { describe, it, expect } from 'vitest';
 import { createRng } from '../rng';
-import { createMathSnakeProblem, moveMathSnake, resolveMathSnakeAnswer } from '../mathSnake';
+import {
+  createMathSnakeProblem,
+  expandSnakeGrid,
+  moveMathSnake,
+  resolveMathSnakeAnswer,
+  SNAKE_MAX_GRID_SIZE,
+  SNAKE_MIN_GRID_SIZE,
+} from '../mathSnake';
 import type { ArithmeticSpec } from '../../types/game';
 
 // Minimal spec set sufficient for mechanics tests that don't care about equation
@@ -56,7 +63,9 @@ describe('mathSnake engine', () => {
     expect(result.problem.snake.length).toBe(problem.snake.length + 1);
   });
 
-  it('creates a math challenge and resolves with correct/incorrect length change', () => {
+  it('math apple does not grow the snake on eat — only a correct answer does', () => {
+    // Growth-model fix: a math apple is a question trigger, not food. Net
+    // growth per math apple: +2 if answered correctly, 0 if wrong.
     const rng = createRng(9999);
     const problem = createMathSnakeProblem(ALL_OPS_SPECS, 3, rng, 'starter');
     const head = problem.snake[0] ?? [0, 0];
@@ -69,17 +78,56 @@ describe('mathSnake engine', () => {
 
     const moved = moveMathSnake(updated, 'RIGHT', 3, rng, 'starter');
     expect(moved.problem.math).not.toBeNull();
+    expect(moved.problem.snake.length).toBe(problem.snake.length);
 
     const correct = resolveMathSnakeAnswer(moved.problem, true, rng);
     expect(correct.gameOver).toBe(false);
-    // Math apple: +1 when eaten, +2 more when correct = +3 total from original
-    // But moved.problem already has +1 from eating, so correct adds +2 more
-    expect(correct.problem.snake.length).toBe(moved.problem.snake.length + 2);
+    expect(correct.problem.snake.length).toBe(problem.snake.length + 2);
 
     const wrong = resolveMathSnakeAnswer(moved.problem, false, rng);
-    // Math apple: +1 when eaten, no change when wrong (hearts system handles wrong answers)
-    // Wrong answer doesn't change snake length anymore
-    expect(wrong.problem.snake.length).toBe(moved.problem.snake.length);
+    expect(wrong.problem.snake.length).toBe(problem.snake.length);
+  });
+
+  it('walls kill the snake (no wraparound)', () => {
+    // Drive the snake straight into the left wall. Wraparound previously let
+    // the head reappear on the opposite edge; post-audit, walls end the run.
+    const rng = createRng(4242);
+    let problem = createMathSnakeProblem(ALL_OPS_SPECS, 1, rng, 'starter');
+    // Initial snake is at (mid, mid), (mid-1, mid), (mid-2, mid), direction
+    // RIGHT. Flip to LEFT via UP → LEFT (two 90° turns avoid opposite-check).
+    problem = moveMathSnake(problem, 'UP', 1, rng, 'starter').problem;
+    problem = moveMathSnake(problem, 'LEFT', 1, rng, 'starter').problem;
+
+    // Remove apple from board so it can't happen to sit on the path.
+    problem = { ...problem, apple: null };
+
+    // Now walk LEFT until we leave the grid. At worst ~gridSize steps.
+    let collided = false;
+    for (let i = 0; i < problem.gridSize + 2; i++) {
+      const step = moveMathSnake(problem, 'LEFT', 1, rng, 'starter');
+      if (step.collision) {
+        collided = true;
+        break;
+      }
+      problem = step.problem;
+    }
+    expect(collided).toBe(true);
+  });
+
+  it('expandSnakeGrid grows by one up to the cap, then no-ops', () => {
+    const rng = createRng(101);
+    const problem = createMathSnakeProblem(ALL_OPS_SPECS, 1, rng, 'starter');
+    expect(problem.gridSize).toBe(SNAKE_MIN_GRID_SIZE);
+
+    let p = problem;
+    for (let i = 0; i < SNAKE_MAX_GRID_SIZE - SNAKE_MIN_GRID_SIZE; i++) {
+      p = expandSnakeGrid(p);
+    }
+    expect(p.gridSize).toBe(SNAKE_MAX_GRID_SIZE);
+
+    // Calling again at the cap is a no-op.
+    p = expandSnakeGrid(p);
+    expect(p.gridSize).toBe(SNAKE_MAX_GRID_SIZE);
   });
 
   // ---------------------------------------------------------------------------

@@ -60,6 +60,16 @@ export interface PaidHint {
  * both use MathSnakeView) can diverge visually without the view having to know
  * the gameType at the API level.
  */
+/**
+ * Snake-family color families. The MathSnakeView maps each to a Tailwind
+ * gradient stack used for head, body and tail. Defaults to 'emerald' so a
+ * snake binding without a palette stays visually identical to pre-theming
+ * builds. Per-binding picks let the six snake cards (additsioon → roheline,
+ * lahutamine → oranž, korrutus → kosmiline indigo / violet) feel distinct
+ * even though they share one component.
+ */
+export type SnakePalette = 'emerald' | 'teal' | 'orange' | 'pink' | 'indigo' | 'purple';
+
 export interface VisualTheme {
   /** Emoji for regular (growth) apples / collectibles. Default per view. */
   normalCollectibleEmoji?: string;
@@ -67,6 +77,8 @@ export interface VisualTheme {
   challengeCollectibleEmoji?: string;
   /** Background flavor; each view interprets which CSS it applies. */
   background?: 'default' | 'cosmic';
+  /** Snake body / head / tail color family. Snake-family bindings only. */
+  snakePalette?: SnakePalette;
 }
 
 export interface GameConfig {

@@ -312,14 +312,14 @@ are listed here as the next natural slice boundaries.
 - **Answer routing hardcoded `baseGameType === 'math_snake'`** (`engine/answerHandler.ts:187`, `hooks/useAnswerHandler.ts` × 6 call sites): new snake games would have fallen through to `processStandardAnswer`, awarding 10 points per correct answer instead of the snake's "math = stars, apples = points" model, and skipping the snake-specific length/collision stat tracking. Replaced with `isSnakeGameType(gameType)`.
 - **Subtraction missing-minuend capped at 15 / 20** (`engine/mathSnake.ts` `sub_missing_minuend`): hardcoded `Math.min(15, maxVal - 1)` / `Math.min(20, maxVal - b)` prevented a "within 100" pack from producing facts like `? − 45 = 30`. Replaced with range bounds driven by the pack's `valueRange`.
 
-### Open (medium) — known smells, not blockers
+### Fixed in the medium-severity follow-up (Phase 1 Slice 3c)
 
-- **Growth model rewards eating math apples regardless of correctness.** Normal apple +1 length, math apple eaten +1, correct answer +2 more (total +3), wrong answer 0 (hearts handle it). A kid who doesn't care about hearts can farm length by guessing. Proposed: wrong answer shrinks snake by 1 (or at minimum: no growth on eat until answer resolves).
-- **Score model measures exploration, not math performance.** High score = how many normal apples eaten. "Got 8/10 multiplication facts right" is not persisted or visible.
-- **No end-of-session summary.** Snake dies → game ends silently. Kid never sees "you answered 12 facts, 3 were hard — keep practicing 7×8, 6×9". Loss of learning-loop closure.
-- **Snake body hard-coded emerald green.** `getSegmentColors` returns Tailwind emerald gradients regardless of visual theme. On the cosmic (multiplication) card the green snake clashes with the indigo/purple background. Palette should flow from `GameConfig.visualTheme`.
-- **Grid size static at 7×7, speed static one-step-per-input.** Traditional snake scales both with score; this one doesn't. Missing progression dimension within a session.
-- **Wraparound + self-collision can feel unfair.** Snake wraps at edges, then crashes into its own body appearing "from nowhere". Mobile/touch input makes this worse.
+- **Growth model no longer rewards wrong answers.** Math apples are now challenge triggers, not food: `moveMathSnake` does not grow the snake on math-apple consumption. `resolveMathSnakeAnswer` is the only growth source for math interactions — correct answer +2 segments, wrong answer 0 (hearts still tick down). Net per math apple: +2 if right, 0 if wrong. No more "farming" length by guessing.
+- **End-of-session summary added.** `SnakeSessionSummary` (rendered by `GameOverScreen` for any `*_snake` binding) shows max length, accuracy, best in-session streak, and the top 3 hardest facts (most wrong attempts). Per-fact tracking lives in `playSessionStore.snakeSessionStats.factHistory` and is the precursor to the Phase 1 mastery tracker.
+- **Theme-aware snake palette.** `VisualTheme.snakePalette: 'emerald' | 'teal' | 'orange' | 'pink' | 'indigo' | 'purple'` drives head, body (alternating), tail, glow ring, and `+N` text colour via the `SNAKE_PALETTES` token table in `MathSnakeView`. Each of the six snake bindings now picks its own family (additsioon → emerald, suur liitmine → teal, lahutamine → orange, suur lahutamine → pink, korrutus → indigo, suur korrutus → purple).
+- **In-session progression.** Grid starts at `SNAKE_MIN_GRID_SIZE` (7) and expands by one every `SNAKE_STREAK_MILESTONE` (5) correct answers, capped at `SNAKE_MAX_GRID_SIZE` (10). `expandSnakeGrid` is invoked from `useAnswerHandler` after a correct snake answer when the new streak hits the milestone. Speed remains one-step-per-input (no autoadvance) — kid-friendly.
+- **Walls now kill (no wraparound).** `moveMathSnake` returns `collision: true` when the next head leaves the grid; `wrapPosition` removed. Solves the unfair "tail appears from nowhere" case that touch input made worse.
+- **`+N` overlay shows actual delta.** `MathSnakeView` captures the snake-length delta on growth and renders `+1` for normal apple, `+2` for correct math answer (was hardcoded `+1`).
 
 ### Open (low) — polish
 
@@ -329,13 +329,10 @@ are listed here as the next natural slice boundaries.
 
 ### v2 opportunities — would materially lift the game
 
-- **Per-fact mastery tracking.** The killer feature for drill games. Track which facts the kid nails and which they keep missing; weight generator toward weak facts and surface a mastery grid ("25 squares, X green, Y yellow, Z red"). This is the single change that turns snake from "a game with math" into "math drill that actually uses data to teach". Fits the Learner-context `SkillMastery` ADR-0002 already planned for Phase 1.
-- **Theme-aware snake palette.** Pull all snake visuals (body gradient, eye color, glow, particle color) from `GameConfig.visualTheme`. Cosmic → purple+silver snake on starfield; addition → leafy-green garden snake; subtraction → orange autumn snake. One code change, six distinct-feeling games.
-- **Session summary screen.** At game-over modal: stats for this run (facts attempted, accuracy, hardest fact, streak), plus "best snake length" trophy. Closes the loop, gives kid a reason to retry.
-- **Streak-based session progression.** Every 5-correct streak: grid grows by 1, snake speed tick slightly (if movement autoadvances later), or a "bonus planet" appears. Classic variable-reward loop that makes snake games sticky.
+- **Per-fact mastery tracking (persistent).** Slice 3c added a session-scoped mini-version (`snakeSessionStats.factHistory` → top-3 hardest in summary). The full Phase 1 mastery tracker promotes that across sessions: persist `SkillMastery` per fact, weight the generator toward weak facts, surface a mastery grid ("25 squares, X green, Y yellow, Z red"). Fits ADR-0002.
+- **Score model measures exploration, not math performance.** High score = how many normal apples eaten. "Got 8/10 multiplication facts right" is now in the session summary but not promoted into a persistent leaderboard.
 - **Daily challenge pack.** Every day, a generated "daily practice" picks 10 weakest facts across all packs, presents as a sub-challenge. Drives return visits without requiring a backend.
-
-Each of these is a natural subsequent slice. Mastery tracking is the biggest pedagogical lift; theme-aware palette is the biggest visual-polish win per-hour-of-work; session summary is the simplest and most impactful "retention" change.
+- **Bonus apple at streak milestones.** Slice 3c grows the grid every 5-correct; layering a one-shot bonus apple (or shimmer effect) on the same milestone would make the variable-reward loop more visible.
 
 ## Deployment
 

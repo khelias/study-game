@@ -23,6 +23,29 @@ export interface LevelProgress {
   levelStartedAt: number; // Timestamp when level started
 }
 
+/**
+ * Session-scoped metrics for the snake family, rebuilt on every startGame.
+ * Drives the end-of-session summary (max length, accuracy, hardest facts).
+ * Per-fact tracking feeds a mini-precursor to the Phase 1 mastery tracker:
+ * weak facts surface in the summary so the kid sees what to practice next.
+ */
+export interface SnakeSessionStats {
+  factsAttempted: number;
+  factsCorrect: number;
+  maxStreak: number;
+  maxSnakeLength: number;
+  /** Equation string → attempts + correct count for this session. */
+  factHistory: Record<string, { attempts: number; correct: number }>;
+}
+
+const emptySnakeSessionStats = (): SnakeSessionStats => ({
+  factsAttempted: 0,
+  factsCorrect: 0,
+  maxStreak: 0,
+  maxSnakeLength: 0,
+  factHistory: {},
+});
+
 export interface PlaySessionStore {
   // State
   gameState: GameState;
@@ -34,6 +57,7 @@ export interface PlaySessionStore {
   currentStreak: number;
   adaptiveDifficulty: AdaptiveDifficulty;
   levelProgress: LevelProgress | null; // Tracks progress toward next level
+  snakeSessionStats: SnakeSessionStats;
 
   // New unified notification system
   notifications: Notification[];
@@ -72,6 +96,9 @@ export interface PlaySessionStore {
   resetSessionState: () => void;
   recordLevelAnswer: (isCorrect: boolean) => void; // Track answer for level progress
   resetLevelProgress: () => void; // Reset when level changes
+  recordSnakeFact: (equation: string, isCorrect: boolean) => void;
+  trackSnakeLength: (length: number) => void;
+  trackSnakeStreak: (streak: number) => void;
 }
 
 const initialState = {
@@ -84,6 +111,7 @@ const initialState = {
   currentStreak: 0,
   adaptiveDifficulty: createAdaptiveDifficulty(),
   levelProgress: null as LevelProgress | null,
+  snakeSessionStats: emptySnakeSessionStats(),
 
   // New notification system
   notifications: [] as Notification[],
@@ -118,6 +146,7 @@ export const usePlaySessionStore = create<PlaySessionStore>((set, get) => ({
         totalAnswers: 0,
         levelStartedAt: Date.now(),
       },
+      snakeSessionStats: emptySnakeSessionStats(),
       confetti: false,
       enhancedConfetti: false,
       particleActive: false,
@@ -274,6 +303,53 @@ export const usePlaySessionStore = create<PlaySessionStore>((set, get) => ({
         totalAnswers: 0,
         levelStartedAt: Date.now(),
       },
+    });
+  },
+
+  recordSnakeFact: (equation: string, isCorrect: boolean) => {
+    set((state) => {
+      const prev = state.snakeSessionStats.factHistory[equation] ?? {
+        attempts: 0,
+        correct: 0,
+      };
+      return {
+        snakeSessionStats: {
+          ...state.snakeSessionStats,
+          factsAttempted: state.snakeSessionStats.factsAttempted + 1,
+          factsCorrect: state.snakeSessionStats.factsCorrect + (isCorrect ? 1 : 0),
+          factHistory: {
+            ...state.snakeSessionStats.factHistory,
+            [equation]: {
+              attempts: prev.attempts + 1,
+              correct: prev.correct + (isCorrect ? 1 : 0),
+            },
+          },
+        },
+      };
+    });
+  },
+
+  trackSnakeLength: (length: number) => {
+    set((state) => {
+      if (length <= state.snakeSessionStats.maxSnakeLength) return state;
+      return {
+        snakeSessionStats: {
+          ...state.snakeSessionStats,
+          maxSnakeLength: length,
+        },
+      };
+    });
+  },
+
+  trackSnakeStreak: (streak: number) => {
+    set((state) => {
+      if (streak <= state.snakeSessionStats.maxStreak) return state;
+      return {
+        snakeSessionStats: {
+          ...state.snakeSessionStats,
+          maxStreak: streak,
+        },
+      };
     });
   },
 

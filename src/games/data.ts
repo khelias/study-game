@@ -212,6 +212,7 @@ export const GAME_CONFIG: Record<string, GameConfig> = {
     paidHints: [
       { id: 'eliminate', icon: '❌', cost: 1, labelKey: 'games.addition_snake.hintEliminateCost' },
     ],
+    visualTheme: { snakePalette: 'emerald' },
   },
   addition_big_snake: {
     id: 'addition_big_snake',
@@ -231,6 +232,7 @@ export const GAME_CONFIG: Record<string, GameConfig> = {
         labelKey: 'games.addition_big_snake.hintEliminateCost',
       },
     ],
+    visualTheme: { snakePalette: 'teal' },
   },
   subtraction_snake: {
     id: 'subtraction_snake',
@@ -250,6 +252,7 @@ export const GAME_CONFIG: Record<string, GameConfig> = {
         labelKey: 'games.subtraction_snake.hintEliminateCost',
       },
     ],
+    visualTheme: { snakePalette: 'orange' },
   },
   subtraction_big_snake: {
     id: 'subtraction_big_snake',
@@ -269,6 +272,7 @@ export const GAME_CONFIG: Record<string, GameConfig> = {
         labelKey: 'games.subtraction_big_snake.hintEliminateCost',
       },
     ],
+    visualTheme: { snakePalette: 'pink' },
   },
   multiplication_snake: {
     id: 'multiplication_snake',
@@ -292,6 +296,7 @@ export const GAME_CONFIG: Record<string, GameConfig> = {
       normalCollectibleEmoji: '⭐',
       challengeCollectibleEmoji: '🪐',
       background: 'cosmic',
+      snakePalette: 'indigo',
     },
   },
   multiplication_big_snake: {
@@ -316,6 +321,7 @@ export const GAME_CONFIG: Record<string, GameConfig> = {
       normalCollectibleEmoji: '✨',
       challengeCollectibleEmoji: '🌌',
       background: 'cosmic',
+      snakePalette: 'purple',
     },
   },
   letter_match: {

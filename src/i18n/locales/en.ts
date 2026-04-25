@@ -161,6 +161,16 @@ export const en = {
     noHeartsLeft: 'No hearts left! Visit the shop to get more.',
     highScore: 'High Score',
     newRecord: 'New Record!',
+    snakeSummary: {
+      title: 'Session summary',
+      maxLength: 'Longest snake',
+      accuracy: 'Accuracy',
+      bestStreak: 'Best streak',
+      factsAttempted: 'Facts',
+      hardestFacts: 'Practice these next time',
+      noMistakes: 'No mistakes — well done!',
+      noFactsAttempted: "You didn't reach any facts this run — try again!",
+    },
   },
 
   // Stats

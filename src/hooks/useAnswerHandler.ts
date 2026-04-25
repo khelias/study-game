@@ -12,7 +12,7 @@ import { useGameEngine } from './useGameEngine';
 import { useGameAudio } from './useGameAudio';
 import { useProfileText } from './useProfileText';
 import { processAnswer } from '../engine/answerHandler';
-import { isSnakeGameType } from '../engine/mathSnake';
+import { expandSnakeGrid, isSnakeGameType, SNAKE_STREAK_MILESTONE } from '../engine/mathSnake';
 import { getRandomEncouragement } from '../components/FeedbackSystem';
 import { GAME_CONFIG } from '../games/data';
 import { useTranslation } from '../i18n/useTranslation';
@@ -73,6 +73,9 @@ export function useAnswerHandler(): UseAnswerHandlerResult {
   const submitAnswer = usePlaySessionStore((state) => state.submitAnswer);
   const addNotification = usePlaySessionStore((state) => state.addNotification);
   const score = usePlaySessionStore((state) => state.score);
+  const recordSnakeFact = usePlaySessionStore((state) => state.recordSnakeFact);
+  const trackSnakeLength = usePlaySessionStore((state) => state.trackSnakeLength);
+  const trackSnakeStreak = usePlaySessionStore((state) => state.trackSnakeStreak);
 
   const handleAnswer = useCallback(
     (
@@ -93,6 +96,13 @@ export function useAnswerHandler(): UseAnswerHandlerResult {
       // Update streak
       submitAnswer(isCorrect);
       const newStreak = isCorrect ? currentStreak + 1 : 0;
+
+      // Snake-family session tracking: per-fact history + session streak.
+      // Equation is captured BEFORE processAnswer clears problem.math.
+      if (isSnakeGameType(gameType) && problem.type === 'math_snake' && problem.math) {
+        recordSnakeFact(problem.math.equation, isCorrect);
+        trackSnakeStreak(newStreak);
+      }
 
       // Collect achievements
       const { newAchievements: answerAchievements } = recordAnswer(isCorrect, points);
@@ -272,9 +282,21 @@ export function useAnswerHandler(): UseAnswerHandlerResult {
 
         setShowHint(false);
 
-        // Update problem if needed (for math snake)
+        // Update problem if needed (for math snake). Snake family: every
+        // SNAKE_STREAK_MILESTONE correct answers, expand the grid by one cell
+        // (up to the cap enforced by expandSnakeGrid). This is the in-session
+        // progression dimension the snake mechanic was missing.
         if (result.updatedProblem) {
-          setProblem(result.updatedProblem);
+          let nextProblem = result.updatedProblem;
+          if (
+            isSnakeGameType(gameType) &&
+            nextProblem.type === 'math_snake' &&
+            newStreak > 0 &&
+            newStreak % SNAKE_STREAK_MILESTONE === 0
+          ) {
+            nextProblem = expandSnakeGrid(nextProblem);
+          }
+          setProblem(nextProblem);
         }
 
         // If we leveled up, use the new level for next problem
@@ -315,13 +337,16 @@ export function useAnswerHandler(): UseAnswerHandlerResult {
         }
         // If leveling up, new problem will be generated after level-up animation completes (handled above)
 
-        // Track max snake length for any snake-family game
+        // Track max snake length for any snake-family game. Both the global
+        // stats (all-time record) and the session stats (shown in game-over
+        // summary) are updated from the same source of truth.
         if (
           isSnakeGameType(gameType) &&
           result.updatedProblem &&
           result.updatedProblem.type === 'math_snake'
         ) {
           const currentSnakeLength = result.updatedProblem.snake.length;
+          trackSnakeLength(currentSnakeLength);
           updateStats((stats) => ({
             ...stats,
             maxSnakeLength: Math.max(stats.maxSnakeLength || 0, currentSnakeLength),
@@ -366,6 +391,7 @@ export function useAnswerHandler(): UseAnswerHandlerResult {
           }
           if (isSnakeGameType(gameType) && problem.type === 'math_snake') {
             const finalSnakeLength = problem.snake.length;
+            trackSnakeLength(finalSnakeLength);
             updateStats((stats) => ({
               ...stats,
               maxSnakeLength: Math.max(stats.maxSnakeLength || 0, finalSnakeLength),
@@ -438,6 +464,9 @@ export function useAnswerHandler(): UseAnswerHandlerResult {
       levelProgress,
       score,
       updateHighScore,
+      recordSnakeFact,
+      trackSnakeLength,
+      trackSnakeStreak,
       // checkLevelUp and calculateStarReward are pure functions from engine, no need in deps
     ],
   );
