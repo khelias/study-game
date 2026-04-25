@@ -1,4 +1,12 @@
-import type { Theme, Category, GameConfig, WordObject, Scene, ProfileType } from '../types/game';
+import type {
+  Theme,
+  Category,
+  GameConfig,
+  MechanicConfig,
+  WordObject,
+  Scene,
+  ProfileType,
+} from '../types/game';
 import type { Profile } from '../types/profile';
 
 export const APP_KEY = 'smart_adv_v45_pro';
@@ -83,6 +91,25 @@ export const CATEGORIES: Record<string, Category> = {
     emoji: '🧠',
     description: 'Memory games',
     color: 'blue',
+  },
+};
+
+/**
+ * Mechanics — one entry per shared engine/view. Bindings (GAME_CONFIG entries)
+ * pointing at the same mechanic id collapse into one menu card; the card opens
+ * a pack picker listing the bindings inside. New mechanics are added here when
+ * a second binding starts sharing a view component.
+ */
+export const MECHANICS: Record<string, MechanicConfig> = {
+  math_snake: {
+    id: 'math_snake',
+    title: 'NUMBRIMADU',
+    desc: 'Söö õunu, lahenda tehe',
+    theme: THEME.green!,
+    icon: 'Sparkles',
+    emoji: '🐍',
+    category: 'math',
+    allowedProfiles: ['starter', 'advanced'],
   },
 };
 
@@ -209,6 +236,7 @@ export const GAME_CONFIG: Record<string, GameConfig> = {
     allowedProfiles: ['starter', 'advanced'],
     difficulty: 'easy',
     category: 'math',
+    mechanic: 'math_snake',
     paidHints: [
       { id: 'eliminate', icon: '❌', cost: 1, labelKey: 'games.addition_snake.hintEliminateCost' },
     ],
@@ -224,6 +252,7 @@ export const GAME_CONFIG: Record<string, GameConfig> = {
     allowedProfiles: ['starter', 'advanced'],
     difficulty: 'medium',
     category: 'math',
+    mechanic: 'math_snake',
     paidHints: [
       {
         id: 'eliminate',
@@ -244,6 +273,7 @@ export const GAME_CONFIG: Record<string, GameConfig> = {
     allowedProfiles: ['starter', 'advanced'],
     difficulty: 'easy',
     category: 'math',
+    mechanic: 'math_snake',
     paidHints: [
       {
         id: 'eliminate',
@@ -264,6 +294,7 @@ export const GAME_CONFIG: Record<string, GameConfig> = {
     allowedProfiles: ['starter', 'advanced'],
     difficulty: 'medium',
     category: 'math',
+    mechanic: 'math_snake',
     paidHints: [
       {
         id: 'eliminate',
@@ -284,6 +315,7 @@ export const GAME_CONFIG: Record<string, GameConfig> = {
     allowedProfiles: ['starter', 'advanced'],
     difficulty: 'medium',
     category: 'math',
+    mechanic: 'math_snake',
     paidHints: [
       {
         id: 'eliminate',
@@ -309,6 +341,7 @@ export const GAME_CONFIG: Record<string, GameConfig> = {
     allowedProfiles: ['starter', 'advanced'],
     difficulty: 'hard',
     category: 'math',
+    mechanic: 'math_snake',
     paidHints: [
       {
         id: 'eliminate',

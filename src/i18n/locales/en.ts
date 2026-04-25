@@ -371,6 +371,18 @@ export const en = {
     editFavourites: 'Edit favourites',
     editFavouritesTitle: 'Choose games for Favourites section',
     save: 'Save',
+    choosePack: 'Choose pack',
+    packCount_one: '{count} pack',
+    packCount_other: '{count} packs',
+  },
+
+  // Mechanics — one entry per shared engine. The menu groups bindings by
+  // mechanic and shows the title/desc here on the aggregate card.
+  mechanics: {
+    math_snake: {
+      title: 'NUMBER SNAKE',
+      desc: 'Eat apples, solve the equation',
+    },
   },
 
   // Tutorial

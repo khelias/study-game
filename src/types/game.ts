@@ -94,6 +94,33 @@ export interface GameConfig {
   levelUpStrategy?: LevelUpStrategy; // Optional - defaults to 'standard'
   paidHints?: PaidHint[]; // Optional star-based hints
   visualTheme?: VisualTheme; // Optional per-game visual overrides
+  /**
+   * Optional mechanic id this binding belongs to. Bindings sharing a mechanic
+   * are collapsed into one menu card; tapping it opens a content-pack picker
+   * listing the underlying bindings. Mechanics are declared in `MECHANICS`
+   * (data.ts). Singleton bindings (no shared mechanic) leave this unset.
+   */
+  mechanic?: string;
+}
+
+/**
+ * Mechanic-level display config. A mechanic is the "how you play" — one
+ * engine + view component — that may be bound to many skills/content packs.
+ * The menu groups GameConfig entries sharing `mechanic` into one card whose
+ * appearance is taken from this map. Click → pack-picker modal listing the
+ * bindings inside.
+ */
+export interface MechanicConfig {
+  id: string;
+  /** Default English label; runtime resolves t.mechanics.<id>.title first. */
+  title: string;
+  /** Default English desc; runtime resolves t.mechanics.<id>.desc first. */
+  desc: string;
+  theme: Theme;
+  icon: string;
+  emoji?: string;
+  category: string;
+  allowedProfiles: ProfileType[];
 }
 
 // Word object for word-based games

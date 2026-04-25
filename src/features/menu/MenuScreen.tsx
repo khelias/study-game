@@ -26,11 +26,13 @@ import {
 import { useGameStore } from '../../stores/gameStore';
 import { useGameAudio } from '../../hooks/useGameAudio';
 import { GameCard } from '../../components/GameCard';
+import { MechanicCard } from '../../components/MechanicCard';
 import { StatsModal } from '../modals/StatsModal';
 import { AchievementsModal } from '../modals/AchievementsModal';
 import { TutorialModal } from '../modals/TutorialModal';
 import { ShopModal } from '../modals/ShopModal';
-import { GAME_CONFIG, PROFILES, CATEGORIES } from '../../games/data';
+import { PackPickerModal } from '../modals/PackPickerModal';
+import { GAME_CONFIG, PROFILES, CATEGORIES, MECHANICS } from '../../games/data';
 import { ACHIEVEMENTS } from '../../engine/achievements';
 
 const TOTAL_ACHIEVEMENTS = Object.keys(ACHIEVEMENTS).length;
@@ -106,6 +108,7 @@ export const MenuScreen: React.FC = () => {
   const [showAchievements, setShowAchievements] = useState(false);
   const [showShop, setShowShop] = useState(false);
   const [showTutorial, setShowTutorial] = useState(!hasSeenTutorial);
+  const [activeMechanicId, setActiveMechanicId] = useState<string | null>(null);
   const [expandedCategories, setExpandedCategories] = useState<Record<string, boolean>>({});
   const [showFavourites, setShowFavourites] = useState(() => favouriteGameIds.length > 0);
   const [showSettingsMenu, setShowSettingsMenu] = useState(false);
@@ -559,6 +562,26 @@ export const MenuScreen: React.FC = () => {
 
               if (categoryGames.length === 0) return null;
 
+              // Group consecutive bindings sharing a mechanic into one card.
+              // Order is preserved from GAME_CONFIG declaration order.
+              const items: Array<
+                | { kind: 'mechanic'; mechanicId: string; bindings: typeof categoryGames }
+                | { kind: 'solo'; binding: (typeof categoryGames)[number] }
+              > = [];
+              const seenMechanics = new Set<string>();
+              for (const entry of categoryGames) {
+                const [, conf] = entry;
+                const mechanicId = conf.mechanic;
+                if (mechanicId && MECHANICS[mechanicId]) {
+                  if (seenMechanics.has(mechanicId)) continue;
+                  seenMechanics.add(mechanicId);
+                  const bindings = categoryGames.filter(([, c]) => c.mechanic === mechanicId);
+                  items.push({ kind: 'mechanic', mechanicId, bindings });
+                } else {
+                  items.push({ kind: 'solo', binding: entry });
+                }
+              }
+
               const isExpanded = expandedCategories[category.id];
 
               return (
@@ -579,7 +602,7 @@ export const MenuScreen: React.FC = () => {
                     </div>
                     <div className="flex items-center gap-2 sm:gap-3">
                       <span className="text-xs sm:text-sm text-slate-500 font-semibold bg-slate-100 px-2 py-1 rounded-full">
-                        {categoryGames.length}
+                        {items.length}
                       </span>
                       {isExpanded ? (
                         <ChevronUp className="w-4 h-4 sm:w-5 sm:h-5 text-slate-600" />
@@ -592,7 +615,29 @@ export const MenuScreen: React.FC = () => {
                   {/* Games grid */}
                   {isExpanded && (
                     <div className="grid grid-cols-1 gap-3 sm:gap-4 mt-3 animate-fadeIn">
-                      {categoryGames.map(([key, conf], idx) => {
+                      {items.map((item, idx) => {
+                        if (item.kind === 'mechanic') {
+                          const mechanicConf = MECHANICS[item.mechanicId];
+                          if (!mechanicConf) return null;
+                          const Icon = ICON_MAP[mechanicConf.icon as keyof typeof ICON_MAP] || Type;
+                          const allNew = item.bindings.every(
+                            ([k]) => (stats.gamesByType?.[k] || 0) === 0,
+                          );
+                          return (
+                            <MechanicCard
+                              key={`mechanic_${item.mechanicId}`}
+                              mechanicConfig={{ ...mechanicConf, iconComponent: Icon }}
+                              packCount={item.bindings.length}
+                              badge={allNew ? formatText(t.menuSpecific.newGame) : null}
+                              delay={idx * 50}
+                              onClick={() => {
+                                playClick();
+                                setActiveMechanicId(item.mechanicId);
+                              }}
+                            />
+                          );
+                        }
+                        const [key, conf] = item.binding;
                         const Icon = ICON_MAP[conf.icon as keyof typeof ICON_MAP] || Type;
                         const gameStats = stats.gamesByType?.[key] || 0;
                         const isNew = gameStats === 0;
@@ -615,6 +660,43 @@ export const MenuScreen: React.FC = () => {
               );
             })}
           </div>
+
+          {/* Pack picker — opened from a mechanic card */}
+          {activeMechanicId &&
+            (() => {
+              const mechanicConf = MECHANICS[activeMechanicId];
+              if (!mechanicConf) return null;
+              const bindings = Object.entries(GAME_CONFIG)
+                .filter(
+                  ([, conf]) =>
+                    conf.mechanic === activeMechanicId &&
+                    (!conf.allowedProfiles ||
+                      conf.allowedProfiles.includes(profile as ProfileType)),
+                )
+                .map(([key, conf]) => {
+                  const Icon = ICON_MAP[conf.icon as keyof typeof ICON_MAP] || Type;
+                  const gameStats = stats.gamesByType?.[key] || 0;
+                  return {
+                    config: conf,
+                    iconComponent: Icon,
+                    level: levels[profile]?.[key] ?? 1,
+                    highScore: getHighScore(key),
+                    isNew: gameStats === 0,
+                  };
+                });
+              return (
+                <PackPickerModal
+                  key={`pack-picker-${activeMechanicId}`}
+                  mechanicConfig={mechanicConf}
+                  bindings={bindings}
+                  onSelect={(gameId) => {
+                    setActiveMechanicId(null);
+                    handleStartGame(gameId);
+                  }}
+                  onClose={() => setActiveMechanicId(null)}
+                />
+              );
+            })()}
 
           {/* Shared footer — matches launcher (games.khe.ee) and adventure */}
           <footer className="w-full pt-6 pb-4 text-center text-[0.7rem] tracking-wider font-light text-slate-400">

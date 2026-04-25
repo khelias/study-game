@@ -371,6 +371,18 @@ export const et = {
     editFavourites: 'Muuda lemmikuid',
     editFavouritesTitle: 'Vali mängud lemmikute sektsiooni',
     save: 'Salvesta',
+    choosePack: 'Vali harjutus',
+    packCount_one: '{count} harjutus',
+    packCount_other: '{count} harjutust',
+  },
+
+  // Mechanics — one entry per shared engine. The menu groups bindings by
+  // mechanic and shows the title/desc here on the aggregate card.
+  mechanics: {
+    math_snake: {
+      title: 'NUMBRIMADU',
+      desc: 'Söö õunu, lahenda tehe',
+    },
   },
 
   // Tutorial
