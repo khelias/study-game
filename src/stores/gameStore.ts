@@ -38,6 +38,7 @@ const MAX_HEARTS = 5;
 const DEFAULT_HEARTS = 3;
 
 const DEFAULT_FAVOURITE_GAME_IDS = ['battlelearn', 'word_cascade', 'addition_snake'];
+export const GAME_STORE_VERSION = 1;
 
 export interface GameStore {
   // State
@@ -80,6 +81,77 @@ export interface GameStore {
 }
 
 const DEFAULT_PROFILE: ProfileType = 'advanced';
+
+export function migrateGameStoreState(persistedState: unknown): unknown {
+  if (!persistedState || typeof persistedState !== 'object') {
+    return persistedState;
+  }
+
+  const stateObj = { ...(persistedState as Record<string, unknown>) };
+  const defaults = {
+    profile: DEFAULT_PROFILE,
+    levels: buildDefaultLevels(),
+    stats: createStats(),
+    unlockedAchievements: [],
+    soundEnabled: true,
+    score: 0,
+    stars: 0,
+    hearts: DEFAULT_HEARTS,
+    hasSeenTutorial: false,
+    highScores: {},
+    favouriteGameIds: DEFAULT_FAVOURITE_GAME_IDS,
+  };
+
+  // Merge levels properly
+  if (stateObj.levels && typeof stateObj.levels === 'object') {
+    const template = buildDefaultLevels();
+    const merged = { ...template };
+    const levelsObj = stateObj.levels as Record<string, Record<string, number>>;
+    Object.entries(levelsObj).forEach(([pid, lvlObj]) => {
+      if (typeof lvlObj === 'object' && lvlObj !== null) {
+        merged[pid] = { ...(template[pid] ?? {}), ...lvlObj };
+      }
+    });
+    stateObj.levels = merged;
+  }
+
+  // Migrate collectedStars to stars (Phase 1 consolidation)
+  if ('collectedStars' in stateObj && typeof stateObj.collectedStars === 'number') {
+    stateObj.stars = stateObj.collectedStars;
+    delete stateObj.collectedStars;
+  }
+
+  // Sync stars with stats.collectedStars for achievement compatibility
+  const statsObj = stateObj.stats as Record<string, unknown> | undefined;
+  if (statsObj && typeof stateObj.stars === 'number') {
+    statsObj.collectedStars = stateObj.stars;
+  } else if (
+    statsObj &&
+    typeof statsObj.collectedStars === 'number' &&
+    typeof stateObj.stars !== 'number'
+  ) {
+    // Legacy: if stats has collectedStars but state doesn't have stars, migrate
+    stateObj.stars = statsObj.collectedStars;
+  }
+
+  // Migrate hearts: if hearts don't exist, set to default
+  if (!('hearts' in stateObj) || typeof stateObj.hearts !== 'number') {
+    stateObj.hearts = DEFAULT_HEARTS;
+  }
+  // Ensure hearts stay within the supported global-resource range
+  if (typeof stateObj.hearts === 'number') {
+    stateObj.hearts = Math.min(MAX_HEARTS, Math.max(0, stateObj.hearts));
+  }
+  // Migrate featuredGameIds -> favouriteGameIds; default if missing
+  if (Array.isArray(stateObj.featuredGameIds)) {
+    stateObj.favouriteGameIds = stateObj.featuredGameIds.filter((id) => typeof id === 'string');
+    delete stateObj.featuredGameIds;
+  }
+  if (!Array.isArray(stateObj.favouriteGameIds)) {
+    stateObj.favouriteGameIds = DEFAULT_FAVOURITE_GAME_IDS;
+  }
+  return { ...defaults, ...stateObj };
+}
 
 export const useGameStore = create<GameStore>()(
   persist(
@@ -380,6 +452,7 @@ export const useGameStore = create<GameStore>()(
     }),
     {
       name: APP_KEY,
+      version: GAME_STORE_VERSION,
       partialize: (state) => ({
         profile: state.profile,
         levels: state.levels,
@@ -394,70 +467,7 @@ export const useGameStore = create<GameStore>()(
         favouriteGameIds: state.favouriteGameIds,
       }),
       // Handle migration from old localStorage format
-      migrate: (persistedState: unknown) => {
-        // Merge old format with new if needed
-        if (persistedState && typeof persistedState === 'object') {
-          const stateObj = persistedState as Record<string, unknown>;
-          const defaults = {
-            profile: DEFAULT_PROFILE,
-            levels: buildDefaultLevels(),
-            stats: createStats(),
-            unlockedAchievements: [],
-            soundEnabled: true,
-            score: 0,
-            stars: 0,
-            hearts: DEFAULT_HEARTS,
-            hasSeenTutorial: false,
-          };
-
-          // Merge levels properly
-          if (stateObj.levels && typeof stateObj.levels === 'object') {
-            const template = buildDefaultLevels();
-            const merged = { ...template };
-            const levelsObj = stateObj.levels as Record<string, Record<string, number>>;
-            Object.entries(levelsObj).forEach(([pid, lvlObj]) => {
-              if (typeof lvlObj === 'object' && lvlObj !== null) {
-                merged[pid] = { ...template[pid], ...lvlObj };
-              }
-            });
-            stateObj.levels = merged;
-          }
-
-          // Migrate collectedStars to stars (Phase 1 consolidation)
-          if ('collectedStars' in stateObj && typeof stateObj.collectedStars === 'number') {
-            stateObj.stars = stateObj.collectedStars;
-            delete stateObj.collectedStars;
-          }
-
-          // Sync stars with stats.collectedStars for achievement compatibility
-          const statsObj = stateObj.stats as Record<string, unknown> | undefined;
-          if (statsObj && typeof stateObj.stars === 'number') {
-            statsObj.collectedStars = stateObj.stars;
-          } else if (statsObj && statsObj.collectedStars && !stateObj.stars) {
-            // Legacy: if stats has collectedStars but state doesn't have stars, migrate
-            stateObj.stars = statsObj.collectedStars as number;
-          }
-
-          // Migrate hearts: if hearts don't exist, set to default
-          if (!('hearts' in stateObj) || typeof stateObj.hearts !== 'number') {
-            stateObj.hearts = DEFAULT_HEARTS;
-          }
-          // Ensure hearts don't exceed max
-          if (typeof stateObj.hearts === 'number' && stateObj.hearts > MAX_HEARTS) {
-            stateObj.hearts = MAX_HEARTS;
-          }
-          // Migrate featuredGameIds → favouriteGameIds; default if missing
-          if (Array.isArray(stateObj.featuredGameIds)) {
-            stateObj.favouriteGameIds = stateObj.featuredGameIds;
-            delete stateObj.featuredGameIds;
-          }
-          if (!Array.isArray(stateObj.favouriteGameIds)) {
-            stateObj.favouriteGameIds = DEFAULT_FAVOURITE_GAME_IDS;
-          }
-          return { ...defaults, ...stateObj };
-        }
-        return persistedState;
-      },
+      migrate: migrateGameStoreState,
     },
   ),
 );

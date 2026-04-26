@@ -42,7 +42,11 @@ Currently per-profile-per-game. ADR-0002 retargets this to per-skill via `SkillM
 - **Hearts** are a global resource; wrong answers cost one; zero hearts ends the session.
 - **Achievements** are cosmetic unlocks tracked in `src/engine/achievements.ts`.
 
-All state persists in LocalStorage via `gameStore`. Per-session state (problem, score, level progress, notifications) lives in `playSessionStore`. Neither syncs across devices yet — Phase 2 work.
+All state persists in LocalStorage via `gameStore`, which uses an explicit
+Zustand persist version and migrates legacy payloads for stars, hearts, levels,
+and favourite games. Per-session state (problem, score, level progress,
+notifications) lives in `playSessionStore`. Neither syncs across devices yet —
+Phase 2 work.
 
 ## Running locally
 
@@ -78,7 +82,7 @@ The quality gate is enforced in [`.github/workflows/ci.yml`](.github/workflows/c
 | `npm run test:e2e:ui`   | Playwright interactive UI mode                                              |
 | `npm run build`         | Vite production build                                                       |
 
-Current state: 24 unit test files, 389 tests on the latest stable Vitest major. Coverage thresholds are baseline floors for `src/engine`, `src/stores`, `src/games`, `src/curriculum`, and `src/services/persistence`; broad UI shells are covered by focused component tests and Playwright instead of the global unit coverage percentage. Playwright smoke suite covers menu load, profile switching, game navigation, and a balance-scale round including the answer → stats recording path. The E2E suite is the refactor safety net required by ROADMAP Phase 0.
+Current state: 25 unit test files, 392 tests on the latest stable Vitest major. Coverage thresholds are baseline floors for `src/engine`, `src/stores`, `src/games`, `src/curriculum`, and `src/services/persistence`; broad UI shells are covered by focused component tests and Playwright instead of the global unit coverage percentage. Playwright smoke suite covers menu load, profile switching, game navigation, and a balance-scale round including the answer → stats recording path. The E2E suite is the refactor safety net required by ROADMAP Phase 0.
 
 ## Deployment
 

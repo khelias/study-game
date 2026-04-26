@@ -1,0 +1,75 @@
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { createStats } from '../../engine/stats';
+import { APP_KEY, PROFILES } from '../../games/data';
+
+describe('gameStore persist migration', () => {
+  beforeEach(() => {
+    localStorage.clear();
+    vi.resetModules();
+  });
+
+  it('declares an explicit persist version', async () => {
+    const { GAME_STORE_VERSION, useGameStore } = await import('../gameStore');
+
+    expect(useGameStore.persist.getOptions().version).toBe(GAME_STORE_VERSION);
+  });
+
+  it('migrates legacy serialized payloads during hydration', async () => {
+    localStorage.setItem(
+      APP_KEY,
+      JSON.stringify({
+        state: {
+          profile: 'starter',
+          levels: {
+            starter: {
+              word_builder: 6,
+            },
+          },
+          stats: {
+            ...createStats(),
+            collectedStars: 2,
+          },
+          collectedStars: 14,
+          hearts: 9,
+          featuredGameIds: ['battlelearn', 'word_cascade', 42],
+        },
+        version: 0,
+      }),
+    );
+
+    const { GAME_STORE_VERSION, useGameStore } = await import('../gameStore');
+    await useGameStore.persist.rehydrate();
+    const state = useGameStore.getState();
+
+    expect(state.stars).toBe(14);
+    expect(state.stats.collectedStars).toBe(14);
+    expect(state.hearts).toBe(5);
+    expect(state.favouriteGameIds).toEqual(['battlelearn', 'word_cascade']);
+    expect(state.levels.starter?.word_builder).toBe(6);
+    expect(Object.keys(state.levels)).toEqual(expect.arrayContaining(Object.keys(PROFILES)));
+
+    const persisted = JSON.parse(localStorage.getItem(APP_KEY) ?? '{}') as { version?: number };
+    expect(persisted.version).toBe(GAME_STORE_VERSION);
+  });
+
+  it('migrates stars from legacy stats when top-level stars are missing', async () => {
+    localStorage.setItem(
+      APP_KEY,
+      JSON.stringify({
+        state: {
+          stats: {
+            ...createStats(),
+            collectedStars: 8,
+          },
+        },
+        version: 0,
+      }),
+    );
+
+    const { useGameStore } = await import('../gameStore');
+    await useGameStore.persist.rehydrate();
+
+    expect(useGameStore.getState().stars).toBe(8);
+    expect(useGameStore.getState().hearts).toBe(3);
+  });
+});
