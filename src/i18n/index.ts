@@ -29,13 +29,43 @@ const translations: Record<SupportedLocale, Translations> = {
 
 // Default locale
 const DEFAULT_LOCALE: SupportedLocale = 'et';
+const LOCALE_STORAGE_KEY = 'app_locale';
+
+function normalizeLocale(value: string | null | undefined): SupportedLocale | null {
+  return value === 'et' || value === 'en' ? value : null;
+}
+
+function getUrlLocale(): SupportedLocale | null {
+  if (typeof window === 'undefined') return null;
+  const params = new URLSearchParams(window.location.search);
+  return normalizeLocale(params.get('lang')) ?? normalizeLocale(params.get('locale'));
+}
+
+function syncDocumentLocale(locale: SupportedLocale): void {
+  if (typeof document === 'undefined') return;
+  document.documentElement.lang = locale;
+}
+
+function syncUrlLocale(locale: SupportedLocale): void {
+  if (typeof window === 'undefined') return;
+  const url = new URL(window.location.href);
+  url.searchParams.set('lang', locale);
+  url.searchParams.delete('locale');
+  window.history.replaceState(null, '', `${url.pathname}${url.search}${url.hash}`);
+}
 
 // Get locale from localStorage or browser, fallback to default
 function getStoredLocale(): SupportedLocale {
   if (typeof window === 'undefined') return DEFAULT_LOCALE;
 
-  const stored = localStorage.getItem('app_locale') as SupportedLocale | null;
-  if (stored && (stored === 'et' || stored === 'en')) {
+  const fromUrl = getUrlLocale();
+  if (fromUrl) {
+    window.localStorage.setItem(LOCALE_STORAGE_KEY, fromUrl);
+    return fromUrl;
+  }
+
+  const stored = normalizeLocale(window.localStorage.getItem(LOCALE_STORAGE_KEY));
+  if (stored) {
     return stored;
   }
 
@@ -66,8 +96,10 @@ export function setLocale(locale: SupportedLocale): void {
 
   currentLocale = locale;
   if (typeof window !== 'undefined') {
-    localStorage.setItem('app_locale', locale);
+    window.localStorage.setItem(LOCALE_STORAGE_KEY, locale);
+    syncUrlLocale(locale);
   }
+  syncDocumentLocale(locale);
 
   // Notify listeners
   localeChangeListeners.forEach((listener) => listener());
@@ -113,6 +145,7 @@ export function subscribeToLocaleChanges(callback: () => void): () => void {
  */
 export function initI18n(): void {
   currentLocale = getStoredLocale();
+  syncDocumentLocale(currentLocale);
 }
 
 // Initialize on module load

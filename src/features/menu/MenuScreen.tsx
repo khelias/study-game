@@ -45,6 +45,7 @@ import { SettingsMenu } from '../../components/SettingsMenu';
 import type { ProfileType } from '../../types/game';
 import type { AchievementUnlock } from '../../types/achievement';
 import { gameIdToSlug } from '../../utils/gameSlug';
+import { getLocale } from '../../i18n';
 
 const ICON_MAP = {
   Type,
@@ -69,6 +70,7 @@ export const MenuScreen: React.FC = () => {
   const navigate = useNavigate();
   const t = useTranslation();
   const { formatText } = useProfileText();
+  const homeHref = `/?lang=${getLocale()}`;
   const profile = useGameStore((state) => state.profile);
   const stars = useGameStore((state) => state.stars); // Persistent currency
   const hearts = useGameStore((state) => state.hearts); // Persistent global resource
@@ -186,7 +188,7 @@ export const MenuScreen: React.FC = () => {
             {/* Left: App Icon (back to games.khe.ee) + Stars */}
             <div className="flex items-center gap-2 flex-shrink-0">
               <a
-                href="/"
+                href={homeHref}
                 className="bg-slate-100 hover:bg-slate-200 p-2 rounded-lg transition-colors active:scale-90 flex items-center justify-center"
                 aria-label="Back to games.khe.ee"
                 title="Back to games.khe.ee"
@@ -703,7 +705,7 @@ export const MenuScreen: React.FC = () => {
             Self-hosted in Tallinn
             <span className="mx-2 opacity-50">·</span>
             <a
-              href="/privacy"
+              href={`/privacy?lang=${getLocale()}`}
               className="text-slate-400 hover:text-slate-600 transition-colors no-underline"
             >
               Privacy
