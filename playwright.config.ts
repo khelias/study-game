@@ -1,5 +1,8 @@
 import { defineConfig, devices } from '@playwright/test';
 
+const baseURL = process.env.PLAYWRIGHT_BASE_URL ?? 'http://localhost:5173';
+const webServerCommand = process.env.PLAYWRIGHT_WEB_SERVER_COMMAND ?? 'npm run dev';
+
 /**
  * Playwright config for E2E smoke tests.
  *
@@ -15,7 +18,7 @@ export default defineConfig({
   workers: process.env.CI ? 1 : undefined,
   reporter: process.env.CI ? 'github' : [['html', { open: 'never' }]],
   use: {
-    baseURL: 'http://localhost:5173',
+    baseURL,
     trace: 'on-first-retry',
   },
   projects: [
@@ -25,8 +28,8 @@ export default defineConfig({
     },
   ],
   webServer: {
-    command: 'npm run dev',
-    url: 'http://localhost:5173/study/',
+    command: webServerCommand,
+    url: `${baseURL}/study/`,
     reuseExistingServer: !process.env.CI,
     timeout: 60_000,
   },

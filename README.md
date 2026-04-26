@@ -78,7 +78,7 @@ The quality gate is enforced in [`.github/workflows/ci.yml`](.github/workflows/c
 | `npm run test:e2e:ui`   | Playwright interactive UI mode                                              |
 | `npm run build`         | Vite production build                                                       |
 
-Current state: 24 unit test files, 389 tests. Coverage thresholds apply to `src/engine`, `src/stores`, `src/games`, `src/curriculum`, and `src/services/persistence`; broad UI shells are covered by focused component tests and Playwright instead of the global unit coverage percentage. Playwright smoke suite covers menu load, profile switching, game navigation, and a balance-scale round including the answer → stats recording path. The E2E suite is the refactor safety net required by ROADMAP Phase 0.
+Current state: 24 unit test files, 389 tests on the latest stable Vitest major. Coverage thresholds are baseline floors for `src/engine`, `src/stores`, `src/games`, `src/curriculum`, and `src/services/persistence`; broad UI shells are covered by focused component tests and Playwright instead of the global unit coverage percentage. Playwright smoke suite covers menu load, profile switching, game navigation, and a balance-scale round including the answer → stats recording path. The E2E suite is the refactor safety net required by ROADMAP Phase 0.
 
 ## Deployment
 
