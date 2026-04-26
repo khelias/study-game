@@ -7,7 +7,7 @@ import eslintConfigPrettier from 'eslint-config-prettier/flat';
 import { defineConfig, globalIgnores } from 'eslint/config';
 
 export default defineConfig([
-  globalIgnores(['dist', 'vitest.config.ts']),
+  globalIgnores(['dist', 'coverage', 'vitest.config.ts']),
   {
     files: ['**/*.{js,jsx}'],
     extends: [

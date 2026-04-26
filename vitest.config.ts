@@ -14,9 +14,17 @@ export default defineConfig({
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json', 'html'],
+      include: [
+        'src/engine/**/*.{ts,tsx}',
+        'src/stores/**/*.{ts,tsx}',
+        'src/games/**/*.{ts,tsx}',
+        'src/curriculum/**/*.{ts,tsx}',
+        'src/services/persistence/**/*.{ts,tsx}',
+      ],
       exclude: [
         'node_modules/',
         'src/test/',
+        '**/__tests__/**',
         '**/*.config.js',
         '**/*.config.ts',
         '**/main.jsx',
@@ -25,8 +33,38 @@ export default defineConfig({
       thresholds: {
         lines: 70,
         functions: 70,
-        branches: 70,
+        branches: 80,
         statements: 70,
+        'src/engine/**': {
+          lines: 70,
+          functions: 85,
+          branches: 80,
+          statements: 70,
+        },
+        'src/stores/**': {
+          lines: 60,
+          functions: 60,
+          branches: 85,
+          statements: 60,
+        },
+        'src/games/**': {
+          lines: 70,
+          functions: 55,
+          branches: 80,
+          statements: 70,
+        },
+        'src/curriculum/**': {
+          lines: 90,
+          functions: 75,
+          branches: 80,
+          statements: 90,
+        },
+        'src/services/persistence/**': {
+          lines: 80,
+          functions: 85,
+          branches: 70,
+          statements: 80,
+        },
       },
     },
   },
