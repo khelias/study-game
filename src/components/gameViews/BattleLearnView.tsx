@@ -16,7 +16,6 @@ import { usePlaySessionStore } from '../../stores/playSessionStore';
 import { useGameStore } from '../../stores/gameStore';
 import type { BattleLearnProblem, BattleLearnCellType, Ship } from '../../types/game';
 import { GameProblemModal } from '../shared/GameProblemModal';
-import { GameStatsBar, type GameStat } from '../shared/GameStatsBar';
 import { PaidHintButtons } from '../shared';
 import { GameResultScreen } from '../../features/gameplay/GameResultScreen';
 import { GAME_CONFIG } from '../../games/data';
@@ -451,17 +450,6 @@ export const BattleLearnView: React.FC<BattleLearnViewProps> = ({
     );
   };
 
-  // Game stats: ships remaining only (misses shown as circles above grid)
-  const stats: GameStat[] = [
-    {
-      id: 'ships',
-      icon: Target,
-      label: t.battlelearn.shipsRemaining,
-      value: `${gameState.ships.length - gameState.sunkShips.length}/${gameState.ships.length}`,
-      variant: gameState.ships.length - gameState.sunkShips.length === 0 ? 'success' : 'default',
-    },
-  ];
-
   // Show victory screen if game is won
   if (gameState.gameWon) {
     return (
@@ -501,11 +489,6 @@ export const BattleLearnView: React.FC<BattleLearnViewProps> = ({
         <div className="shadow-lg rounded-lg p-3 sm:p-4 bg-gradient-to-br from-slate-100 to-slate-200">
           {renderGrid()}
         </div>
-      </div>
-
-      {/* Ships remaining - under main play area */}
-      <div className="mt-4 w-full max-w-2xl">
-        <GameStatsBar stats={stats} />
       </div>
 
       {/* Problem Modal - Only shown when answering */}

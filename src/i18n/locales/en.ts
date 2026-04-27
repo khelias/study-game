@@ -372,6 +372,7 @@ export const en = {
     editFavourites: 'Edit favourites',
     editFavouritesTitle: 'Choose games for Favourites section',
     save: 'Save',
+    allGames: 'All games',
     choosePack: 'Choose pack',
     packCount_one: '{count} pack',
     packCount_other: '{count} packs',
@@ -425,6 +426,7 @@ export const en = {
   gameScreen: {
     returnToMenu: 'Return to menu',
     tipsLabel: 'Tips',
+    progressLabel: 'Progress',
     gameDescriptionTitle: 'How to play',
     starProgress: {
       one: '1/5 stars! 🌟',

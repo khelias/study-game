@@ -38,8 +38,6 @@ import { ShopModal } from '../modals/ShopModal';
 import { PackPickerModal } from '../modals/PackPickerModal';
 import { GAME_CONFIG, CATEGORIES, MECHANICS } from '../../games/data';
 import { ACHIEVEMENTS } from '../../engine/achievements';
-
-const TOTAL_ACHIEVEMENTS = Object.keys(ACHIEVEMENTS).length;
 import { useTranslation } from '../../i18n/useTranslation';
 import { useProfileText } from '../../hooks/useProfileText';
 import { getAchievementCopy } from '../../utils/achievementCopy';
@@ -152,11 +150,6 @@ export const MenuScreen: React.FC = () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
   }, [showSettingsMenu]);
-
-  const achievementsProgress = Math.min(
-    100,
-    (unlockedAchievements.length / Math.max(1, TOTAL_ACHIEVEMENTS)) * 100,
-  );
 
   const handleStartGame = (gameType: string) => {
     playClick();
@@ -298,51 +291,39 @@ export const MenuScreen: React.FC = () => {
               </div>
             </div>
 
-            <div className="mt-3 flex flex-wrap items-center gap-x-2 gap-y-1 border-t border-slate-200 pt-2 text-xs font-bold text-slate-500">
+            <div className="mt-3 flex flex-wrap items-center gap-1.5 border-t border-slate-200 pt-2">
               <button
                 onClick={() => {
                   setShowShop(true);
                   playClick();
                 }}
-                className="inline-flex h-8 items-center gap-1.5 rounded-md px-2 transition-colors hover:bg-white hover:text-slate-900"
+                className="inline-flex h-8 items-center gap-1.5 rounded-full border border-amber-200 bg-amber-50/80 px-2.5 text-[0.72rem] font-bold text-slate-600 shadow-sm transition-colors hover:border-amber-300 hover:bg-white hover:text-slate-900 sm:text-xs"
               >
                 <Star size={14} className="fill-yellow-400 text-yellow-600" aria-hidden />
                 <span>{formatText(t.menu.stars)}</span>
                 <span className="font-black text-slate-900">{stars}</span>
               </button>
 
-              <span className="h-4 w-px bg-slate-200" aria-hidden />
-
               <button
                 onClick={() => {
                   setShowAchievements(true);
                   playClick();
                 }}
-                className="inline-flex h-8 min-w-0 items-center gap-1.5 rounded-md px-2 transition-colors hover:bg-white hover:text-slate-900"
+                className="inline-flex h-8 min-w-0 items-center gap-1.5 rounded-full border border-slate-200 bg-white/80 px-2.5 text-[0.72rem] font-bold text-slate-600 shadow-sm transition-colors hover:border-slate-300 hover:bg-white hover:text-slate-900 sm:text-xs"
                 title={formatText(t.menuSpecific.showAchievements)}
                 aria-label={t.menuSpecific.showAchievements}
               >
                 <Trophy size={14} className="text-amber-600" aria-hidden />
                 <span>{formatText(t.menu.achievements)}</span>
                 <span className="font-black text-slate-900">{unlockedAchievements.length}</span>
-                <span className="h-1.5 w-16 overflow-hidden rounded-full bg-slate-200" aria-hidden>
-                  <span
-                    className="block h-full bg-emerald-500 transition-all duration-500 ease-out"
-                    style={{
-                      width: `${achievementsProgress}%`,
-                    }}
-                  />
-                </span>
               </button>
-
-              <span className="h-4 w-px bg-slate-200" aria-hidden />
 
               <button
                 onClick={() => {
                   setShowShop(true);
                   playClick();
                 }}
-                className="inline-flex h-8 items-center gap-1.5 rounded-md px-2 transition-colors hover:bg-white hover:text-slate-900"
+                className="inline-flex h-8 items-center gap-1.5 rounded-full border border-rose-200 bg-rose-50/80 px-2.5 text-[0.72rem] font-bold text-slate-600 shadow-sm transition-colors hover:border-rose-300 hover:bg-white hover:text-slate-900 sm:text-xs"
               >
                 <Heart size={14} className="fill-red-500 text-red-500" aria-hidden />
                 <span>{formatText(t.game.hearts)}</span>
@@ -352,25 +333,26 @@ export const MenuScreen: React.FC = () => {
           </div>
 
           {/* Favourites Section */}
-          <div className="w-full mb-4 sm:mb-5">
-            <div className="flex items-center gap-2">
+          <div className="w-full mb-5 sm:mb-6">
+            <div className="mb-2 flex items-center justify-between gap-3 px-1">
               <button
                 onClick={() => {
                   playClick();
                   setShowFavourites(!showFavourites);
                 }}
-                className="flex-1 flex items-center justify-between bg-white border border-slate-200 hover:border-emerald-300 px-4 py-3 rounded-lg shadow-sm hover:shadow-md transition-colors"
+                className="inline-flex min-w-0 items-center gap-2 rounded-lg px-1.5 py-1.5 text-left transition-colors hover:bg-white"
               >
-                <div className="flex items-center gap-2 sm:gap-3">
-                  <Heart className="w-5 h-5 text-rose-500" aria-hidden />
-                  <span className="font-bold text-sm sm:text-base text-slate-700">
-                    {formatText(t.menu.favourites)}
-                  </span>
-                </div>
+                <Heart className="w-5 h-5 shrink-0 text-rose-500" aria-hidden />
+                <span className="truncate text-sm font-black text-slate-800 sm:text-base">
+                  {formatText(t.menu.favourites)}
+                </span>
+                <span className="rounded-md bg-slate-100 px-1.5 py-0.5 text-xs font-black text-slate-500">
+                  {favouriteGameIds.length}
+                </span>
                 {showFavourites ? (
-                  <ChevronUp className="w-4 h-4 sm:w-5 sm:h-5 text-slate-600" />
+                  <ChevronUp className="h-4 w-4 shrink-0 text-slate-500" aria-hidden />
                 ) : (
-                  <ChevronDown className="w-4 h-4 sm:w-5 sm:h-5 text-slate-600" />
+                  <ChevronDown className="h-4 w-4 shrink-0 text-slate-500" aria-hidden />
                 )}
               </button>
               <button
@@ -379,17 +361,17 @@ export const MenuScreen: React.FC = () => {
                   setEditFavouritesDraft([...favouriteGameIds]);
                   setShowEditFavourites(true);
                 }}
-                className="p-2.5 rounded-lg bg-white border border-slate-200 hover:border-emerald-300 shadow-sm hover:shadow-md transition-colors"
+                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-600 shadow-sm transition-colors hover:border-slate-300 hover:bg-slate-50"
                 aria-label={formatText(t.menuSpecific.editFavourites)}
                 title={formatText(t.menuSpecific.editFavourites)}
               >
-                <Pencil className="w-4 h-4 sm:w-5 sm:h-5 text-slate-600" />
+                <Pencil className="h-4 w-4" aria-hidden />
               </button>
             </div>
 
             {/* Favourites games grid */}
             {showFavourites && (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4 mt-3 animate-fadeIn">
+              <div className="grid grid-cols-1 gap-2.5 md:grid-cols-2 xl:grid-cols-3 animate-fadeIn sm:gap-3">
                 {favouriteGameIds.map((key) => {
                   const conf = GAME_CONFIG[key];
                   if (!conf) return null;
@@ -507,6 +489,11 @@ export const MenuScreen: React.FC = () => {
 
           {/* Games by category - Refined */}
           <div className="w-full pb-6 sm:pb-10">
+            <div className="mb-2 px-1">
+              <h2 className="text-xs font-black uppercase tracking-wide text-slate-500">
+                {formatText(t.menuSpecific.allGames)}
+              </h2>
+            </div>
             {Object.values(CATEGORIES).map((category) => {
               // All games appear in their category; favourites also appear in Favourites section
               const categoryGames = Object.entries(GAME_CONFIG).filter(
@@ -540,11 +527,11 @@ export const MenuScreen: React.FC = () => {
                 CATEGORY_ICON_MAP[category.id as keyof typeof CATEGORY_ICON_MAP] ?? BookOpen;
 
               return (
-                <div key={category.id} className="mb-3 sm:mb-4">
+                <div key={category.id} className="mb-2.5 sm:mb-3">
                   {/* Category header */}
                   <button
                     onClick={() => toggleCategory(category.id)}
-                    className="w-full flex items-center justify-between bg-white border border-slate-200 hover:border-emerald-300 px-4 py-3 rounded-lg shadow-sm hover:shadow-md transition-colors"
+                    className="w-full flex items-center justify-between rounded-lg border border-slate-200 bg-white px-3.5 py-2.5 shadow-sm transition-colors hover:border-slate-300 hover:bg-slate-50 sm:px-4"
                   >
                     <div className="flex items-center gap-2 sm:gap-3">
                       <CategoryIcon className="w-5 h-5 text-slate-500" aria-hidden />
@@ -569,7 +556,7 @@ export const MenuScreen: React.FC = () => {
 
                   {/* Games grid */}
                   {isExpanded && (
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4 mt-3 animate-fadeIn">
+                    <div className="grid grid-cols-1 gap-2.5 mt-2.5 md:grid-cols-2 xl:grid-cols-3 animate-fadeIn sm:gap-3">
                       {items.map((item, idx) => {
                         if (item.kind === 'mechanic') {
                           const mechanicConf = MECHANICS[item.mechanicId];

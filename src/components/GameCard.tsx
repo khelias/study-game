@@ -62,31 +62,38 @@ export const GameCard: React.FC<GameCardProps> = ({
         disabled={isLocked}
         aria-label={ariaLabel}
         className={`
-          group relative grid w-full grid-cols-[auto_1fr_auto] items-center gap-3 rounded-lg p-4 text-left
-          ${gameConfig.theme.bg} border ${gameConfig.theme.border}
-          shadow-sm transition-colors duration-200 hover:bg-white hover:shadow-md active:bg-slate-50
+          group relative grid w-full grid-cols-[auto_1fr_auto] items-center gap-2.5 overflow-hidden rounded-lg
+          ${gameConfig.theme.bg} border border-slate-200 p-3 text-left shadow-sm transition duration-200
+          hover:border-slate-300 hover:shadow-md active:bg-slate-50 sm:gap-3 sm:p-3.5
           ${isLocked ? 'opacity-50 cursor-not-allowed grayscale' : 'cursor-pointer'}
         `}
       >
+        <span
+          className={`absolute inset-y-3 left-0 w-1 rounded-r-full ${gameConfig.theme.accent}`}
+          aria-hidden
+        />
+
         <div
           className={`
-          flex h-12 w-12 items-center justify-center rounded-lg border border-white/70
+          flex h-10 w-10 items-center justify-center rounded-lg border border-white/70 sm:h-11 sm:w-11
           ${gameConfig.theme.iconBg} ${gameConfig.theme.text}
         `}
         >
-          <IconComponent size={26} aria-hidden />
+          <IconComponent size={22} aria-hidden />
         </div>
 
         <div className="text-left flex-1 min-w-0">
           <h3
-            className={`text-base sm:text-lg font-bold ${gameConfig.theme.text} flex items-center gap-2 mb-1 truncate`}
+            className={`text-sm sm:text-base font-bold ${gameConfig.theme.text} flex items-center gap-2 truncate`}
           >
             {formatText(gameTitle)}
             {isLocked && <Lock size={14} aria-hidden className="shrink-0" />}
           </h3>
-          <p className="text-sm font-medium text-slate-600 truncate">{formatText(gameDesc)}</p>
+          <p className="mt-0.5 line-clamp-2 text-xs font-medium leading-snug text-slate-600 sm:text-sm">
+            {formatText(gameDesc)}
+          </p>
 
-          <div className="mt-2 flex items-center gap-2 flex-wrap">
+          <div className="mt-1.5 flex items-center gap-1.5 flex-wrap">
             {badge && (
               <span className="text-[11px] font-bold px-2 py-0.5 rounded-md bg-slate-900 text-white">
                 {formatText(badge)}
@@ -128,16 +135,11 @@ export const GameCard: React.FC<GameCardProps> = ({
         </div>
 
         <div className="flex flex-col items-end gap-1 flex-shrink-0">
-          <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wide">
+          <span className="text-[0.62rem] font-bold text-slate-500 uppercase tracking-wide">
             {formatText(t.level)}
           </span>
-          <div
-            className={`
-            w-12 h-12 rounded-lg flex items-center justify-center
-            bg-white/80 border ${gameConfig.theme.border}
-          `}
-          >
-            <span className={`text-xl font-black ${gameConfig.theme.text}`}>{level}</span>
+          <div className="w-10 h-10 rounded-lg flex items-center justify-center bg-white/80 border border-slate-200 sm:h-11 sm:w-11">
+            <span className={`text-lg font-black ${gameConfig.theme.text}`}>{level}</span>
           </div>
         </div>
       </button>

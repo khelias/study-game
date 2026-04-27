@@ -372,6 +372,7 @@ export const et = {
     editFavourites: 'Muuda lemmikuid',
     editFavouritesTitle: 'Vali mängud lemmikute sektsiooni',
     save: 'Salvesta',
+    allGames: 'Kõik mängud',
     choosePack: 'Vali harjutus',
     packCount_one: '{count} harjutus',
     packCount_other: '{count} harjutust',
@@ -425,6 +426,7 @@ export const et = {
   gameScreen: {
     returnToMenu: 'Tagasi menüüsse',
     tipsLabel: 'Näpunäited',
+    progressLabel: 'Edenemine',
     gameDescriptionTitle: 'Kuidas mängida',
     starProgress: {
       one: '1/5 tähte! 🌟',

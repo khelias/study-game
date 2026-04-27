@@ -5,10 +5,12 @@ import { NotificationSystem } from '../../components/NotificationSystem';
 import { TipButton } from '../../components/TipButton';
 import { EnhancedConfetti } from '../../components/EnhancedAnimations';
 import { ParticleEffect } from '../../components/ParticleEffect';
-import { GameHeader } from '../../components/GameHeader';
+import { GameHeader, type GameHeaderObjective } from '../../components/GameHeader';
 import { GameRenderer } from './GameRenderer';
 import type { Direction, Problem } from '../../types/game';
 import type { Notification } from '../../types/notification';
+import { useTranslation } from '../../i18n/useTranslation';
+import { useProfileText } from '../../hooks/useProfileText';
 
 interface GameScreenViewProps {
   // Background / overlay effects
@@ -94,6 +96,24 @@ export const GameScreenView: React.FC<GameScreenViewProps> = ({
   onTipReplay,
   canReopenTip,
 }) => {
+  const t = useTranslation();
+  const { formatText } = useProfileText();
+  const sessionObjective: GameHeaderObjective | null =
+    problem?.type === 'battlelearn'
+      ? (() => {
+          const totalShips = Math.max(1, problem.ships.length);
+          const sunkShips = problem.sunkShips.length;
+          const remainingShips = Math.max(0, totalShips - sunkShips);
+          return {
+            label: formatText(t.battlelearn.shipsRemaining),
+            value: `${remainingShips}/${totalShips}`,
+            percent: (remainingShips / totalShips) * 100,
+            tone: 'blue',
+            ariaLabel: `${formatText(t.battlelearn.shipsRemaining)} ${remainingShips}/${totalShips}`,
+          };
+        })()
+      : null;
+
   return (
     <div
       className={`flex h-full min-h-0 flex-col overflow-hidden font-sans ${bgClass} select-none transition-colors duration-500`}
@@ -113,7 +133,7 @@ export const GameScreenView: React.FC<GameScreenViewProps> = ({
         levelProgress={levelProgress}
         levelUpRequirement={levelUpRequirement}
         showLevelProgress={showLevelProgress}
-        particleActive={particleActive}
+        sessionObjective={sessionObjective}
         onReturnToMenu={onReturnToMenu}
         onSettingsClick={onSettingsClick}
         onShopClick={onShopClick}
