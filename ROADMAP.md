@@ -49,6 +49,7 @@ Today all four are welded together inside the `games/` folder. The roadmap's bac
 - CI/CD: GitHub Actions quality gate (lint / typecheck / format-check / unit / E2E / build) plus self-hosted-runner deploy → `games.khe.ee/study/`. See `.github/workflows/ci.yml` + `deploy.yml`.
 - Playwright E2E safety net: four smoke scenarios covering menu load, category expansion, game navigation, balance-scale answer → stats.
 - Whole-game Playwright QA: every `GAME_CONFIG` game route now has a render smoke that fails on route errors, lingering loading state, `console.error`, or page exceptions.
+- Manual full-game browser QA baseline recorded in [docs/qa/2026-04-27-full-game-qa.md](docs/qa/2026-04-27-full-game-qa.md): menu/modals plus all 23 game routes were opened in the in-app browser and each route received at least one real interaction. Immediate findings already fixed: Shape Dash hardcoded English strings, Shop/Level close aria labels, and Shape Shift drag anchoring/release.
 - Gameplay screen refactored into container + pure view + modal host (`src/features/gameplay/GameScreen.tsx` + `GameScreenView.tsx` + `GameScreenModalHost.tsx`) with heavy side-effect orchestration extracted into named hooks (`useMathSnakeMovement`, `useGameScreenEffects`, `useUnlockedAchievementCopies`).
 - ADRs recorded: [ADR-0001](docs/adr/0001-bounded-contexts.md) (five bounded contexts), [ADR-0002](docs/adr/0002-learner-profile.md) (persona-agnostic learner identity).
 - `ARCHITECTURE.md` documents current shape; supersession by ADRs is explicit where relevant.
@@ -63,6 +64,47 @@ Today all four are welded together inside the `games/` folder. The roadmap's bac
 - **No observability.** `src/utils/errorHandler.ts` comment: _"In production, you could send errors to error tracking service"_.
 - **No collection / economy layer.** Stars exist as an earned counter; there is no spending target, no inventory, no unlock catalog, no theme application system.
 - **Monetization scaffolding has never been exercised.** Feature flags are defined, nothing gates on them. Plumbing without a fixture.
+- **Product QA debt is now the blocker before backend work.** The browser pass found the app is stable enough to load and play, but not yet cohesive enough as a product: individual games use different density/color conventions, some mechanics need clearer onboarding, and the economy/progression surfaces compete for attention.
+- **Economy semantics are unclear.** Hearts, spendable stars, collected stars, free star purchase, paid hints, achievements, and stats all exist, but the product meaning is not consistent. `ShopModal` still exposes "buy stars" as free, and stats labels do not clearly distinguish earned lifetime stars from current spendable balance.
+- **Content-pack depth is uneven.** The registry now has 19 skills and 22 packs, but several packs are still progression specs rather than deep content banks: `math.balance_equations.core` has 1 item, addition/multiplication memory/arithmetic packs often have 2-3 spec items, `math.time_reading.core` has 5, and `language.spatial_sentences.scene_pack` has 8 scenes. This is enough for procedural smoke coverage, not enough for a durable learning product.
+
+---
+
+## 2.1 Full-game QA baseline — 2026-04-27
+
+This baseline is the first point where the project can be evaluated as a whole product rather than as a set of migrated mechanics.
+
+**Environment.** Codex in-app browser, local Vite dev server at `http://127.0.0.1:5173/study/`, narrow mobile-like viewport, Estonian locale.
+
+**Coverage.**
+
+- Menu, settings, stats, achievements, shop, tutorial, and favorites editor.
+- All 23 registered game routes.
+- One real browser interaction per game route.
+- Console-error capture through the browser pass and Playwright E2E.
+- Local visual artifacts under `/tmp/study-game-qa/`: first-render contact sheet, post-interaction contact sheet, and `interact-results.json`.
+
+**Outcome.** No route failed to render, no unknown-game route appeared, no generic app error appeared, and no captured runtime console error remained after fixes.
+
+**Immediate fixes shipped from the pass.**
+
+- Shape Dash UI and canvas labels now use locale strings instead of hardcoded English.
+- Shape Shift drag now keeps the piece centered under the pointer and drops reliably after the pointer leaves the tray.
+- Shop and level selector close controls now expose generic close labels instead of the statistics-modal label.
+
+**Next product-quality priorities before Phase 2.**
+
+| Priority | Area | Decision / work |
+| --- | --- | --- |
+| P0 | Regression coverage | Add focused interaction E2E for Shape Shift drag/drop, Shape Dash jump/run, BattleLearn question modal, and one standard answer-card game. |
+| P0 | Economy semantics | Decide whether stars are currency, score, or lifetime achievement. Remove or dev-gate free star purchase before production. |
+| P1 | Shape Shift UX | Show a lightweight target/outline/onboarding state by default; the current empty board asks too much from a new player. |
+| P1 | Shape Dash UX | Decide portrait strategy: either a true portrait layout or a hard landscape-first presentation. Current portrait works but wastes space. |
+| P1 | Stats/achievements | Align copy and contrast: locked achievements are too washed out; stats should not confuse current balance with lifetime collection. |
+| P1 | Content packs | Audit item counts, difficulty bands, locale coverage, and learning outcomes for every pack. Expand shallow packs before adding more mechanics. |
+| P2 | Standard games | Add short inline task prompts and richer feedback loops to Word Builder, Syllables, Letter Match, Unit Conversion, Compare Sizes, and Sentence Logic. |
+
+The practical conclusion: **Phase 1 is architecturally close, but a Phase 1.5 product-quality pass should happen before backend/auth/sync.** The backend would otherwise preserve and sync unclear product semantics.
 
 ---
 
@@ -172,7 +214,7 @@ Each phase is **self-contained**: stopping after any of them leaves the project 
 **Done when.**
 
 - Adding a new skill (e.g. `multiplication_1_10`) to the platform is a data-only change: create a ContentPack JSON, reference it in one registration binding. No engine or component code touched.
-- All 18 existing games still playable, still passing their tests.
+- All current games still playable, still passing their tests.
 - Coverage on engine holds or improves.
 
 **Risks.**
@@ -181,6 +223,60 @@ Each phase is **self-contained**: stopping after any of them leaves the project 
 - Migration loss. A mistranslation from the old data shape to `ContentPack` breaks a game silently. Mitigated by the E2E tests added in Phase 0.
 
 **Estimate.** 3–4 weeks calendar.
+
+---
+
+### Phase 1.5 — Product QA, game quality, and content depth
+
+**Goal.** Turn the now-decoupled architecture into a cohesive, testable learning product before investing in server-side sync.
+
+This phase is inserted after the 2026-04-27 full-game browser QA. It does not change the target bounded contexts; it hardens the current local-first product so Phase 2 does not lock in unclear economy, stats, onboarding, or content decisions.
+
+**Scope.**
+
+- Expand E2E from route-render smoke to interaction smoke for the highest-risk mechanics:
+  - Shape Shift drag/drop
+  - Shape Dash jump/run
+  - BattleLearn question modal + answer
+  - one standard answer-card game
+  - one memory-card game after the peek phase
+- Settle the economy model in code and copy:
+  - lifetime earned stars vs. current spendable stars
+  - heart recovery and heart purchase rules
+  - whether free star purchase exists only in development
+  - how paid hints relate to learning, not just spending
+- Redesign first-session clarity for Shape Shift and Shape Dash:
+  - Shape Shift: visible goal/outline affordance, clearer drag target, and a first-piece success path
+  - Shape Dash: portrait strategy, canvas sizing, and gate explanation
+- Review achievements and stats as one system:
+  - contrast of locked achievements
+  - legacy uppercase/internal game names in achievement descriptions
+  - stats labels for current vs. lifetime values
+- Run a content-pack audit:
+  - pack id, skill id, locale, item count, difficulty range, generator consumer, and learning outcome
+  - flag shallow packs that are only procedural specs
+  - identify which packs need more real authored content before new features
+- Normalize the per-game UI baseline:
+  - consistent task prompt placement
+  - consistent success/error feedback intensity
+  - no mobile overlap between header, badges, hints, and game controls
+
+**Non-goals.**
+
+- No backend or account work.
+- No new major game mechanics.
+- No real payment or entitlement gating.
+- No content CMS. Pack audit may create structured metadata, but packs remain in-repo.
+
+**Done when.**
+
+- Manual full-game QA has a repeatable checklist and current screenshot artifacts.
+- E2E catches at least one meaningful interaction per high-risk mechanic, not just first render.
+- Economy copy and store fields are internally consistent.
+- Shape Shift and Shape Dash have clear first-session flows on mobile.
+- Every content pack has an explicit audit row and an owner decision: "enough for now", "expand", "merge", or "replace".
+
+**Estimate.** 1–2 weeks calendar.
 
 ---
 
@@ -376,3 +472,4 @@ Named so they don't creep in quietly:
 - **2026-04-27** — Phase 1 Slice 17 landed: BattleLearn board/question progression specs moved into curriculum. New `math.mixed_problem_solving` skill + `MATH_BATTLELEARN_PACK` hold profile grid/ship stages, non-ship cell weights, initial/follow-up question stage pools, count-object labels, and sequence patterns. `battlelearn` registration now declares `skillIds` + `contentPackId`; `Generators.battlelearn` and `generateBattleLearnQuestion()` resolve progression via `getPackItems()` while keeping ship placement, concrete question construction, answer-option generation, and board state in the mechanic. Added pack-shape, registry, and generator coverage for the binding.
 - **2026-04-27** — Phase 1 Slice 18 landed: Learner progress moved onto the ADR-0002 shape. New `src/learner/` defines `LearnerProfile`, `SkillMastery`, and the legacy game→skill migration map. `gameStore` now persists `activeLearnerProfile`, migrates the active legacy profile's `levels[profile][game]` into `skillMastery[skillId].level`, and dual-writes level changes through the learner profile. The menu no longer renders the starter/advanced profile selector; cards, pack picker rows, gameplay level progress, and level selection read levels through `getLevelForGame()`. The visible menu UI was simplified around one learner-progress surface, with neutral cards, icon controls, and no hidden 7+ default for fresh users. Legacy `profile` remains only as a temporary generator compatibility input.
 - **2026-04-27** — Phase 1 Slice 19 landed: Whole-game QA smoke added. New Playwright coverage iterates every `GAME_CONFIG` id, opens the corresponding `/study/games/:slug` route, verifies game chrome and loaded state, and fails on `console.error` or uncaught page exceptions. This raises the safety net from a single representative game to all current game bindings.
+- **2026-04-27** — Phase 1.5 inserted from manual full-game browser QA. The in-app browser pass covered menu surfaces plus all 23 game routes with one real interaction per game. Immediate QA fixes shipped in `c0f834f`: Shape Dash locale text, Shape Shift drag anchoring/window pointer release, Shop/Level close aria labels, and a Shape Shift drag regression test. Roadmap updated with the conclusion that product QA, economy semantics, high-risk interaction E2E, and content-pack audit should precede Phase 2 backend/auth/sync work.
