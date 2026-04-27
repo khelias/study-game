@@ -269,13 +269,18 @@ export const ShapeShiftView: React.FC<ShapeShiftViewProps> = ({
     <div className="w-full flex flex-col items-center px-4 max-w-3xl mx-auto pt-4 animate-in fade-in duration-300 select-none">
       {/* Game Board */}
       <div
+        data-testid="shape-shift-board-shell"
         className="relative mb-6 rounded-2xl shadow-xl bg-slate-50 overflow-hidden border-4 border-slate-200"
         style={{
           width: 'min(90vw, 500px)',
           aspectRatio: '1',
         }}
       >
-        <div ref={boardRef} className="absolute inset-0 w-full h-full">
+        <div
+          ref={boardRef}
+          data-testid="shape-shift-board"
+          className="absolute inset-0 w-full h-full"
+        >
           {/* Grid Pattern Background */}
           <div
             className="absolute inset-0 opacity-10"
@@ -323,6 +328,7 @@ export const ShapeShiftView: React.FC<ShapeShiftViewProps> = ({
             return (
               <div
                 key={p.id}
+                data-testid={`shape-shift-board-piece-${p.id}`}
                 className={`absolute transition-transform ${isDragging ? 'opacity-0' : 'cursor-grab active:cursor-grabbing hover:brightness-110'}`}
                 style={{
                   left: `${pct.left}%`,
@@ -350,6 +356,7 @@ export const ShapeShiftView: React.FC<ShapeShiftViewProps> = ({
       {/* Drag Ghost (Floating on top of everything) */}
       {dragState && dragPiece && (
         <div
+          data-testid="shape-shift-drag-ghost"
           className="fixed pointer-events-none z-[9999]"
           style={{
             left: dragState.x, // Current mouse position
@@ -383,6 +390,7 @@ export const ShapeShiftView: React.FC<ShapeShiftViewProps> = ({
       {/* Tray */}
       <div
         ref={trayRef}
+        data-testid="shape-shift-tray"
         className="w-full max-w-2xl bg-slate-100/80 rounded-xl border-2 border-dashed border-slate-300 p-4 min-h-[100px] flex items-center justify-center flex-wrap gap-4"
       >
         {trayPieces.length === 0 && status === 'idle' && (
@@ -396,6 +404,7 @@ export const ShapeShiftView: React.FC<ShapeShiftViewProps> = ({
           return (
             <div
               key={p.id}
+              data-testid={`shape-shift-tray-piece-${p.id}`}
               className={`transition-all ${isDragging ? 'opacity-0 w-0 h-0 m-0 overflow-hidden' : 'cursor-grab active:cursor-grabbing hover:scale-110'}`}
               style={{
                 width: sizePx,

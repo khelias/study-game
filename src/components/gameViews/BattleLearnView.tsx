@@ -389,6 +389,7 @@ export const BattleLearnView: React.FC<BattleLearnViewProps> = ({
 
           <div
             className="grid gap-2"
+            data-testid="battlelearn-grid"
             style={{ gridTemplateColumns: `repeat(${gridSize}, minmax(0, 1fr))` }}
           >
             {Array.from({ length: gridSize }, (_, row) =>
@@ -422,6 +423,10 @@ export const BattleLearnView: React.FC<BattleLearnViewProps> = ({
                 return (
                   <div
                     key={`${row}-${col}`}
+                    data-testid={`battlelearn-cell-${row}-${col}`}
+                    data-qa-cell-type={
+                      import.meta.env.DEV ? (cellGrid[row]?.[col] ?? 'empty') : undefined
+                    }
                     className={cellClass}
                     onClick={() => handleCellClick(row, col)}
                     style={{

@@ -282,6 +282,7 @@ export const StandardGameView: React.FC<StandardGameViewProps> = ({
           return (
             <button
               key={idx}
+              data-testid={`standard-answer-${idx}`}
               disabled={isDisabled}
               onClick={() => handleChoice(opt)}
               className={`

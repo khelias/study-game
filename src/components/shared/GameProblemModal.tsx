@@ -89,6 +89,7 @@ export const GameProblemModal: React.FC<GameProblemModalProps> = ({
     >
       <div
         ref={modalRef}
+        data-testid="game-problem-modal"
         className={`bg-gradient-to-br from-white via-slate-50 to-white rounded-2xl shadow-2xl border-2 border-slate-200 w-full animate-in zoom-in duration-300 ${
           isCompact ? 'max-w-md p-4' : 'max-w-lg p-6 sm:p-8'
         }`}
@@ -160,6 +161,7 @@ export const GameProblemModal: React.FC<GameProblemModalProps> = ({
                 <button
                   key={index}
                   ref={index === firstInteractiveIndex ? firstOptionRef : null}
+                  data-testid={`game-problem-option-${index}`}
                   onClick={() => onOptionSelect(index)}
                   disabled={disabled || selectedOption !== null}
                   className={`

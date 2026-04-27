@@ -51,6 +51,7 @@ const MemoCard: React.FC<{
   return (
     <button
       type="button"
+      data-testid={`picture-pairs-card-${index}`}
       onClick={() => onFlip(index)}
       disabled={disabled}
       className={`
