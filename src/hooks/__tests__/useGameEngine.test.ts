@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { useGameEngine } from '../useGameEngine';
 import { renderHook } from '@testing-library/react';
 import { SHAPE_SHIFT_PUZZLES_PACK } from '../../curriculum/packs/geometry/shapeShiftPuzzles';
+import { MATH_GEOMETRY_SHAPES_PACK } from '../../curriculum/packs/math/geometry_shapes';
 import { useGameStore } from '../../stores/gameStore';
 
 // Import game registrations to ensure games are registered
@@ -192,6 +193,35 @@ describe('useGameEngine - Problem UID Uniqueness', () => {
       expect(useGameStore.getState().getPlayedContent(SHAPE_SHIFT_PUZZLES_PACK.id)).toContain(
         problem.puzzle.id,
       );
+    }
+  });
+
+  it('records generated Shape Dash curriculum item ids in content-pack history', () => {
+    useGameStore.setState({ playedContentByPack: {} });
+    const { result } = renderHook(() => useGameEngine());
+    const adaptiveDifficulty = {
+      recentAccuracy: [],
+      averageResponseTime: [],
+      consecutiveCorrect: 0,
+      consecutiveWrong: 0,
+      difficultyMultiplier: 1,
+      levelAdjustment: 0,
+    };
+
+    const problem = result.current.generateUniqueProblemForGame(
+      'shape_dash',
+      1,
+      'starter',
+      adaptiveDifficulty,
+    );
+
+    expect(problem?.type).toBe('shape_dash');
+    if (problem?.type === 'shape_dash') {
+      expect(problem.contentItemIds?.length).toBeGreaterThan(0);
+      const playedIds = useGameStore.getState().getPlayedContent(MATH_GEOMETRY_SHAPES_PACK.id);
+      for (const contentItemId of problem.contentItemIds ?? []) {
+        expect(playedIds).toContain(contentItemId);
+      }
     }
   });
 

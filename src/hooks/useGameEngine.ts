@@ -60,14 +60,16 @@ const makeKey = (prob: Problem | null): string => {
   }
 };
 
-const getContentItemId = (prob: Problem): string | null => {
+const getContentItemIds = (prob: Problem): string[] => {
   switch (prob.type) {
     case 'shape_shift':
-      return prob.puzzle.id;
+      return [prob.puzzle.id];
     case 'star_mapper':
-      return prob.constellation.id;
+      return [prob.constellation.id];
+    case 'shape_dash':
+      return prob.contentItemIds ?? [];
     default:
-      return null;
+      return [];
   }
 };
 
@@ -169,9 +171,11 @@ export function useGameEngine() {
         }
       }
 
-      const contentItemId = getContentItemId(prob);
-      if (contentPackId && contentItemId) {
-        useGameStore.getState().recordPlayedContent(contentPackId, contentItemId);
+      const contentItemIds = getContentItemIds(prob);
+      if (contentPackId && contentItemIds.length > 0) {
+        for (const contentItemId of contentItemIds) {
+          useGameStore.getState().recordPlayedContent(contentPackId, contentItemId);
+        }
       }
 
       return prob;

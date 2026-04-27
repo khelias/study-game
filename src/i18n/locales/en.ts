@@ -521,7 +521,7 @@ export const en = {
       timeMatch: 'Look at the clock hands!',
       unitConversion: 'Calculate!',
       compare_sizes: 'Compare the sizes carefully!',
-      shape_dash: 'Jump with Space or tap; at checkpoints answer the questions!',
+      shape_dash: 'Jump with Space or tap; choose the right shape gate answer!',
       default: 'Try again!',
     },
     hintButton: {
@@ -647,7 +647,7 @@ export const en = {
       shape_dash: [
         'Press Space or tap the screen to jump!',
         'Avoid the triangular spikes and yellow blocks.',
-        'At checkpoints, answer the geometry questions correctly.',
+        'In shape gates, choose the answer by jump height.',
       ],
     },
   },
@@ -992,8 +992,8 @@ export const en = {
         'Your character runs automatically. Press Space or tap to jump over obstacles. Pass through the correct shape gate to answer geometry questions while running! Wrong gate = lose combo/shield, but keep running. Hit 2 wrong gates in a row or crash into obstacles = game over.',
       tapToRetry: 'Tap to try again',
       jumpLabel: 'Jump',
+      playAreaLabel: 'Shape Dash play area',
       completeLabel: 'LEVEL COMPLETE!',
-      portraitHint: 'For best experience, rotate your device to landscape',
       jumpHint: 'or tap to jump • Double-jump available!',
       attemptLabel: 'Attempt',
       scoreLabel: 'Score',

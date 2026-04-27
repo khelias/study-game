@@ -89,7 +89,7 @@ import { getRandom, uid } from '../engine/rng';
 import { getLocale, getTranslations } from '../i18n/index';
 import { createMathSnakeProblem } from '../engine/mathSnake';
 import { placeShips } from '../engine/battlelearn';
-import { getMinObstacleGap, SPIKE_WIDTH } from '../engine/shapeDash';
+import { GATE_WIDTH, getMinObstacleGap, SPIKE_WIDTH } from '../engine/shapeDash';
 import type {
   RngFunction,
   ProfileType,
@@ -1816,6 +1816,7 @@ export const Generators: Record<string, GeneratorFunction> = {
     level: number,
     rng: RngFunction = Math.random,
     profile: ProfileType = 'starter',
+    context: GeneratorContext = {},
   ): ShapeDashProblem => {
     const meta = profileMeta(profile);
     const effectiveLevel = Math.max(1, level + meta.difficultyOffset);
@@ -1823,15 +1824,25 @@ export const Generators: Record<string, GeneratorFunction> = {
     // Base scroll speed and run length scale with level
     const baseSpeed = 120 + effectiveLevel * 18;
     const scrollSpeed = Math.min(280, baseSpeed);
-    const runLength = 2800 + effectiveLevel * 400;
+    const runLength = 3400 + effectiveLevel * 420;
 
     const locale = getLocale();
     const lang = locale === 'et' ? 'et' : 'en';
     const geometryItems = getPackItems<ShapeDashGeometryItem>(MATH_GEOMETRY_SHAPES_PACK.id);
     const questionBank = getShapeDashCheckpointQuestions(geometryItems);
     const shapeGateBank = getShapeDashGateQuestions(geometryItems);
+    const persistentAvoidIds = new Set(context.avoidContentIds ?? []);
+    const pickPackItems = <T extends { id: string }>(items: readonly T[], count: number): T[] => {
+      const fresh = [...items].filter((item) => !persistentAvoidIds.has(item.id));
+      const freshShuffled = fresh.sort(() => rng() - 0.5);
+      const fallback = [...items]
+        .filter((item) => !freshShuffled.some((selected) => selected.id === item.id))
+        .sort(() => rng() - 0.5);
 
-    const obstacles: ShapeDashObstacle[] = [];
+      return [...freshShuffled, ...fallback].slice(0, count);
+    };
+
+    let obstacles: ShapeDashObstacle[] = [];
     const numObstacles = 6 + Math.floor(effectiveLevel * 1.4);
     const numCheckpoints = Math.min(2, 1 + Math.floor(effectiveLevel / 4));
 
@@ -1841,7 +1852,9 @@ export const Generators: Record<string, GeneratorFunction> = {
     const firstLandingMargin = Math.max(120, 180 - effectiveLevel * 12);
     const firstMinGap = getMinObstacleGap(scrollSpeed, firstLandingMargin);
     const gapVariation = Math.max(40, 100 - effectiveLevel * 8);
-    const runInDistance = 560;
+    const runInDistance = 880;
+    const firstGateDistance = runInDistance + 740;
+    const endObstaclePadding = 360;
     const clearAfterCheckpoint = 200;
     const checkpointLeadIn = 60;
 
@@ -1859,6 +1872,8 @@ export const Generators: Record<string, GeneratorFunction> = {
       const baseGap = useGenerousGap ? firstMinGap : minGap;
       const gap = baseGap + Math.floor(rng() * gapVariation);
       lastX += gap;
+      if (lastX > runLength - endObstaclePadding) break;
+
       let type: 'spike' | 'block' | 'circle' | 'floating';
       if (rng() < harderBias) {
         type = rng() > 0.5 ? 'circle' : 'floating';
@@ -1895,6 +1910,7 @@ export const Generators: Record<string, GeneratorFunction> = {
 
     const obstacleWidth = (o: ShapeDashObstacle) =>
       o.type === 'circle' ? 2 * (o.radius ?? 18) : SPIKE_WIDTH;
+    const obstacleCenterX = (o: ShapeDashObstacle) => o.x + obstacleWidth(o) / 2;
 
     // Place checkpoints only in safe zones: after an obstacle, with no obstacle for clearAfterCheckpoint px after the checkpoint.
     const checkpoints: ShapeDashCheckpoint[] = [];
@@ -1907,8 +1923,8 @@ export const Generators: Record<string, GeneratorFunction> = {
         safeZones.push({ start: gapStart, end: gapEnd });
       }
     }
-    const shuffledBank = [...questionBank].sort(() => rng() - 0.5);
-    const numToPlace = Math.min(numCheckpoints, safeZones.length, shuffledBank.length);
+    const selectedCheckpointBank = pickPackItems(questionBank, numCheckpoints);
+    const numToPlace = Math.min(numCheckpoints, safeZones.length, selectedCheckpointBank.length);
     const zoneOrder = safeZones
       .map((_, i) => i)
       .sort((a, b) => safeZones[a]!.start - safeZones[b]!.start);
@@ -1916,7 +1932,7 @@ export const Generators: Record<string, GeneratorFunction> = {
       const zoneIdx = zoneOrder[c]!;
       const zone = safeZones[zoneIdx]!;
       const x = Math.floor(zone.start + rng() * Math.max(0, zone.end - zone.start - 40));
-      const q = shuffledBank[c]!;
+      const q = selectedCheckpointBank[c]!;
       const prompt = q.prompt[lang];
       const localizedOptions = q.options[lang];
       const options = [...localizedOptions].sort(() => rng() - 0.5);
@@ -1925,106 +1941,65 @@ export const Generators: Record<string, GeneratorFunction> = {
       checkpoints.push({
         id: `cp-${uid(rng)}`,
         x,
+        contentItemId: q.id,
         question: { prompt, options, correctIndex: safeCorrectIndex },
       });
     }
     checkpoints.sort((a, b) => a.x - b.x);
 
-    // V3: Generate stars (3-5 per run, scaling with level)
-    const stars: ShapeDashStar[] = [];
-    const STARS_PER_LEVEL_SCALING = 0.3; // Additional stars per level (0.3 = 1 star every ~3 levels)
-    const numStars = 3 + Math.floor(effectiveLevel * STARS_PER_LEVEL_SCALING);
-    const starHeights = [0, 60, 100, 140]; // ground, low jump, high jump, double-jump height
-    for (let s = 0; s < numStars; s++) {
-      // Place stars between obstacles, avoiding collision with obstacles and checkpoints
-      const segment = Math.floor((runLength - runInDistance) / numStars);
-      const xRange = runInDistance + s * segment;
-      const x = xRange + Math.floor(rng() * Math.max(100, segment - 100));
-      const y = starHeights[Math.floor(rng() * starHeights.length)]!;
-      // Ensure star doesn't overlap with obstacles or checkpoints
-      const tooClose =
-        obstacles.some((obs) => Math.abs(obs.x - x) < 80) ||
-        checkpoints.some((cp) => Math.abs(cp.x - x) < 80);
-      if (!tooClose) {
-        stars.push({ id: `star-${uid(rng)}`, x, y });
-      }
-    }
-
-    // V3: Generate jump pads (1-2 per run at higher levels)
-    const jumpPads: ShapeDashJumpPad[] = [];
-    if (effectiveLevel >= 4) {
-      const numJumpPads = effectiveLevel >= 8 ? 2 : 1;
-      for (let j = 0; j < numJumpPads; j++) {
-        const segment = (runLength - runInDistance) / (numJumpPads + 1);
-        const x = runInDistance + (j + 1) * segment + Math.floor((rng() - 0.5) * segment * 0.3);
-        // Ensure jump pad doesn't overlap with obstacles or checkpoints
-        const tooClose =
-          obstacles.some((obs) => Math.abs(obs.x - x) < 120) ||
-          checkpoints.some((cp) => Math.abs(cp.x - x) < 150);
-        if (!tooClose) {
-          jumpPads.push({ id: `pad-${uid(rng)}`, x });
-        }
-      }
-    }
-
-    // V3: Generate boost zones (brief speed boosts)
-    const boostZones: ShapeDashBoostZone[] = [];
-    if (effectiveLevel >= 3) {
-      const numBoosts = 1 + Math.floor(effectiveLevel / 5);
-      for (let b = 0; b < numBoosts; b++) {
-        const segment = (runLength - runInDistance) / (numBoosts + 1);
-        const x = runInDistance + (b + 1) * segment + Math.floor((rng() - 0.5) * segment * 0.4);
-        const width = 180 + Math.floor(rng() * 40);
-        // Ensure boost zone doesn't overlap with obstacles or checkpoints
-        const tooClose =
-          obstacles.some((obs) => obs.x >= x && obs.x <= x + width) ||
-          checkpoints.some((cp) => cp.x >= x && cp.x <= x + width);
-        if (!tooClose) {
-          boostZones.push({ id: `boost-${uid(rng)}`, x, width });
-        }
-      }
-    }
-
     // V4: Generate shape gates (3 per run, ~every 30% of run length)
     const shapeGates: ShapeDashShapeGate[] = [];
     const numShapeGates = 3;
-    const shuffledGateBank = [...shapeGateBank].sort(() => rng() - 0.5);
+    const selectedGateBank = pickPackItems(shapeGateBank, numShapeGates);
 
     // Define constants for gate positioning
-    const GATE_MIN_DISTANCE = 110; // Keep gates readable without requiring a full extra obstacle gap.
-    const MAX_REPOSITION_ATTEMPTS = 10; // Max attempts to find valid position
-    const REPOSITION_STEP_SIZE = 50; // Step size for repositioning attempts
-    const MIN_GATE_PADDING = 100; // Minimum padding from run start
+    const GATE_CLEAR_DISTANCE = 260; // Prefer a clear corridor for choosing by jump height.
+    const GATE_FALLBACK_CLEAR_DISTANCE = 150; // Keep at least this much room if the run is dense.
+    const MAX_REPOSITION_ATTEMPTS = 14; // Max attempts to find valid position
+    const REPOSITION_STEP_SIZE = 80; // Step size for repositioning attempts
     const END_GATE_PADDING = 300; // Padding from run end
 
-    for (let g = 0; g < numShapeGates && g < shuffledGateBank.length; g++) {
-      const segment = (runLength - runInDistance) / (numShapeGates + 1);
-      let x = runInDistance + (g + 1) * segment;
-      const gateData = shuffledGateBank[g]!;
+    for (let g = 0; g < numShapeGates && g < selectedGateBank.length; g++) {
+      const segment = (runLength - firstGateDistance - END_GATE_PADDING) / numShapeGates;
+      let x = firstGateDistance + g * segment;
+      const gateData = selectedGateBank[g]!;
 
-      // Try to find a valid position for the gate
-      let validPosition = false;
-      for (let attempt = 0; attempt < MAX_REPOSITION_ATTEMPTS; attempt++) {
-        const tooClose =
-          obstacles.some((obs) => Math.abs(obs.x - x) < GATE_MIN_DISTANCE) ||
-          checkpoints.some((cp) => Math.abs(cp.x - x) < GATE_MIN_DISTANCE);
+      const isGateTooClose = (candidateX: number, minDistance: number) =>
+        obstacles.some((obs) => Math.abs(obstacleCenterX(obs) - candidateX) < minDistance) ||
+        checkpoints.some((cp) => Math.abs(cp.x - candidateX) < minDistance) ||
+        shapeGates.some((gate) => Math.abs(gate.x - candidateX) < minDistance + GATE_WIDTH);
 
-        if (!tooClose) {
-          validPosition = true;
-          break;
-        }
+      const findGatePosition = (minDistance: number): number | null => {
+        let candidateX = x;
+        for (let attempt = 0; attempt < MAX_REPOSITION_ATTEMPTS; attempt++) {
+          if (!isGateTooClose(candidateX, minDistance)) return candidateX;
 
-        // Try alternative positions: shift forward/backward
-        if (attempt < MAX_REPOSITION_ATTEMPTS - 1) {
           const offset = (attempt + 1) * REPOSITION_STEP_SIZE * (attempt % 2 === 0 ? 1 : -1);
-          x = runInDistance + (g + 1) * segment + offset;
-          // Ensure x is within valid range
-          x = Math.max(runInDistance + MIN_GATE_PADDING, Math.min(x, runLength - END_GATE_PADDING));
+          candidateX = firstGateDistance + g * segment + offset;
+          candidateX = Math.max(
+            firstGateDistance,
+            Math.min(candidateX, runLength - END_GATE_PADDING),
+          );
+        }
+        return null;
+      };
+
+      // Try to find a valid position for the gate. Prefer a very clear corridor,
+      // but allow a slightly denser run rather than removing all gates.
+      const positionedX =
+        findGatePosition(GATE_CLEAR_DISTANCE) ?? findGatePosition(GATE_FALLBACK_CLEAR_DISTANCE);
+      x = positionedX ?? x;
+
+      // If a dense seed still leaves no ideal gate corridor, keep the curriculum
+      // item and clear the nearby procedural hazards instead of dropping the gate.
+      obstacles = obstacles.filter(
+        (obs) => Math.abs(obstacleCenterX(obs) - x) >= GATE_FALLBACK_CLEAR_DISTANCE,
+      );
+      for (let i = checkpoints.length - 1; i >= 0; i--) {
+        if (Math.abs(checkpoints[i]!.x - x) < GATE_FALLBACK_CLEAR_DISTANCE) {
+          checkpoints.splice(i, 1);
         }
       }
-
-      // Skip gate only if no valid position found after all attempts
-      if (!validPosition) continue;
 
       // Generate 3 shape options: correct + 2 random wrong
       const allShapes: ShapeDashGateShape[] = [
@@ -2058,9 +2033,150 @@ export const Generators: Record<string, GeneratorFunction> = {
       shapeGates.push({
         id: `gate-${uid(rng)}`,
         x,
+        contentItemId: gateData.id,
         prompt: gateData.prompt[lang],
         shapes,
       });
+    }
+
+    type SafeSegment = { start: number; end: number };
+
+    const gameplayStartX = runInDistance + 120;
+    const gameplayEndX = runLength - 260;
+    const clampZone = (zone: SafeSegment): SafeSegment => ({
+      start: Math.max(gameplayStartX, zone.start),
+      end: Math.min(gameplayEndX, zone.end),
+    });
+    const makeCenterZone = (centerX: number, radius: number): SafeSegment =>
+      clampZone({ start: centerX - radius, end: centerX + radius });
+
+    const baseForbiddenZones: SafeSegment[] = [
+      ...obstacles.map((obs) => makeCenterZone(obstacleCenterX(obs), 108)),
+      ...checkpoints.map((cp) => makeCenterZone(cp.x, 120)),
+      ...shapeGates.map((gate) => makeCenterZone(gate.x, 210)),
+    ];
+
+    const buildSafeSegments = (zones: SafeSegment[], minWidth: number): SafeSegment[] => {
+      const sortedZones = zones
+        .map(clampZone)
+        .filter((zone) => zone.end > zone.start)
+        .sort((a, b) => a.start - b.start);
+      const segments: SafeSegment[] = [];
+      let cursor = gameplayStartX;
+
+      for (const zone of sortedZones) {
+        if (zone.start - cursor >= minWidth) {
+          segments.push({ start: cursor, end: zone.start });
+        }
+        cursor = Math.max(cursor, zone.end);
+      }
+
+      if (gameplayEndX - cursor >= minWidth) {
+        segments.push({ start: cursor, end: gameplayEndX });
+      }
+
+      return segments;
+    };
+
+    const pickXFromSegments = (
+      segments: SafeSegment[],
+      usedX: number[],
+      minSpacing: number,
+      edgePadding: number,
+    ): number | null => {
+      const eligibleSegments = segments.filter(
+        (segment) => segment.end - segment.start > edgePadding * 2,
+      );
+      if (eligibleSegments.length === 0) return null;
+
+      for (let attempt = 0; attempt < 80; attempt++) {
+        const totalWidth = eligibleSegments.reduce(
+          (sum, segment) => sum + (segment.end - segment.start - edgePadding * 2),
+          0,
+        );
+        let pick = rng() * totalWidth;
+        let selected = eligibleSegments[0]!;
+
+        for (const segment of eligibleSegments) {
+          const width = segment.end - segment.start - edgePadding * 2;
+          if (pick <= width) {
+            selected = segment;
+            break;
+          }
+          pick -= width;
+        }
+
+        const availableWidth = selected.end - selected.start - edgePadding * 2;
+        const x = Math.floor(selected.start + edgePadding + rng() * availableWidth);
+        if (usedX.every((used) => Math.abs(used - x) >= minSpacing)) return x;
+      }
+
+      return null;
+    };
+
+    // V3: Generate stars in clear, reachable lanes.
+    const stars: ShapeDashStar[] = [];
+    const STARS_PER_LEVEL_SCALING = 0.3; // Additional stars per level (0.3 = 1 star every ~3 levels)
+    const numStars = 3 + Math.floor(effectiveLevel * STARS_PER_LEVEL_SCALING);
+    const starHeights = [24, 84, 124, 164]; // run, low jump, high jump, double-jump lanes
+    const starSegments = buildSafeSegments(baseForbiddenZones, 96);
+    const fallbackStarSegments = buildSafeSegments(baseForbiddenZones, 56);
+
+    for (let s = 0; s < numStars; s++) {
+      const usedStarX = stars.map((star) => star.x);
+      const x =
+        pickXFromSegments(starSegments, usedStarX, 170, 32) ??
+        pickXFromSegments(fallbackStarSegments, usedStarX, 120, 20);
+      if (x === null) break;
+
+      const laneOffset = Math.floor(rng() * starHeights.length);
+      const y = starHeights[(s + laneOffset) % starHeights.length]!;
+      stars.push({ id: `star-${uid(rng)}`, x, y });
+    }
+
+    // V3: Generate jump pads in clear ground sections.
+    const jumpPads: ShapeDashJumpPad[] = [];
+    if (effectiveLevel >= 4) {
+      const numJumpPads = effectiveLevel >= 8 ? 2 : 1;
+      const jumpPadForbiddenZones = [
+        ...baseForbiddenZones,
+        ...stars.map((star) => makeCenterZone(star.x, 90)),
+      ];
+      const jumpPadSegments = buildSafeSegments(jumpPadForbiddenZones, 180);
+
+      for (let j = 0; j < numJumpPads; j++) {
+        const x = pickXFromSegments(
+          jumpPadSegments,
+          jumpPads.map((pad) => pad.x),
+          520,
+          24,
+        );
+        if (x !== null) {
+          jumpPads.push({ id: `pad-${uid(rng)}`, x });
+        }
+      }
+    }
+
+    // V3: Generate boost zones only in long clear corridors.
+    const boostZones: ShapeDashBoostZone[] = [];
+    if (effectiveLevel >= 3) {
+      const numBoosts = 1 + Math.floor(effectiveLevel / 5);
+      const boostForbiddenZones = [
+        ...baseForbiddenZones,
+        ...stars.map((star) => makeCenterZone(star.x, 90)),
+        ...jumpPads.map((pad) => makeCenterZone(pad.x, 120)),
+      ];
+
+      for (let b = 0; b < numBoosts; b++) {
+        const width = 170 + Math.floor(rng() * 40);
+        const boostSegments = buildSafeSegments(boostForbiddenZones, width + 80);
+        const usedBoostX = boostZones.map((zone) => zone.x + zone.width / 2);
+        const centerX = pickXFromSegments(boostSegments, usedBoostX, 520, width / 2 + 24);
+
+        if (centerX !== null) {
+          boostZones.push({ id: `boost-${uid(rng)}`, x: Math.floor(centerX - width / 2), width });
+        }
+      }
     }
 
     // V4: Generate terrain segments (varied heights for visual interest)
@@ -2098,6 +2214,12 @@ export const Generators: Record<string, GeneratorFunction> = {
       boostZones,
       shapeGates,
       terrainSegments,
+      contentItemIds: [
+        ...checkpoints
+          .map((checkpoint) => checkpoint.contentItemId)
+          .filter((id): id is string => Boolean(id)),
+        ...shapeGates.map((gate) => gate.contentItemId).filter((id): id is string => Boolean(id)),
+      ],
     };
   },
 };

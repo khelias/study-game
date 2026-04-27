@@ -17,6 +17,7 @@
  */
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { ArrowUp } from 'lucide-react';
 import { playSound } from '../../engine/audio';
 import {
   GRAVITY,
@@ -36,6 +37,7 @@ import {
   GATE_HEIGHT,
   GATE_ZONE_WIDTH,
   GATE_SPACING,
+  getGateStackTopY,
   hasReachedFinish,
 } from '../../engine/shapeDash';
 import { useTranslation } from '../../i18n/useTranslation';
@@ -58,10 +60,6 @@ interface ShapeDashViewProps {
 const CANVAS_ASPECT_RATIO = 16 / 10; // 1.6:1 aspect ratio for landscape
 const CANVAS_MAX_WIDTH = 896; // 4xl max-width
 const CANVAS_HEIGHT_BASE = 400;
-
-// Portrait mode constants
-const PORTRAIT_ASPECT_RATIO = 1.2; // Slightly taller than wide for portrait
-const MAX_PORTRAIT_HEIGHT_MULTIPLIER = 1.5; // Max height multiplier for portrait
 
 const GROUND_Y = CANVAS_HEIGHT_BASE - 90;
 const PLAYER_X = 140;
@@ -715,7 +713,7 @@ function drawShape(
   ctx.restore();
 }
 
-// V4: Draw shape gate zone (3 gates side-by-side)
+// V4: Draw shape gate zone (3 vertical lanes selected by jump height)
 function drawShapeGates(
   ctx: CanvasRenderingContext2D,
   gate: {
@@ -734,18 +732,16 @@ function drawShapeGates(
   revealed: boolean = false,
 ) {
   const gateScreenX = gate.x - scrollOffset;
-
-  // Calculate positions for 3 gates
-  const totalWidth = GATE_ZONE_WIDTH;
-  const startX = gateScreenX - totalWidth / 2;
+  const gateX = gateScreenX - GATE_WIDTH / 2;
+  const startY = getGateStackTopY(groundY);
 
   for (let i = 0; i < 3; i++) {
     const shape = gate.shapes[i];
     if (!shape) continue;
 
-    const gateX = startX + i * (GATE_WIDTH + GATE_SPACING);
+    const gateY = startY + i * (GATE_HEIGHT + GATE_SPACING);
     const gateCenterX = gateX + GATE_WIDTH / 2;
-    const gateCenterY = groundY - GATE_HEIGHT / 2;
+    const gateCenterY = gateY + GATE_HEIGHT / 2;
 
     // Draw gate frame
     const isCorrect = shape.isCorrect;
@@ -761,12 +757,12 @@ function drawShapeGates(
 
     ctx.strokeStyle = frameColor;
     ctx.lineWidth = 4;
-    ctx.strokeRect(gateX, groundY - GATE_HEIGHT, GATE_WIDTH, GATE_HEIGHT);
+    ctx.strokeRect(gateX, gateY, GATE_WIDTH, GATE_HEIGHT);
 
     ctx.restore();
 
     // Draw shape inside gate
-    const shapeSize = 20;
+    const shapeSize = 15;
     const shapeColor = revealed && isCorrect ? '#00ff88' : '#00ffcc';
     drawShape(
       ctx,
@@ -782,7 +778,7 @@ function drawShapeGates(
     ctx.fillStyle = '#ffffff';
     ctx.font = 'bold 12px Arial';
     ctx.textAlign = 'center';
-    ctx.fillText(shape.label, gateCenterX, groundY - 20);
+    ctx.fillText(shape.label, gateCenterX, gateY + GATE_HEIGHT - 9);
   }
 }
 
@@ -973,7 +969,6 @@ export const ShapeDashView: React.FC<ShapeDashViewProps> = ({
   const [displayRating, setDisplayRating] = useState(0);
   const [canvasWidth, setCanvasWidth] = useState(CANVAS_MAX_WIDTH);
   const [canvasHeight, setCanvasHeight] = useState(CANVAS_HEIGHT_BASE);
-  const [isPortrait, setIsPortrait] = useState(false); // V4: Track portrait orientation
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -1181,31 +1176,16 @@ export const ShapeDashView: React.FC<ShapeDashViewProps> = ({
     containerRef.current?.focus({ preventScroll: true });
   }, []);
 
-  // V4: Responsive canvas sizing with portrait mode detection
+  // Keep the runner in a landscape playfield even inside portrait pages. A tall
+  // canvas adds vertical dead space because the game world scrolls horizontally.
   useEffect(() => {
     const updateCanvasSize = () => {
       if (!containerRef.current) return;
       const container = containerRef.current;
       const rect = container.getBoundingClientRect();
 
-      // Detect portrait orientation (height > width)
-      const windowIsPortrait = window.innerHeight > window.innerWidth;
-      setIsPortrait(windowIsPortrait);
-
-      // In portrait mode, adjust aspect ratio to fit better
-      let width, height;
-      if (windowIsPortrait) {
-        // Use a more square aspect ratio for portrait (closer to 1:1)
-        width = Math.min(rect.width, CANVAS_MAX_WIDTH);
-        height = Math.min(
-          width * PORTRAIT_ASPECT_RATIO,
-          CANVAS_HEIGHT_BASE * MAX_PORTRAIT_HEIGHT_MULTIPLIER,
-        );
-      } else {
-        // Use standard 16:10 aspect ratio for landscape
-        width = Math.min(rect.width, CANVAS_MAX_WIDTH);
-        height = width / CANVAS_ASPECT_RATIO;
-      }
+      const width = Math.min(rect.width, CANVAS_MAX_WIDTH);
+      const height = width / CANVAS_ASPECT_RATIO;
 
       setCanvasWidth(Math.floor(width));
       setCanvasHeight(Math.floor(height));
@@ -1334,9 +1314,16 @@ export const ShapeDashView: React.FC<ShapeDashViewProps> = ({
       // Update pulse phase
       state.pulsePhase += dt;
 
+      const playerEngineState = {
+        x: PLAYER_X,
+        y: py + PLAYER_SIZE,
+        velocityY: pvy,
+        isOnGround: state.isOnGround,
+      };
+
       // V3: Check star collection
       const newlyCollectedStarIds = checkStarCollection(
-        { x: PLAYER_X, y: py, velocityY: pvy, isOnGround: state.isOnGround },
+        playerEngineState,
         collectibleStars,
         nextScroll,
         groundY, // Pass groundY for correct coordinate calculation
@@ -1472,10 +1459,11 @@ export const ShapeDashView: React.FC<ShapeDashViewProps> = ({
 
       // V4: Shape gate detection (replaces checkpoint modal system)
       const gatePass = checkShapeGatePass(
-        { x: PLAYER_X, y: py, velocityY: pvy, isOnGround: state.isOnGround },
+        playerEngineState,
         shapeGates,
         nextScroll,
         state.passedGateIds,
+        groundY,
       );
 
       if (gatePass) {
@@ -1727,6 +1715,19 @@ export const ShapeDashView: React.FC<ShapeDashViewProps> = ({
     [gameState, requestJump, doRetry],
   );
 
+  const handleJumpButtonClick = useCallback(
+    (e: React.MouseEvent<HTMLButtonElement>) => {
+      e.preventDefault();
+      e.stopPropagation();
+      if (gameState === 'crashed') {
+        doRetry();
+        return;
+      }
+      requestJump();
+    },
+    [gameState, requestJump, doRetry],
+  );
+
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent) => {
       if (e.key === ' ') {
@@ -1743,6 +1744,7 @@ export const ShapeDashView: React.FC<ShapeDashViewProps> = ({
 
   const tapToRetry =
     shapeDashText.tapToRetry ?? (t.game as { retry?: string })?.retry ?? 'Tap to try again';
+  const playAreaLabel = shapeDashText.playAreaLabel ?? shapeDashText.title ?? 'Shape Dash';
 
   return (
     <div className="flex flex-col items-center gap-3 w-full max-w-4xl relative">
@@ -1750,17 +1752,16 @@ export const ShapeDashView: React.FC<ShapeDashViewProps> = ({
         ref={containerRef}
         className="relative rounded-2xl overflow-hidden border-2 border-emerald-400 shadow-xl bg-slate-900 cursor-pointer focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 w-full"
         style={{
-          aspectRatio: isPortrait ? undefined : CANVAS_ASPECT_RATIO,
+          aspectRatio: CANVAS_ASPECT_RATIO,
           maxWidth: '100%',
           boxShadow: '0 0 40px rgba(0, 255, 136, 0.2)',
-          height: isPortrait ? `${canvasHeight}px` : undefined,
         }}
         onClick={handleClick}
         onPointerDown={handlePointerDown}
         onKeyDown={handleKeyDown}
         role="button"
         tabIndex={0}
-        aria-label={gameState === 'crashed' ? tapToRetry : shapeDashText.jumpLabel}
+        aria-label={gameState === 'crashed' ? tapToRetry : playAreaLabel}
       >
         <canvas
           ref={canvasRef}
@@ -1809,16 +1810,18 @@ export const ShapeDashView: React.FC<ShapeDashViewProps> = ({
         )}
       </div>
 
-      {/* Portrait mode hint */}
-      {isPortrait && (
-        <div className="text-xs text-amber-400 text-center px-4 py-2 bg-amber-950/30 rounded-lg border border-amber-700/30">
-          <span className="inline-block mr-2">📱</span>
-          {shapeDashText.portraitHint}
-        </div>
-      )}
+      <button
+        type="button"
+        data-testid="shape-dash-jump-button"
+        className="flex min-h-[52px] w-full max-w-xs items-center justify-center gap-2 rounded-xl border border-emerald-300 bg-emerald-400 px-5 py-3 text-base font-black text-slate-950 shadow-lg shadow-emerald-500/20 transition-transform active:scale-95 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-500"
+        onClick={handleJumpButtonClick}
+      >
+        <ArrowUp size={22} strokeWidth={3} aria-hidden="true" />
+        <span>{gameState === 'crashed' ? tapToRetry : shapeDashText.jumpLabel}</span>
+      </button>
 
       {/* Instructions hint */}
-      <div className="text-sm text-slate-400 text-center">
+      <div className="hidden text-sm text-slate-400 text-center sm:block">
         <kbd className="px-2 py-1 bg-slate-700 rounded text-xs font-semibold text-slate-200">
           SPACE
         </kbd>{' '}

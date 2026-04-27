@@ -19,8 +19,9 @@ import {
   PLAYER_WIDTH,
   PLAYER_HEIGHT,
   GROUND_Y,
-  GATE_WIDTH,
+  GATE_HEIGHT,
   GATE_SPACING,
+  getGateStackTopY,
 } from '../shapeDash';
 import type { PlayerState } from '../shapeDash';
 import type {
@@ -177,14 +178,40 @@ describe('shapeDash engine', () => {
 
       expect(collected).toHaveLength(0);
     });
+
+    it('checkStarCollection uses a forgiving hitbox around the player body', () => {
+      const stars: ShapeDashStar[] = [
+        { id: 'near-star', x: 150, y: PLAYER_HEIGHT + 24, collected: false },
+      ];
+
+      const playerState: PlayerState = {
+        x: 150 - PLAYER_WIDTH / 2,
+        y: GROUND_Y,
+        velocityY: 0,
+        isOnGround: true,
+      };
+
+      const collected = checkStarCollection(playerState, stars, 0, GROUND_Y);
+
+      expect(collected).toContain('near-star');
+    });
   });
 
   describe('V4: Shape gate detection', () => {
-    it('checkShapeGatePass detects correct gate when player is in left gate', () => {
+    const gateGroundY = 310;
+    const gateCenterX = 500;
+    const playerXInGate = gateCenterX - PLAYER_WIDTH / 2;
+    const playerYInLane = (laneIndex: number) =>
+      getGateStackTopY(gateGroundY) +
+      laneIndex * (GATE_HEIGHT + GATE_SPACING) +
+      GATE_HEIGHT / 2 +
+      PLAYER_HEIGHT / 2;
+
+    it('checkShapeGatePass detects correct gate when player is in top answer lane', () => {
       const shapeGates: ShapeDashShapeGate[] = [
         {
           id: 'gate1',
-          x: 500,
+          x: gateCenterX,
           prompt: 'Test',
           shapes: [
             { type: 'circle', label: 'Circle', isCorrect: true },
@@ -194,28 +221,33 @@ describe('shapeDash engine', () => {
         },
       ];
 
-      // Player positioned in the left gate (first gate slot)
       const playerState: PlayerState = {
-        x: 500 - (GATE_WIDTH * 3 + GATE_SPACING * 2) / 2 + GATE_WIDTH / 2 - PLAYER_WIDTH / 2,
-        y: GROUND_Y,
+        x: playerXInGate,
+        y: playerYInLane(0),
         velocityY: 0,
-        isOnGround: true,
+        isOnGround: false,
       };
 
       const scrollOffset = 0;
       const passedGateIds = new Set<string>();
-      const result = checkShapeGatePass(playerState, shapeGates, scrollOffset, passedGateIds);
+      const result = checkShapeGatePass(
+        playerState,
+        shapeGates,
+        scrollOffset,
+        passedGateIds,
+        gateGroundY,
+      );
 
       expect(result).not.toBeNull();
       expect(result?.gateIndex).toBe(0);
-      expect(result?.gateChoice).toBe(0); // Left gate
+      expect(result?.gateChoice).toBe(0);
     });
 
-    it('checkShapeGatePass detects correct gate when player is in middle gate', () => {
+    it('checkShapeGatePass detects correct gate when player is in middle answer lane', () => {
       const shapeGates: ShapeDashShapeGate[] = [
         {
           id: 'gate1',
-          x: 500,
+          x: gateCenterX,
           prompt: 'Test',
           shapes: [
             { type: 'circle', label: 'Circle', isCorrect: false },
@@ -225,34 +257,33 @@ describe('shapeDash engine', () => {
         },
       ];
 
-      // Player positioned in the middle gate (second gate slot)
       const playerState: PlayerState = {
-        x:
-          500 -
-          (GATE_WIDTH * 3 + GATE_SPACING * 2) / 2 +
-          GATE_WIDTH +
-          GATE_SPACING +
-          GATE_WIDTH / 2 -
-          PLAYER_WIDTH / 2,
-        y: GROUND_Y,
+        x: playerXInGate,
+        y: playerYInLane(1),
         velocityY: 0,
-        isOnGround: true,
+        isOnGround: false,
       };
 
       const scrollOffset = 0;
       const passedGateIds = new Set<string>();
-      const result = checkShapeGatePass(playerState, shapeGates, scrollOffset, passedGateIds);
+      const result = checkShapeGatePass(
+        playerState,
+        shapeGates,
+        scrollOffset,
+        passedGateIds,
+        gateGroundY,
+      );
 
       expect(result).not.toBeNull();
       expect(result?.gateIndex).toBe(0);
-      expect(result?.gateChoice).toBe(1); // Middle gate
+      expect(result?.gateChoice).toBe(1);
     });
 
-    it('checkShapeGatePass returns null when player is in spacing between gates', () => {
+    it('checkShapeGatePass returns null when player is between answer lanes', () => {
       const shapeGates: ShapeDashShapeGate[] = [
         {
           id: 'gate1',
-          x: 500,
+          x: gateCenterX,
           prompt: 'Test',
           shapes: [
             { type: 'circle', label: 'Circle', isCorrect: true },
@@ -262,24 +293,23 @@ describe('shapeDash engine', () => {
         },
       ];
 
-      // Player positioned in the spacing between left and middle gates
       const playerState: PlayerState = {
-        x:
-          500 -
-          (GATE_WIDTH * 3 + GATE_SPACING * 2) / 2 +
-          GATE_WIDTH +
-          GATE_SPACING / 2 -
-          PLAYER_WIDTH / 2,
-        y: GROUND_Y,
+        x: playerXInGate,
+        y: getGateStackTopY(gateGroundY) + GATE_HEIGHT + GATE_SPACING / 2 + PLAYER_HEIGHT / 2,
         velocityY: 0,
-        isOnGround: true,
+        isOnGround: false,
       };
 
       const scrollOffset = 0;
       const passedGateIds = new Set<string>();
-      const result = checkShapeGatePass(playerState, shapeGates, scrollOffset, passedGateIds);
+      const result = checkShapeGatePass(
+        playerState,
+        shapeGates,
+        scrollOffset,
+        passedGateIds,
+        gateGroundY,
+      );
 
-      // Should return null because player is in the spacing
       expect(result).toBeNull();
     });
 
@@ -287,7 +317,7 @@ describe('shapeDash engine', () => {
       const shapeGates: ShapeDashShapeGate[] = [
         {
           id: 'gate1',
-          x: 500,
+          x: gateCenterX,
           prompt: 'Test',
           shapes: [
             { type: 'circle', label: 'Circle', isCorrect: true },
@@ -300,14 +330,20 @@ describe('shapeDash engine', () => {
       // Player positioned far before the gate zone
       const playerState: PlayerState = {
         x: 100,
-        y: GROUND_Y,
+        y: playerYInLane(2),
         velocityY: 0,
         isOnGround: true,
       };
 
       const scrollOffset = 0;
       const passedGateIds = new Set<string>();
-      const result = checkShapeGatePass(playerState, shapeGates, scrollOffset, passedGateIds);
+      const result = checkShapeGatePass(
+        playerState,
+        shapeGates,
+        scrollOffset,
+        passedGateIds,
+        gateGroundY,
+      );
 
       expect(result).toBeNull();
     });
@@ -316,7 +352,7 @@ describe('shapeDash engine', () => {
       const shapeGates: ShapeDashShapeGate[] = [
         {
           id: 'gate1',
-          x: 500,
+          x: gateCenterX,
           prompt: 'Test',
           shapes: [
             { type: 'circle', label: 'Circle', isCorrect: true },
@@ -326,17 +362,22 @@ describe('shapeDash engine', () => {
         },
       ];
 
-      // Player positioned in the left gate
       const playerState: PlayerState = {
-        x: 500 - (GATE_WIDTH * 3 + GATE_SPACING * 2) / 2 + GATE_WIDTH / 2 - PLAYER_WIDTH / 2,
-        y: GROUND_Y,
+        x: playerXInGate,
+        y: playerYInLane(0),
         velocityY: 0,
-        isOnGround: true,
+        isOnGround: false,
       };
 
       const scrollOffset = 0;
       const passedGateIds = new Set<string>(['gate1']);
-      const result = checkShapeGatePass(playerState, shapeGates, scrollOffset, passedGateIds);
+      const result = checkShapeGatePass(
+        playerState,
+        shapeGates,
+        scrollOffset,
+        passedGateIds,
+        gateGroundY,
+      );
 
       // Should return null because gate is already passed
       expect(result).toBeNull();

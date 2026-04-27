@@ -499,6 +499,7 @@ export interface ShapeDashCheckpoint {
   id: string;
   x: number;
   question: ShapeDashCheckpointQuestion;
+  contentItemId?: string; // Curriculum pack item id used for history/rotation
 }
 
 /** Collectible star for V3 scoring system */
@@ -526,6 +527,7 @@ export interface ShapeDashBoostZone {
 export interface ShapeDashShapeGate {
   id: string;
   x: number; // World x position (pixels) - center of gate zone
+  contentItemId?: string; // Curriculum pack item id used for history/rotation
   prompt: string; // Question text (e.g., "4 sides?" or "Which is a triangle?")
   shapes: Array<{
     // 3 shape options displayed as gates
@@ -558,6 +560,7 @@ export interface ShapeDashProblem extends BaseProblem {
   boostZones?: ShapeDashBoostZone[]; // V3: Speed boost zones
   shapeGates?: ShapeDashShapeGate[]; // V4: Shape gates for inline questions
   terrainSegments?: ShapeDashTerrainSegment[]; // V4: Multi-level terrain
+  contentItemIds?: string[]; // Curriculum pack item ids included in this generated run
 }
 
 // Answer metadata for game-specific actions

@@ -60,6 +60,7 @@ import {
   getBattleLearnProfileStage,
   getBattleLearnQuestionStage,
 } from '../../curriculum/packs/math/battlelearn';
+import { SPIKE_WIDTH } from '../../engine/shapeDash';
 
 describe('Generators', () => {
   describe('balance_scale', () => {
@@ -1399,9 +1400,72 @@ describe('Generators', () => {
       expect(problem.shapeGates?.length).toBeGreaterThan(0);
       for (const gate of problem.shapeGates ?? []) {
         expect(packGatePrompts.has(gate.prompt)).toBe(true);
+        expect(gate.contentItemId).toBeDefined();
         expect(gate.shapes).toHaveLength(3);
         expect(gate.shapes.filter((shape) => shape.isCorrect)).toHaveLength(1);
       }
+    });
+
+    it('should keep gates and pickups in clear playable corridors', () => {
+      const generator = Generators.shape_dash;
+      if (!generator) throw new Error('shape_dash generator not found');
+      const obstacleWidth = (obstacle: ShapeDashProblem['obstacles'][number]) =>
+        obstacle.type === 'circle' ? 2 * (obstacle.radius ?? 18) : SPIKE_WIDTH;
+      const obstacleCenterX = (obstacle: ShapeDashProblem['obstacles'][number]) =>
+        obstacle.x + obstacleWidth(obstacle) / 2;
+
+      for (let seed = 1; seed <= 40; seed++) {
+        const problem = generator(8, createRng(seed), 'starter') as ShapeDashProblem;
+        expect(problem.obstacles.length).toBeGreaterThan(0);
+        expect(problem.shapeGates?.length).toBeGreaterThan(0);
+        const firstObstacleX = Math.min(...problem.obstacles.map((obstacle) => obstacle.x));
+        const firstGateX = Math.min(...(problem.shapeGates ?? []).map((gate) => gate.x));
+
+        expect(firstObstacleX).toBeGreaterThanOrEqual(1100);
+        expect(firstGateX).toBeGreaterThanOrEqual(1500);
+        expect(problem.contentItemIds?.length).toBeGreaterThan(0);
+
+        for (const obstacle of problem.obstacles) {
+          expect(obstacle.x).toBeLessThanOrEqual(problem.runLength - 360);
+        }
+
+        for (const gate of problem.shapeGates ?? []) {
+          for (const obstacle of problem.obstacles) {
+            expect(Math.abs(obstacleCenterX(obstacle) - gate.x)).toBeGreaterThanOrEqual(150);
+          }
+          for (const checkpoint of problem.checkpoints) {
+            expect(Math.abs(checkpoint.x - gate.x)).toBeGreaterThanOrEqual(150);
+          }
+        }
+
+        for (const star of problem.stars ?? []) {
+          expect([24, 84, 124, 164]).toContain(star.y);
+          for (const obstacle of problem.obstacles) {
+            expect(Math.abs(obstacleCenterX(obstacle) - star.x)).toBeGreaterThanOrEqual(108);
+          }
+          for (const checkpoint of problem.checkpoints) {
+            expect(Math.abs(checkpoint.x - star.x)).toBeGreaterThanOrEqual(120);
+          }
+          for (const gate of problem.shapeGates ?? []) {
+            expect(Math.abs(gate.x - star.x)).toBeGreaterThanOrEqual(210);
+          }
+        }
+      }
+    });
+
+    it('should avoid recently played Shape Dash pack items while fresh items remain', () => {
+      const generator = Generators.shape_dash;
+      if (!generator) throw new Error('shape_dash generator not found');
+      const gateIds = getShapeDashGateQuestions(MATH_GEOMETRY_SHAPES_PACK.items).map(
+        (item) => item.id,
+      );
+      const allowedGateId = gateIds[0]!;
+      const problem = generator(4, createRng(456), 'starter', {
+        avoidContentIds: gateIds.filter((id) => id !== allowedGateId),
+      }) as ShapeDashProblem;
+
+      expect(problem.shapeGates?.some((gate) => gate.contentItemId === allowedGateId)).toBe(true);
+      expect(problem.contentItemIds).toContain(allowedGateId);
     });
   });
 

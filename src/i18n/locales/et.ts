@@ -521,7 +521,7 @@ export const et = {
       timeMatch: 'Vaata kella osuteid!',
       unitConversion: 'Arvuta ümber!',
       compare_sizes: 'Võrdle suurusi hoolikalt!',
-      shape_dash: 'Hüppa tühikuklahviga või puudutades; kontrollpunktides vasta küsimustele!',
+      shape_dash: 'Hüppa tühikuklahviga või puudutades; vali kujundiväravas õige vastus!',
       default: 'Proovi veel!',
     },
     hintButton: {
@@ -647,7 +647,7 @@ export const et = {
       shape_dash: [
         'Vajuta tühikuklahvi või puuduta ekraani, et hüpata!',
         'Vältida tuleb kolmnurkseid okkaid ja kollaseid plokke.',
-        'Kontrollpunktides vasta geomeetria küsimustele õigesti.',
+        'Kujundiväravas vali hüppe kõrgusega õige vastus.',
       ],
     },
   },
@@ -992,8 +992,8 @@ export const et = {
         'Sinu tegelane jookseb ise edasi. Vajuta tühikuklahvi või puuduta ekraani, et hüpata takistuste üle. Läbi õige kujundi värava jookstes vastame geomeetria küsimustele! Vale värav = kaotad combo/kilbi, aga jooksed edasi. Kaks valet järjest või kokkupõrge takistustega = mäng läbi.',
       tapToRetry: 'Vajuta uuesti proovimiseks',
       jumpLabel: 'Hüppa',
+      playAreaLabel: 'Kujundite jooksu mänguala',
       completeLabel: 'TASE LÄBITUD!',
-      portraitHint: 'Parima kogemuse jaoks pööra seade horisontaali',
       jumpHint: 'või puuduta hüppamiseks • Topelthüpe on olemas!',
       attemptLabel: 'Katse',
       scoreLabel: 'Skoor',

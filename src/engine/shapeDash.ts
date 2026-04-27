@@ -161,8 +161,11 @@ export function getMinObstacleGap(
 
 // ================= V3 Features =================
 
-/** Star collection radius in px */
-export const STAR_COLLECT_RADIUS = 20;
+/** Visible star radius in px */
+export const STAR_VISUAL_RADIUS = 16;
+
+/** Forgiving collection distance from the player hitbox in px */
+export const STAR_COLLECT_RADIUS = 30;
 
 /** Jump pad dimensions */
 export const JUMP_PAD_WIDTH = 40;
@@ -181,15 +184,16 @@ export function checkStarCollection(
   groundY: number = GROUND_Y,
 ): string[] {
   const collected: string[] = [];
-  const playerCenterX = playerState.x + PLAYER_WIDTH / 2;
-  const playerCenterY = playerState.y - PLAYER_HEIGHT / 2;
+  const playerBounds = getPlayerBounds(playerState);
 
   for (const star of stars) {
     if (star.collected) continue;
     const starScreenX = star.x - scrollOffset;
     const starScreenY = groundY - star.y; // Fixed: Use same coordinate system as rendering
-    const dx = playerCenterX - starScreenX;
-    const dy = playerCenterY - starScreenY;
+    const closestX = Math.max(playerBounds.left, Math.min(starScreenX, playerBounds.right));
+    const closestY = Math.max(playerBounds.top, Math.min(starScreenY, playerBounds.bottom));
+    const dx = closestX - starScreenX;
+    const dy = closestY - starScreenY;
     const distSq = dx * dx + dy * dy;
     if (distSq < STAR_COLLECT_RADIUS * STAR_COLLECT_RADIUS) {
       collected.push(star.id);
@@ -246,10 +250,15 @@ export function checkBoostZone(
 // ================= V4 Features =================
 
 /** Shape gate dimensions */
-export const GATE_WIDTH = 80;
-export const GATE_HEIGHT = 120;
-export const GATE_SPACING = 20; // Space between gates
-export const GATE_ZONE_WIDTH = GATE_WIDTH * 3 + GATE_SPACING * 2; // Total width of 3 gates
+export const GATE_WIDTH = 96;
+export const GATE_HEIGHT = 54;
+export const GATE_SPACING = 12; // Space between vertical answer lanes
+export const GATE_ZONE_WIDTH = GATE_WIDTH; // Horizontal pass window for one answer stack
+export const GATE_ZONE_HEIGHT = GATE_HEIGHT * 3 + GATE_SPACING * 2;
+
+export function getGateStackTopY(groundY: number): number {
+  return Math.max(56, groundY - GATE_ZONE_HEIGHT - 12);
+}
 
 /**
  * Check if player is approaching a shape gate (for visual warning)
@@ -275,41 +284,40 @@ export function getApproachingGateIndex(
 /**
  * Check if player is passing through a shape gate zone
  * Returns: { gateIndex, gateChoice } or null
- * gateChoice: 0=left, 1=middle, 2=right
+ * gateChoice: 0=top, 1=middle, 2=bottom
  */
 export function checkShapeGatePass(
   playerState: PlayerState,
   shapeGates: ShapeDashShapeGate[],
   scrollOffset: number,
   passedGateIds: Set<string>,
+  groundY: number = 310,
 ): { gateIndex: number; gateChoice: number } | null {
   const playerCenterX = playerState.x + PLAYER_WIDTH / 2;
+  const playerCenterY = playerState.y - PLAYER_HEIGHT / 2;
+  const gateStackTopY = getGateStackTopY(groundY);
+  const gateStackBottomY = gateStackTopY + GATE_ZONE_HEIGHT;
 
   for (let i = 0; i < shapeGates.length; i++) {
     const gate = shapeGates[i]!;
     if (passedGateIds.has(gate.id)) continue;
     const gateScreenX = gate.x - scrollOffset;
-    const gateZoneLeft = gateScreenX - GATE_ZONE_WIDTH / 2;
-    const gateZoneRight = gateScreenX + GATE_ZONE_WIDTH / 2;
+    const gateZoneLeft = gateScreenX - GATE_WIDTH / 2;
+    const gateZoneRight = gateScreenX + GATE_WIDTH / 2;
 
-    // Check if player center is within gate zone horizontally
-    if (playerCenterX >= gateZoneLeft && playerCenterX <= gateZoneRight) {
-      // Determine which gate (left, middle, right) the player is passing through
-      const relativeX = playerCenterX - gateZoneLeft;
-      const gateSlotWidth = GATE_WIDTH + GATE_SPACING;
-      const gateSlot = Math.floor(relativeX / gateSlotWidth);
-      const posWithinSlot = relativeX % gateSlotWidth;
+    if (playerCenterX < gateZoneLeft || playerCenterX > gateZoneRight) continue;
+    if (playerCenterY < gateStackTopY || playerCenterY > gateStackBottomY) continue;
 
-      // Check if player is actually within a gate (not in the spacing)
-      if (posWithinSlot > GATE_WIDTH) {
-        // Player is in the spacing between gates - don't register as a pass yet
-        continue;
-      }
+    const relativeY = playerCenterY - gateStackTopY;
+    const laneSlotHeight = GATE_HEIGHT + GATE_SPACING;
+    const gateSlot = Math.floor(relativeY / laneSlotHeight);
+    const posWithinSlot = relativeY % laneSlotHeight;
 
-      const gateChoice = Math.max(0, Math.min(2, gateSlot)); // Clamp to 0-2
+    // Player is between answer lanes, so do not register a choice yet.
+    if (posWithinSlot > GATE_HEIGHT) continue;
 
-      return { gateIndex: i, gateChoice };
-    }
+    const gateChoice = Math.max(0, Math.min(2, gateSlot)); // 0=top, 1=middle, 2=bottom
+    return { gateIndex: i, gateChoice };
   }
   return null;
 }
