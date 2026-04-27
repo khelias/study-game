@@ -38,6 +38,7 @@ import {
   MATH_UNIT_CONVERSIONS_SKILL,
   MATH_COMPARE_NUMBERS_SKILL,
   MATH_TIME_READING_SKILL,
+  MATH_BALANCE_EQUATIONS_SKILL,
 } from '../skills/math';
 import { MATH_ADDITION_WITHIN_20_PACK } from '../packs/math/addition_within_20';
 import { MATH_ADDITION_WITHIN_100_PACK } from '../packs/math/addition_within_100';
@@ -63,6 +64,10 @@ import {
 } from '../packs/math/unit_conversions';
 import { MATH_COMPARE_NUMBERS_PACK, getCompareNumberStage } from '../packs/math/compare_numbers';
 import { MATH_TIME_READING_PACK, getTimeReadingStage } from '../packs/math/time_reading';
+import {
+  MATH_BALANCE_EQUATIONS_PACK,
+  getBalanceEquationProgression,
+} from '../packs/math/balance_equations';
 import { SHAPE_SHIFT_PUZZLES_PACK } from '../packs/geometry/shapeShiftPuzzles';
 import type { Constellation } from '../../types/game';
 
@@ -278,6 +283,7 @@ describe('curriculum', () => {
       { pack: MATH_UNIT_CONVERSIONS_PACK, skill: MATH_UNIT_CONVERSIONS_SKILL },
       { pack: MATH_COMPARE_NUMBERS_PACK, skill: MATH_COMPARE_NUMBERS_SKILL },
       { pack: MATH_TIME_READING_PACK, skill: MATH_TIME_READING_SKILL },
+      { pack: MATH_BALANCE_EQUATIONS_PACK, skill: MATH_BALANCE_EQUATIONS_SKILL },
     ];
 
     it('every math pack binds to its declared skill', () => {
@@ -384,6 +390,19 @@ describe('curriculum', () => {
       expect(level5).toMatchObject({ stepMinutes: 10, optionCount: 4 });
       expect(level7).toMatchObject({ stepMinutes: 5, optionCount: 6 });
       expect(MATH_TIME_READING_PACK.items.every((item) => 60 % item.stepMinutes === 0)).toBe(true);
+    });
+
+    it('balance equation pack defines sum growth and distractor settings', () => {
+      const progression = getBalanceEquationProgression(MATH_BALANCE_EQUATIONS_PACK.items);
+
+      expect(progression).toMatchObject({
+        baseMinSum: 4,
+        baseMaxSum: 7,
+        minVisibleWeight: 2,
+        optionCount: 3,
+      });
+      expect(progression.distractorOffsetMin).toBeLessThan(0);
+      expect(progression.distractorOffsetMax).toBeGreaterThan(0);
     });
   });
 

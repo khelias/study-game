@@ -37,6 +37,7 @@ import {
   MATH_UNIT_CONVERSIONS_SKILL,
   MATH_COMPARE_NUMBERS_SKILL,
   MATH_TIME_READING_SKILL,
+  MATH_BALANCE_EQUATIONS_SKILL,
 } from '../curriculum/skills/math';
 import { MATH_ADDITION_WITHIN_20_PACK } from '../curriculum/packs/math/addition_within_20';
 import { MATH_ADDITION_WITHIN_100_PACK } from '../curriculum/packs/math/addition_within_100';
@@ -49,6 +50,7 @@ import { MATH_PATTERN_SEQUENCES_PACK } from '../curriculum/packs/math/pattern_se
 import { MATH_UNIT_CONVERSIONS_PACK } from '../curriculum/packs/math/unit_conversions';
 import { MATH_COMPARE_NUMBERS_PACK } from '../curriculum/packs/math/compare_numbers';
 import { MATH_TIME_READING_PACK } from '../curriculum/packs/math/time_reading';
+import { MATH_BALANCE_EQUATIONS_PACK } from '../curriculum/packs/math/balance_equations';
 import { SHAPE_SHIFT_PUZZLES_PACK } from '../curriculum/packs/geometry/shapeShiftPuzzles';
 import {
   BalanceScaleView,
@@ -381,6 +383,8 @@ function registerAllGames(): void {
       config: balanceScaleConfig,
       validator: validateBalanceScale,
       allowedProfiles: balanceScaleConfig.allowedProfiles,
+      skillIds: [MATH_BALANCE_EQUATIONS_SKILL.id],
+      contentPackId: MATH_BALANCE_EQUATIONS_PACK.id,
     });
   }
 

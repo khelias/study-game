@@ -53,6 +53,11 @@ import {
   getTimeReadingStage,
   type TimeReadingStageItem,
 } from '../curriculum/packs/math/time_reading';
+import {
+  MATH_BALANCE_EQUATIONS_PACK,
+  getBalanceEquationProgression,
+  type BalanceEquationProgressionItem,
+} from '../curriculum/packs/math/balance_equations';
 import { SHAPE_SHIFT_PUZZLES_PACK } from '../curriculum/packs/geometry/shapeShiftPuzzles';
 import { getRandom, uid } from '../engine/rng';
 import { getLocale, getTranslations } from '../i18n/index';
@@ -295,34 +300,44 @@ export const Generators: Record<string, GeneratorFunction> = {
     profile: ProfileType = 'starter',
   ): BalanceScaleProblem => {
     const meta = profileMeta(profile);
+    const progression = getBalanceEquationProgression(
+      getPackItems<BalanceEquationProgressionItem>(MATH_BALANCE_EQUATIONS_PACK.id),
+    );
     // Improved progression: Level 1 = 4-7, Level 5 = 10-15, Level 10 = 15-22
     // Start easier
-    const baseMin = 4;
-    const baseMax = 7;
-    const levelGrowth = Math.floor(level * 0.6); // Smoother growth
-    const profileBoost = meta.difficultyOffset * 1.5; // Advanced profile +3 (not +4)
-    const minSum = baseMin + levelGrowth + profileBoost;
-    const maxSum = baseMax + Math.floor(level * 0.9) + profileBoost;
+    const levelGrowth = Math.floor(level * progression.minSumLevelGrowth); // Smoother growth
+    const profileBoost = meta.difficultyOffset * progression.profileBoostMultiplier; // Advanced profile +3 (not +4)
+    const minSum = progression.baseMinSum + levelGrowth + profileBoost;
+    const maxSum =
+      progression.baseMaxSum + Math.floor(level * progression.maxSumLevelGrowth) + profileBoost;
     const total = Math.floor(rng() * (maxSum - minSum + 1)) + minSum;
+    const randomVisibleWeight = () =>
+      Math.floor(rng() * (total - 2 * progression.minVisibleWeight + 1)) +
+      progression.minVisibleWeight;
 
-    const l1 = Math.floor(rng() * (total - 3)) + 2;
+    const l1 = randomVisibleWeight();
     const l2 = total - l1;
 
-    let r1 = Math.floor(rng() * (total - 3)) + 2;
+    let r1 = randomVisibleWeight();
     if (r1 === l1 && level > 2) {
-      r1 = Math.floor(rng() * (total - 3)) + 2;
+      r1 = randomVisibleWeight();
     }
     const rHidden = total - r1;
 
     const opts = new Set([rHidden]);
     let safety = 0;
-    while (opts.size < 3 && safety < 50) {
+    while (opts.size < progression.optionCount && safety < 50) {
       safety++;
-      const offset = Math.floor(rng() * 5) - 2; // -2 kuni +2
+      const offset =
+        Math.floor(
+          rng() * (progression.distractorOffsetMax - progression.distractorOffsetMin + 1),
+        ) + progression.distractorOffsetMin;
       const r = rHidden + offset;
       if (r > 0 && r !== rHidden) opts.add(r);
     }
-    while (opts.size < 3) opts.add(Math.floor(rng() * 10) + 1);
+    while (opts.size < progression.optionCount) {
+      opts.add(Math.floor(rng() * progression.fallbackMaxOption) + 1);
+    }
 
     return {
       type: 'balance_scale',

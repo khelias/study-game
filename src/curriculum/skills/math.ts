@@ -136,3 +136,14 @@ export const MATH_TIME_READING_SKILL: Skill = {
     topic: 'math.measurement.time_reading',
   },
 };
+
+export const MATH_BALANCE_EQUATIONS_SKILL: Skill = {
+  id: 'math.balance_equations',
+  name: { et: 'Tasakaaluvõrrandid', en: 'Balance equations' },
+  taxonomy: {
+    subject: 'matemaatika',
+    grade: 2,
+    level: 'foundation',
+    topic: 'math.algebra.balance_equations',
+  },
+};

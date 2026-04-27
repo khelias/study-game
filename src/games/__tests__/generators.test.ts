@@ -40,6 +40,10 @@ import {
   MATH_TIME_READING_PACK,
   getTimeReadingStage,
 } from '../../curriculum/packs/math/time_reading';
+import {
+  MATH_BALANCE_EQUATIONS_PACK,
+  getBalanceEquationProgression,
+} from '../../curriculum/packs/math/balance_equations';
 
 describe('Generators', () => {
   describe('balance_scale', () => {
@@ -66,6 +70,24 @@ describe('Generators', () => {
       const problem = generator(1, rng, 'starter') as BalanceScaleProblem;
 
       expect(problem.options).toContain(problem.answer);
+    });
+
+    it('should use the balance equation curriculum progression', () => {
+      const rng = createRng(12345);
+      const generator = Generators.balance_scale;
+      if (!generator) throw new Error('balance_scale generator not found');
+      const problem = generator(1, rng, 'starter') as BalanceScaleProblem;
+      const progression = getBalanceEquationProgression(MATH_BALANCE_EQUATIONS_PACK.items);
+      const leftSum = problem.display.left.reduce((a, b) => a + b, 0);
+      const levelMin = progression.baseMinSum + Math.floor(1 * progression.minSumLevelGrowth);
+      const levelMax = progression.baseMaxSum + Math.floor(1 * progression.maxSumLevelGrowth);
+
+      expect(leftSum).toBeGreaterThanOrEqual(levelMin);
+      expect(leftSum).toBeLessThanOrEqual(levelMax);
+      expect(problem.display.left.every((value) => value >= progression.minVisibleWeight)).toBe(
+        true,
+      );
+      expect(problem.options).toHaveLength(progression.optionCount);
     });
 
     it('should generate consistent problems with same seed', () => {
