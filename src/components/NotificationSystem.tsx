@@ -438,7 +438,7 @@ const HeroToast: React.FC<HeroToastProps> = ({
   return (
     <div
       className={`
-        pointer-events-auto
+        pointer-events-none
         ${toneClasses}
         ${getToastStateClass(slot, isShowing)}
         ${attentionClass}
@@ -494,7 +494,7 @@ const StandardToast: React.FC<StandardToastProps> = ({
   return (
     <div
       className={`
-        pointer-events-auto
+        pointer-events-none
         ${toneClasses}
         ${getToastStateClass(slot, isShowing)}
         ${attentionClass}
@@ -524,7 +524,7 @@ const StandardToast: React.FC<StandardToastProps> = ({
               onClose();
             }}
             type="button"
-            className="ml-1 rounded-lg p-1.5 hover:bg-white/20 transition-colors"
+            className="pointer-events-auto ml-1 rounded-lg p-1.5 hover:bg-white/20 transition-colors"
             aria-label={closeLabel}
           >
             <X className="w-5 h-5" />
