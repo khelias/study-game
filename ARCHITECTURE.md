@@ -225,7 +225,7 @@ Feature-flag + tier scaffolding in `src/monetization/`, intentionally inert. No 
 - **Engine unit tests** (`src/engine/__tests__/`) — deterministic, no DOM. 76% coverage target 80%+.
 - **Hook + utility tests** — `src/hooks/__tests__/`, `src/utils/__tests__/`, `src/stores/__tests__/`.
 - **Component tests** — colocated `__tests__/` folders using Happy DOM + React Testing Library.
-- **End-to-end** (`e2e/`) — Playwright smoke suite: menu loads with learner-progress game cards, category expansion shows games without age-tier filtering, game-card click navigates to the game route, balance-scale answer records in stats.
+- **End-to-end** (`e2e/`) — Playwright smoke suite: menu loads with learner-progress game cards, category expansion shows games without age-tier filtering, game-card click navigates to the game route, balance-scale answer records in stats, and every `GAME_CONFIG` route renders without runtime console/page errors.
 
 ### Principles
 
