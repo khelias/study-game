@@ -11,7 +11,6 @@ export const StudySiteHeader: React.FC<StudySiteHeaderProps> = ({ surface = 'men
   const locale = getLocale();
   const isEt = locale === 'et';
   const kheLabel = isEt ? 'KHE avaleht' : 'KHE home';
-  const gamesLabel = isEt ? 'Mängud' : 'Games';
   const languageLabel = isEt ? 'Keel' : 'Language';
   const widthClass = surface === 'play' ? 'max-w-2xl' : 'max-w-5xl';
 
@@ -31,14 +30,6 @@ export const StudySiteHeader: React.FC<StudySiteHeaderProps> = ({ surface = 'men
           className="inline-flex h-11 min-w-11 items-center justify-center rounded-lg border border-slate-200 bg-white px-2 text-[0.68rem] font-black tracking-normal text-slate-800 shadow-sm transition-colors hover:bg-slate-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-500"
         >
           KHE
-        </a>
-
-        <a
-          href={`/?lang=${locale}`}
-          className="hidden min-h-11 items-center gap-1 rounded-lg px-2 text-[0.7rem] font-extrabold uppercase tracking-normal text-slate-500 transition-colors hover:text-slate-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-500 sm:inline-flex"
-        >
-          <span aria-hidden="true">←</span>
-          <span>{gamesLabel}</span>
         </a>
 
         <div className="min-w-0 flex-1">
