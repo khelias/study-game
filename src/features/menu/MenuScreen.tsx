@@ -207,6 +207,7 @@ export const MenuScreen: React.FC = () => {
             <AchievementsModal
               key="achievements-modal"
               unlockedAchievements={unlockedAchievements}
+              stats={stats}
               onClose={() => setShowAchievements(false)}
             />
           )}

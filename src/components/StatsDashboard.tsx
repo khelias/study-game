@@ -1,6 +1,6 @@
 // Statistics dashboard
 import React from 'react';
-import { BarChart3, Trophy, Target, TrendingUp, Clock, Star } from 'lucide-react';
+import { BarChart3, Trophy, Target, TrendingUp, Clock, Hash } from 'lucide-react';
 import { Stats } from '../types/stats';
 import { AchievementUnlock } from '../types/achievement';
 import { useTranslation } from '../i18n/useTranslation';
@@ -63,9 +63,9 @@ export const StatsDashboard: React.FC<StatsDashboardProps> = ({
       subtitle: formatText(t.stats.streakSuffix),
     },
     {
-      icon: Star,
-      label: formatText(t.stats.totalStars),
-      value: stats.collectedStars || 0,
+      icon: Hash,
+      label: formatText(t.stats.totalScore),
+      value: stats.totalScore,
       color: 'bg-purple-100 text-purple-700',
     },
     {

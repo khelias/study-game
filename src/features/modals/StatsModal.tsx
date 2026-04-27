@@ -1,5 +1,5 @@
 import React from 'react';
-import { X, Trophy } from 'lucide-react';
+import { X, Trophy, Star, Wallet } from 'lucide-react';
 import { GAME_CONFIG } from '../../games/data';
 import { StatsDashboard, GameTypeStats } from '../../components/StatsDashboard';
 import { FocusTrap } from '../../components/AccessibilityHelpers';
@@ -19,6 +19,7 @@ export const StatsModal: React.FC<StatsModalProps> = ({ stats, unlockedAchieveme
   const t = useTranslation();
   const { formatText } = useProfileText();
   const highScores = useGameStore((state) => state.highScores);
+  const spendableStars = useGameStore((state) => state.stars);
 
   return (
     <div
@@ -54,6 +55,31 @@ export const StatsModal: React.FC<StatsModalProps> = ({ stats, unlockedAchieveme
           </div>
 
           <div className="space-y-6">
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+              <div className="rounded-2xl border border-amber-200 bg-amber-50/80 p-4">
+                <div className="mb-2 flex items-center gap-2 text-sm font-black text-slate-700">
+                  <Wallet size={18} className="text-amber-600" aria-hidden />
+                  {formatText(t.stats.spendableStars)}
+                </div>
+                <div className="text-3xl font-black text-slate-900">{spendableStars}</div>
+                <p className="mt-1 text-xs font-medium text-slate-600">
+                  {formatText(t.stats.spendableStarsHint)}
+                </p>
+              </div>
+              <div className="rounded-2xl border border-yellow-200 bg-yellow-50/80 p-4">
+                <div className="mb-2 flex items-center gap-2 text-sm font-black text-slate-700">
+                  <Star size={18} className="fill-yellow-400 text-yellow-600" aria-hidden />
+                  {formatText(t.stats.totalStars)}
+                </div>
+                <div className="text-3xl font-black text-slate-900">
+                  {stats.collectedStars || 0}
+                </div>
+                <p className="mt-1 text-xs font-medium text-slate-600">
+                  {formatText(t.stats.lifetimeStarsHint)}
+                </p>
+              </div>
+            </div>
+
             {/* Enhanced dashboard */}
             <StatsDashboard stats={stats} unlockedAchievements={unlockedAchievements} />
 

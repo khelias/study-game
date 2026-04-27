@@ -181,6 +181,10 @@ export const en = {
     bestStreak: 'Best streak',
     highestLevel: 'Highest level',
     totalStars: 'Lifetime stars earned',
+    spendableStars: 'Spendable star balance',
+    spendableStarsHint: 'Use these for hints and hearts.',
+    lifetimeStarsHint: 'Does not go down when you spend stars in the shop.',
+    totalScore: 'Total score',
     playTime: 'Play time',
     achievements: 'Achievements',
     streakSuffix: 'correct in a row',
@@ -238,15 +242,15 @@ export const en = {
       },
       word_master: {
         title: 'Word Master',
-        desc: 'Reach WORD MASTER level 5',
+        desc: 'Reach Word Master level 5',
       },
       math_whiz: {
         title: 'Math Whiz',
-        desc: 'Reach MATH MEMORY level 5',
+        desc: 'Reach Math Memory level 5',
       },
       pattern_pro: {
         title: 'Pattern Pro',
-        desc: 'Reach PATTERN TRAIN level 5',
+        desc: 'Reach Pattern Train level 5',
       },
       score_100: {
         title: '100 Points',
@@ -278,7 +282,7 @@ export const en = {
       },
       snake_master: {
         title: 'Snake Master',
-        desc: 'Reach NUMBER SNAKE level 5',
+        desc: 'Reach Number Snake level 5',
       },
       snake_growth_20: {
         title: 'Long Snake',
@@ -294,35 +298,35 @@ export const en = {
       },
       syllable_master: {
         title: 'Syllable Master',
-        desc: 'Reach SYLLABLE MASTER level 5',
+        desc: 'Reach Syllable Master level 5',
       },
       sentence_detective: {
         title: 'Sentence Detective',
-        desc: 'Reach SENTENCE DETECTIVE level 5',
+        desc: 'Reach Sentence Detective level 5',
       },
       robo_master: {
         title: 'Robo Master',
-        desc: 'Reach ROBO PATH level 5',
+        desc: 'Reach Robo Path level 5',
       },
       letter_detective: {
         title: 'Letter Detective',
-        desc: 'Reach LETTER DETECTIVE level 5',
+        desc: 'Reach Letter Detective level 5',
       },
       unit_master: {
         title: 'Unit Master',
-        desc: 'Reach UNITS level 5',
+        desc: 'Reach Units level 5',
       },
       compare_master: {
         title: 'Compare Master',
-        desc: 'Reach NUMBER COMPARE level 5',
+        desc: 'Reach Number Compare level 5',
       },
       scale_master: {
         title: 'Scale Master',
-        desc: 'Reach SCALES level 5',
+        desc: 'Reach Scales level 5',
       },
       clock_master: {
         title: 'Clock Master',
-        desc: 'Reach CLOCK GAME level 5',
+        desc: 'Reach Clock Game level 5',
       },
       cascade_master: {
         title: 'Cascade Master',

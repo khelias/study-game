@@ -1,6 +1,23 @@
 import type { Achievement } from '../types/achievement';
 import type { Stats } from '../types/stats';
 
+export const CORE_GAME_TYPES_FOR_ALL_GAMES = [
+  'word_builder',
+  'word_cascade',
+  'syllable_builder',
+  'pattern',
+  'sentence_logic',
+  'memory_math',
+  'robo_path',
+  'math_snake',
+  'letter_match',
+  'unit_conversion',
+  'compare_sizes',
+  'balance_scale',
+  'time_match',
+  'battlelearn',
+] as const;
+
 /**
  * Achievement definitions - achievements and medals system
  */
@@ -49,23 +66,7 @@ export const ACHIEVEMENTS: Record<string, Achievement> = {
     id: 'all_games',
     icon: '🎯',
     check: (stats: Stats) => {
-      const battlelearnPlayed = (stats.gamesByType.battlelearn || 0) > 0;
-      const otherTypes = [
-        'word_builder',
-        'word_cascade',
-        'syllable_builder',
-        'pattern',
-        'sentence_logic',
-        'memory_math',
-        'robo_path',
-        'math_snake',
-        'letter_match',
-        'unit_conversion',
-        'compare_sizes',
-        'balance_scale',
-        'time_match',
-      ];
-      return battlelearnPlayed && otherTypes.every((type) => (stats.gamesByType[type] || 0) > 0);
+      return CORE_GAME_TYPES_FOR_ALL_GAMES.every((type) => (stats.gamesByType[type] || 0) > 0);
     },
   },
   battlelearn_first_win: {

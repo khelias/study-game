@@ -67,6 +67,7 @@ export const GameScreenModalHost: React.FC<GameScreenModalHostProps> = ({
       {showAchievements && (
         <AchievementsModal
           unlockedAchievements={unlockedAchievementIds}
+          stats={stats}
           onClose={onCloseAchievements}
         />
       )}

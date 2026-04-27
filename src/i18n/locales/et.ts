@@ -181,6 +181,10 @@ export const et = {
     bestStreak: 'Parim seeria',
     highestLevel: 'Kõrgeim tase',
     totalStars: 'Elu jooksul teenitud tähed',
+    spendableStars: 'Kulutatav tähe saldo',
+    spendableStarsHint: 'Saad kasutada vihjete ja südamete jaoks.',
+    lifetimeStarsHint: 'Ei vähene, kui poes tähti kulutad.',
+    totalScore: 'Koguskoor',
     playTime: 'Mänguaeg',
     achievements: 'Saavutused',
     streakSuffix: 'järjestikust õiget',
@@ -223,8 +227,8 @@ export const et = {
   achievements: {
     title: 'Saavutused',
     unlocked: 'Avatud',
-    locked: 'Lukustatud',
-    progress: 'Progress',
+    locked: 'Lukus',
+    progress: 'Edenemine',
     modalTitle: 'Saavutused 🏅',
     collectedLabel: 'saavutust kogutud',
     items: {
@@ -238,15 +242,15 @@ export const et = {
       },
       word_master: {
         title: 'Sõnameister',
-        desc: 'Jõua SÕNAMEISTER tasemele 5',
+        desc: 'Jõua Sõnameistri tasemele 5',
       },
       math_whiz: {
         title: 'Matemaatikameister',
-        desc: 'Jõua MATEMAATIKA MÄLU tasemele 5',
+        desc: 'Jõua Matemaatika mälu tasemele 5',
       },
       pattern_pro: {
         title: 'Mustriproff',
-        desc: 'Jõua MUSTRI-RONG tasemele 5',
+        desc: 'Jõua Mustri-rongi tasemele 5',
       },
       score_100: {
         title: 'Sada punkti',
@@ -278,7 +282,7 @@ export const et = {
       },
       snake_master: {
         title: 'Madumeister',
-        desc: 'Jõua NUMBRIMADU tasemele 5',
+        desc: 'Jõua Numbrimadu tasemele 5',
       },
       snake_growth_20: {
         title: 'Pikk madu',
@@ -294,42 +298,42 @@ export const et = {
       },
       syllable_master: {
         title: 'Silbimeister',
-        desc: 'Jõua SILBIMEISTER tasemele 5',
+        desc: 'Jõua Silbimeistri tasemele 5',
       },
       sentence_detective: {
         title: 'Lause detektiiv',
-        desc: 'Jõua LAUSE DETEKTIIV tasemele 5',
+        desc: 'Jõua Lause detektiivi tasemele 5',
       },
       robo_master: {
         title: 'Robomeister',
-        desc: 'Jõua ROBO-RADA tasemele 5',
+        desc: 'Jõua Robo-raja tasemele 5',
       },
       letter_detective: {
         title: 'Tähe detektiiv',
-        desc: 'Jõua TÄHE DETEKTIIV tasemele 5',
+        desc: 'Jõua Tähe detektiivi tasemele 5',
       },
       unit_master: {
         title: 'Ühikumeister',
-        desc: 'Jõua ÜHIKUD tasemele 5',
+        desc: 'Jõua Ühikute tasemele 5',
       },
       compare_master: {
         title: 'Võrdlusmeister',
-        desc: 'Jõua NUMBRIVÕRDLUS tasemele 5',
+        desc: 'Jõua Numbrivõrdluse tasemele 5',
       },
       scale_master: {
         title: 'Kaalumeister',
-        desc: 'Jõua KAALUD tasemele 5',
+        desc: 'Jõua Kaalude tasemele 5',
       },
       clock_master: {
         title: 'Kellameister',
-        desc: 'Jõua KELLAMÄNG tasemele 5',
+        desc: 'Jõua Kellamängu tasemele 5',
       },
       cascade_master: {
-        title: 'Koske meister',
-        desc: 'Jõua SÕNAKOSK tasemele 5',
+        title: 'Sõnakose meister',
+        desc: 'Jõua Sõnakose tasemele 5',
       },
       cascade_perfect_10: {
-        title: 'Koske kangelane',
+        title: 'Sõnakose kangelane',
         desc: 'Lõpeta 10 Sõnakoske mängu',
       },
       battlelearn_first_win: {
