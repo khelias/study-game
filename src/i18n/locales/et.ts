@@ -158,7 +158,7 @@ export const et = {
     continue: 'Jätka',
     levelUp: 'Tase tõusis!',
     newAchievement: 'Uus saavutus!',
-    noHeartsLeft: 'Südamed on otsas! Külasta poodi, et saada rohkem.',
+    noHeartsLeft: 'Südamed on otsas! Täida neid poes teenitud tähtede eest.',
     highScore: 'Parim tulemus',
     newRecord: 'Uus rekord!',
     snakeSummary: {
@@ -180,7 +180,7 @@ export const et = {
     accuracy: 'Täpsus',
     bestStreak: 'Parim seeria',
     highestLevel: 'Kõrgeim tase',
-    totalStars: 'Kogutud tähed',
+    totalStars: 'Elu jooksul teenitud tähed',
     playTime: 'Mänguaeg',
     achievements: 'Saavutused',
     streakSuffix: 'järjestikust õiget',
@@ -408,7 +408,7 @@ export const et = {
     beCareful: {
       title: 'Ole ettevaatlik',
       content:
-        'Iga vale vastus maksab ühe südame. Südamid on globaalsed - need säilivad mängude vahel. Kui südamed otsa saavad, saad neid tähtedega osta!',
+        'Iga vale vastus võib maksta ühe südame. Südamed on globaalsed ja säilivad mängude vahel. Kui südamed otsa saavad, saad neid poes teenitud tähtede eest juurde võtta.',
     },
     collectAchievements: {
       title: 'Kogu saavutusi',
@@ -663,9 +663,14 @@ export const et = {
   shop: {
     title: 'Pood',
     yourStars: 'Sinu tähed',
+    yourStarBalance: 'Tähe saldo',
+    starBalanceDescription:
+      'Saldo on kulutatav: teenid tähti taseme tõusuga ning kasutad neid vihjete ja südamete jaoks.',
+    lifetimeStars: 'Kokku teenitud',
     yourHearts: 'Sinu südamed',
     buyHearts: 'Osta südameid',
-    buyHeartsDescription: 'Osta südameid tähtede eest, et jätkata mängimist!',
+    buyHeartsDescription:
+      'Üks süda maksab 10 tähte. Südamed on ühised kõigis mängudes ja maksimum on 5.',
     buy1Heart: 'Osta 1 süda',
     buyHeartsCount: 'Osta {count} südant',
     cost: 'Hind',
@@ -675,10 +680,11 @@ export const et = {
     maxHearts: 'Maksimaalne arv südameid',
     notEnoughStars: 'Pole piisavalt tähti',
     buyStars: 'Osta tähti',
-    buyStarsDescription: 'Osta tähti, et saada rohkem südameid ja avada erifunktsioone!',
-    buy50Stars: 'Osta 50 tähte',
+    buyStarsDescription:
+      'Päris makset veel ei ole. Seni saad tähesaldot tasuta juurde lisada; ostetud tähed ei loe saavutuste teenitud tähtede hulka.',
+    buy50Stars: 'Lisa {count} tähte',
     noHeartsToPlay: 'Sul pole südameid mängimiseks!',
-    buyHeartsToContinue: 'Osta südameid, et jätkata mängimist.',
+    buyHeartsToContinue: 'Kasuta teenitud tähti, et südameid juurde võtta.',
   },
 
   // Progression

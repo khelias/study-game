@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { useGameStore } from '../gameStore';
+import { STAR_PURCHASE_AMOUNT, useGameStore } from '../gameStore';
 import { PROFILES } from '../../games/data';
 import { MATH_ADDITION_WITHIN_20_SKILL } from '../../curriculum/skills/math';
 import { LANGUAGE_VOCABULARY_SKILL } from '../../curriculum/skills/language';
@@ -42,6 +42,7 @@ describe('gameStore', () => {
       score: 0,
       stars: 0,
       hasSeenTutorial: false,
+      hearts: 3,
     });
   });
 
@@ -141,7 +142,7 @@ describe('gameStore', () => {
     });
   });
 
-  describe('Stars (Persistent Currency)', () => {
+  describe('Stars (Spendable Balance + Lifetime Earnings)', () => {
     beforeEach(() => {
       // Reset stars to 0 for each test
       const { spendStars } = useGameStore.getState();
@@ -157,7 +158,7 @@ describe('gameStore', () => {
 
       const state = useGameStore.getState();
       expect(state.stars).toBe(5);
-      expect(state.stats.collectedStars).toBe(5); // Synced for achievement compatibility
+      expect(state.stats.collectedStars).toBe(5);
     });
 
     it('should accumulate stars', () => {
@@ -178,6 +179,7 @@ describe('gameStore', () => {
 
       const state = useGameStore.getState();
       expect(state.stars).toBe(7);
+      expect(state.stats.collectedStars).toBe(10);
     });
 
     it('should not spend stars if insufficient', () => {
@@ -189,6 +191,41 @@ describe('gameStore', () => {
 
       const state = useGameStore.getState();
       expect(state.stars).toBe(5); // Unchanged
+      expect(state.stats.collectedStars).toBe(5);
+    });
+
+    it('should keep lifetime stars when spendable stars are spent on hearts', () => {
+      const { earnStars, buyHeartsWithStars, spendHeart } = useGameStore.getState();
+      earnStars(20);
+      spendHeart();
+      spendHeart();
+
+      const success = buyHeartsWithStars(2);
+
+      expect(success).toBe(true);
+      expect(useGameStore.getState().stars).toBe(0);
+      expect(useGameStore.getState().hearts).toBe(3);
+      expect(useGameStore.getState().stats.collectedStars).toBe(20);
+    });
+
+    it('should buy stars into spendable balance without changing lifetime earned stars', () => {
+      const { buyStars } = useGameStore.getState();
+
+      const success = buyStars(STAR_PURCHASE_AMOUNT);
+
+      expect(success).toBe(true);
+      expect(useGameStore.getState().stars).toBe(STAR_PURCHASE_AMOUNT);
+      expect(useGameStore.getState().stats.collectedStars).toBe(0);
+    });
+
+    it('should not convert bought stars into lifetime earned stars later', () => {
+      const { buyStars, earnStars } = useGameStore.getState();
+
+      buyStars(STAR_PURCHASE_AMOUNT);
+      earnStars(3);
+
+      expect(useGameStore.getState().stars).toBe(STAR_PURCHASE_AMOUNT + 3);
+      expect(useGameStore.getState().stats.collectedStars).toBe(3);
     });
   });
 

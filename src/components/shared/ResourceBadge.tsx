@@ -48,7 +48,7 @@ export const ResourceBadge: React.FC<ResourceBadgeProps> = ({
               }
             : undefined
         }
-        aria-label={onClick ? 'Open shop to buy stars' : undefined}
+        aria-label={onClick ? 'Open shop to manage stars' : undefined}
       >
         <Star
           size={iconSize}

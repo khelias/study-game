@@ -65,7 +65,7 @@ export const StatsDashboard: React.FC<StatsDashboardProps> = ({
     {
       icon: Star,
       label: formatText(t.stats.totalStars),
-      value: stats.collectedStars || 0, // Note: stats.collectedStars synced with gameStore.stars for achievements
+      value: stats.collectedStars || 0,
       color: 'bg-purple-100 text-purple-700',
     },
     {

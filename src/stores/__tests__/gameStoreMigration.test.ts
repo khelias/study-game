@@ -84,4 +84,48 @@ describe('gameStore persist migration', () => {
     expect(useGameStore.getState().stars).toBe(8);
     expect(useGameStore.getState().hearts).toBe(3);
   });
+
+  it('preserves lifetime earned stars separately from spendable balance', async () => {
+    localStorage.setItem(
+      APP_KEY,
+      JSON.stringify({
+        state: {
+          stars: 4,
+          stats: {
+            ...createStats(),
+            collectedStars: 18,
+          },
+        },
+        version: 2,
+      }),
+    );
+
+    const { useGameStore } = await import('../gameStore');
+    await useGameStore.persist.rehydrate();
+
+    expect(useGameStore.getState().stars).toBe(4);
+    expect(useGameStore.getState().stats.collectedStars).toBe(18);
+  });
+
+  it('does not treat legacy spendable-only star balance as lifetime earned stars', async () => {
+    localStorage.setItem(
+      APP_KEY,
+      JSON.stringify({
+        state: {
+          stars: 50,
+          stats: {
+            ...createStats(),
+            collectedStars: 0,
+          },
+        },
+        version: 2,
+      }),
+    );
+
+    const { useGameStore } = await import('../gameStore');
+    await useGameStore.persist.rehydrate();
+
+    expect(useGameStore.getState().stars).toBe(50);
+    expect(useGameStore.getState().stats.collectedStars).toBe(0);
+  });
 });

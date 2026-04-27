@@ -158,7 +158,7 @@ export const en = {
     continue: 'Continue',
     levelUp: 'Level up!',
     newAchievement: 'New achievement!',
-    noHeartsLeft: 'No hearts left! Visit the shop to get more.',
+    noHeartsLeft: 'No hearts left! Refill them in the shop with earned stars.',
     highScore: 'High Score',
     newRecord: 'New Record!',
     snakeSummary: {
@@ -180,7 +180,7 @@ export const en = {
     accuracy: 'Accuracy',
     bestStreak: 'Best streak',
     highestLevel: 'Highest level',
-    totalStars: 'Total stars',
+    totalStars: 'Lifetime stars earned',
     playTime: 'Play time',
     achievements: 'Achievements',
     streakSuffix: 'correct in a row',
@@ -408,7 +408,7 @@ export const en = {
     beCareful: {
       title: 'Be careful',
       content:
-        'Each wrong answer costs one heart. Hearts are global - they persist across games. When hearts run out, you can buy more with stars!',
+        'Each wrong answer can cost one heart. Hearts are global and persist across games. When hearts run out, you can refill them in the shop with earned stars.',
     },
     collectAchievements: {
       title: 'Collect achievements',
@@ -663,9 +663,14 @@ export const en = {
   shop: {
     title: 'Shop',
     yourStars: 'Your Stars',
+    yourStarBalance: 'Star balance',
+    starBalanceDescription:
+      'Balance is spendable: earn stars by leveling up, then use them for hints and hearts.',
+    lifetimeStars: 'Lifetime earned',
     yourHearts: 'Your Hearts',
     buyHearts: 'Buy Hearts',
-    buyHeartsDescription: 'Buy hearts with stars to keep playing!',
+    buyHeartsDescription:
+      'One heart costs 10 stars. Hearts are shared across every game and max out at 5.',
     buy1Heart: 'Buy 1 Heart',
     buyHeartsCount: 'Buy {count} Hearts',
     cost: 'Cost',
@@ -675,10 +680,11 @@ export const en = {
     maxHearts: 'Maximum hearts reached',
     notEnoughStars: 'Not enough stars',
     buyStars: 'Buy Stars',
-    buyStarsDescription: 'Buy stars to get more hearts and unlock special features!',
-    buy50Stars: 'Buy 50 Stars',
+    buyStarsDescription:
+      'Real payments are not wired up yet. Until then, you can add star balance for free; purchased stars do not count toward earned-star achievements.',
+    buy50Stars: 'Add {count} Stars',
     noHeartsToPlay: 'You have no hearts to play!',
-    buyHeartsToContinue: 'Buy hearts to continue playing.',
+    buyHeartsToContinue: 'Use earned stars to refill hearts and continue playing.',
   },
 
   // Progression

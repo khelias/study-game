@@ -1,12 +1,17 @@
 /**
  * ShopModal Component
  *
- * Modal for purchasing hearts with stars and buying stars (mocked as FREE for now).
+ * Modal for spending earned stars on hearts.
  */
 
 import React from 'react';
 import { X, Heart, Star, ShoppingBag } from 'lucide-react';
-import { useGameStore } from '../../stores/gameStore';
+import {
+  HEART_COST_STARS,
+  MAX_HEARTS,
+  STAR_PURCHASE_AMOUNT,
+  useGameStore,
+} from '../../stores/gameStore';
 import { useTranslation } from '../../i18n/useTranslation';
 import { useProfileText } from '../../hooks/useProfileText';
 import { useGameAudio } from '../../hooks/useGameAudio';
@@ -17,13 +22,11 @@ interface ShopModalProps {
   openedFromNoHearts?: boolean; // If true, show a message about needing hearts to play
 }
 
-const HEART_COST_STARS = 10; // 10 stars = 1 heart
-const MAX_HEARTS = 5;
-
 export const ShopModal: React.FC<ShopModalProps> = ({ onClose, openedFromNoHearts = false }) => {
   const t = useTranslation();
   const { formatText } = useProfileText();
   const stars = useGameStore((state) => state.stars);
+  const lifetimeStars = useGameStore((state) => state.stats.collectedStars);
   const hearts = useGameStore((state) => state.hearts);
   const buyHeartsWithStars = useGameStore((state) => state.buyHeartsWithStars);
   const buyStars = useGameStore((state) => state.buyStars);
@@ -32,20 +35,18 @@ export const ShopModal: React.FC<ShopModalProps> = ({ onClose, openedFromNoHeart
 
   const canBuyHeart = stars >= HEART_COST_STARS && hearts < MAX_HEARTS;
   const heartsNeeded = MAX_HEARTS - hearts;
+  const canFillHearts = heartsNeeded > 0 && stars >= HEART_COST_STARS * heartsNeeded;
 
   const handleBuyHeart = () => {
     if (canBuyHeart) {
       playClick();
-      const success = buyHeartsWithStars(1);
-      if (success) {
-        // Show success feedback (could add notification here)
-      }
+      buyHeartsWithStars(1);
     }
   };
 
   const handleBuyStars = () => {
     playClick();
-    buyStars(50); // Mock: give 50 stars for free
+    buyStars(STAR_PURCHASE_AMOUNT);
   };
 
   return (
@@ -106,9 +107,20 @@ export const ShopModal: React.FC<ShopModalProps> = ({ onClose, openedFromNoHeart
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center gap-2">
                   <Star size={20} className="text-yellow-500 fill-yellow-500" />
-                  <span className="font-bold text-slate-700">{formatText(t.shop.yourStars)}</span>
+                  <span className="font-bold text-slate-700">
+                    {formatText(t.shop.yourStarBalance)}
+                  </span>
                 </div>
                 <span className="text-2xl font-black text-yellow-700">{stars}</span>
+              </div>
+              <div className="mb-3 text-xs text-slate-600">
+                {formatText(t.shop.starBalanceDescription)}
+              </div>
+              <div className="flex items-center justify-between mb-2 text-sm">
+                <span className="font-semibold text-slate-600">
+                  {formatText(t.shop.lifetimeStars)}
+                </span>
+                <span className="font-black text-slate-700">{lifetimeStars}</span>
               </div>
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
@@ -164,14 +176,14 @@ export const ShopModal: React.FC<ShopModalProps> = ({ onClose, openedFromNoHeart
                 {heartsNeeded > 1 && (
                   <button
                     onClick={() => {
-                      if (stars >= HEART_COST_STARS * heartsNeeded) {
+                      if (canFillHearts) {
                         playClick();
                         buyHeartsWithStars(heartsNeeded);
                       }
                     }}
-                    disabled={stars < HEART_COST_STARS * heartsNeeded}
+                    disabled={!canFillHearts}
                     className={`w-full p-4 rounded-xl border-2 transition-all flex items-center justify-between ${
-                      stars >= HEART_COST_STARS * heartsNeeded
+                      canFillHearts
                         ? 'bg-red-50 border-red-300 hover:bg-red-100 hover:border-red-400 active:scale-95'
                         : 'bg-slate-100 border-slate-300 opacity-50 cursor-not-allowed'
                     }`}
@@ -203,7 +215,6 @@ export const ShopModal: React.FC<ShopModalProps> = ({ onClose, openedFromNoHeart
               </div>
             </div>
 
-            {/* Buy Stars Section (Mocked as FREE) */}
             <div className="bg-slate-50 p-5 rounded-2xl border-2 border-slate-200">
               <h3 className="text-lg font-black text-slate-800 mb-3 flex items-center gap-2">
                 <Star size={20} className="text-yellow-500 fill-yellow-500" />
@@ -220,7 +231,12 @@ export const ShopModal: React.FC<ShopModalProps> = ({ onClose, openedFromNoHeart
                 <div className="flex items-center gap-3">
                   <Star size={24} className="text-yellow-500 fill-yellow-500" />
                   <div className="text-left">
-                    <div className="font-bold text-slate-800">{formatText(t.shop.buy50Stars)}</div>
+                    <div className="font-bold text-slate-800">
+                      {formatText(t.shop.buy50Stars).replace(
+                        '{count}',
+                        String(STAR_PURCHASE_AMOUNT),
+                      )}
+                    </div>
                     <div className="text-sm text-slate-600">
                       {formatText(t.shop.price)}:{' '}
                       <span className="font-bold text-green-600">{formatText(t.shop.free)}</span>

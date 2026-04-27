@@ -15,7 +15,7 @@ export const createStats = (): Stats => ({
   gamesByType: {},
   totalTimePlayed: 0, // in seconds
   lastPlayed: null,
-  collectedStars: 0, // Stars collected for narrative purposes
+  collectedStars: 0, // Lifetime earned stars for stats and achievements
   maxSnakeLength: 0, // Maximum snake length achieved in math snake
 });
 

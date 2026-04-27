@@ -14,7 +14,7 @@ export interface Stats {
   gamesByType: Record<string, number>;
   totalTimePlayed: number; // in seconds
   lastPlayed: number | null;
-  collectedStars: number; // Stars collected for narrative purposes
+  collectedStars: number; // Lifetime earned stars for stats and achievements
   maxSnakeLength: number; // Maximum snake length achieved in math snake
 }
 

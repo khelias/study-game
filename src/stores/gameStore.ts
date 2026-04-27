@@ -40,11 +40,13 @@ const buildDefaultLevels = () => {
   return base;
 };
 
-const MAX_HEARTS = 5;
-const DEFAULT_HEARTS = 3;
+export const MAX_HEARTS = 5;
+export const DEFAULT_HEARTS = 3;
+export const HEART_COST_STARS = 10;
+export const STAR_PURCHASE_AMOUNT = 50;
 
 const DEFAULT_FAVOURITE_GAME_IDS = ['battlelearn', 'word_cascade', 'addition_snake'];
-export const GAME_STORE_VERSION = 2;
+export const GAME_STORE_VERSION = 3;
 const DEFAULT_LOCALE = 'et';
 
 export interface GameStore {
@@ -56,7 +58,7 @@ export interface GameStore {
   unlockedAchievements: string[];
   soundEnabled: boolean;
   score: number;
-  stars: number; // Persistent currency (replaces collectedStars)
+  stars: number; // Spendable star balance
   hearts: number; // Persistent global resource (replaces session hearts)
   hasSeenTutorial: boolean;
   highScores: Record<string, number>; // High score per game type
@@ -80,7 +82,7 @@ export interface GameStore {
   spendHeart: () => boolean; // Returns true if heart was spent, false if no hearts available
   addHeart: (count?: number) => void; // Adds hearts up to MAX_HEARTS
   buyHeartsWithStars: (count: number) => boolean; // Buy hearts with stars, returns true if successful
-  buyStars: (count: number) => void; // Buy stars (mocked as FREE for now)
+  buyStars: (count: number) => boolean; // Temporary top-up until real purchases exist
   setScore: (score: number) => void;
   addScore: (points: number) => void;
   markTutorialSeen: () => void;
@@ -158,23 +160,44 @@ export function migrateGameStoreState(persistedState: unknown): unknown {
     stateObj.levels = defaultLevels;
   }
 
-  // Migrate collectedStars to stars (Phase 1 consolidation)
+  const legacyTopLevelStars =
+    'collectedStars' in stateObj && typeof stateObj.collectedStars === 'number'
+      ? Math.max(0, stateObj.collectedStars)
+      : undefined;
+
+  // Migrate old top-level collectedStars to the spendable star balance if needed.
   if ('collectedStars' in stateObj && typeof stateObj.collectedStars === 'number') {
-    stateObj.stars = stateObj.collectedStars;
     delete stateObj.collectedStars;
+    if (typeof stateObj.stars !== 'number') {
+      stateObj.stars = legacyTopLevelStars;
+    }
   }
 
-  // Sync stars with stats.collectedStars for achievement compatibility
-  const statsObj = stateObj.stats as Record<string, unknown> | undefined;
-  if (statsObj && typeof stateObj.stars === 'number') {
-    statsObj.collectedStars = stateObj.stars;
-  } else if (
-    statsObj &&
-    typeof statsObj.collectedStars === 'number' &&
-    typeof stateObj.stars !== 'number'
-  ) {
-    // Legacy: if stats has collectedStars but state doesn't have stars, migrate
-    stateObj.stars = statsObj.collectedStars;
+  // Keep stars as current spendable balance and stats.collectedStars as lifetime
+  // earned stars for stats + achievement thresholds.
+  if (typeof stateObj.stars === 'number') {
+    stateObj.stars = Math.max(0, stateObj.stars);
+  }
+
+  const statsObj =
+    stateObj.stats && typeof stateObj.stats === 'object'
+      ? (stateObj.stats as Record<string, unknown>)
+      : undefined;
+  if (statsObj) {
+    const statsLifetime =
+      typeof statsObj.collectedStars === 'number' ? Math.max(0, statsObj.collectedStars) : 0;
+    if (typeof stateObj.stars !== 'number') {
+      stateObj.stars = statsLifetime;
+    }
+    statsObj.collectedStars = Math.max(statsLifetime, legacyTopLevelStars ?? 0);
+  } else {
+    stateObj.stats = {
+      ...createStats(),
+      collectedStars: Math.max(
+        typeof stateObj.stars === 'number' ? stateObj.stars : 0,
+        legacyTopLevelStars ?? 0,
+      ),
+    };
   }
 
   // Migrate hearts: if hearts don't exist, set to default
@@ -215,7 +238,7 @@ export const useGameStore = create<GameStore>()(
       unlockedAchievements: [],
       soundEnabled: true,
       score: 0,
-      stars: 0, // Persistent currency
+      stars: 0, // Spendable star balance
       hearts: DEFAULT_HEARTS, // Persistent global resource
       hasSeenTutorial: false,
       highScores: {},
@@ -386,13 +409,14 @@ export const useGameStore = create<GameStore>()(
       },
 
       earnStars: (count: number, _reason?: string) => {
+        const earned = Math.max(0, count);
         const state = get();
-        const newStars = state.stars + count;
+        const newStars = state.stars + earned;
+        const lifetimeStars = Math.max(0, state.stats.collectedStars ?? 0) + earned;
 
-        // Update stats with stars (for achievement tracking)
         const updatedStats = {
           ...state.stats,
-          collectedStars: newStars, // Keep in stats for achievement compatibility
+          collectedStars: lifetimeStars,
         };
 
         // Check for new achievements
@@ -421,6 +445,7 @@ export const useGameStore = create<GameStore>()(
       },
 
       spendStars: (count: number) => {
+        if (count <= 0) return false;
         const state = get();
         if (state.stars >= count) {
           set({ stars: state.stars - count });
@@ -445,10 +470,10 @@ export const useGameStore = create<GameStore>()(
       },
 
       buyHeartsWithStars: (count: number) => {
+        if (count <= 0) return false;
         const state = get();
-        const HEART_COST_STARS = 10; // 10 stars = 1 heart
-        const totalCost = HEART_COST_STARS * count;
         const heartsCanAdd = Math.min(count, MAX_HEARTS - state.hearts);
+        const totalCost = HEART_COST_STARS * heartsCanAdd;
 
         if (state.stars >= totalCost && heartsCanAdd > 0) {
           set({
@@ -461,9 +486,10 @@ export const useGameStore = create<GameStore>()(
       },
 
       buyStars: (count: number) => {
-        // Mocked as FREE for now - will be wired up to payment system later
+        if (count <= 0) return false;
         const state = get();
         set({ stars: state.stars + count });
+        return true;
       },
 
       setScore: (score: number) => {
