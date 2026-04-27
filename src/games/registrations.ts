@@ -22,6 +22,7 @@ import { ASTRONOMY_VISIBLE_FROM_ESTONIA_PACK } from '../curriculum/packs/astrono
 import {
   LANGUAGE_SPATIAL_SENTENCES_SKILL,
   LANGUAGE_SYLLABIFICATION_SKILL,
+  LANGUAGE_VOCABULARY_SKILL,
 } from '../curriculum/skills/language';
 import { LANGUAGE_SPATIAL_SENTENCES_PACK } from '../curriculum/packs/language/spatialSentences';
 import {
@@ -101,6 +102,7 @@ function registerAllGames(): void {
     config: wordBuilderConfig,
     validator: validateWordBuilder,
     allowedProfiles: wordBuilderConfig.allowedProfiles,
+    skillIds: [LANGUAGE_VOCABULARY_SKILL.id],
   });
 
   // Word Cascade
@@ -114,6 +116,7 @@ function registerAllGames(): void {
       config: wordCascadeConfig,
       validator: validateWordCascade,
       allowedProfiles: wordCascadeConfig.allowedProfiles,
+      skillIds: [LANGUAGE_VOCABULARY_SKILL.id],
     });
   }
 
@@ -190,6 +193,7 @@ function registerAllGames(): void {
       config: picturePairsConfig,
       validator: validatePicturePairs,
       allowedProfiles: picturePairsConfig.allowedProfiles,
+      skillIds: [LANGUAGE_VOCABULARY_SKILL.id],
     });
   }
 
@@ -320,6 +324,7 @@ function registerAllGames(): void {
       config: letterMatchConfig,
       validator: validateLetterMatch,
       allowedProfiles: letterMatchConfig.allowedProfiles,
+      skillIds: [LANGUAGE_VOCABULARY_SKILL.id],
     });
   }
 

@@ -1,11 +1,15 @@
-import { ALPHABET, WORD_DB, WORD_DB_EN, PROFILES } from './data';
+import { PROFILES } from './data';
 import { getPackItems, getPackItemsForLocale } from '../curriculum';
 import {
   getConstellationsForLevel,
   ASTRONOMY_VISIBLE_FROM_ESTONIA_PACK,
 } from '../curriculum/packs/astronomy/visibleFromEstonia';
-import { LANGUAGE_SYLLABIFICATION_SKILL } from '../curriculum/skills/language';
-import type { SyllableWord } from '../curriculum/packs/language/types';
+import {
+  LANGUAGE_SYLLABIFICATION_SKILL,
+  LANGUAGE_VOCABULARY_SKILL,
+} from '../curriculum/skills/language';
+import type { SyllableWord, VocabularyWord } from '../curriculum/packs/language/types';
+import { ALPHABET, groupWordsByLength } from '../curriculum/packs/language/vocabulary';
 import {
   LANGUAGE_SPATIAL_SENTENCES_PACK,
   generateSentence,
@@ -75,6 +79,11 @@ import type {
 } from '../types/game';
 
 const profileMeta = (profileId: ProfileType) => PROFILES[profileId] || PROFILES.starter;
+
+function getVocabularyWordDb(locale: 'et' | 'en'): Record<number, VocabularyWord[]> {
+  const words = getPackItemsForLocale<VocabularyWord>(LANGUAGE_VOCABULARY_SKILL.id, locale);
+  return groupWordsByLength(words);
+}
 
 // Helper function to check if a word contains diacritical marks
 function hasDiacritics(word: string): boolean {
@@ -324,8 +333,7 @@ export const Generators: Record<string, GeneratorFunction> = {
       len = Math.min(len + 1, 7);
     }
 
-    // Select appropriate word database
-    const wordDb = locale === 'en' ? WORD_DB_EN : WORD_DB;
+    const wordDb = getVocabularyWordDb(locale);
 
     // Filter words by diacritics for levels 1-2 (Estonian only)
     let availableWords = wordDb[len] || wordDb[4] || [];
@@ -401,7 +409,7 @@ export const Generators: Record<string, GeneratorFunction> = {
     _profile: ProfileType = 'starter',
   ): WordCascadeProblem => {
     const locale = getLocale();
-    const db = locale === 'en' ? WORD_DB_EN : WORD_DB;
+    const db = getVocabularyWordDb(locale);
 
     // Levels map to word lengths (start short, grow gradually)
     // Allow longer words at earlier levels to increase variety
@@ -595,7 +603,7 @@ export const Generators: Record<string, GeneratorFunction> = {
     const meta = profileMeta(profile);
     const harder = meta.difficultyOffset > 0;
     const locale = getLocale();
-    const wordDb = locale === 'en' ? WORD_DB_EN : WORD_DB;
+    const wordDb = getVocabularyWordDb(locale);
     const allWords: Array<{ w: string; e: string }> = Object.values(wordDb).flat();
     if (allWords.length < 4) throw new Error('Not enough words for picture_pairs');
 
@@ -865,9 +873,10 @@ export const Generators: Record<string, GeneratorFunction> = {
     }
 
     // Find a word that contains the target letter (for emoji)
-    let wordObj = null;
-    for (const len of Object.keys(WORD_DB)) {
-      const words = WORD_DB[parseInt(len)];
+    let wordObj: VocabularyWord | null = null;
+    const wordDb = getVocabularyWordDb('et');
+    for (const len of Object.keys(wordDb)) {
+      const words = wordDb[parseInt(len)];
       if (words && words.length > 0) {
         wordObj = getRandom(
           words.filter((w) => w.w.includes(targetUpper)),

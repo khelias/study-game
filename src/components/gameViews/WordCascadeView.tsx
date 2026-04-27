@@ -9,7 +9,8 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { playSound } from '../../engine/audio';
 import { useTranslation } from '../../i18n/useTranslation';
 import { useWrongStrikes } from '../../hooks/useWrongStrikes';
-import { ALPHABET, GAME_CONFIG } from '../../games/data';
+import { GAME_CONFIG } from '../../games/data';
+import { ALPHABET } from '../../curriculum/packs/language/vocabulary';
 import { PaidHintButtons } from '../shared';
 import type { WordCascadeProblem } from '../../types/game';
 

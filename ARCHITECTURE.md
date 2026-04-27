@@ -126,16 +126,16 @@ Top-level hooks in `src/hooks/`. All are idiomatic React hooks — they either e
 
 The registry pattern makes game additions data-driven: no switch statements outside `src/games/`.
 
-- **`games/data.ts`** — `GAME_CONFIG` (per-game UI metadata, difficulty, category, `allowedProfiles`, `levelUpStrategy`), `PROFILES`, `CATEGORIES`, curated word database.
+- **`games/data.ts`** — `GAME_CONFIG` (per-game UI metadata, difficulty, category, `allowedProfiles`, `levelUpStrategy`), `PROFILES`, `CATEGORIES`, and mechanic-level menu metadata.
 - **`games/generators.ts`** — one generator function per game type; produces the next `Problem` given `(level, rng, profile)`.
 - **`games/validators.ts`** — one validator per game type; pure `(problem, userAnswer) → boolean`.
 - **`games/registry.ts`** — centralized registry; games register themselves as `{ id, component, generator, config, validator, allowedProfiles, skillIds?, contentPackId? }`. `skillIds` + `contentPackId` are present on curriculum-migrated bindings (Phase 1).
 - **`games/registrations.ts`** — imports everything and calls `gameRegistry.register(...)` for all 18 games. Module side effect on import. Imports `src/curriculum/` first so pack lookups resolve deterministically.
 
-Game-type-specific content files (`shapeShiftGrid.ts`) still live alongside `generators.ts` — this is the **Skill × Mechanic × Content welding** called out as debt in ROADMAP §2. Six migrations have landed: constellations → `ASTRONOMY_VISIBLE_FROM_ESTONIA_PACK` (Slice 1), syllables → `LANGUAGE_SYLLABIFICATION_{ET,EN}_PACK` (Slice 2), the snake family's arithmetic specs → six focused math packs (Slice 3), Shape Dash's checkpoint/gate question bank → `MATH_GEOMETRY_SHAPES_PACK` (Slice 5), Shape Shift's puzzle database → `SHAPE_SHIFT_PUZZLES_PACK` (Slice 6), and Sentence Logic's scene/sentence data → `LANGUAGE_SPATIAL_SENTENCES_PACK` (Slice 7). Three shapes of pack consumption now exist:
+Game-type-specific content files (`shapeShiftGrid.ts`) and several inline generator branches still live alongside `generators.ts` — this is the **Skill × Mechanic × Content welding** called out as debt in ROADMAP §2. Seven content migrations have landed: constellations → `ASTRONOMY_VISIBLE_FROM_ESTONIA_PACK` (Slice 1), syllables → `LANGUAGE_SYLLABIFICATION_{ET,EN}_PACK` (Slice 2), the snake family's arithmetic specs → six focused math packs (Slice 3), Shape Dash's checkpoint/gate question bank → `MATH_GEOMETRY_SHAPES_PACK` (Slice 5), Shape Shift's puzzle database → `SHAPE_SHIFT_PUZZLES_PACK` (Slice 6), Sentence Logic's scene/sentence data → `LANGUAGE_SPATIAL_SENTENCES_PACK` (Slice 7), and vocabulary words → `LANGUAGE_VOCABULARY_{ET,EN}_PACK` (Slice 8). Three shapes of pack consumption now exist:
 
 - **Static single-pack**: binding sets `contentPackId`; generator calls `getPackItems(id)`. Used by `star_mapper`, `shape_dash`, `shape_shift`, and `sentence_logic`.
-- **Multi-locale skill**: binding sets only `skillIds`; generator calls `getPackItemsForLocale(skillId, locale)`. Used by `syllable_builder`.
+- **Multi-locale skill**: binding sets only `skillIds`; generator calls `getPackItemsForLocale(skillId, locale)`. Used by `syllable_builder` and the vocabulary-backed word games.
 - **Procedural DSL pack**: pack items are spec-recipes, not static instances. The engine owns range-scaling logic; specs carry op kind + optional per-spec overrides. Used by the six snake bindings. Multiple bindings point to different packs → appear under one mechanic card in the menu using the same underlying component.
 
 ## Curriculum (skills + content packs)
@@ -146,6 +146,7 @@ Game-type-specific content files (`shapeShiftGrid.ts`) still live alongside `gen
 - **`curriculum/registry.ts`** — `skillRegistry` + `contentPackRegistry` singletons. `getPackItems<T>(id)` resolves a pack by id; `getPackItemsForLocale<T>(skillId, locale)` resolves the right pack when a skill has one pack per locale (falls back to any pack of the skill if the locale match is missing).
 - **`curriculum/skills/`** — one file per subject, registering `Skill` taxonomy entries.
 - **`curriculum/packs/<subject>/<pack>.ts`** — a `ContentPack<TItem>` export plus pack-scoped helper lookups (e.g. `getConstellationById(items, id)`). Helpers take `items` explicitly so the pack module stays stateless.
+- **`curriculum/packs/language/vocabulary.ts`** — Estonian and English vocabulary packs plus the Estonian alphabet and word-length grouping helper used by word builder, word cascade, picture pairs, and letter match.
 - **`curriculum/packs/language/spatialSentences.ts`** — Sentence Logic scenes, subject/anchor translations, position translations, and sentence construction helpers. The generator owns level-based scene filtering and option construction.
 - **`curriculum/packs/geometry/shapeShiftPuzzles.ts`** — Shape Shift puzzle definitions. The generator owns mode selection, history avoidance, piece initialization, and decoys; the puzzle data lives in curriculum.
 - **`curriculum/packs/math/types.ts`** — re-exports the `ArithmeticSpec` / `EquationOp` DSL types from `src/types/game.ts`. Math packs are lists of specs (op + optional per-spec overrides), consumed by the `math_snake` engine which owns level-based range scaling.

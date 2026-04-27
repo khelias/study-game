@@ -12,14 +12,20 @@ import { ASTRONOMY_VISIBLE_CONSTELLATIONS_SKILL } from '../skills/astronomy';
 import {
   LANGUAGE_SPATIAL_SENTENCES_SKILL,
   LANGUAGE_SYLLABIFICATION_SKILL,
+  LANGUAGE_VOCABULARY_SKILL,
 } from '../skills/language';
 import { LANGUAGE_SYLLABIFICATION_ET_PACK } from '../packs/language/syllables_et';
 import { LANGUAGE_SYLLABIFICATION_EN_PACK } from '../packs/language/syllables_en';
-import type { SyllableWord } from '../packs/language/types';
+import type { SyllableWord, VocabularyWord } from '../packs/language/types';
 import {
   LANGUAGE_SPATIAL_SENTENCES_PACK,
   generateSentence,
 } from '../packs/language/spatialSentences';
+import {
+  groupWordsByLength,
+  LANGUAGE_VOCABULARY_EN_PACK,
+  LANGUAGE_VOCABULARY_ET_PACK,
+} from '../packs/language/vocabulary';
 import {
   MATH_ADDITION_WITHIN_20_SKILL,
   MATH_ADDITION_WITHIN_100_SKILL,
@@ -81,6 +87,13 @@ describe('curriculum', () => {
       );
       expect(etPack?.id).toBe(LANGUAGE_SYLLABIFICATION_ET_PACK.id);
       expect(enPack?.id).toBe(LANGUAGE_SYLLABIFICATION_EN_PACK.id);
+    });
+
+    it('registers vocabulary packs per locale', () => {
+      const etPack = contentPackRegistry.findBySkillAndLocale(LANGUAGE_VOCABULARY_SKILL.id, 'et');
+      const enPack = contentPackRegistry.findBySkillAndLocale(LANGUAGE_VOCABULARY_SKILL.id, 'en');
+      expect(etPack?.id).toBe(LANGUAGE_VOCABULARY_ET_PACK.id);
+      expect(enPack?.id).toBe(LANGUAGE_VOCABULARY_EN_PACK.id);
     });
 
     it('getPackItemsForLocale returns locale-specific items', () => {
@@ -169,6 +182,40 @@ describe('curriculum', () => {
         expect(counts.has(3)).toBe(true);
         expect(counts.has(4)).toBe(true);
       }
+    });
+  });
+
+  describe('vocabulary packs shape', () => {
+    it('both packs bind to the vocabulary skill', () => {
+      expect(LANGUAGE_VOCABULARY_ET_PACK.skillId).toBe(LANGUAGE_VOCABULARY_SKILL.id);
+      expect(LANGUAGE_VOCABULARY_EN_PACK.skillId).toBe(LANGUAGE_VOCABULARY_SKILL.id);
+      expect(skillRegistry.has(LANGUAGE_VOCABULARY_SKILL.id)).toBe(true);
+    });
+
+    it('declare distinct locales', () => {
+      expect(LANGUAGE_VOCABULARY_ET_PACK.locale).toBe('et');
+      expect(LANGUAGE_VOCABULARY_EN_PACK.locale).toBe('en');
+    });
+
+    it('groups words by length for generator progression', () => {
+      const et = groupWordsByLength(LANGUAGE_VOCABULARY_ET_PACK.items);
+      const en = groupWordsByLength(LANGUAGE_VOCABULARY_EN_PACK.items);
+      for (const db of [et, en]) {
+        expect(db[3]?.length).toBeGreaterThan(0);
+        expect(db[4]?.length).toBeGreaterThan(0);
+        expect(db[5]?.length).toBeGreaterThan(0);
+        expect(db[6]?.length).toBeGreaterThan(0);
+        expect(db[7]?.length).toBeGreaterThan(0);
+      }
+    });
+
+    it('returns locale-specific vocabulary through registry lookup', () => {
+      const et = getPackItemsForLocale<VocabularyWord>(LANGUAGE_VOCABULARY_SKILL.id, 'et');
+      const en = getPackItemsForLocale<VocabularyWord>(LANGUAGE_VOCABULARY_SKILL.id, 'en');
+      expect(et).toBe(LANGUAGE_VOCABULARY_ET_PACK.items);
+      expect(en).toBe(LANGUAGE_VOCABULARY_EN_PACK.items);
+      expect(et.some((word) => /[ÕÄÖÜŠŽ]/.test(word.w))).toBe(true);
+      expect(en.every((word) => /^[A-Z]+$/.test(word.w))).toBe(true);
     });
   });
 

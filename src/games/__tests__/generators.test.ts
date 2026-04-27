@@ -4,11 +4,13 @@ import { createRng } from '../../engine/rng';
 import type {
   BalanceScaleProblem,
   WordBuilderProblem,
+  WordCascadeProblem,
   PatternProblem,
   SentenceLogicProblem,
   MathSnakeProblem,
   CompareSizesProblem,
   PicturePairsProblem,
+  LetterMatchProblem,
   StarMapperProblem,
   ShapeShiftProblem,
   ShapeDashProblem,
@@ -21,6 +23,7 @@ import {
 } from '../../curriculum/packs/math/geometry_shapes';
 import { SHAPE_SHIFT_PUZZLES_PACK } from '../../curriculum/packs/geometry/shapeShiftPuzzles';
 import { LANGUAGE_SPATIAL_SENTENCES_PACK } from '../../curriculum/packs/language/spatialSentences';
+import { LANGUAGE_VOCABULARY_ET_PACK } from '../../curriculum/packs/language/vocabulary';
 
 describe('Generators', () => {
   describe('balance_scale', () => {
@@ -229,6 +232,35 @@ describe('Generators', () => {
       expect(problem5.target.length).toBeGreaterThanOrEqual(problem1.target.length);
       expect(problem10.target.length).toBeGreaterThanOrEqual(problem5.target.length);
     });
+
+    it('should source words from the vocabulary pack', () => {
+      const rng = createRng(12345);
+      const generator = Generators.word_builder;
+      if (!generator) throw new Error('word_builder generator not found');
+      const problem = generator(1, rng, 'starter') as WordBuilderProblem;
+      const source = LANGUAGE_VOCABULARY_ET_PACK.items.find(
+        (item) => item.w === problem.target.toUpperCase(),
+      );
+
+      expect(source).toBeDefined();
+      expect(problem.emoji).toBe(source?.e);
+    });
+  });
+
+  describe('word_cascade', () => {
+    it('should source target words from the vocabulary pack', () => {
+      const rng = createRng(12345);
+      const generator = Generators.word_cascade;
+      if (!generator) throw new Error('word_cascade generator not found');
+      const problem = generator(1, rng, 'starter') as WordCascadeProblem;
+      const source = LANGUAGE_VOCABULARY_ET_PACK.items.find(
+        (item) => item.w === problem.target.toUpperCase(),
+      );
+
+      expect(problem.type).toBe('word_cascade');
+      expect(source).toBeDefined();
+      expect(problem.emoji).toBe(source?.e);
+    });
   });
 
   describe('pattern', () => {
@@ -383,6 +415,40 @@ describe('Generators', () => {
       const rng2 = createRng(222);
       const high = generator(10, rng2, 'advanced') as PicturePairsProblem;
       expect(high.pairs.length).toBeGreaterThanOrEqual(low.pairs.length);
+    });
+
+    it('should source pairs from the vocabulary pack', () => {
+      const rng = createRng(777);
+      const generator = Generators.picture_pairs;
+      if (!generator) throw new Error('picture_pairs generator not found');
+      const problem = generator(3, rng, 'advanced') as PicturePairsProblem;
+      const sourceByWord = new Map(
+        LANGUAGE_VOCABULARY_ET_PACK.items.map((item) => [item.w, item.e]),
+      );
+
+      for (const pair of problem.pairs) {
+        expect(sourceByWord.get(pair.word)).toBe(pair.emoji);
+      }
+    });
+  });
+
+  describe('letter_match', () => {
+    it('should use vocabulary words when a matching letter exists', () => {
+      const generator = Generators.letter_match;
+      if (!generator) throw new Error('letter_match generator not found');
+      const sourceByWord = new Map(
+        LANGUAGE_VOCABULARY_ET_PACK.items.map((item) => [item.w, item.e]),
+      );
+
+      const problem = Array.from(
+        { length: 80 },
+        (_, seed) => generator(1, createRng(seed), 'starter') as LetterMatchProblem,
+      ).find((candidate) => sourceByWord.has(candidate.word));
+
+      expect(problem).toBeDefined();
+      if (!problem) throw new Error('No letter_match problem used a vocabulary word');
+      expect(problem.word).toContain(problem.display);
+      expect(sourceByWord.get(problem.word)).toBe(problem.emoji);
     });
   });
 

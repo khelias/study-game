@@ -1,7 +1,7 @@
 /**
  * PicturePairsView Component
  *
- * Classic memory game: match emoji–word pairs. Reuses WORD_DB content.
+ * Classic memory game: match emoji–word pairs from the vocabulary curriculum pack.
  * Designed for progress, juice, and addictiveness (moves counter, celebration).
  */
 

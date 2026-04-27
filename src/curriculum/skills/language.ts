@@ -34,3 +34,17 @@ export const LANGUAGE_SPATIAL_SENTENCES_SKILL: Skill = {
     topic: 'language.grammar.spatial_relations',
   },
 };
+
+export const LANGUAGE_VOCABULARY_SKILL: Skill = {
+  id: 'language.vocabulary',
+  name: {
+    et: 'Sõnavara',
+    en: 'Vocabulary',
+  },
+  taxonomy: {
+    subject: 'emakeel',
+    grade: 1,
+    level: 'foundation',
+    topic: 'language.vocabulary.words',
+  },
+};

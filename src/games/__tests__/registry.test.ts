@@ -8,7 +8,10 @@
 import { describe, it, expect } from 'vitest';
 import { gameRegistry } from '../registry';
 import { MATH_GEOMETRY_SHAPES_SKILL } from '../../curriculum/skills/math';
-import { LANGUAGE_SPATIAL_SENTENCES_SKILL } from '../../curriculum/skills/language';
+import {
+  LANGUAGE_SPATIAL_SENTENCES_SKILL,
+  LANGUAGE_VOCABULARY_SKILL,
+} from '../../curriculum/skills/language';
 import { LANGUAGE_SPATIAL_SENTENCES_PACK } from '../../curriculum/packs/language/spatialSentences';
 import { MATH_GEOMETRY_SHAPES_PACK } from '../../curriculum/packs/math/geometry_shapes';
 import { SHAPE_SHIFT_PUZZLES_PACK } from '../../curriculum/packs/geometry/shapeShiftPuzzles';
@@ -57,6 +60,14 @@ describe('GameRegistry', () => {
     expect(game).toBeDefined();
     expect(game?.skillIds).toEqual([LANGUAGE_SPATIAL_SENTENCES_SKILL.id]);
     expect(game?.contentPackId).toBe(LANGUAGE_SPATIAL_SENTENCES_PACK.id);
+  });
+
+  it('should bind word vocabulary games to the vocabulary skill', () => {
+    for (const id of ['word_builder', 'word_cascade', 'picture_pairs', 'letter_match']) {
+      const game = gameRegistry.get(id);
+      expect(game).toBeDefined();
+      expect(game?.skillIds).toEqual([LANGUAGE_VOCABULARY_SKILL.id]);
+    }
   });
 
   it('should return undefined for unknown game', () => {
