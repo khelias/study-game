@@ -41,6 +41,7 @@ import {
   MATH_BALANCE_EQUATIONS_SKILL,
   MATH_ADDITION_MEMORY_SKILL,
   MATH_GRID_NAVIGATION_SKILL,
+  MATH_MIXED_PROBLEM_SOLVING_SKILL,
 } from '../skills/math';
 import { MATH_ADDITION_WITHIN_20_PACK } from '../packs/math/addition_within_20';
 import { MATH_ADDITION_WITHIN_100_PACK } from '../packs/math/addition_within_100';
@@ -77,6 +78,14 @@ import {
   getRoboPathObstacleStage,
   getRoboPathSettings,
 } from '../packs/math/grid_navigation';
+import {
+  MATH_BATTLELEARN_PACK,
+  getBattleLearnCellDistribution,
+  getBattleLearnCountObjectLabels,
+  getBattleLearnProfileStage,
+  getBattleLearnQuestionStage,
+  getBattleLearnSequencePatterns,
+} from '../packs/math/battlelearn';
 import { SHAPE_SHIFT_PUZZLES_PACK } from '../packs/geometry/shapeShiftPuzzles';
 import type { Constellation } from '../../types/game';
 
@@ -295,6 +304,7 @@ describe('curriculum', () => {
       { pack: MATH_BALANCE_EQUATIONS_PACK, skill: MATH_BALANCE_EQUATIONS_SKILL },
       { pack: MATH_ADDITION_MEMORY_PACK, skill: MATH_ADDITION_MEMORY_SKILL },
       { pack: MATH_GRID_NAVIGATION_PACK, skill: MATH_GRID_NAVIGATION_SKILL },
+      { pack: MATH_BATTLELEARN_PACK, skill: MATH_MIXED_PROBLEM_SOLVING_SKILL },
     ];
 
     it('every math pack binds to its declared skill', () => {
@@ -436,6 +446,41 @@ describe('curriculum', () => {
       expect(getRoboPathGridSize(MATH_GRID_NAVIGATION_PACK.items, 'advanced', 16)).toBe(8);
       expect(getRoboPathObstacleStage(MATH_GRID_NAVIGATION_PACK.items, 9).obstacleVariance).toBe(2);
       expect(settings.maxObstacleRatio).toBe(0.25);
+    });
+
+    it('battlelearn pack defines board and question progression', () => {
+      const starterStage = getBattleLearnProfileStage(MATH_BATTLELEARN_PACK.items, 'starter', 1);
+      const advancedStage = getBattleLearnProfileStage(MATH_BATTLELEARN_PACK.items, 'advanced', 11);
+      const initialStage = getBattleLearnQuestionStage(
+        MATH_BATTLELEARN_PACK.items,
+        'initial',
+        'starter',
+        1,
+      );
+      const followupStage = getBattleLearnQuestionStage(
+        MATH_BATTLELEARN_PACK.items,
+        'followup',
+        'advanced',
+        6,
+      );
+      const cellDistribution = getBattleLearnCellDistribution(MATH_BATTLELEARN_PACK.items);
+      const advancedPatterns = getBattleLearnSequencePatterns(
+        MATH_BATTLELEARN_PACK.items,
+        'advanced_pattern',
+      );
+
+      expect(starterStage).toMatchObject({ gridSize: 4, shipLengths: [2] });
+      expect(advancedStage).toMatchObject({ gridSize: 8, shipLengths: [4, 3, 3, 2] });
+      expect(initialStage.questionKinds).toEqual(['count_ships', 'simple_addition', 'count_ships']);
+      expect(followupStage.questionKinds).toContain('time_problem');
+      expect(cellDistribution.weights.map((entry) => entry.cell)).toEqual([
+        'empty',
+        'problem',
+        'star',
+        'heart',
+      ]);
+      expect(getBattleLearnCountObjectLabels(MATH_BATTLELEARN_PACK.items, 'et')).toContain('laeva');
+      expect(advancedPatterns.some((pattern) => pattern.answer === 81)).toBe(true);
     });
   });
 

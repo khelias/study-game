@@ -72,6 +72,18 @@ import {
   type RoboPathProgressionItem,
   type RoboPathProgressionProfile,
 } from '../curriculum/packs/math/grid_navigation';
+import {
+  MATH_BATTLELEARN_PACK,
+  getBattleLearnCellDistribution,
+  getBattleLearnCountObjectLabels,
+  getBattleLearnProfileStage,
+  getBattleLearnQuestionStage,
+  getBattleLearnSequencePatterns,
+  type BattleLearnCurriculumItem,
+  type BattleLearnProfile,
+  type BattleLearnQuestionFlow,
+  type BattleLearnQuestionKind,
+} from '../curriculum/packs/math/battlelearn';
 import { SHAPE_SHIFT_PUZZLES_PACK } from '../curriculum/packs/geometry/shapeShiftPuzzles';
 import { getRandom, uid } from '../engine/rng';
 import { getLocale, getTranslations } from '../i18n/index';
@@ -1697,9 +1709,12 @@ export const Generators: Record<string, GeneratorFunction> = {
     rng: RngFunction = Math.random,
     profile: ProfileType = 'starter',
   ): BattleLearnProblem => {
-    const isAdvanced = profile === 'advanced';
-    let gridSize: number;
-    let shipLengths: number[];
+    const curriculumItems = getPackItems<BattleLearnCurriculumItem>(MATH_BATTLELEARN_PACK.id);
+    const battleProfile: BattleLearnProfile = profile === 'advanced' ? 'advanced' : 'starter';
+    const profileStage = getBattleLearnProfileStage(curriculumItems, battleProfile, level);
+    const cellDistribution = getBattleLearnCellDistribution(curriculumItems);
+    const gridSize = profileStage.gridSize;
+    const shipLengths = [...profileStage.shipLengths];
 
     function buildBattleLearnCellGrid(
       size: number,
@@ -1725,182 +1740,42 @@ export const Generators: Record<string, GeneratorFunction> = {
           }
         }
       }
-      // Weights: mostly empty, fewer challenges, fewer hearts
-      const weights = [0.72, 0.15, 0.1, 0.03];
-      const types: Exclude<BattleLearnCellType, 'ship'>[] = ['empty', 'problem', 'star', 'heart'];
       for (const [r, c] of nonShipCells) {
         const roll = rngFn();
         let sum = 0;
-        for (let i = 0; i < weights.length; i++) {
-          sum += weights[i]!;
+        let cellType: Exclude<BattleLearnCellType, 'ship'> = 'empty';
+        for (const entry of cellDistribution.weights) {
+          sum += entry.weight;
           if (roll < sum) {
-            grid[r]![c] = types[i]!;
+            cellType = entry.cell;
             break;
           }
         }
+        grid[r]![c] = cellType;
       }
       return grid;
     }
 
-    if (isAdvanced) {
-      // Advanced profile: starts moderate, grows to complex
-      gridSize = level <= 2 ? 5 : level <= 5 ? 6 : level <= 10 ? 7 : 8;
-      shipLengths =
-        level <= 2 ? [3, 2] : level <= 5 ? [3, 2, 2] : level <= 10 ? [4, 3, 2] : [4, 3, 3, 2];
-    } else {
-      // Starter profile: gradual progression from very simple to moderate
-      gridSize = level === 1 ? 4 : level <= 3 ? 4 : level <= 6 ? 5 : 6;
-      shipLengths = level === 1 ? [2] : level <= 3 ? [2, 2] : level <= 6 ? [3, 2] : [3, 2, 2];
-    }
-
     const ships = placeShips(gridSize, shipLengths, rng);
     const cellGrid = buildBattleLearnCellGrid(gridSize, ships, rng);
-    let prompt: string;
-    let correctAnswer: number | string;
-    let options: string[];
-
-    if (isAdvanced) {
-      if (level <= 5) {
-        const questionTypes = [
-          () => generatePatternQuestion(level, rng),
-          () => generateDistanceQuestion(level, rng, gridSize),
-          () => generateWordProblem3(level, rng),
-          () => generateNavigateQuestion(level, rng, gridSize),
-          () => generateAreaProblem(level, rng),
-          () => generatePatternQuestion(level, rng),
-          () => generateDistanceQuestion(level, rng, gridSize),
-        ];
-        const question = questionTypes[Math.floor(rng() * questionTypes.length)]!();
-        prompt = question.prompt;
-        correctAnswer = question.correctAnswer;
-        if (
-          typeof correctAnswer === 'string' &&
-          (correctAnswer.includes('-') || correctAnswer.includes('('))
-        ) {
-          options = generateCoordinateOptions(correctAnswer, gridSize, rng);
-        } else {
-          options = generateOptions(correctAnswer as number, 4, rng);
-        }
-      } else if (level <= 10) {
-        const questionTypes = [
-          () => generateMultiMoveQuestion(level, rng, gridSize),
-          () => generateFleetMultiplyQuestion(level, rng),
-          () => generateFormationCount(level, rng),
-          () => generateDistanceQuestion(level, rng, gridSize),
-          () => generateWordProblem3(level, rng),
-          () => generateAreaProblem(level, rng),
-          () => generateFleetMultiplyQuestion(level, rng),
-          () => generateMultiMoveQuestion(level, rng, gridSize),
-        ];
-        const question = questionTypes[Math.floor(rng() * questionTypes.length)]!();
-        prompt = question.prompt;
-        correctAnswer = question.correctAnswer;
-        if (
-          typeof correctAnswer === 'string' &&
-          (correctAnswer.includes('-') || correctAnswer.includes('('))
-        ) {
-          options = generateCoordinateOptions(correctAnswer, gridSize, rng);
-        } else {
-          options = generateOptions(correctAnswer as number, 4, rng);
-        }
-      } else {
-        const questionTypes = [
-          () => generateVectorAddition(level, rng),
-          () => generateMultiMoveQuestion(level, rng, gridSize),
-          () => generateFleetMultiplyQuestion(level, rng),
-          () => generateFormationCount(level, rng),
-          () => generateDistanceQuestion(level, rng, gridSize),
-          () => generateVectorAddition(level, rng),
-          () => generateMultiMoveQuestion(level, rng, gridSize),
-        ];
-        const question = questionTypes[Math.floor(rng() * questionTypes.length)]!();
-        prompt = question.prompt;
-        correctAnswer = question.correctAnswer;
-        if (
-          typeof correctAnswer === 'string' &&
-          (correctAnswer.includes('-') || correctAnswer.includes('('))
-        ) {
-          options = generateCoordinateOptions(correctAnswer, gridSize, rng);
-        } else {
-          options = generateOptions(correctAnswer as number, 4, rng);
-        }
-      }
-    } else if (level === 1) {
-      // Level 1: Super simple - only counting (3 question types for easier start)
-      const questionTypes = [
-        () => generateCountShipsQuestion(level, rng),
-        () => generateSimpleAddition(level, rng),
-        () => generateCountShipsQuestion(level, rng), // Count appears twice
-      ];
-      const questionType = questionTypes[Math.floor(rng() * questionTypes.length)]!;
-      const question = questionType();
-      prompt = question.prompt;
-      correctAnswer = question.correctAnswer;
-      options = generateOptions(correctAnswer, 4, rng);
-    } else if (level <= 3) {
-      // Level 2-3: Basic counting/arithmetic
-      const questionTypes = [
-        () => generateCountShipsQuestion(level, rng),
-        () => generateCountObjectsQuestion(level, rng),
-        () => generateSimpleAddition(level, rng),
-        () => generateSimpleSubtraction(level, rng),
-        () => generateGreaterThanQuestion(level, rng),
-        () => generateLessThanQuestion(level, rng),
-      ];
-      const questionType = questionTypes[Math.floor(rng() * questionTypes.length)]!;
-      const question = questionType();
-      prompt = question.prompt;
-      correctAnswer = question.correctAnswer;
-      options = generateOptions(correctAnswer, 4, rng);
-    } else if (level <= 6) {
-      // Level 4-6: Subtraction/addition and word problems
-      const questionTypes = [
-        () => generateAmmunitionQuestion(level, rng),
-        () => generateMissingNumber(level, rng),
-        () => generateMissingNumberSub(level, rng),
-        () => generateWordProblem1(level, rng),
-        () => generateWordProblem2(level, rng),
-        () => generateTwoStepProblem(level, rng),
-        () => generateTimeProblem(level, rng),
-        () => generateCoinProblem(level, rng),
-        () => generateSimpleAddition(level, rng),
-        () => generateSimpleSubtraction(level, rng),
-      ];
-      const questionType = questionTypes[Math.floor(rng() * questionTypes.length)]!;
-      const question = questionType();
-      prompt = question.prompt;
-      correctAnswer = question.correctAnswer;
-      options = generateOptions(correctAnswer, 4, rng);
-    } else {
-      // Level 7+: Coordinates/logic and multi-step
-      const questionTypes = [
-        () => generateNavigateQuestion(level, rng, gridSize),
-        () => generateSequenceQuestion(level, rng),
-        () => generateAreaProblem(level, rng),
-        () => generatePerimeterProblem(level, rng),
-        () => generateWordProblem3(level, rng),
-        () => generateTwoStepProblem(level, rng),
-        () => generateLogicPuzzle(level, rng),
-      ];
-      const questionType = questionTypes[Math.floor(rng() * questionTypes.length)]!;
-      const question = questionType();
-      prompt = question.prompt;
-      correctAnswer = question.correctAnswer;
-      if (
-        typeof correctAnswer === 'string' &&
-        (correctAnswer.includes('-') || correctAnswer.includes('('))
-      ) {
-        options = generateCoordinateOptions(correctAnswer, gridSize, rng);
-      } else if (correctAnswer === '>' || correctAnswer === '<' || correctAnswer === '=') {
-        options = ['>', '<', '='];
-      } else {
-        options = generateOptions(correctAnswer as number, 4, rng);
-      }
-    }
+    const question = generateBattleLearnQuestionForStage(
+      curriculumItems,
+      'initial',
+      battleProfile,
+      level,
+      rng,
+      gridSize,
+    );
+    const options = generateBattleLearnOptions(question.correctAnswer, gridSize, rng);
 
     const numOptions = options.length;
     const correctIndex = Math.floor(rng() * numOptions);
-    const shuffledOptions = shuffleOptionsWithCorrect(options, correctAnswer, correctIndex, rng);
+    const shuffledOptions = shuffleOptionsWithCorrect(
+      options,
+      question.correctAnswer,
+      correctIndex,
+      rng,
+    );
 
     return {
       type: 'battlelearn',
@@ -1913,7 +1788,7 @@ export const Generators: Record<string, GeneratorFunction> = {
       sunkShips: [],
       shotAvailable: false,
       question: {
-        prompt,
+        prompt: question.prompt,
         options: shuffledOptions,
         correctIndex,
       },
@@ -2225,6 +2100,107 @@ function formatQuestion(template: string, params: Record<string, string | number
   return result;
 }
 
+interface GeneratedBattleLearnQuestion {
+  prompt: string;
+  correctAnswer: number | string;
+}
+
+function generateBattleLearnQuestionForStage(
+  curriculumItems: readonly BattleLearnCurriculumItem[],
+  flow: BattleLearnQuestionFlow,
+  profile: BattleLearnProfile,
+  level: number,
+  rng: RngFunction,
+  gridSize: number,
+): GeneratedBattleLearnQuestion {
+  const stage = getBattleLearnQuestionStage(curriculumItems, flow, profile, level);
+  const kind = stage.questionKinds[Math.floor(rng() * stage.questionKinds.length)]!;
+  return generateBattleLearnQuestionByKind(kind, curriculumItems, level, rng, gridSize);
+}
+
+function generateBattleLearnQuestionByKind(
+  kind: BattleLearnQuestionKind,
+  curriculumItems: readonly BattleLearnCurriculumItem[],
+  level: number,
+  rng: RngFunction,
+  gridSize: number,
+): GeneratedBattleLearnQuestion {
+  switch (kind) {
+    case 'count_ships':
+      return generateCountShipsQuestion(level, rng);
+    case 'count_objects':
+      return generateCountObjectsQuestion(level, rng, curriculumItems);
+    case 'simple_addition':
+      return generateSimpleAddition(level, rng);
+    case 'simple_subtraction':
+      return generateSimpleSubtraction(level, rng);
+    case 'greater_than':
+      return generateGreaterThanQuestion(level, rng);
+    case 'less_than':
+      return generateLessThanQuestion(level, rng);
+    case 'ammunition':
+      return generateAmmunitionQuestion(level, rng);
+    case 'missing_number_add':
+      return generateMissingNumber(level, rng);
+    case 'missing_number_sub':
+      return generateMissingNumberSub(level, rng);
+    case 'word_problem_1':
+      return generateWordProblem1(level, rng);
+    case 'word_problem_2':
+      return generateWordProblem2(level, rng);
+    case 'two_step':
+      return generateTwoStepProblem(level, rng);
+    case 'time_problem':
+      return generateTimeProblem(level, rng);
+    case 'coin_problem':
+      return generateCoinProblem(level, rng);
+    case 'navigate':
+      return generateNavigateQuestion(level, rng, gridSize);
+    case 'sequence_next':
+      return generateSequenceQuestion(level, rng, curriculumItems);
+    case 'area':
+      return generateAreaProblem(level, rng);
+    case 'perimeter':
+      return generatePerimeterProblem(level, rng);
+    case 'word_problem_3':
+      return generateWordProblem3(level, rng);
+    case 'logic_puzzle':
+      return generateLogicPuzzle(level, rng);
+    case 'pattern_next':
+      return generatePatternQuestion(level, rng, curriculumItems);
+    case 'distance':
+      return generateDistanceQuestion(level, rng, gridSize);
+    case 'multi_move':
+      return generateMultiMoveQuestion(level, rng, gridSize);
+    case 'fleet_multiply':
+      return generateFleetMultiplyQuestion(level, rng);
+    case 'formation_count':
+      return generateFormationCount(level, rng);
+    case 'vector_add':
+      return generateVectorAddition(level, rng);
+  }
+  const exhaustive: never = kind;
+  void exhaustive;
+  throw new Error('Unsupported BattleLearn question kind');
+}
+
+function generateBattleLearnOptions(
+  correctAnswer: number | string,
+  gridSize: number,
+  rng: RngFunction,
+): string[] {
+  if (
+    typeof correctAnswer === 'string' &&
+    (correctAnswer.includes('-') || correctAnswer.includes('('))
+  ) {
+    return generateCoordinateOptions(correctAnswer, gridSize, rng);
+  }
+  if (correctAnswer === '>' || correctAnswer === '<' || correctAnswer === '=') {
+    return ['>', '<', '='];
+  }
+  return generateOptions(correctAnswer as number, 4, rng);
+}
+
 // Starter Profile Question Generators (Level 1-3: Basic counting/arithmetic)
 
 function generateCountShipsQuestion(
@@ -2367,14 +2343,12 @@ function generateCoinProblem(
 function generateCountObjectsQuestion(
   _level: number,
   rng: RngFunction,
+  curriculumItems: readonly BattleLearnCurriculumItem[],
 ): { prompt: string; correctAnswer: number } {
   const t = getTranslations();
   const locale = getLocale();
-  const items =
-    locale === 'et'
-      ? ['laeva', 'torpeedot', 'meremeest', 'kahurit']
-      : ['ships', 'torpedoes', 'sailors', 'cannons'];
-  const item = items[Math.floor(rng() * items.length)]!;
+  const labels = getBattleLearnCountObjectLabels(curriculumItems, locale);
+  const item = labels[Math.floor(rng() * labels.length)]!;
   const count = Math.min(Math.floor(rng() * 5) + 2, 10);
   const shipEmoji = '🚢 '.repeat(count);
   return {
@@ -2495,19 +2469,14 @@ function generateNavigateQuestion(
 function generateSequenceQuestion(
   _level: number,
   rng: RngFunction,
+  curriculumItems: readonly BattleLearnCurriculumItem[],
 ): { prompt: string; correctAnswer: number } {
   const t = getTranslations();
-  const patterns = [
-    { seq: [2, 4, 6], answer: 8 },
-    { seq: [5, 10, 15], answer: 20 },
-    { seq: [1, 3, 5], answer: 7 },
-    { seq: [10, 20, 30], answer: 40 },
-    { seq: [3, 6, 9], answer: 12 },
-  ];
+  const patterns = getBattleLearnSequencePatterns(curriculumItems, 'starter_sequence');
   const pattern = patterns[Math.floor(rng() * patterns.length)]!;
   return {
     prompt: formatQuestion(t.battlelearn.questions.sequenceNext, {
-      sequence: pattern.seq.join(', '),
+      sequence: pattern.sequence.join(', '),
     }),
     correctAnswer: pattern.answer,
   };
@@ -2544,21 +2513,14 @@ function generatePerimeterProblem(
 function generatePatternQuestion(
   _level: number,
   rng: RngFunction,
+  curriculumItems: readonly BattleLearnCurriculumItem[],
 ): { prompt: string; correctAnswer: number } {
   const t = getTranslations();
-  const patterns = [
-    { seq: [2, 4, 8], answer: 16 },
-    { seq: [5, 10, 15], answer: 20 },
-    { seq: [3, 6, 12], answer: 24 },
-    { seq: [1, 3, 5], answer: 7 },
-    { seq: [10, 20, 30], answer: 40 },
-    { seq: [1, 2, 4], answer: 8 },
-    { seq: [3, 9, 27], answer: 81 },
-  ];
+  const patterns = getBattleLearnSequencePatterns(curriculumItems, 'advanced_pattern');
   const pattern = patterns[Math.floor(rng() * patterns.length)]!;
   return {
     prompt: formatQuestion(t.battlelearn.questions.patternNext, {
-      pattern: pattern.seq.join(', '),
+      pattern: pattern.sequence.join(', '),
     }),
     correctAnswer: pattern.answer,
   };
@@ -2822,135 +2784,33 @@ export function generateBattleLearnQuestion(
   rng: RngFunction = Math.random,
 ): BattleLearnProblem {
   const gridSize = currentProblem.gridSize;
-  let prompt: string;
-  let correctAnswer: number | string;
-  let options: string[] = [];
-
-  // Helper to set options and return correctIndex for next step
-  const setOptionsForAnswer = (): number => {
-    if (
-      typeof correctAnswer === 'string' &&
-      (correctAnswer.includes('-') || correctAnswer.includes('('))
-    ) {
-      options = generateCoordinateOptions(correctAnswer, gridSize, rng);
-    } else if (correctAnswer === '>' || correctAnswer === '<' || correctAnswer === '=') {
-      options = ['>', '<', '='];
-    } else {
-      options = generateOptions(correctAnswer as number, 4, rng);
-    }
-    return options.length;
-  };
-
-  // Generate question based on profile and level (same logic as generators)
-  if (profile === 'starter') {
-    if (level <= 3) {
-      const questionTypes = [
-        () => generateCountShipsQuestion(level, rng),
-        () => generateCountObjectsQuestion(level, rng),
-        () => generateSimpleAddition(level, rng),
-        () => generateSimpleSubtraction(level, rng),
-        () => generateGreaterThanQuestion(level, rng),
-        () => generateLessThanQuestion(level, rng),
-      ];
-      const questionType = questionTypes[Math.floor(rng() * questionTypes.length)]!;
-      const question = questionType();
-      prompt = question.prompt;
-      correctAnswer = question.correctAnswer;
-      setOptionsForAnswer();
-    } else if (level <= 6) {
-      const questionTypes = [
-        () => generateAmmunitionQuestion(level, rng),
-        () => generateMissingNumber(level, rng),
-        () => generateMissingNumberSub(level, rng),
-        () => generateWordProblem1(level, rng),
-        () => generateWordProblem2(level, rng),
-        () => generateTwoStepProblem(level, rng),
-        () => generateTimeProblem(level, rng),
-        () => generateCoinProblem(level, rng),
-        () => generateSimpleAddition(level, rng),
-        () => generateSimpleSubtraction(level, rng),
-      ];
-      const questionType = questionTypes[Math.floor(rng() * questionTypes.length)]!;
-      const question = questionType();
-      prompt = question.prompt;
-      correctAnswer = question.correctAnswer;
-      setOptionsForAnswer();
-    } else {
-      const questionTypes = [
-        () => generateWordProblem3(level, rng),
-        () => generateNavigateQuestion(level, rng, gridSize),
-        () => generateTwoStepProblem(level, rng),
-        () => generateSequenceQuestion(level, rng),
-        () => generateAreaProblem(level, rng),
-        () => generatePerimeterProblem(level, rng),
-        () => generateLogicPuzzle(level, rng),
-      ];
-      const questionType = questionTypes[Math.floor(rng() * questionTypes.length)]!;
-      const question = questionType();
-      prompt = question.prompt;
-      correctAnswer = question.correctAnswer;
-      setOptionsForAnswer();
-    }
-  } else {
-    if (level <= 5) {
-      const questionTypes = [
-        () => generatePatternQuestion(level, rng),
-        () => generateDistanceQuestion(level, rng, gridSize),
-        () => generateWordProblem3(level, rng),
-        () => generateNavigateQuestion(level, rng, gridSize),
-        () => generateAreaProblem(level, rng),
-        () => generatePerimeterProblem(level, rng),
-        () => generateLogicPuzzle(level, rng),
-      ];
-      const questionType = questionTypes[Math.floor(rng() * questionTypes.length)]!;
-      const question = questionType();
-      prompt = question.prompt;
-      correctAnswer = question.correctAnswer;
-      setOptionsForAnswer();
-    } else if (level <= 10) {
-      const questionTypes = [
-        () => generateMultiMoveQuestion(level, rng, gridSize),
-        () => generateFleetMultiplyQuestion(level, rng),
-        () => generateFormationCount(level, rng),
-        () => generateDistanceQuestion(level, rng, gridSize),
-        () => generateWordProblem3(level, rng),
-        () => generateAreaProblem(level, rng),
-        () => generatePerimeterProblem(level, rng),
-        () => generateTimeProblem(level, rng),
-        () => generateCoinProblem(level, rng),
-      ];
-      const questionType = questionTypes[Math.floor(rng() * questionTypes.length)]!;
-      const question = questionType();
-      prompt = question.prompt;
-      correctAnswer = question.correctAnswer;
-      setOptionsForAnswer();
-    } else {
-      const questionTypes = [
-        () => generateVectorAddition(level, rng),
-        () => generateMultiMoveQuestion(level, rng, gridSize),
-        () => generateFleetMultiplyQuestion(level, rng),
-        () => generateFormationCount(level, rng),
-        () => generateDistanceQuestion(level, rng, gridSize),
-        () => generateLogicPuzzle(level, rng),
-      ];
-      const questionType = questionTypes[Math.floor(rng() * questionTypes.length)]!;
-      const question = questionType();
-      prompt = question.prompt;
-      correctAnswer = question.correctAnswer;
-      setOptionsForAnswer();
-    }
-  }
+  const curriculumItems = getPackItems<BattleLearnCurriculumItem>(MATH_BATTLELEARN_PACK.id);
+  const battleProfile: BattleLearnProfile = profile === 'advanced' ? 'advanced' : 'starter';
+  const question = generateBattleLearnQuestionForStage(
+    curriculumItems,
+    'followup',
+    battleProfile,
+    level,
+    rng,
+    gridSize,
+  );
+  const options = generateBattleLearnOptions(question.correctAnswer, gridSize, rng);
 
   const numOptions = options.length;
   const correctIndex = Math.floor(rng() * numOptions);
-  const shuffledOptions = shuffleOptionsWithCorrect(options, correctAnswer, correctIndex, rng);
+  const shuffledOptions = shuffleOptionsWithCorrect(
+    options,
+    question.correctAnswer,
+    correctIndex,
+    rng,
+  );
 
   // Return updated problem with new question but SAME board state (keep same uid so view does not remount and lose answeredProblemCells)
   return {
     ...currentProblem,
     uid: currentProblem.uid,
     question: {
-      prompt,
+      prompt: question.prompt,
       options: shuffledOptions,
       correctIndex,
     },

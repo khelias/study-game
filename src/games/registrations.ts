@@ -40,6 +40,7 @@ import {
   MATH_BALANCE_EQUATIONS_SKILL,
   MATH_ADDITION_MEMORY_SKILL,
   MATH_GRID_NAVIGATION_SKILL,
+  MATH_MIXED_PROBLEM_SOLVING_SKILL,
 } from '../curriculum/skills/math';
 import { MATH_ADDITION_WITHIN_20_PACK } from '../curriculum/packs/math/addition_within_20';
 import { MATH_ADDITION_WITHIN_100_PACK } from '../curriculum/packs/math/addition_within_100';
@@ -55,6 +56,7 @@ import { MATH_TIME_READING_PACK } from '../curriculum/packs/math/time_reading';
 import { MATH_BALANCE_EQUATIONS_PACK } from '../curriculum/packs/math/balance_equations';
 import { MATH_ADDITION_MEMORY_PACK } from '../curriculum/packs/math/addition_memory';
 import { MATH_GRID_NAVIGATION_PACK } from '../curriculum/packs/math/grid_navigation';
+import { MATH_BATTLELEARN_PACK } from '../curriculum/packs/math/battlelearn';
 import { SHAPE_SHIFT_PUZZLES_PACK } from '../curriculum/packs/geometry/shapeShiftPuzzles';
 import {
   BalanceScaleView,
@@ -473,6 +475,8 @@ function registerAllGames(): void {
       config: battlelearnConfig,
       validator: validateBattleLearn,
       allowedProfiles: battlelearnConfig.allowedProfiles,
+      skillIds: [MATH_MIXED_PROBLEM_SOLVING_SKILL.id],
+      contentPackId: MATH_BATTLELEARN_PACK.id,
     });
   }
 }

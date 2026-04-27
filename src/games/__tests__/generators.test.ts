@@ -55,6 +55,11 @@ import {
   getRoboPathGridSize,
   getRoboPathSettings,
 } from '../../curriculum/packs/math/grid_navigation';
+import {
+  MATH_BATTLELEARN_PACK,
+  getBattleLearnProfileStage,
+  getBattleLearnQuestionStage,
+} from '../../curriculum/packs/math/battlelearn';
 
 describe('Generators', () => {
   describe('balance_scale', () => {
@@ -1253,6 +1258,25 @@ describe('Generators', () => {
       const totalLength10 = problem10.ships.reduce((sum, ship) => sum + ship.length, 0);
 
       expect(totalLength10).toBeGreaterThanOrEqual(totalLength1);
+    });
+
+    it('should use the battlelearn curriculum board progression', () => {
+      const rng = createRng(12345);
+      const generator = Generators.battlelearn;
+      if (!generator) throw new Error('battlelearn generator not found');
+
+      const problem = generator(1, rng, 'starter') as BattleLearnProblem;
+      const stage = getBattleLearnProfileStage(MATH_BATTLELEARN_PACK.items, 'starter', 1);
+      const questionStage = getBattleLearnQuestionStage(
+        MATH_BATTLELEARN_PACK.items,
+        'initial',
+        'starter',
+        1,
+      );
+
+      expect(problem.gridSize).toBe(stage.gridSize);
+      expect(problem.ships.map((ship) => ship.length)).toEqual(stage.shipLengths);
+      expect(questionStage.questionKinds).toContain('simple_addition');
     });
   });
 

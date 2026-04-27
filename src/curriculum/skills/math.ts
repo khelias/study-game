@@ -169,3 +169,15 @@ export const MATH_GRID_NAVIGATION_SKILL: Skill = {
     topic: 'math.geometry.grid_navigation',
   },
 };
+
+export const MATH_MIXED_PROBLEM_SOLVING_SKILL: Skill = {
+  id: 'math.mixed_problem_solving',
+  name: { et: 'Segatüüpi probleemülesanded', en: 'Mixed problem solving' },
+  taxonomy: {
+    subject: 'matemaatika',
+    grade: 3,
+    level: 'intermediate',
+    topic: 'math.problem_solving.mixed',
+  },
+  prerequisites: ['math.addition_within_20', 'math.subtraction_within_20', 'math.grid_navigation'],
+};

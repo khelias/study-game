@@ -16,6 +16,7 @@ import {
   MATH_BALANCE_EQUATIONS_SKILL,
   MATH_ADDITION_MEMORY_SKILL,
   MATH_GRID_NAVIGATION_SKILL,
+  MATH_MIXED_PROBLEM_SOLVING_SKILL,
 } from '../../curriculum/skills/math';
 import {
   LANGUAGE_SPATIAL_SENTENCES_SKILL,
@@ -30,6 +31,7 @@ import { MATH_TIME_READING_PACK } from '../../curriculum/packs/math/time_reading
 import { MATH_BALANCE_EQUATIONS_PACK } from '../../curriculum/packs/math/balance_equations';
 import { MATH_ADDITION_MEMORY_PACK } from '../../curriculum/packs/math/addition_memory';
 import { MATH_GRID_NAVIGATION_PACK } from '../../curriculum/packs/math/grid_navigation';
+import { MATH_BATTLELEARN_PACK } from '../../curriculum/packs/math/battlelearn';
 import { SHAPE_SHIFT_PUZZLES_PACK } from '../../curriculum/packs/geometry/shapeShiftPuzzles';
 
 // Import registrations to ensure games are registered
@@ -111,6 +113,13 @@ describe('GameRegistry', () => {
     expect(game).toBeDefined();
     expect(game?.skillIds).toEqual([MATH_GRID_NAVIGATION_SKILL.id]);
     expect(game?.contentPackId).toBe(MATH_GRID_NAVIGATION_PACK.id);
+  });
+
+  it('should bind battlelearn to the mixed problem solving curriculum pack', () => {
+    const game = gameRegistry.get('battlelearn');
+    expect(game).toBeDefined();
+    expect(game?.skillIds).toEqual([MATH_MIXED_PROBLEM_SOLVING_SKILL.id]);
+    expect(game?.contentPackId).toBe(MATH_BATTLELEARN_PACK.id);
   });
 
   it('should bind shape_shift to the geometry puzzle curriculum pack', () => {
