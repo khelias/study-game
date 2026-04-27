@@ -42,12 +42,12 @@ export const MechanicCard: React.FC<MechanicCardProps> = ({
   const ariaLabel = `${formatText(title)} - ${formatText(desc)} - ${countLabel}`;
 
   return (
-    <FadeIn delay={delay}>
+    <FadeIn delay={delay} className="h-full">
       <button
         onClick={onClick}
         aria-label={ariaLabel}
         className={`
-          group relative grid w-full grid-cols-[auto_1fr_auto] items-center gap-2.5 overflow-hidden rounded-lg
+          group relative grid h-full w-full grid-cols-[auto_1fr_auto] items-center gap-2.5 overflow-hidden rounded-lg
           ${mechanicConfig.theme.bg} border border-slate-200 p-3 text-left shadow-sm transition duration-200
           hover:border-slate-300 hover:shadow-md active:bg-slate-50 sm:gap-3 sm:p-3.5 cursor-pointer
         `}

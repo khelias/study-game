@@ -101,12 +101,13 @@ export const ShakeEffect: React.FC<EffectWrapperProps> = ({ active, children }) 
 interface FadeInProps {
   children: ReactNode;
   delay?: number;
+  className?: string;
 }
 
 // Fade in animation for new tasks
-export const FadeIn: React.FC<FadeInProps> = ({ children, delay = 0 }) => {
+export const FadeIn: React.FC<FadeInProps> = ({ children, delay = 0, className = '' }) => {
   return (
-    <div className="animate-fade-in" style={{ animationDelay: `${delay}ms` }}>
+    <div className={`animate-fade-in ${className}`} style={{ animationDelay: `${delay}ms` }}>
       {children}
       <style>{`
         @keyframes fade-in {
