@@ -37,6 +37,7 @@ import {
   MATH_PATTERN_SEQUENCES_SKILL,
   MATH_UNIT_CONVERSIONS_SKILL,
   MATH_COMPARE_NUMBERS_SKILL,
+  MATH_TIME_READING_SKILL,
 } from '../skills/math';
 import { MATH_ADDITION_WITHIN_20_PACK } from '../packs/math/addition_within_20';
 import { MATH_ADDITION_WITHIN_100_PACK } from '../packs/math/addition_within_100';
@@ -61,6 +62,7 @@ import {
   getUnitConversionsByCategory,
 } from '../packs/math/unit_conversions';
 import { MATH_COMPARE_NUMBERS_PACK, getCompareNumberStage } from '../packs/math/compare_numbers';
+import { MATH_TIME_READING_PACK, getTimeReadingStage } from '../packs/math/time_reading';
 import { SHAPE_SHIFT_PUZZLES_PACK } from '../packs/geometry/shapeShiftPuzzles';
 import type { Constellation } from '../../types/game';
 
@@ -275,6 +277,7 @@ describe('curriculum', () => {
       { pack: MATH_PATTERN_SEQUENCES_PACK, skill: MATH_PATTERN_SEQUENCES_SKILL },
       { pack: MATH_UNIT_CONVERSIONS_PACK, skill: MATH_UNIT_CONVERSIONS_SKILL },
       { pack: MATH_COMPARE_NUMBERS_PACK, skill: MATH_COMPARE_NUMBERS_SKILL },
+      { pack: MATH_TIME_READING_PACK, skill: MATH_TIME_READING_SKILL },
     ];
 
     it('every math pack binds to its declared skill', () => {
@@ -370,6 +373,17 @@ describe('curriculum', () => {
       expect(level4.symbolOptions).toEqual(['left', 'right', 'equal']);
       expect(level4.showNumbers).toBe(true);
       expect(level12.maxValue).toBe(100);
+    });
+
+    it('time reading pack defines minute precision and option count stages', () => {
+      const level1 = getTimeReadingStage(MATH_TIME_READING_PACK.items, 1);
+      const level5 = getTimeReadingStage(MATH_TIME_READING_PACK.items, 5);
+      const level7 = getTimeReadingStage(MATH_TIME_READING_PACK.items, 7);
+
+      expect(level1).toMatchObject({ stepMinutes: 30, optionCount: 3 });
+      expect(level5).toMatchObject({ stepMinutes: 10, optionCount: 4 });
+      expect(level7).toMatchObject({ stepMinutes: 5, optionCount: 6 });
+      expect(MATH_TIME_READING_PACK.items.every((item) => 60 % item.stepMinutes === 0)).toBe(true);
     });
   });
 

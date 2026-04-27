@@ -33,6 +33,7 @@ import {
   MATH_PATTERN_SEQUENCES_SKILL,
   MATH_UNIT_CONVERSIONS_SKILL,
   MATH_COMPARE_NUMBERS_SKILL,
+  MATH_TIME_READING_SKILL,
 } from './skills/math';
 import { MATH_ADDITION_WITHIN_20_PACK } from './packs/math/addition_within_20';
 import { MATH_ADDITION_WITHIN_100_PACK } from './packs/math/addition_within_100';
@@ -44,6 +45,7 @@ import { MATH_GEOMETRY_SHAPES_PACK } from './packs/math/geometry_shapes';
 import { MATH_PATTERN_SEQUENCES_PACK } from './packs/math/pattern_sequences';
 import { MATH_UNIT_CONVERSIONS_PACK } from './packs/math/unit_conversions';
 import { MATH_COMPARE_NUMBERS_PACK } from './packs/math/compare_numbers';
+import { MATH_TIME_READING_PACK } from './packs/math/time_reading';
 import { SHAPE_SHIFT_PUZZLES_PACK } from './packs/geometry/shapeShiftPuzzles';
 
 let registered = false;
@@ -73,6 +75,7 @@ export function registerAll(): void {
   skillRegistry.register(MATH_PATTERN_SEQUENCES_SKILL);
   skillRegistry.register(MATH_UNIT_CONVERSIONS_SKILL);
   skillRegistry.register(MATH_COMPARE_NUMBERS_SKILL);
+  skillRegistry.register(MATH_TIME_READING_SKILL);
   contentPackRegistry.register(MATH_ADDITION_WITHIN_20_PACK);
   contentPackRegistry.register(MATH_ADDITION_WITHIN_100_PACK);
   contentPackRegistry.register(MATH_SUBTRACTION_WITHIN_20_PACK);
@@ -83,6 +86,7 @@ export function registerAll(): void {
   contentPackRegistry.register(MATH_PATTERN_SEQUENCES_PACK);
   contentPackRegistry.register(MATH_UNIT_CONVERSIONS_PACK);
   contentPackRegistry.register(MATH_COMPARE_NUMBERS_PACK);
+  contentPackRegistry.register(MATH_TIME_READING_PACK);
   contentPackRegistry.register(SHAPE_SHIFT_PUZZLES_PACK);
   registered = true;
 }

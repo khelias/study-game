@@ -48,6 +48,11 @@ import {
   getCompareNumberStage,
   type CompareNumberStageItem,
 } from '../curriculum/packs/math/compare_numbers';
+import {
+  MATH_TIME_READING_PACK,
+  getTimeReadingStage,
+  type TimeReadingStageItem,
+} from '../curriculum/packs/math/time_reading';
 import { SHAPE_SHIFT_PUZZLES_PACK } from '../curriculum/packs/geometry/shapeShiftPuzzles';
 import { getRandom, uid } from '../engine/rng';
 import { getLocale, getTranslations } from '../i18n/index';
@@ -1211,17 +1216,18 @@ export const Generators: Record<string, GeneratorFunction> = {
     rng: RngFunction = Math.random,
     _profile: ProfileType = 'advanced',
   ): TimeMatchProblem => {
-    // Step: 30min early, 15 then 10 then 5 for trickier "to/past" times
-    const step = level <= 2 ? 30 : level <= 4 ? 15 : level <= 6 ? 10 : 5;
-    const numOptions = level <= 2 ? 3 : level <= 5 ? 4 : 6;
+    const stage = getTimeReadingStage(
+      getPackItems<TimeReadingStageItem>(MATH_TIME_READING_PACK.id),
+      level,
+    );
     const hour24 = Math.floor(rng() * 24);
-    const minute = Math.floor(rng() * (60 / step)) * step;
+    const minute = Math.floor(rng() * (60 / stage.stepMinutes)) * stage.stepMinutes;
     const toLabel = (h24: number, m: number) =>
       `${h24.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`;
     const correct = toLabel(hour24, minute);
     const opts = new Set([correct]);
-    while (opts.size < numOptions) {
-      const delta = (Math.floor(rng() * 3) + 1) * step;
+    while (opts.size < stage.optionCount) {
+      const delta = (Math.floor(rng() * 3) + 1) * stage.stepMinutes;
       const sign = rng() > 0.5 ? 1 : -1;
       const m2 = (minute + sign * delta + 60) % 60;
       const h2 = (hour24 + (minute + sign * delta < 0 ? -1 : 0) + 24) % 24;

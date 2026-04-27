@@ -125,3 +125,14 @@ export const MATH_COMPARE_NUMBERS_SKILL: Skill = {
     topic: 'math.numbers.comparison',
   },
 };
+
+export const MATH_TIME_READING_SKILL: Skill = {
+  id: 'math.time_reading',
+  name: { et: 'Kellaaja lugemine', en: 'Reading time' },
+  taxonomy: {
+    subject: 'matemaatika',
+    grade: 2,
+    level: 'foundation',
+    topic: 'math.measurement.time_reading',
+  },
+};

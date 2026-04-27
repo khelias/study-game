@@ -16,6 +16,7 @@ import type {
   ShapeDashProblem,
   BattleLearnProblem,
   UnitConversionProblem,
+  TimeMatchProblem,
 } from '../../types/game';
 import {
   MATH_GEOMETRY_SHAPES_PACK,
@@ -35,6 +36,10 @@ import {
   MATH_COMPARE_NUMBERS_PACK,
   getCompareNumberStage,
 } from '../../curriculum/packs/math/compare_numbers';
+import {
+  MATH_TIME_READING_PACK,
+  getTimeReadingStage,
+} from '../../curriculum/packs/math/time_reading';
 
 describe('Generators', () => {
   describe('balance_scale', () => {
@@ -591,6 +596,33 @@ describe('Generators', () => {
       const advancedProblem = generator(1, rng2, 'advanced') as WordBuilderProblem;
 
       expect(advancedProblem.target.length).toBeGreaterThanOrEqual(starterProblem.target.length);
+    });
+  });
+
+  describe('time_match', () => {
+    it('should generate a valid time matching problem from the curriculum stage', () => {
+      const rng = createRng(12345);
+      const generator = Generators.time_match;
+      if (!generator) throw new Error('time_match generator not found');
+      const problem = generator(1, rng, 'advanced') as TimeMatchProblem;
+      const stage = getTimeReadingStage(MATH_TIME_READING_PACK.items, 1);
+
+      expect(problem.type).toBe('time_match');
+      expect(problem.minutes % stage.stepMinutes).toBe(0);
+      expect(problem.options).toHaveLength(stage.optionCount);
+      expect(problem.options).toContain(problem.answer);
+    });
+
+    it('should move to five-minute precision at later levels', () => {
+      const rng = createRng(54321);
+      const generator = Generators.time_match;
+      if (!generator) throw new Error('time_match generator not found');
+      const problem = generator(7, rng, 'advanced') as TimeMatchProblem;
+      const stage = getTimeReadingStage(MATH_TIME_READING_PACK.items, 7);
+
+      expect(stage.stepMinutes).toBe(5);
+      expect(problem.minutes % stage.stepMinutes).toBe(0);
+      expect(problem.options).toHaveLength(stage.optionCount);
     });
   });
 
