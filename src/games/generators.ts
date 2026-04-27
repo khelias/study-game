@@ -21,7 +21,7 @@ import {
   type ShapeDashGateShape,
   type ShapeDashGeometryItem,
 } from '../curriculum/packs/math/geometry_shapes';
-import { PUZZLES } from './puzzles';
+import { SHAPE_SHIFT_PUZZLES_PACK } from '../curriculum/packs/geometry/shapeShiftPuzzles';
 import { getRandom, uid } from '../engine/rng';
 import { getLocale, getTranslations } from '../i18n/index';
 import { generateSentence, getSceneName } from './sentenceTranslations';
@@ -49,6 +49,7 @@ import type {
   Star,
   Constellation,
   ShapeShiftProblem,
+  Puzzle,
   PieceState,
   ShapeType,
   GeneratorFunction,
@@ -1637,8 +1638,11 @@ export const Generators: Record<string, GeneratorFunction> = {
     // Select difficulty based on level
     const difficulty = level <= 3 ? 'easy' : level <= 7 ? 'medium' : 'hard';
 
-    // Pick puzzle matching difficulty
-    const suitablePuzzles = PUZZLES.filter((p) => p.difficulty === difficulty);
+    const puzzles = getPackItems<Puzzle>(SHAPE_SHIFT_PUZZLES_PACK.id);
+    const suitablePuzzles = puzzles.filter((p) => p.difficulty === difficulty);
+    if (suitablePuzzles.length === 0) {
+      throw new Error(`Shape Shift: no puzzles available for difficulty ${difficulty}`);
+    }
     // Smart Shuffle: Avoid recently played puzzles
     // @ts-expect-error -- dynamic property on globalThis for session-scoped history
     if (!globalThis._shapeShiftHistory) globalThis._shapeShiftHistory = [];
@@ -1657,7 +1661,7 @@ export const Generators: Record<string, GeneratorFunction> = {
     }
 
     const puzzleIndex = Math.floor(rng() * pool.length);
-    const puzzle = (pool[puzzleIndex] ?? PUZZLES[0])!;
+    const puzzle = (pool[puzzleIndex] ?? puzzles[0])!;
 
     // Add to history
     history.push(puzzle.id);

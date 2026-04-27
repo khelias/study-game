@@ -36,6 +36,7 @@ import { MATH_SUBTRACTION_WITHIN_100_PACK } from '../curriculum/packs/math/subtr
 import { MATH_MULTIPLICATION_1_5_PACK } from '../curriculum/packs/math/multiplication_1_5';
 import { MATH_MULTIPLICATION_1_10_PACK } from '../curriculum/packs/math/multiplication_1_10';
 import { MATH_GEOMETRY_SHAPES_PACK } from '../curriculum/packs/math/geometry_shapes';
+import { SHAPE_SHIFT_PUZZLES_PACK } from '../curriculum/packs/geometry/shapeShiftPuzzles';
 import {
   BalanceScaleView,
   StandardGameView,
@@ -401,6 +402,8 @@ function registerAllGames(): void {
       config: shapeShiftConfig,
       validator: validateShapeShift,
       allowedProfiles: shapeShiftConfig.allowedProfiles,
+      skillIds: [MATH_GEOMETRY_SHAPES_SKILL.id],
+      contentPackId: SHAPE_SHIFT_PUZZLES_PACK.id,
     });
   }
 

@@ -34,6 +34,7 @@ import {
   getShapeDashGateQuestions,
   getShapeDashShapeLabel,
 } from '../packs/math/geometry_shapes';
+import { SHAPE_SHIFT_PUZZLES_PACK } from '../packs/geometry/shapeShiftPuzzles';
 import type { Constellation } from '../../types/game';
 
 describe('curriculum', () => {
@@ -255,6 +256,31 @@ describe('curriculum', () => {
       for (const question of gateQuestions) {
         expect(getShapeDashShapeLabel(question.correctShape, 'et')).not.toBe('');
         expect(getShapeDashShapeLabel(question.correctShape, 'en')).not.toBe('');
+      }
+    });
+  });
+
+  describe('shape shift puzzle pack shape', () => {
+    it('binds to the geometry skill and registers on import', () => {
+      expect(SHAPE_SHIFT_PUZZLES_PACK.skillId).toBe(MATH_GEOMETRY_SHAPES_SKILL.id);
+      expect(contentPackRegistry.has(SHAPE_SHIFT_PUZZLES_PACK.id)).toBe(true);
+    });
+
+    it('covers every Shape Shift difficulty tier', () => {
+      const difficulties = new Set(
+        SHAPE_SHIFT_PUZZLES_PACK.items.map((puzzle) => puzzle.difficulty),
+      );
+      expect(difficulties.has('easy')).toBe(true);
+      expect(difficulties.has('medium')).toBe(true);
+      expect(difficulties.has('hard')).toBe(true);
+    });
+
+    it('keeps every puzzle id unique and every puzzle non-empty', () => {
+      const ids = SHAPE_SHIFT_PUZZLES_PACK.items.map((puzzle) => puzzle.id);
+      expect(new Set(ids).size).toBe(ids.length);
+
+      for (const puzzle of SHAPE_SHIFT_PUZZLES_PACK.items) {
+        expect(puzzle.pieces.length).toBeGreaterThan(0);
       }
     });
   });

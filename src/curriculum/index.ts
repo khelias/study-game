@@ -29,6 +29,7 @@ import { MATH_SUBTRACTION_WITHIN_100_PACK } from './packs/math/subtraction_withi
 import { MATH_MULTIPLICATION_1_5_PACK } from './packs/math/multiplication_1_5';
 import { MATH_MULTIPLICATION_1_10_PACK } from './packs/math/multiplication_1_10';
 import { MATH_GEOMETRY_SHAPES_PACK } from './packs/math/geometry_shapes';
+import { SHAPE_SHIFT_PUZZLES_PACK } from './packs/geometry/shapeShiftPuzzles';
 
 let registered = false;
 
@@ -56,6 +57,7 @@ export function registerAll(): void {
   contentPackRegistry.register(MATH_MULTIPLICATION_1_5_PACK);
   contentPackRegistry.register(MATH_MULTIPLICATION_1_10_PACK);
   contentPackRegistry.register(MATH_GEOMETRY_SHAPES_PACK);
+  contentPackRegistry.register(SHAPE_SHIFT_PUZZLES_PACK);
   registered = true;
 }
 

@@ -9,6 +9,7 @@ import { describe, it, expect } from 'vitest';
 import { gameRegistry } from '../registry';
 import { MATH_GEOMETRY_SHAPES_SKILL } from '../../curriculum/skills/math';
 import { MATH_GEOMETRY_SHAPES_PACK } from '../../curriculum/packs/math/geometry_shapes';
+import { SHAPE_SHIFT_PUZZLES_PACK } from '../../curriculum/packs/geometry/shapeShiftPuzzles';
 
 // Import registrations to ensure games are registered
 import '../registrations';
@@ -40,6 +41,13 @@ describe('GameRegistry', () => {
     expect(game).toBeDefined();
     expect(game?.skillIds).toEqual([MATH_GEOMETRY_SHAPES_SKILL.id]);
     expect(game?.contentPackId).toBe(MATH_GEOMETRY_SHAPES_PACK.id);
+  });
+
+  it('should bind shape_shift to the geometry puzzle curriculum pack', () => {
+    const game = gameRegistry.get('shape_shift');
+    expect(game).toBeDefined();
+    expect(game?.skillIds).toEqual([MATH_GEOMETRY_SHAPES_SKILL.id]);
+    expect(game?.contentPackId).toBe(SHAPE_SHIFT_PUZZLES_PACK.id);
   });
 
   it('should return undefined for unknown game', () => {

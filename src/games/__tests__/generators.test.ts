@@ -18,6 +18,7 @@ import {
   getShapeDashCheckpointQuestions,
   getShapeDashGateQuestions,
 } from '../../curriculum/packs/math/geometry_shapes';
+import { SHAPE_SHIFT_PUZZLES_PACK } from '../../curriculum/packs/geometry/shapeShiftPuzzles';
 
 describe('Generators', () => {
   describe('balance_scale', () => {
@@ -797,6 +798,16 @@ describe('Generators', () => {
       expect(problem.pieces).toBeInstanceOf(Array);
       expect(problem.pieces.length).toBeGreaterThan(0);
       expect(problem.showHints).toBeDefined();
+    });
+
+    it('should select puzzles from the geometry curriculum pack', () => {
+      const rng = createRng(12345);
+      const generator = Generators.shape_shift;
+      if (!generator) throw new Error('shape_shift generator not found');
+      const problem = generator(1, rng, 'starter') as ShapeShiftProblem;
+      const packPuzzleIds = new Set(SHAPE_SHIFT_PUZZLES_PACK.items.map((puzzle) => puzzle.id));
+
+      expect(packPuzzleIds.has(problem.puzzle.id)).toBe(true);
     });
 
     it('should use match mode for levels 1-3', () => {
