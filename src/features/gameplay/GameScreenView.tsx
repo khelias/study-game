@@ -7,7 +7,6 @@ import { EnhancedConfetti } from '../../components/EnhancedAnimations';
 import { ParticleEffect } from '../../components/ParticleEffect';
 import { GameHeader } from '../../components/GameHeader';
 import { GameRenderer } from './GameRenderer';
-import { GameOverlayBadges } from './GameOverlayBadges';
 import type { Direction, Problem } from '../../types/game';
 import type { Notification } from '../../types/notification';
 
@@ -37,7 +36,7 @@ interface GameScreenViewProps {
   onSettingsClick: () => void;
   onShopClick: () => void;
 
-  // Overlay badges
+  // HUD actions
   currentLevel: number;
   gameType: string;
   onLevelBadgeClick: () => void;
@@ -118,21 +117,17 @@ export const GameScreenView: React.FC<GameScreenViewProps> = ({
         onReturnToMenu={onReturnToMenu}
         onSettingsClick={onSettingsClick}
         onShopClick={onShopClick}
+        currentLevel={currentLevel}
+        gameType={gameType}
+        onLevelClick={onLevelBadgeClick}
+        onGameNameClick={onGameNameClick}
         showSettingsMenu={showSettingsMenu}
         settingsMenuRef={settingsMenuRef}
       >
         {settingsMenuSlot}
       </GameHeader>
 
-      <div className="flex-1 flex flex-col items-center p-4 max-w-2xl mx-auto w-full relative pt-14 sm:pt-16">
-        <GameOverlayBadges
-          level={currentLevel}
-          gameType={gameType}
-          score={score}
-          onLevelClick={onLevelBadgeClick}
-          onGameNameClick={onGameNameClick}
-        />
-
+      <div className="flex-1 flex flex-col items-center p-4 max-w-2xl mx-auto w-full relative pt-3 sm:pt-4">
         {!problem ? (
           <Loader2 className="animate-spin mt-20 text-slate-400" size={48} />
         ) : (

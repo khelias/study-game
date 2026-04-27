@@ -43,7 +43,6 @@ const TOTAL_ACHIEVEMENTS = Object.keys(ACHIEVEMENTS).length;
 import { useTranslation } from '../../i18n/useTranslation';
 import { useProfileText } from '../../hooks/useProfileText';
 import { getAchievementCopy } from '../../utils/achievementCopy';
-import { ResourceBadge } from '../../components/shared/ResourceBadge';
 import { SettingsMenu } from '../../components/SettingsMenu';
 import type { AchievementUnlock } from '../../types/achievement';
 import { gameIdToSlug } from '../../utils/gameSlug';
@@ -230,7 +229,7 @@ export const MenuScreen: React.FC = () => {
           {showTutorial && <TutorialModal key="tutorial-modal" onClose={handleCloseTutorial} />}
 
           <div className="w-full mb-4 sm:mb-5">
-            <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+            <div className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-3">
               <div className="min-w-0">
                 <h1 className="text-2xl sm:text-3xl font-black text-slate-950 tracking-normal">
                   {formatText(t.menuSpecific.heading)}
@@ -239,48 +238,7 @@ export const MenuScreen: React.FC = () => {
                   {t.menuSpecific.subtitle}
                 </p>
               </div>
-              <div className="flex w-full flex-wrap items-center gap-2 lg:w-auto lg:justify-end">
-                <ResourceBadge
-                  type="stars"
-                  value={stars}
-                  compact={true}
-                  onClick={() => {
-                    setShowShop(true);
-                    playClick();
-                  }}
-                />
-                <button
-                  onClick={() => {
-                    setShowAchievements(true);
-                    playClick();
-                  }}
-                  className="inline-flex min-h-9 min-w-[9.5rem] flex-1 items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2 shadow-sm transition-colors hover:border-amber-300 hover:bg-amber-50 sm:flex-none"
-                  title={formatText(t.menuSpecific.showAchievements)}
-                  aria-label={t.menuSpecific.showAchievements}
-                >
-                  <span className="inline-flex items-center gap-1.5 text-xs font-black text-slate-700">
-                    <Trophy size={15} aria-hidden className="text-amber-500" />
-                    {unlockedAchievements.length}
-                  </span>
-                  <span className="h-2 min-w-14 flex-1 overflow-hidden rounded-md bg-slate-200 shadow-inner sm:w-24">
-                    <span
-                      className="block h-full bg-emerald-500 transition-all duration-500 ease-out"
-                      style={{
-                        width: `${achievementsProgress}%`,
-                      }}
-                    />
-                  </span>
-                </button>
-                <ResourceBadge
-                  type="hearts"
-                  value={hearts}
-                  maxValue={5}
-                  compact={true}
-                  onClick={() => {
-                    setShowShop(true);
-                    playClick();
-                  }}
-                />
+              <div className="flex items-center gap-2 md:justify-end">
                 <button
                   onClick={() => setShowTutorial(true)}
                   className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-700 shadow-sm transition-colors hover:bg-slate-100"
@@ -338,6 +296,58 @@ export const MenuScreen: React.FC = () => {
                   )}
                 </div>
               </div>
+            </div>
+
+            <div className="mt-3 flex flex-wrap items-center gap-x-2 gap-y-1 border-t border-slate-200 pt-2 text-xs font-bold text-slate-500">
+              <button
+                onClick={() => {
+                  setShowShop(true);
+                  playClick();
+                }}
+                className="inline-flex h-8 items-center gap-1.5 rounded-md px-2 transition-colors hover:bg-white hover:text-slate-900"
+              >
+                <Star size={14} className="fill-yellow-400 text-yellow-600" aria-hidden />
+                <span>{formatText(t.menu.stars)}</span>
+                <span className="font-black text-slate-900">{stars}</span>
+              </button>
+
+              <span className="h-4 w-px bg-slate-200" aria-hidden />
+
+              <button
+                onClick={() => {
+                  setShowAchievements(true);
+                  playClick();
+                }}
+                className="inline-flex h-8 min-w-0 items-center gap-1.5 rounded-md px-2 transition-colors hover:bg-white hover:text-slate-900"
+                title={formatText(t.menuSpecific.showAchievements)}
+                aria-label={t.menuSpecific.showAchievements}
+              >
+                <Trophy size={14} className="text-amber-600" aria-hidden />
+                <span>{formatText(t.menu.achievements)}</span>
+                <span className="font-black text-slate-900">{unlockedAchievements.length}</span>
+                <span className="h-1.5 w-16 overflow-hidden rounded-full bg-slate-200" aria-hidden>
+                  <span
+                    className="block h-full bg-emerald-500 transition-all duration-500 ease-out"
+                    style={{
+                      width: `${achievementsProgress}%`,
+                    }}
+                  />
+                </span>
+              </button>
+
+              <span className="h-4 w-px bg-slate-200" aria-hidden />
+
+              <button
+                onClick={() => {
+                  setShowShop(true);
+                  playClick();
+                }}
+                className="inline-flex h-8 items-center gap-1.5 rounded-md px-2 transition-colors hover:bg-white hover:text-slate-900"
+              >
+                <Heart size={14} className="fill-red-500 text-red-500" aria-hidden />
+                <span>{formatText(t.game.hearts)}</span>
+                <span className="font-black text-slate-900">{hearts}/5</span>
+              </button>
             </div>
           </div>
 
