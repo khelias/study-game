@@ -20,3 +20,17 @@ export const LANGUAGE_SYLLABIFICATION_SKILL: Skill = {
     topic: 'language.phonology.syllables',
   },
 };
+
+export const LANGUAGE_SPATIAL_SENTENCES_SKILL: Skill = {
+  id: 'language.spatial_sentences',
+  name: {
+    et: 'Asukohalaused',
+    en: 'Spatial sentences',
+  },
+  taxonomy: {
+    subject: 'emakeel',
+    grade: 1,
+    level: 'foundation',
+    topic: 'language.grammar.spatial_relations',
+  },
+};

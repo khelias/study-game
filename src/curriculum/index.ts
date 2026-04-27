@@ -10,9 +10,13 @@
 import { contentPackRegistry, skillRegistry } from './registry';
 import { ASTRONOMY_VISIBLE_CONSTELLATIONS_SKILL } from './skills/astronomy';
 import { ASTRONOMY_VISIBLE_FROM_ESTONIA_PACK } from './packs/astronomy/visibleFromEstonia';
-import { LANGUAGE_SYLLABIFICATION_SKILL } from './skills/language';
+import {
+  LANGUAGE_SPATIAL_SENTENCES_SKILL,
+  LANGUAGE_SYLLABIFICATION_SKILL,
+} from './skills/language';
 import { LANGUAGE_SYLLABIFICATION_ET_PACK } from './packs/language/syllables_et';
 import { LANGUAGE_SYLLABIFICATION_EN_PACK } from './packs/language/syllables_en';
+import { LANGUAGE_SPATIAL_SENTENCES_PACK } from './packs/language/spatialSentences';
 import {
   MATH_ADDITION_WITHIN_20_SKILL,
   MATH_ADDITION_WITHIN_100_SKILL,
@@ -40,8 +44,10 @@ export function registerAll(): void {
   contentPackRegistry.register(ASTRONOMY_VISIBLE_FROM_ESTONIA_PACK);
   // Language (one skill, locale-scoped packs)
   skillRegistry.register(LANGUAGE_SYLLABIFICATION_SKILL);
+  skillRegistry.register(LANGUAGE_SPATIAL_SENTENCES_SKILL);
   contentPackRegistry.register(LANGUAGE_SYLLABIFICATION_ET_PACK);
   contentPackRegistry.register(LANGUAGE_SYLLABIFICATION_EN_PACK);
+  contentPackRegistry.register(LANGUAGE_SPATIAL_SENTENCES_PACK);
   // Math (one skill per focused pack; math_snake mechanic binds to each separately)
   skillRegistry.register(MATH_ADDITION_WITHIN_20_SKILL);
   skillRegistry.register(MATH_ADDITION_WITHIN_100_SKILL);

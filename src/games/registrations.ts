@@ -19,7 +19,11 @@ import { Generators } from './generators';
 import '../curriculum';
 import { ASTRONOMY_VISIBLE_CONSTELLATIONS_SKILL } from '../curriculum/skills/astronomy';
 import { ASTRONOMY_VISIBLE_FROM_ESTONIA_PACK } from '../curriculum/packs/astronomy/visibleFromEstonia';
-import { LANGUAGE_SYLLABIFICATION_SKILL } from '../curriculum/skills/language';
+import {
+  LANGUAGE_SPATIAL_SENTENCES_SKILL,
+  LANGUAGE_SYLLABIFICATION_SKILL,
+} from '../curriculum/skills/language';
+import { LANGUAGE_SPATIAL_SENTENCES_PACK } from '../curriculum/packs/language/spatialSentences';
 import {
   MATH_ADDITION_WITHIN_20_SKILL,
   MATH_ADDITION_WITHIN_100_SKILL,
@@ -156,6 +160,8 @@ function registerAllGames(): void {
       config: sentenceLogicConfig,
       validator: validateSentenceLogic,
       allowedProfiles: sentenceLogicConfig.allowedProfiles,
+      skillIds: [LANGUAGE_SPATIAL_SENTENCES_SKILL.id],
+      contentPackId: LANGUAGE_SPATIAL_SENTENCES_PACK.id,
     });
   }
 

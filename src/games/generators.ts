@@ -1,4 +1,4 @@
-import { ALPHABET, WORD_DB, WORD_DB_EN, SCENE_DB, PROFILES } from './data';
+import { ALPHABET, WORD_DB, WORD_DB_EN, PROFILES } from './data';
 import { getPackItems, getPackItemsForLocale } from '../curriculum';
 import {
   getConstellationsForLevel,
@@ -6,6 +6,12 @@ import {
 } from '../curriculum/packs/astronomy/visibleFromEstonia';
 import { LANGUAGE_SYLLABIFICATION_SKILL } from '../curriculum/skills/language';
 import type { SyllableWord } from '../curriculum/packs/language/types';
+import {
+  LANGUAGE_SPATIAL_SENTENCES_PACK,
+  generateSentence,
+  getSceneName,
+  type SpatialSentenceScene,
+} from '../curriculum/packs/language/spatialSentences';
 import { MATH_ADDITION_WITHIN_20_PACK } from '../curriculum/packs/math/addition_within_20';
 import { MATH_ADDITION_WITHIN_100_PACK } from '../curriculum/packs/math/addition_within_100';
 import { MATH_SUBTRACTION_WITHIN_20_PACK } from '../curriculum/packs/math/subtraction_within_20';
@@ -24,7 +30,6 @@ import {
 import { SHAPE_SHIFT_PUZZLES_PACK } from '../curriculum/packs/geometry/shapeShiftPuzzles';
 import { getRandom, uid } from '../engine/rng';
 import { getLocale, getTranslations } from '../i18n/index';
-import { generateSentence, getSceneName } from './sentenceTranslations';
 import { createMathSnakeProblem } from '../engine/mathSnake';
 import { placeShips } from '../engine/battlelearn';
 import { getMinObstacleGap, SPIKE_WIDTH } from '../engine/shapeDash';
@@ -692,19 +697,17 @@ export const Generators: Record<string, GeneratorFunction> = {
     _profile: ProfileType = 'starter',
   ): SentenceLogicProblem => {
     // 1. Select scene based on level progression
-    const allScenes = Object.keys(SCENE_DB);
-    const sceneKeys =
+    const allScenes = getPackItems<SpatialSentenceScene>(LANGUAGE_SPATIAL_SENTENCES_PACK.id);
+    const scenePool =
       level <= 2
-        ? allScenes.filter((k) => (SCENE_DB[k]?.positions?.length ?? 0) <= 4)
+        ? allScenes.filter((scene) => scene.positions.length <= 4)
         : level <= 5
-          ? allScenes.filter((k) => (SCENE_DB[k]?.positions?.length ?? 0) <= 5)
+          ? allScenes.filter((scene) => scene.positions.length <= 5)
           : allScenes;
 
-    const sceneKey = getRandom(sceneKeys, rng);
-    if (!sceneKey) throw new Error('No scene found for sentence_logic game');
-
-    const scene = SCENE_DB[sceneKey];
-    if (!scene) throw new Error('Scene not found in SCENE_DB');
+    const scene = getRandom([...scenePool], rng);
+    if (!scene) throw new Error('No scene found for sentence_logic game');
+    const sceneKey = scene.id;
 
     // 2. Select objects
     const subject = getRandom(scene.subjects, rng);

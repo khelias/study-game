@@ -5,6 +5,7 @@ import type {
   BalanceScaleProblem,
   WordBuilderProblem,
   PatternProblem,
+  SentenceLogicProblem,
   MathSnakeProblem,
   CompareSizesProblem,
   PicturePairsProblem,
@@ -19,6 +20,7 @@ import {
   getShapeDashGateQuestions,
 } from '../../curriculum/packs/math/geometry_shapes';
 import { SHAPE_SHIFT_PUZZLES_PACK } from '../../curriculum/packs/geometry/shapeShiftPuzzles';
+import { LANGUAGE_SPATIAL_SENTENCES_PACK } from '../../curriculum/packs/language/spatialSentences';
 
 describe('Generators', () => {
   describe('balance_scale', () => {
@@ -285,6 +287,38 @@ describe('Generators', () => {
       const problem5 = generator(5, rng2, 'starter') as PatternProblem;
 
       expect(problem5.sequence.length).toBeGreaterThanOrEqual(problem1.sequence.length);
+    });
+  });
+
+  describe('sentence_logic', () => {
+    it('should generate a sentence logic problem from the spatial sentence pack', () => {
+      const rng = createRng(12345);
+      const generator = Generators.sentence_logic;
+      if (!generator) throw new Error('sentence_logic generator not found');
+      const problem = generator(1, rng, 'starter') as SentenceLogicProblem;
+      const packSceneIds = new Set(LANGUAGE_SPATIAL_SENTENCES_PACK.items.map((scene) => scene.id));
+
+      expect(problem.type).toBe('sentence_logic');
+      expect(packSceneIds.has(problem.scene)).toBe(true);
+      expect(problem.sentence).toContain(problem.subject.n);
+      expect(problem.options.length).toBeGreaterThanOrEqual(2);
+    });
+
+    it('should use simpler scenes at early levels', () => {
+      const generator = Generators.sentence_logic;
+      if (!generator) throw new Error('sentence_logic generator not found');
+      const earlyProblems = Array.from(
+        { length: 20 },
+        (_, seed) => generator(1, createRng(seed), 'starter') as SentenceLogicProblem,
+      );
+      const sceneById = new Map(
+        LANGUAGE_SPATIAL_SENTENCES_PACK.items.map((scene) => [scene.id, scene]),
+      );
+
+      for (const problem of earlyProblems) {
+        const scene = sceneById.get(problem.scene);
+        expect(scene?.positions.length).toBeLessThanOrEqual(4);
+      }
     });
   });
 

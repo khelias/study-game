@@ -9,10 +9,17 @@ import {
   getConstellationsForLevel,
 } from '../packs/astronomy/visibleFromEstonia';
 import { ASTRONOMY_VISIBLE_CONSTELLATIONS_SKILL } from '../skills/astronomy';
-import { LANGUAGE_SYLLABIFICATION_SKILL } from '../skills/language';
+import {
+  LANGUAGE_SPATIAL_SENTENCES_SKILL,
+  LANGUAGE_SYLLABIFICATION_SKILL,
+} from '../skills/language';
 import { LANGUAGE_SYLLABIFICATION_ET_PACK } from '../packs/language/syllables_et';
 import { LANGUAGE_SYLLABIFICATION_EN_PACK } from '../packs/language/syllables_en';
 import type { SyllableWord } from '../packs/language/types';
+import {
+  LANGUAGE_SPATIAL_SENTENCES_PACK,
+  generateSentence,
+} from '../packs/language/spatialSentences';
 import {
   MATH_ADDITION_WITHIN_20_SKILL,
   MATH_ADDITION_WITHIN_100_SKILL,
@@ -162,6 +169,37 @@ describe('curriculum', () => {
         expect(counts.has(3)).toBe(true);
         expect(counts.has(4)).toBe(true);
       }
+    });
+  });
+
+  describe('spatial sentence pack shape', () => {
+    it('binds to the spatial sentence skill and registers on import', () => {
+      expect(LANGUAGE_SPATIAL_SENTENCES_PACK.skillId).toBe(LANGUAGE_SPATIAL_SENTENCES_SKILL.id);
+      expect(skillRegistry.has(LANGUAGE_SPATIAL_SENTENCES_SKILL.id)).toBe(true);
+      expect(contentPackRegistry.has(LANGUAGE_SPATIAL_SENTENCES_PACK.id)).toBe(true);
+    });
+
+    it('has keyed scenes with subjects, anchors, and positions', () => {
+      expect(LANGUAGE_SPATIAL_SENTENCES_PACK.items.length).toBeGreaterThan(5);
+
+      for (const scene of LANGUAGE_SPATIAL_SENTENCES_PACK.items) {
+        expect(scene.id).not.toBe('');
+        expect(scene.subjects.length).toBeGreaterThan(0);
+        expect(scene.anchors.length).toBeGreaterThan(0);
+        expect(scene.positions.length).toBeGreaterThan(0);
+      }
+    });
+
+    it('can generate localized sentences from scene content', () => {
+      const scene = LANGUAGE_SPATIAL_SENTENCES_PACK.items[0];
+      if (!scene) throw new Error('spatial sentence pack has no scenes');
+      const subject = scene.subjects[0];
+      const anchor = scene.anchors[0];
+      const position = scene.positions[0];
+      if (!subject || !anchor || !position) throw new Error('spatial scene is incomplete');
+
+      expect(generateSentence(subject, anchor, position, 'et')).toContain(subject.n);
+      expect(generateSentence(subject, anchor, position, 'en')).toContain(' is ');
     });
   });
 
