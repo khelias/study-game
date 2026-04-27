@@ -6,25 +6,32 @@ import { MenuScreen } from './features/menu/MenuScreen';
 import { GameScreen } from './features/gameplay/GameScreen';
 import { GameResultScreen } from './features/gameplay/GameResultScreen';
 import { GameRoute } from './features/routing/GameRoute';
+import { StudySiteHeader } from './components/StudySiteHeader';
 
 const App: React.FC = () => {
   const gameState = usePlaySessionStore((state) => state.gameState);
+  const headerSurface = gameState === 'playing' || gameState === 'game_over' ? 'play' : 'menu';
 
   return (
     <ErrorBoundary>
-      <Routes>
-        <Route
-          path="/"
-          element={
-            <>
-              {gameState === 'menu' && <MenuScreen />}
-              {gameState === 'playing' && <GameScreen />}
-              {gameState === 'game_over' && <GameResultScreen type="gameOver" />}
-            </>
-          }
-        />
-        <Route path="/games/:gameSlug" element={<GameRoute />} />
-      </Routes>
+      <div className="flex h-dvh min-h-screen flex-col overflow-hidden bg-slate-50 font-sans">
+        <StudySiteHeader surface={headerSurface} />
+        <div className="min-h-0 flex-1 overflow-hidden">
+          <Routes>
+            <Route
+              path="/"
+              element={
+                <>
+                  {gameState === 'menu' && <MenuScreen />}
+                  {gameState === 'playing' && <GameScreen />}
+                  {gameState === 'game_over' && <GameResultScreen type="gameOver" />}
+                </>
+              }
+            />
+            <Route path="/games/:gameSlug" element={<GameRoute />} />
+          </Routes>
+        </div>
+      </div>
     </ErrorBoundary>
   );
 };

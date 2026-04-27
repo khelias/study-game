@@ -44,8 +44,6 @@ import { useTranslation } from '../../i18n/useTranslation';
 import { useProfileText } from '../../hooks/useProfileText';
 import { getAchievementCopy } from '../../utils/achievementCopy';
 import { ResourceBadge } from '../../components/shared/ResourceBadge';
-import { SmartGamesLogo } from '../../components/shared/SmartGamesLogo';
-import { KheBrandLink } from '../../components/shared/KheBrandLink';
 import { SettingsMenu } from '../../components/SettingsMenu';
 import type { AchievementUnlock } from '../../types/achievement';
 import { gameIdToSlug } from '../../utils/gameSlug';
@@ -82,9 +80,6 @@ export const MenuScreen: React.FC = () => {
   const navigate = useNavigate();
   const t = useTranslation();
   const { formatText } = useProfileText();
-  const locale = getLocale();
-  const homeHref = `/?lang=${locale}`;
-  const gamesHomeLabel = locale === 'et' ? 'Tagasi mängude avalehele' : 'Back to games.khe.ee';
   const stars = useGameStore((state) => state.stars); // Persistent currency
   const hearts = useGameStore((state) => state.hearts); // Persistent global resource
   const unlockedAchievements = useGameStore((state) => state.unlockedAchievements);
@@ -188,26 +183,17 @@ export const MenuScreen: React.FC = () => {
   };
 
   return (
-    <div className="h-dvh min-h-screen bg-slate-50 font-sans flex flex-col items-center overflow-hidden animate-in fade-in">
+    <div className="flex h-full min-h-0 flex-col items-center overflow-hidden bg-slate-50 font-sans animate-in fade-in">
       {/* Scrollable area so viewport resize (e.g. mobile URL bar) doesn't reset scroll */}
       <div
         ref={scrollContainerRef}
         className="flex-1 min-h-0 w-full overflow-y-auto overflow-x-hidden overscroll-contain"
       >
-        {/* Header - Matches GameHeader exactly, starts from top */}
+        {/* Game toolbar - site navigation and language live in StudySiteHeader. */}
         <div className="w-full bg-white/95 backdrop-blur-md border-b border-slate-200 sticky top-0 z-40 shadow-sm flex-shrink-0">
-          <div className="w-full max-w-4xl mx-auto flex items-center justify-between gap-2 sm:gap-3 px-2 sm:px-4 p-2 sm:p-2.5 min-h-[56px] sm:min-h-[64px]">
-            {/* Left: App Icon (back to games.khe.ee) + Stars */}
+          <div className="w-full max-w-5xl mx-auto flex items-center justify-between gap-2 sm:gap-3 px-3 sm:px-4 p-2 sm:p-2.5 min-h-[56px] sm:min-h-[64px]">
+            {/* Left: Stars */}
             <div className="flex items-center gap-2 flex-shrink-0">
-              <KheBrandLink className="hidden sm:inline-flex" />
-              <a
-                href={homeHref}
-                className="bg-slate-100 hover:bg-slate-200 border border-slate-200 p-2 rounded-lg transition-colors active:scale-95 flex items-center justify-center"
-                aria-label={gamesHomeLabel}
-                title={gamesHomeLabel}
-              >
-                <SmartGamesLogo />
-              </a>
               <ResourceBadge
                 type="stars"
                 value={stars}
@@ -311,7 +297,7 @@ export const MenuScreen: React.FC = () => {
 
         {/* Content area with padding; extra bottom for iOS safe area / browser chrome */}
         <div
-          className="w-full max-w-4xl mx-auto px-4 pt-4 flex flex-col items-center"
+          className="w-full max-w-5xl mx-auto px-3 sm:px-4 pt-4 flex flex-col items-center"
           style={{
             paddingBottom: 'calc(4rem + env(safe-area-inset-bottom, 0px) + 1rem)',
           }}

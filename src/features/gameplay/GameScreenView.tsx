@@ -97,7 +97,7 @@ export const GameScreenView: React.FC<GameScreenViewProps> = ({
 }) => {
   return (
     <div
-      className={`min-h-screen font-sans flex flex-col ${bgClass} transition-colors duration-500 select-none overflow-hidden`}
+      className={`flex h-full min-h-0 flex-col overflow-hidden font-sans ${bgClass} select-none transition-colors duration-500`}
     >
       {confetti && <Confetti />}
       {enhancedConfetti && (
