@@ -23,7 +23,7 @@ export const GameScreen: React.FC = () => {
   // Persistent store
   const profile = useGameStore((state) => state.profile);
   const profileId = profile as ProfileType;
-  const levels = useGameStore((state) => state.levels);
+  const getLevelForGame = useGameStore((state) => state.getLevelForGame);
   const stars = useGameStore((state) => state.stars);
   const hearts = useGameStore((state) => state.hearts);
   const stats = useGameStore((state) => state.stats);
@@ -133,7 +133,7 @@ export const GameScreen: React.FC = () => {
 
   if (!gameType) return null;
 
-  const currentLevel = levels[profile]?.[gameType] ?? 1;
+  const currentLevel = getLevelForGame(gameType);
 
   const settingsMenuSlot = (
     <SettingsMenu

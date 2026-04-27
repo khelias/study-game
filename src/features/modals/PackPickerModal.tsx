@@ -2,7 +2,7 @@
 // Lists the bindings inside that mechanic so the user can pick a content
 // pack (skill). Each row → starts the corresponding game binding by id.
 import React from 'react';
-import { X, Type, type LucideIcon } from 'lucide-react';
+import { Trophy, X, Type, type LucideIcon } from 'lucide-react';
 import { useTranslation } from '../../i18n/useTranslation';
 import { useProfileText } from '../../hooks/useProfileText';
 import { FocusTrap } from '../../components/AccessibilityHelpers';
@@ -32,7 +32,7 @@ export const PackPickerModal: React.FC<PackPickerModalProps> = ({
 
   const mechanicCopy = t.mechanics[mechanicConfig.id as keyof typeof t.mechanics];
   const mechanicTitle: string = (mechanicCopy?.title ?? mechanicConfig.title) as string;
-  const heading = `${mechanicConfig.emoji ?? ''} ${formatText(mechanicTitle)}`.trim();
+  const heading = formatText(mechanicTitle);
 
   return (
     <div
@@ -41,7 +41,7 @@ export const PackPickerModal: React.FC<PackPickerModalProps> = ({
     >
       <FocusTrap active={true}>
         <div
-          className="bg-white rounded-3xl max-w-md w-full shadow-2xl max-h-[90vh] flex flex-col border-2 border-slate-200"
+          className="bg-white rounded-lg max-w-md w-full shadow-2xl max-h-[90vh] flex flex-col border border-slate-200"
           style={{ margin: '0 auto' }}
         >
           <div className="p-5 border-b border-slate-200 flex items-center justify-between gap-3">
@@ -53,7 +53,7 @@ export const PackPickerModal: React.FC<PackPickerModalProps> = ({
             </div>
             <button
               onClick={onClose}
-              className="p-2 rounded-full bg-slate-100 hover:bg-slate-200 transition-colors flex-shrink-0"
+              className="p-2 rounded-lg bg-slate-100 hover:bg-slate-200 transition-colors flex-shrink-0"
               aria-label={String(t.common.close)}
             >
               <X size={20} className="text-slate-600" />
@@ -77,16 +77,16 @@ export const PackPickerModal: React.FC<PackPickerModalProps> = ({
                   <li key={config.id}>
                     <button
                       onClick={() => onSelect(config.id)}
-                      className={`group relative w-full flex items-center gap-3 p-3 rounded-2xl border-2 ${config.theme.border} ${config.theme.bg} hover:shadow-md hover:scale-[1.01] active:scale-[0.99] transition-all text-left`}
+                      className={`group relative w-full grid grid-cols-[auto_1fr_auto] items-center gap-3 p-3 rounded-lg border ${config.theme.border} ${config.theme.bg} hover:bg-white hover:shadow-md active:bg-slate-50 transition-colors text-left`}
                       aria-label={`${formatText(title)} - ${formatText(desc)}`}
                     >
                       {isNew && (
-                        <div className="absolute -top-2 -right-2 bg-gradient-to-r from-red-500 to-pink-500 text-white text-[10px] font-black px-2 py-0.5 rounded-full shadow z-10 border-2 border-white">
+                        <div className="absolute right-2 top-2 bg-slate-900 text-white text-[10px] font-bold px-2 py-0.5 rounded-md shadow z-10">
                           {formatText(t.menuSpecific.newGame)}
                         </div>
                       )}
                       <div
-                        className={`p-3 rounded-xl bg-gradient-to-br ${config.theme.iconBg} ${config.theme.text} flex-shrink-0`}
+                        className={`flex h-11 w-11 items-center justify-center rounded-lg ${config.theme.iconBg} ${config.theme.text} flex-shrink-0`}
                       >
                         <Icon size={24} />
                       </div>
@@ -100,7 +100,7 @@ export const PackPickerModal: React.FC<PackPickerModalProps> = ({
                         <div className="mt-1 flex items-center gap-2 flex-wrap">
                           {difficultyText && (
                             <span
-                              className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                              className={`text-[10px] font-bold px-2 py-0.5 rounded-md ${
                                 config.difficulty === 'easy'
                                   ? 'bg-green-100 text-green-700'
                                   : config.difficulty === 'medium'
@@ -111,13 +111,14 @@ export const PackPickerModal: React.FC<PackPickerModalProps> = ({
                               {formatText(difficultyText)}
                             </span>
                           )}
-                          <span className="text-[10px] font-semibold text-slate-500">
-                            🏆 {highScore > 0 ? highScore : '-'}
+                          <span className="text-[10px] font-semibold text-slate-500 inline-flex items-center gap-1">
+                            <Trophy size={11} aria-hidden />
+                            {highScore > 0 ? highScore : '-'}
                           </span>
                         </div>
                       </div>
                       <div
-                        className={`flex flex-col items-center justify-center w-12 h-12 rounded-xl bg-gradient-to-br ${config.theme.iconBg} border-2 ${config.theme.border} flex-shrink-0`}
+                        className={`flex flex-col items-center justify-center w-12 h-12 rounded-lg bg-white/80 border ${config.theme.border} flex-shrink-0`}
                       >
                         <span className="text-[9px] font-bold text-slate-500">
                           {formatText(t.game.level)}

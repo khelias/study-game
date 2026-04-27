@@ -80,7 +80,7 @@ Owns cross-session state: `profile`, per-`profile`-per-game `levels`, global `st
 
 Owns session state: current `gameType`, `problem`, `score`, `levelProgress`, `bgClass`, confetti/particle flags, `adaptiveDifficulty` snapshot, notifications queue, `gameStartTime`. Actions: `setProblem`, `addScore`, `addNotification` / `removeNotification`, `endGame`, `returnToMenu`, `resetLevelProgress`, `updateAdaptiveDifficulty`. Discarded on menu return.
 
-The split is load-bearing: persistent data survives reloads but is free of transient UI noise; session data disappears automatically when the play ends. ADR-0002 retargets the persistent half: the `profile`→`levels` matrix migrates to `LearnerProfile.skillMastery[skillId].level` once the Curriculum context lands in Phase 1.
+The split is load-bearing: persistent data survives reloads but is free of transient UI noise; session data disappears automatically when the play ends. ADR-0002 now has its first implementation slice: `gameStore.activeLearnerProfile.skillMastery[skillId].level` is the canonical level source for the menu and gameplay containers. The legacy `profile` + `levels[profile][gameType]` fields remain only as generator compatibility and localStorage migration scaffolding.
 
 ### Flow
 
@@ -121,13 +121,13 @@ Top-level hooks in `src/hooks/`. All are idiomatic React hooks — they either e
 - **`useGameScreenEffects`** — bundles six gameplay-screen lifecycle effects (settings-click-outside, compact-layout query, initial problem generation, level-progress reset, auto-open game description, escape-to-close).
 - **`useUnlockedAchievementCopies`** — reads unlocked-achievement IDs and enriches them with i18n copy; returns both raw IDs and enriched `AchievementUnlock[]`.
 - **`useWrongStrikes`** — consecutive-wrong tracking used by games with crash-on-N-wrong mechanics.
-- **`useAchievements`**, **`useGameState`**, **`useProfileText`**, **`useLocalStorage`** — smaller utility hooks.
+- **`useAchievements`**, **`useGameState`**, **`useProfileText`**, **`useLocalStorage`** — smaller utility hooks. `useProfileText` is now a compatibility wrapper for legacy call sites; visible copy is no longer switched by the hidden generator profile.
 
 ## Game data and registry
 
 The registry pattern makes game additions data-driven: no switch statements outside `src/games/`.
 
-- **`games/data.ts`** — `GAME_CONFIG` (per-game UI metadata, difficulty, category, `allowedProfiles`, `levelUpStrategy`), `PROFILES`, `CATEGORIES`, and mechanic-level menu metadata.
+- **`games/data.ts`** — `GAME_CONFIG` (per-game UI metadata, difficulty, category, legacy `allowedProfiles`, `levelUpStrategy`), legacy `PROFILES`, `CATEGORIES`, and mechanic-level menu metadata.
 - **`games/generators.ts`** — one generator function per game type; produces the next `Problem` given `(level, rng, profile)`.
 - **`games/validators.ts`** — one validator per game type; pure `(problem, userAnswer) → boolean`.
 - **`games/registry.ts`** — centralized registry; games register themselves as `{ id, component, generator, config, validator, allowedProfiles, skillIds?, contentPackId? }`. `skillIds` + `contentPackId` are present on curriculum-migrated bindings (Phase 1).
@@ -225,7 +225,7 @@ Feature-flag + tier scaffolding in `src/monetization/`, intentionally inert. No 
 - **Engine unit tests** (`src/engine/__tests__/`) — deterministic, no DOM. 76% coverage target 80%+.
 - **Hook + utility tests** — `src/hooks/__tests__/`, `src/utils/__tests__/`, `src/stores/__tests__/`.
 - **Component tests** — colocated `__tests__/` folders using Happy DOM + React Testing Library.
-- **End-to-end** (`e2e/`) — Playwright smoke suite: menu loads with profile switcher and game cards, profile selection toggles visually, game-card click navigates to the game route, balance-scale answer records in stats.
+- **End-to-end** (`e2e/`) — Playwright smoke suite: menu loads with learner-progress game cards, category expansion shows games without age-tier filtering, game-card click navigates to the game route, balance-scale answer records in stats.
 
 ### Principles
 

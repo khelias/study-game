@@ -2,7 +2,7 @@
 import React, { useMemo } from 'react';
 import { FadeIn } from './EnhancedAnimations';
 import { GameConfig } from '../types/game';
-import { LucideIcon } from 'lucide-react';
+import { Lock, Trophy, type LucideIcon } from 'lucide-react';
 import { useTranslation } from '../i18n/useTranslation';
 import { useProfileText } from '../hooks/useProfileText';
 
@@ -62,52 +62,40 @@ export const GameCard: React.FC<GameCardProps> = ({
         disabled={isLocked}
         aria-label={ariaLabel}
         className={`
-          group relative flex items-center gap-4 p-5 rounded-3xl w-full
-          ${gameConfig.theme.bg} border-4 ${gameConfig.theme.border}
-          shadow-lg hover:shadow-2xl transition-all duration-300 
-          hover:scale-[1.03] hover:-translate-y-1 active:scale-[0.98]
+          group relative grid w-full grid-cols-[auto_1fr_auto] items-center gap-3 rounded-lg p-4 text-left
+          ${gameConfig.theme.bg} border ${gameConfig.theme.border}
+          shadow-sm transition-colors duration-200 hover:bg-white hover:shadow-md active:bg-slate-50
           ${isLocked ? 'opacity-50 cursor-not-allowed grayscale' : 'cursor-pointer'}
         `}
       >
-        {/* Badge */}
-        {badge && (
-          <div className="absolute -top-3 -right-3 bg-gradient-to-r from-red-500 to-pink-500 text-white text-xs font-black px-3 py-1.5 rounded-full animate-bounce shadow-lg z-10 border-2 border-white">
-            ✨ {formatText(badge)}
-          </div>
-        )}
-
-        {/* Icon */}
         <div
           className={`
-          relative p-5 rounded-2xl transition-all duration-300
-          group-hover:rotate-12 group-hover:scale-125
-          bg-gradient-to-br ${gameConfig.theme.iconBg} 
-          shadow-md group-hover:shadow-xl
-          ${gameConfig.theme.text}
+          flex h-12 w-12 items-center justify-center rounded-lg border border-white/70
+          ${gameConfig.theme.iconBg} ${gameConfig.theme.text}
         `}
         >
-          <div className="absolute inset-0 bg-gradient-to-br from-white/20 to-transparent rounded-2xl"></div>
-          <IconComponent size={36} className="relative z-10" />
+          <IconComponent size={26} aria-hidden />
         </div>
 
-        {/* Content */}
         <div className="text-left flex-1 min-w-0">
           <h3
-            className={`text-xl font-black ${gameConfig.theme.text} flex items-center gap-2 mb-1 truncate`}
+            className={`text-base sm:text-lg font-bold ${gameConfig.theme.text} flex items-center gap-2 mb-1 truncate`}
           >
             {formatText(gameTitle)}
-            {isLocked && <span className="text-sm">🔒</span>}
+            {isLocked && <Lock size={14} aria-hidden className="shrink-0" />}
           </h3>
-          <p className="text-sm font-semibold text-slate-600 mb-2 truncate">
-            {formatText(gameDesc)}
-          </p>
+          <p className="text-sm font-medium text-slate-600 truncate">{formatText(gameDesc)}</p>
 
-          {/* Difficulty badge and High Score */}
-          <div className="mt-1 flex items-center gap-2 flex-wrap">
+          <div className="mt-2 flex items-center gap-2 flex-wrap">
+            {badge && (
+              <span className="text-[11px] font-bold px-2 py-0.5 rounded-md bg-slate-900 text-white">
+                {formatText(badge)}
+              </span>
+            )}
             {gameConfig.difficulty && difficultyText && (
               <span
                 className={`
-                text-xs font-bold px-2 py-0.5 rounded-full
+                text-[11px] font-bold px-2 py-0.5 rounded-md
                 ${
                   gameConfig.difficulty === 'easy'
                     ? 'bg-green-100 text-green-700'
@@ -121,37 +109,35 @@ export const GameCard: React.FC<GameCardProps> = ({
               </span>
             )}
             {highScore !== undefined && (
-              <span className="text-xs font-semibold text-slate-500 flex items-center gap-1">
-                🏆 {formatText(t.game.highScore || 'High Score')}: {highScore > 0 ? highScore : '-'}
+              <span className="text-[11px] font-semibold text-slate-500 flex items-center gap-1">
+                <Trophy size={12} aria-hidden />
+                {formatText(t.game.highScore || 'High Score')}: {highScore > 0 ? highScore : '-'}
               </span>
             )}
           </div>
 
           {/* Progress bar */}
           {progress && (
-            <div className="mt-2 w-full h-1.5 bg-slate-200 rounded-full overflow-hidden">
+            <div className="mt-2 w-full h-1.5 bg-slate-200 rounded-md overflow-hidden">
               <div
-                className="h-full bg-gradient-to-r from-yellow-400 to-orange-500 transition-all duration-500"
+                className="h-full bg-emerald-500 transition-all duration-500"
                 style={{ width: `${(progress.current / progress.total) * 100}%` }}
               />
             </div>
           )}
         </div>
 
-        {/* Level indicator */}
         <div className="flex flex-col items-end gap-1 flex-shrink-0">
-          <span className="text-xs font-bold text-slate-500 tracking-wider">
+          <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wide">
             {formatText(t.level)}
           </span>
           <div
             className={`
-            w-16 h-16 rounded-2xl flex items-center justify-center
-            bg-gradient-to-br ${gameConfig.theme.iconBg}
-            border-4 ${gameConfig.theme.border}
-            shadow-lg group-hover:scale-110 transition-transform
+            w-12 h-12 rounded-lg flex items-center justify-center
+            bg-white/80 border ${gameConfig.theme.border}
           `}
           >
-            <span className={`text-3xl font-black ${gameConfig.theme.text}`}>{level}</span>
+            <span className={`text-xl font-black ${gameConfig.theme.text}`}>{level}</span>
           </div>
         </div>
       </button>

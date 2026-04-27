@@ -11,6 +11,12 @@ import {
 import { checkAchievements } from '../engine/achievements';
 import { getTranslations } from '../i18n';
 import { getAchievementCopy } from '../utils/achievementCopy';
+import {
+  applyLegacyGameLevelToLearner,
+  createLearnerProfileFromLegacyProgress,
+  getLearnerLevelForLegacyGame,
+  type LearnerProfile,
+} from '../learner';
 import type { ProfileType } from '../types/game';
 
 interface AchievementData {
@@ -38,12 +44,14 @@ const MAX_HEARTS = 5;
 const DEFAULT_HEARTS = 3;
 
 const DEFAULT_FAVOURITE_GAME_IDS = ['battlelearn', 'word_cascade', 'addition_snake'];
-export const GAME_STORE_VERSION = 1;
+export const GAME_STORE_VERSION = 2;
+const DEFAULT_LOCALE = 'et';
 
 export interface GameStore {
   // State
   profile: string;
   levels: Record<string, Record<string, number>>;
+  activeLearnerProfile: LearnerProfile;
   stats: ReturnType<typeof createStats>;
   unlockedAchievements: string[];
   soundEnabled: boolean;
@@ -63,6 +71,7 @@ export interface GameStore {
   recordAnswer: (isCorrect: boolean, points?: number) => { newAchievements: AchievementData[] };
   recordGameStart: (gameType: string) => { newAchievements: AchievementData[] };
   recordLevelUp: (gameType: string, newLevel: number) => { newAchievements: AchievementData[] };
+  getLevelForGame: (gameType: string) => number;
   unlockAchievement: (id: string) => void;
   toggleSound: () => void;
   resetGame: () => void;
@@ -80,7 +89,38 @@ export interface GameStore {
   getHighScore: (gameType: string) => number; // Get high score for a game type
 }
 
-const DEFAULT_PROFILE: ProfileType = 'advanced';
+const DEFAULT_PROFILE: ProfileType = 'starter';
+
+function normalizeProfile(profile: unknown): ProfileType {
+  return typeof profile === 'string' && profile in PROFILES
+    ? (profile as ProfileType)
+    : DEFAULT_PROFILE;
+}
+
+function isLearnerProfile(value: unknown): value is LearnerProfile {
+  if (!value || typeof value !== 'object') return false;
+  const candidate = value as Partial<LearnerProfile>;
+  return (
+    typeof candidate.id === 'string' &&
+    typeof candidate.displayName === 'string' &&
+    typeof candidate.skillMastery === 'object' &&
+    candidate.skillMastery !== null
+  );
+}
+
+function createActiveLearnerProfile(
+  profile: unknown,
+  levels: Record<string, Record<string, number>>,
+): LearnerProfile {
+  const profileId = normalizeProfile(profile);
+  return createLearnerProfileFromLegacyProgress({
+    displayName: PROFILES[profileId].label,
+    legacyProfileId: profileId,
+    levelsByProfile: levels,
+    locale: DEFAULT_LOCALE,
+    now: Date.now(),
+  });
+}
 
 export function migrateGameStoreState(persistedState: unknown): unknown {
   if (!persistedState || typeof persistedState !== 'object') {
@@ -88,9 +128,11 @@ export function migrateGameStoreState(persistedState: unknown): unknown {
   }
 
   const stateObj = { ...(persistedState as Record<string, unknown>) };
+  const defaultLevels = buildDefaultLevels();
   const defaults = {
     profile: DEFAULT_PROFILE,
-    levels: buildDefaultLevels(),
+    levels: defaultLevels,
+    activeLearnerProfile: createActiveLearnerProfile(DEFAULT_PROFILE, defaultLevels),
     stats: createStats(),
     unlockedAchievements: [],
     soundEnabled: true,
@@ -104,15 +146,16 @@ export function migrateGameStoreState(persistedState: unknown): unknown {
 
   // Merge levels properly
   if (stateObj.levels && typeof stateObj.levels === 'object') {
-    const template = buildDefaultLevels();
-    const merged = { ...template };
+    const merged = { ...defaultLevels };
     const levelsObj = stateObj.levels as Record<string, Record<string, number>>;
     Object.entries(levelsObj).forEach(([pid, lvlObj]) => {
       if (typeof lvlObj === 'object' && lvlObj !== null) {
-        merged[pid] = { ...(template[pid] ?? {}), ...lvlObj };
+        merged[pid] = { ...(defaultLevels[pid] ?? {}), ...lvlObj };
       }
     });
     stateObj.levels = merged;
+  } else {
+    stateObj.levels = defaultLevels;
   }
 
   // Migrate collectedStars to stars (Phase 1 consolidation)
@@ -150,6 +193,14 @@ export function migrateGameStoreState(persistedState: unknown): unknown {
   if (!Array.isArray(stateObj.favouriteGameIds)) {
     stateObj.favouriteGameIds = DEFAULT_FAVOURITE_GAME_IDS;
   }
+
+  if (!isLearnerProfile(stateObj.activeLearnerProfile)) {
+    stateObj.activeLearnerProfile = createActiveLearnerProfile(
+      stateObj.profile,
+      stateObj.levels as Record<string, Record<string, number>>,
+    );
+  }
+
   return { ...defaults, ...stateObj };
 }
 
@@ -159,6 +210,7 @@ export const useGameStore = create<GameStore>()(
       // Initial state
       profile: DEFAULT_PROFILE,
       levels: buildDefaultLevels(),
+      activeLearnerProfile: createActiveLearnerProfile(DEFAULT_PROFILE, buildDefaultLevels()),
       stats: createStats(),
       unlockedAchievements: [],
       soundEnabled: true,
@@ -172,7 +224,11 @@ export const useGameStore = create<GameStore>()(
       // Actions
       setProfile: (profile: string) => {
         if (profile in PROFILES) {
-          set({ profile: profile as ProfileType });
+          const state = get();
+          set({
+            profile: profile as ProfileType,
+            activeLearnerProfile: createActiveLearnerProfile(profile, state.levels),
+          });
         }
       },
 
@@ -272,6 +328,12 @@ export const useGameStore = create<GameStore>()(
 
         set({
           levels: updatedLevels,
+          activeLearnerProfile: applyLegacyGameLevelToLearner(
+            state.activeLearnerProfile,
+            gameType,
+            newLevel,
+            Date.now(),
+          ),
           stats: updatedStats,
           unlockedAchievements:
             newAchievements.length > 0
@@ -289,6 +351,15 @@ export const useGameStore = create<GameStore>()(
         }
       },
 
+      getLevelForGame: (gameType: string) => {
+        const state = get();
+        return getLearnerLevelForLegacyGame(
+          state.activeLearnerProfile,
+          gameType,
+          state.levels[state.profile]?.[gameType] ?? 1,
+        );
+      },
+
       toggleSound: () => {
         set((state) => ({ soundEnabled: !state.soundEnabled }));
       },
@@ -300,6 +371,7 @@ export const useGameStore = create<GameStore>()(
           set({
             profile: DEFAULT_PROFILE,
             levels: buildDefaultLevels(),
+            activeLearnerProfile: createActiveLearnerProfile(DEFAULT_PROFILE, buildDefaultLevels()),
             stats: createStats(),
             unlockedAchievements: [],
             soundEnabled: true,
@@ -421,6 +493,14 @@ export const useGameStore = create<GameStore>()(
         };
 
         set({ levels: updatedLevels });
+        set({
+          activeLearnerProfile: applyLegacyGameLevelToLearner(
+            state.activeLearnerProfile,
+            gameType,
+            newLevel,
+            Date.now(),
+          ),
+        });
       },
 
       updateHighScore: (gameType: string, score: number) => {
@@ -456,6 +536,7 @@ export const useGameStore = create<GameStore>()(
       partialize: (state) => ({
         profile: state.profile,
         levels: state.levels,
+        activeLearnerProfile: state.activeLearnerProfile,
         stats: state.stats,
         unlockedAchievements: state.unlockedAchievements,
         soundEnabled: state.soundEnabled,

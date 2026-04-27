@@ -12,7 +12,7 @@ import type { Direction, ProfileType } from '../types/game';
 export const useMathSnakeMovement = (): ((direction: Direction) => void) | undefined => {
   const { getRng } = useGameEngine();
   const profile = useGameStore((state) => state.profile);
-  const levels = useGameStore((state) => state.levels);
+  const getLevelForGame = useGameStore((state) => state.getLevelForGame);
   const updateStats = useGameStore((state) => state.updateStats);
   const updateHighScore = useGameStore((state) => state.updateHighScore);
   const addGlobalScore = useGameStore((state) => state.addScore);
@@ -37,7 +37,7 @@ export const useMathSnakeMovement = (): ((direction: Direction) => void) | undef
     if (!problem || problem.type !== 'math_snake') return;
     if (problem.math) return;
 
-    const currentLevel = levels[profile]?.[gameType] || 1;
+    const currentLevel = getLevelForGame(gameType);
     const rng = getRng();
     const wasEatingNormalApple = problem.apple?.kind === 'normal';
 

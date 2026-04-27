@@ -349,7 +349,7 @@ export const en = {
 
   // Menu specific
   menuSpecific: {
-    subtitle: 'PRACTICE AND LEARN',
+    subtitle: 'Practice and learn',
     starsLabel: 'stars',
     achievementsCount: 'achievements - click to see all',
     showAchievements: 'Show achievements',
@@ -392,8 +392,9 @@ export const en = {
       content: 'This is an educational game where you can practice reading, math and logic!',
     },
     selectAge: {
-      title: 'Choose your age',
-      content: 'Select your age group (5+ or 7+) in the menu to get appropriate tasks.',
+      title: 'Difficulty adapts',
+      content:
+        'Start with any game. Each skill progresses separately and the menu shows your current practice level.',
     },
     selectGame: {
       title: 'Choose a game',

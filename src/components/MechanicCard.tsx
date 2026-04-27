@@ -1,7 +1,5 @@
-// Mechanic card — aggregate menu card representing one engine + its content packs.
-// Visually mirrors GameCard but shows skill count + chevron in the right slot.
 import React, { useMemo } from 'react';
-import { ChevronRight, type LucideIcon } from 'lucide-react';
+import { ChevronRight, Layers, type LucideIcon } from 'lucide-react';
 import { FadeIn } from './EnhancedAnimations';
 import type { MechanicConfig } from '../types/game';
 import { useTranslation } from '../i18n/useTranslation';
@@ -49,55 +47,45 @@ export const MechanicCard: React.FC<MechanicCardProps> = ({
         onClick={onClick}
         aria-label={ariaLabel}
         className={`
-          group relative flex items-center gap-4 p-5 rounded-3xl w-full
-          ${mechanicConfig.theme.bg} border-4 ${mechanicConfig.theme.border}
-          shadow-lg hover:shadow-2xl transition-all duration-300
-          hover:scale-[1.03] hover:-translate-y-1 active:scale-[0.98] cursor-pointer
+          group relative grid w-full grid-cols-[auto_1fr_auto] items-center gap-3 rounded-lg p-4 text-left
+          ${mechanicConfig.theme.bg} border ${mechanicConfig.theme.border}
+          shadow-sm transition-colors duration-200 hover:bg-white hover:shadow-md active:bg-slate-50 cursor-pointer
         `}
       >
-        {badge && (
-          <div className="absolute -top-3 -right-3 bg-gradient-to-r from-red-500 to-pink-500 text-white text-xs font-black px-3 py-1.5 rounded-full animate-bounce shadow-lg z-10 border-2 border-white">
-            ✨ {formatText(badge)}
-          </div>
-        )}
-
         <div
           className={`
-            relative p-5 rounded-2xl transition-all duration-300
-            group-hover:rotate-12 group-hover:scale-125
-            bg-gradient-to-br ${mechanicConfig.theme.iconBg}
-            shadow-md group-hover:shadow-xl
-            ${mechanicConfig.theme.text}
+            flex h-12 w-12 items-center justify-center rounded-lg border border-white/70
+            ${mechanicConfig.theme.iconBg} ${mechanicConfig.theme.text}
           `}
         >
-          <div className="absolute inset-0 bg-gradient-to-br from-white/20 to-transparent rounded-2xl"></div>
-          <IconComponent size={36} className="relative z-10" />
+          <IconComponent size={26} aria-hidden />
         </div>
 
         <div className="text-left flex-1 min-w-0">
           <h3
-            className={`text-xl font-black ${mechanicConfig.theme.text} flex items-center gap-2 mb-1 truncate`}
+            className={`text-base sm:text-lg font-bold ${mechanicConfig.theme.text} flex items-center gap-2 mb-1 truncate`}
           >
-            {mechanicConfig.emoji && (
-              <span className="text-2xl" aria-hidden>
-                {mechanicConfig.emoji}
-              </span>
-            )}
             {formatText(title)}
           </h3>
-          <p className="text-sm font-semibold text-slate-600 mb-2 truncate">{formatText(desc)}</p>
-          <span className="inline-flex items-center gap-1 text-xs font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-700">
-            🎯 {countLabel}
-          </span>
+          <p className="text-sm font-medium text-slate-600 truncate">{formatText(desc)}</p>
+          <div className="mt-2 flex items-center gap-2 flex-wrap">
+            {badge && (
+              <span className="text-[11px] font-bold px-2 py-0.5 rounded-md bg-slate-900 text-white">
+                {formatText(badge)}
+              </span>
+            )}
+            <span className="inline-flex items-center gap-1 text-[11px] font-bold px-2 py-0.5 rounded-md bg-white/80 text-slate-700">
+              <Layers size={12} aria-hidden />
+              {countLabel}
+            </span>
+          </div>
         </div>
 
         <div className="flex flex-col items-end gap-1 flex-shrink-0">
           <div
             className={`
-              w-16 h-16 rounded-2xl flex items-center justify-center
-              bg-gradient-to-br ${mechanicConfig.theme.iconBg}
-              border-4 ${mechanicConfig.theme.border}
-              shadow-lg group-hover:scale-110 transition-transform
+              w-12 h-12 rounded-lg flex items-center justify-center
+              bg-white/80 border ${mechanicConfig.theme.border}
             `}
           >
             <ChevronRight size={28} className={`${mechanicConfig.theme.text}`} aria-hidden />

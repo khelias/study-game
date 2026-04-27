@@ -1,13 +1,28 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { useGameStore } from '../gameStore';
 import { PROFILES } from '../../games/data';
+import { MATH_ADDITION_WITHIN_20_SKILL } from '../../curriculum/skills/math';
+import { LANGUAGE_VOCABULARY_SKILL } from '../../curriculum/skills/language';
+import { createLearnerProfileFromLegacyProgress } from '../../learner';
 
 describe('gameStore', () => {
   beforeEach(() => {
+    const levels = {
+      starter: {},
+      advanced: {},
+    };
     // Reset store to initial state
     useGameStore.setState({
       profile: Object.keys(PROFILES)[0],
-      levels: {},
+      levels,
+      activeLearnerProfile: createLearnerProfileFromLegacyProgress({
+        id: 'test-learner',
+        displayName: 'Test learner',
+        legacyProfileId: 'starter',
+        levelsByProfile: levels,
+        locale: 'et',
+        now: 0,
+      }),
       stats: {
         gamesPlayed: 0,
         correctAnswers: 0,
@@ -99,6 +114,7 @@ describe('gameStore', () => {
 
       const state = useGameStore.getState();
       expect(state.levels[state.profile]?.['word_builder']).toBe(2);
+      expect(state.activeLearnerProfile.skillMastery[LANGUAGE_VOCABULARY_SKILL.id]?.level).toBe(2);
       expect(state.stats.maxLevels['word_builder']).toBe(2);
     });
 
@@ -110,6 +126,18 @@ describe('gameStore', () => {
 
       const state = useGameStore.getState();
       expect(state.stats.maxLevels['word_builder']).toBe(3);
+    });
+
+    it('should read levels from active learner skill mastery', () => {
+      const { recordLevelUp, getLevelForGame } = useGameStore.getState();
+
+      recordLevelUp('addition_snake', 4);
+
+      expect(getLevelForGame('addition_snake')).toBe(4);
+      expect(
+        useGameStore.getState().activeLearnerProfile.skillMastery[MATH_ADDITION_WITHIN_20_SKILL.id]
+          ?.level,
+      ).toBe(4);
     });
   });
 

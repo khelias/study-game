@@ -22,6 +22,10 @@ import {
   Star,
   Anchor,
   Pencil,
+  Heart,
+  Trophy,
+  HelpCircle,
+  Sparkles,
 } from 'lucide-react';
 import { useGameStore } from '../../stores/gameStore';
 import { useGameAudio } from '../../hooks/useGameAudio';
@@ -32,7 +36,7 @@ import { AchievementsModal } from '../modals/AchievementsModal';
 import { TutorialModal } from '../modals/TutorialModal';
 import { ShopModal } from '../modals/ShopModal';
 import { PackPickerModal } from '../modals/PackPickerModal';
-import { GAME_CONFIG, PROFILES, CATEGORIES, MECHANICS } from '../../games/data';
+import { GAME_CONFIG, CATEGORIES, MECHANICS } from '../../games/data';
 import { ACHIEVEMENTS } from '../../engine/achievements';
 
 const TOTAL_ACHIEVEMENTS = Object.keys(ACHIEVEMENTS).length;
@@ -42,7 +46,6 @@ import { getAchievementCopy } from '../../utils/achievementCopy';
 import { ResourceBadge } from '../../components/shared/ResourceBadge';
 import { SmartGamesLogo } from '../../components/shared/SmartGamesLogo';
 import { SettingsMenu } from '../../components/SettingsMenu';
-import type { ProfileType } from '../../types/game';
 import type { AchievementUnlock } from '../../types/achievement';
 import { gameIdToSlug } from '../../utils/gameSlug';
 import { getLocale } from '../../i18n';
@@ -64,6 +67,14 @@ const ICON_MAP = {
   Search,
   Star,
   Anchor,
+  Sparkles,
+};
+
+const CATEGORY_ICON_MAP = {
+  language: BookOpen,
+  math: Hash,
+  logic: Bot,
+  memory: Brain,
 };
 
 export const MenuScreen: React.FC = () => {
@@ -71,19 +82,17 @@ export const MenuScreen: React.FC = () => {
   const t = useTranslation();
   const { formatText } = useProfileText();
   const homeHref = `/?lang=${getLocale()}`;
-  const profile = useGameStore((state) => state.profile);
   const stars = useGameStore((state) => state.stars); // Persistent currency
   const hearts = useGameStore((state) => state.hearts); // Persistent global resource
   const unlockedAchievements = useGameStore((state) => state.unlockedAchievements);
   const soundEnabled = useGameStore((state) => state.soundEnabled);
   const stats = useGameStore((state) => state.stats);
   const hasSeenTutorial = useGameStore((state) => state.hasSeenTutorial);
-  const levels = useGameStore((state) => state.levels);
+  const getLevelForGame = useGameStore((state) => state.getLevelForGame);
   const getHighScore = useGameStore((state) => state.getHighScore);
   const favouriteGameIds = useGameStore((state) => state.favouriteGameIds);
   const setFavouriteGameIds = useGameStore((state) => state.setFavouriteGameIds);
 
-  const setProfile = useGameStore((state) => state.setProfile);
   const toggleSound = useGameStore((state) => state.toggleSound);
   const resetGame = useGameStore((state) => state.resetGame);
   const markTutorialSeen = useGameStore((state) => state.markTutorialSeen);
@@ -176,20 +185,20 @@ export const MenuScreen: React.FC = () => {
   };
 
   return (
-    <div className="h-dvh min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 font-sans flex flex-col items-center overflow-hidden animate-in fade-in">
+    <div className="h-dvh min-h-screen bg-slate-50 font-sans flex flex-col items-center overflow-hidden animate-in fade-in">
       {/* Scrollable area so viewport resize (e.g. mobile URL bar) doesn't reset scroll */}
       <div
         ref={scrollContainerRef}
         className="flex-1 min-h-0 w-full overflow-y-auto overflow-x-hidden overscroll-contain"
       >
         {/* Header - Matches GameHeader exactly, starts from top */}
-        <div className="w-full bg-white/90 backdrop-blur-md border-b-2 sm:border-b-4 border-slate-200 sticky top-0 z-40 shadow-sm flex-shrink-0">
-          <div className="w-full max-w-2xl mx-auto flex items-center justify-between gap-2 sm:gap-3 px-2 sm:px-4 p-2 sm:p-2.5 min-h-[56px] sm:min-h-[64px]">
+        <div className="w-full bg-white/95 backdrop-blur-md border-b border-slate-200 sticky top-0 z-40 shadow-sm flex-shrink-0">
+          <div className="w-full max-w-4xl mx-auto flex items-center justify-between gap-2 sm:gap-3 px-2 sm:px-4 p-2 sm:p-2.5 min-h-[56px] sm:min-h-[64px]">
             {/* Left: App Icon (back to games.khe.ee) + Stars */}
             <div className="flex items-center gap-2 flex-shrink-0">
               <a
                 href={homeHref}
-                className="bg-slate-100 hover:bg-slate-200 p-2 rounded-lg transition-colors active:scale-90 flex items-center justify-center"
+                className="bg-slate-100 hover:bg-slate-200 border border-slate-200 p-2 rounded-lg transition-colors active:scale-95 flex items-center justify-center"
                 aria-label="Back to games.khe.ee"
                 title="Back to games.khe.ee"
               >
@@ -217,12 +226,13 @@ export const MenuScreen: React.FC = () => {
                 title={formatText(t.menuSpecific.showAchievements)}
                 aria-label={t.menuSpecific.showAchievements}
               >
-                <div className="text-xs sm:text-sm font-bold text-slate-700 text-center">
-                  🏅 {unlockedAchievements.length}
+                <div className="text-xs sm:text-sm font-bold text-slate-700 text-center inline-flex items-center justify-center gap-1">
+                  <Trophy size={14} aria-hidden className="text-amber-500" />
+                  {unlockedAchievements.length}
                 </div>
-                <div className="w-full h-2 sm:h-2.5 bg-slate-200 rounded-full overflow-hidden shadow-inner">
+                <div className="w-full h-2 sm:h-2.5 bg-slate-200 rounded-md overflow-hidden shadow-inner">
                   <div
-                    className="h-full bg-gradient-to-r from-purple-400 via-purple-500 to-pink-500 transition-all duration-500 ease-out rounded-full"
+                    className="h-full bg-emerald-500 transition-all duration-500 ease-out"
                     style={{
                       width: `${Math.min(100, (unlockedAchievements.length / Math.max(1, TOTAL_ACHIEVEMENTS)) * 100)}%`,
                     }}
@@ -250,7 +260,7 @@ export const MenuScreen: React.FC = () => {
                     playClick();
                   }}
                   aria-label={settingsLabel}
-                  className="bg-slate-100 hover:bg-slate-200 p-2 rounded-lg transition-colors active:scale-90 flex items-center justify-center"
+                  className="bg-slate-100 hover:bg-slate-200 border border-slate-200 p-2 rounded-lg transition-colors active:scale-95 flex items-center justify-center"
                   title={settingsLabel}
                 >
                   {showSettingsMenu ? (
@@ -297,7 +307,7 @@ export const MenuScreen: React.FC = () => {
 
         {/* Content area with padding; extra bottom for iOS safe area / browser chrome */}
         <div
-          className="w-full max-w-2xl mx-auto px-4 pt-4 flex flex-col items-center"
+          className="w-full max-w-4xl mx-auto px-4 pt-4 flex flex-col items-center"
           style={{
             paddingBottom: 'calc(4rem + env(safe-area-inset-bottom, 0px) + 1rem)',
           }}
@@ -330,68 +340,24 @@ export const MenuScreen: React.FC = () => {
 
           {showTutorial && <TutorialModal key="tutorial-modal" onClose={handleCloseTutorial} />}
 
-          {/* Title Section - Cleaner design */}
           <div className="w-full mb-4 sm:mb-5">
             <div className="flex items-center justify-between mb-3 sm:mb-4">
               <div className="flex-1">
-                <h1
-                  className={`text-2xl sm:text-3xl font-black bg-gradient-to-r from-purple-600 via-pink-600 to-orange-600 bg-clip-text text-transparent ${profile === 'starter' ? 'tracking-tight' : 'tracking-normal'}`}
-                >
+                <h1 className="text-2xl sm:text-3xl font-black text-slate-950 tracking-normal">
                   {formatText(t.menu.title)}
                 </h1>
-                <p
-                  className={`text-xs sm:text-sm text-slate-600 mt-1 ${profile === 'starter' ? 'uppercase font-semibold' : 'font-medium'}`}
-                >
-                  {formatText(
-                    profile === 'starter'
-                      ? t.menuSpecific.starterDescription
-                      : t.menuSpecific.advancedDescription,
-                  )}
+                <p className="text-xs sm:text-sm text-slate-600 mt-1 font-medium">
+                  {t.menuSpecific.subtitle}
                 </p>
               </div>
               <button
                 onClick={() => setShowTutorial(true)}
-                className="flex-shrink-0 bg-blue-50 hover:bg-blue-100 border border-blue-200 px-3 sm:px-4 py-1.5 sm:py-2 text-blue-700 rounded-lg font-semibold text-xs sm:text-sm transition-colors"
+                className="flex-shrink-0 bg-white hover:bg-slate-100 border border-slate-200 p-2 text-slate-700 rounded-lg font-semibold transition-colors"
                 aria-label={formatText(t.menuSpecific.showTutorial)}
+                title={formatText(t.menuSpecific.showTutorial)}
               >
-                ❓ {formatText(t.menuSpecific.tutorial)}
+                <HelpCircle size={20} aria-hidden />
               </button>
-            </div>
-          </div>
-
-          {/* Profile selector - Refined */}
-          <div className="w-full mb-4 sm:mb-5">
-            <div className="flex gap-2 sm:gap-3">
-              {Object.values(PROFILES).map((p) => (
-                <button
-                  key={p.id}
-                  onClick={() => {
-                    playClick();
-                    setProfile(p.id);
-                  }}
-                  className={`
-                flex-1 py-2.5 sm:py-3 rounded-xl border-2 font-semibold text-xs sm:text-sm 
-                transition-all duration-200
-                ${
-                  profile === p.id
-                    ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white border-purple-400 shadow-md'
-                    : 'bg-white text-slate-700 border-slate-200 hover:border-purple-300 hover:shadow-sm'
-                }
-              `}
-                >
-                  <div className="flex items-center justify-center gap-1.5 sm:gap-2">
-                    <span className="text-lg sm:text-xl">{p.emoji || '👤'}</span>
-                    <div className="text-left">
-                      <div className="font-bold">{p.label}</div>
-                      <div
-                        className={`text-[10px] sm:text-xs ${profile === p.id ? 'text-purple-50' : 'text-slate-500'}`}
-                      >
-                        {formatText(t.profiles[p.id as keyof typeof t.profiles]?.desc || p.desc)}
-                      </div>
-                    </div>
-                  </div>
-                </button>
-              ))}
             </div>
           </div>
 
@@ -403,10 +369,10 @@ export const MenuScreen: React.FC = () => {
                   playClick();
                   setShowFavourites(!showFavourites);
                 }}
-                className="flex-1 flex items-center justify-between bg-white border-2 border-slate-200 hover:border-emerald-300 px-4 py-3 rounded-xl shadow-sm hover:shadow-md transition-all"
+                className="flex-1 flex items-center justify-between bg-white border border-slate-200 hover:border-emerald-300 px-4 py-3 rounded-lg shadow-sm hover:shadow-md transition-colors"
               >
                 <div className="flex items-center gap-2 sm:gap-3">
-                  <span className="text-xl sm:text-2xl">❤️</span>
+                  <Heart className="w-5 h-5 text-rose-500" aria-hidden />
                   <span className="font-bold text-sm sm:text-base text-slate-700">
                     {formatText(t.menu.favourites)}
                   </span>
@@ -423,7 +389,7 @@ export const MenuScreen: React.FC = () => {
                   setEditFavouritesDraft([...favouriteGameIds]);
                   setShowEditFavourites(true);
                 }}
-                className="p-2.5 rounded-xl bg-white border-2 border-slate-200 hover:border-emerald-300 shadow-sm hover:shadow-md transition-all"
+                className="p-2.5 rounded-lg bg-white border border-slate-200 hover:border-emerald-300 shadow-sm hover:shadow-md transition-colors"
                 aria-label={formatText(t.menuSpecific.editFavourites)}
                 title={formatText(t.menuSpecific.editFavourites)}
               >
@@ -433,30 +399,26 @@ export const MenuScreen: React.FC = () => {
 
             {/* Favourites games grid */}
             {showFavourites && (
-              <div className="grid grid-cols-1 gap-3 sm:gap-4 mt-3 animate-fadeIn">
-                {favouriteGameIds
-                  .filter((key) =>
-                    GAME_CONFIG[key]?.allowedProfiles?.includes(profile as ProfileType),
-                  )
-                  .map((key) => {
-                    const conf = GAME_CONFIG[key];
-                    if (!conf) return null;
-                    const Icon = ICON_MAP[conf.icon as keyof typeof ICON_MAP] || Type;
-                    const gameStats = stats.gamesByType?.[key] || 0;
-                    const isNew = gameStats === 0;
-                    const currentLevel = levels[profile]?.[key] ?? 1;
-                    return (
-                      <GameCard
-                        key={key}
-                        gameConfig={{ ...conf, iconComponent: Icon }}
-                        level={currentLevel}
-                        onClick={() => handleStartGame(key)}
-                        badge={isNew ? formatText(t.menuSpecific.newGame) : null}
-                        delay={0}
-                        highScore={getHighScore(key)}
-                      />
-                    );
-                  })}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4 mt-3 animate-fadeIn">
+                {favouriteGameIds.map((key) => {
+                  const conf = GAME_CONFIG[key];
+                  if (!conf) return null;
+                  const Icon = ICON_MAP[conf.icon as keyof typeof ICON_MAP] || Type;
+                  const gameStats = stats.gamesByType?.[key] || 0;
+                  const isNew = gameStats === 0;
+                  const currentLevel = getLevelForGame(key);
+                  return (
+                    <GameCard
+                      key={key}
+                      gameConfig={{ ...conf, iconComponent: Icon }}
+                      level={currentLevel}
+                      onClick={() => handleStartGame(key)}
+                      badge={isNew ? formatText(t.menuSpecific.newGame) : null}
+                      delay={0}
+                      highScore={getHighScore(key)}
+                    />
+                  );
+                })}
               </div>
             )}
           </div>
@@ -464,7 +426,7 @@ export const MenuScreen: React.FC = () => {
           {/* Edit Favourites modal */}
           {showEditFavourites && (
             <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 animate-in fade-in duration-200">
-              <div className="bg-white rounded-2xl shadow-xl max-w-md w-full max-h-[85vh] flex flex-col border-2 border-slate-200 animate-in zoom-in-95 duration-200">
+              <div className="bg-white rounded-lg shadow-xl max-w-md w-full max-h-[85vh] flex flex-col border border-slate-200 animate-in zoom-in-95 duration-200">
                 <div className="p-4 border-b border-slate-200">
                   <h2 className="text-lg font-bold text-slate-800">
                     {formatText(t.menuSpecific.editFavouritesTitle)}
@@ -473,31 +435,29 @@ export const MenuScreen: React.FC = () => {
                 <div className="p-4 overflow-y-auto flex-1">
                   {Object.values(CATEGORIES).map((category) => {
                     const categoryGames = Object.entries(GAME_CONFIG).filter(
-                      ([_key, conf]) =>
-                        conf.category === category.id &&
-                        conf.allowedProfiles?.includes(profile as ProfileType),
+                      ([_key, conf]) => conf.category === category.id,
                     );
                     if (categoryGames.length === 0) return null;
+                    const CategoryIcon =
+                      CATEGORY_ICON_MAP[category.id as keyof typeof CATEGORY_ICON_MAP] ?? BookOpen;
                     const categoryName = formatText(
                       t.categories[category.id as keyof typeof t.categories]?.name ?? category.name,
                     );
                     return (
                       <div key={category.id} className="mb-4">
                         <div className="flex items-center gap-2 mb-2 px-1 text-slate-500 text-sm font-semibold">
-                          <span className="text-lg" aria-hidden>
-                            {category.emoji}
-                          </span>
+                          <CategoryIcon className="w-4 h-4" aria-hidden />
                           <span>{categoryName}</span>
                         </div>
                         {categoryGames.map(([key, conf]) => {
                           const isChecked = editFavouritesDraft.includes(key);
                           const gameName: string = (t.games[key as keyof typeof t.games]?.title ??
                             conf.title) as string;
-                          const gameEmoji = conf.emoji ?? CATEGORIES[conf.category]?.emoji ?? '🎮';
+                          const GameIcon = ICON_MAP[conf.icon as keyof typeof ICON_MAP] || Type;
                           return (
                             <label
                               key={key}
-                              className="flex items-center gap-3 py-2.5 px-3 rounded-xl hover:bg-slate-50 cursor-pointer"
+                              className="flex items-center gap-3 py-2.5 px-3 rounded-lg hover:bg-slate-50 cursor-pointer"
                             >
                               <input
                                 type="checkbox"
@@ -513,8 +473,11 @@ export const MenuScreen: React.FC = () => {
                                 }}
                                 className="w-5 h-5 rounded border-2 border-slate-300 text-emerald-600 focus:ring-emerald-500"
                               />
-                              <span className="text-xl sm:text-2xl shrink-0" aria-hidden>
-                                {gameEmoji}
+                              <span
+                                className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg ${conf.theme.iconBg} ${conf.theme.text}`}
+                                aria-hidden
+                              >
+                                <GameIcon size={18} />
                               </span>
                               <span className="font-semibold text-slate-800">
                                 {formatText(gameName)}
@@ -532,7 +495,7 @@ export const MenuScreen: React.FC = () => {
                       playClick();
                       setShowEditFavourites(false);
                     }}
-                    className="px-4 py-2 rounded-xl border-2 border-slate-200 font-semibold text-slate-700 hover:bg-slate-50"
+                    className="px-4 py-2 rounded-lg border border-slate-200 font-semibold text-slate-700 hover:bg-slate-50"
                   >
                     {formatText(t.common.cancel)}
                   </button>
@@ -543,7 +506,7 @@ export const MenuScreen: React.FC = () => {
                       setShowEditFavourites(false);
                       if (editFavouritesDraft.length === 0) setShowFavourites(false);
                     }}
-                    className="px-4 py-2 rounded-xl bg-emerald-500 text-white font-semibold hover:bg-emerald-600"
+                    className="px-4 py-2 rounded-lg bg-emerald-600 text-white font-semibold hover:bg-emerald-700"
                   >
                     {formatText(t.menuSpecific.save)}
                   </button>
@@ -557,9 +520,7 @@ export const MenuScreen: React.FC = () => {
             {Object.values(CATEGORIES).map((category) => {
               // All games appear in their category; favourites also appear in Favourites section
               const categoryGames = Object.entries(GAME_CONFIG).filter(
-                ([_key, conf]) =>
-                  conf.category === category.id &&
-                  (!conf.allowedProfiles || conf.allowedProfiles.includes(profile as ProfileType)),
+                ([_key, conf]) => conf.category === category.id,
               );
 
               if (categoryGames.length === 0) return null;
@@ -585,16 +546,18 @@ export const MenuScreen: React.FC = () => {
               }
 
               const isExpanded = expandedCategories[category.id];
+              const CategoryIcon =
+                CATEGORY_ICON_MAP[category.id as keyof typeof CATEGORY_ICON_MAP] ?? BookOpen;
 
               return (
                 <div key={category.id} className="mb-3 sm:mb-4">
                   {/* Category header */}
                   <button
                     onClick={() => toggleCategory(category.id)}
-                    className="w-full flex items-center justify-between bg-white border-2 border-slate-200 hover:border-purple-300 px-4 py-3 rounded-xl shadow-sm hover:shadow-md transition-all"
+                    className="w-full flex items-center justify-between bg-white border border-slate-200 hover:border-emerald-300 px-4 py-3 rounded-lg shadow-sm hover:shadow-md transition-colors"
                   >
                     <div className="flex items-center gap-2 sm:gap-3">
-                      <span className="text-xl sm:text-2xl">{category.emoji}</span>
+                      <CategoryIcon className="w-5 h-5 text-slate-500" aria-hidden />
                       <span className="font-bold text-sm sm:text-base text-slate-700">
                         {formatText(
                           t.categories[category.id as keyof typeof t.categories]?.name ||
@@ -603,7 +566,7 @@ export const MenuScreen: React.FC = () => {
                       </span>
                     </div>
                     <div className="flex items-center gap-2 sm:gap-3">
-                      <span className="text-xs sm:text-sm text-slate-500 font-semibold bg-slate-100 px-2 py-1 rounded-full">
+                      <span className="text-xs sm:text-sm text-slate-500 font-semibold bg-slate-100 px-2 py-1 rounded-md">
                         {items.length}
                       </span>
                       {isExpanded ? (
@@ -616,7 +579,7 @@ export const MenuScreen: React.FC = () => {
 
                   {/* Games grid */}
                   {isExpanded && (
-                    <div className="grid grid-cols-1 gap-3 sm:gap-4 mt-3 animate-fadeIn">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4 mt-3 animate-fadeIn">
                       {items.map((item, idx) => {
                         if (item.kind === 'mechanic') {
                           const mechanicConf = MECHANICS[item.mechanicId];
@@ -643,7 +606,7 @@ export const MenuScreen: React.FC = () => {
                         const Icon = ICON_MAP[conf.icon as keyof typeof ICON_MAP] || Type;
                         const gameStats = stats.gamesByType?.[key] || 0;
                         const isNew = gameStats === 0;
-                        const currentLevel = levels[profile]?.[key] ?? 1;
+                        const currentLevel = getLevelForGame(key);
                         return (
                           <GameCard
                             key={key}
@@ -669,19 +632,14 @@ export const MenuScreen: React.FC = () => {
               const mechanicConf = MECHANICS[activeMechanicId];
               if (!mechanicConf) return null;
               const bindings = Object.entries(GAME_CONFIG)
-                .filter(
-                  ([, conf]) =>
-                    conf.mechanic === activeMechanicId &&
-                    (!conf.allowedProfiles ||
-                      conf.allowedProfiles.includes(profile as ProfileType)),
-                )
+                .filter(([, conf]) => conf.mechanic === activeMechanicId)
                 .map(([key, conf]) => {
                   const Icon = ICON_MAP[conf.icon as keyof typeof ICON_MAP] || Type;
                   const gameStats = stats.gamesByType?.[key] || 0;
                   return {
                     config: conf,
                     iconComponent: Icon,
-                    level: levels[profile]?.[key] ?? 1,
+                    level: getLevelForGame(key),
                     highScore: getHighScore(key),
                     isNew: gameStats === 0,
                   };

@@ -1,6 +1,8 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { createStats } from '../../engine/stats';
 import { APP_KEY, PROFILES } from '../../games/data';
+import { LANGUAGE_VOCABULARY_SKILL } from '../../curriculum/skills/language';
+import { MATH_GEOMETRY_SHAPES_SKILL } from '../../curriculum/skills/math';
 
 describe('gameStore persist migration', () => {
   beforeEach(() => {
@@ -23,6 +25,12 @@ describe('gameStore persist migration', () => {
           levels: {
             starter: {
               word_builder: 6,
+              word_cascade: 3,
+              shape_dash: 2,
+              shape_shift: 5,
+            },
+            advanced: {
+              word_builder: 9,
             },
           },
           stats: {
@@ -46,6 +54,10 @@ describe('gameStore persist migration', () => {
     expect(state.hearts).toBe(5);
     expect(state.favouriteGameIds).toEqual(['battlelearn', 'word_cascade']);
     expect(state.levels.starter?.word_builder).toBe(6);
+    expect(state.activeLearnerProfile.persona).toBe('kid');
+    expect(state.activeLearnerProfile.displayName).toBe('5+');
+    expect(state.activeLearnerProfile.skillMastery[LANGUAGE_VOCABULARY_SKILL.id]?.level).toBe(6);
+    expect(state.activeLearnerProfile.skillMastery[MATH_GEOMETRY_SHAPES_SKILL.id]?.level).toBe(5);
     expect(Object.keys(state.levels)).toEqual(expect.arrayContaining(Object.keys(PROFILES)));
 
     const persisted = JSON.parse(localStorage.getItem(APP_KEY) ?? '{}') as { version?: number };

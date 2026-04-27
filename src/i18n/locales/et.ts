@@ -349,7 +349,7 @@ export const et = {
 
   // Menu specific
   menuSpecific: {
-    subtitle: 'HARJUTA JA ÕPI',
+    subtitle: 'Harjuta ja õpi',
     starsLabel: 'tähte',
     achievementsCount: 'saavutust - kliki, et näha kõiki',
     showAchievements: 'Näita saavutusi',
@@ -392,8 +392,9 @@ export const et = {
       content: 'See on õppemäng, kus saad harjutada lugemist, matemaatikat ja loogikat!',
     },
     selectAge: {
-      title: 'Vali oma vanus',
-      content: 'Vali menüüs oma vanusegrupp (5+ või 7+), et saada sobivad ülesanded.',
+      title: 'Tase kohandub',
+      content:
+        'Alusta sobivast mängust. Iga oskuse tase liigub edasi eraldi ja menüü näitab sinu praegust harjutustaset.',
     },
     selectGame: {
       title: 'Vali mäng',

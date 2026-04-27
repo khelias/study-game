@@ -47,7 +47,7 @@ export const useGameScreenEffects = ({
   playClick,
 }: UseGameScreenEffectsParams): void => {
   const profile = useGameStore((state) => state.profile);
-  const levels = useGameStore((state) => state.levels);
+  const getLevelForGame = useGameStore((state) => state.getLevelForGame);
 
   const gameType = usePlaySessionStore((state) => state.gameType);
   const problem = usePlaySessionStore((state) => state.problem);
@@ -90,7 +90,7 @@ export const useGameScreenEffects = ({
   // Generate initial problem on mount
   useEffect(() => {
     if (gameType && !problem) {
-      const currentLevel = levels[profile]?.[gameType] || 1;
+      const currentLevel = getLevelForGame(gameType);
       const newProblem = generateUniqueProblemForGame(
         gameType,
         currentLevel,
@@ -102,8 +102,8 @@ export const useGameScreenEffects = ({
   }, [
     gameType,
     problem,
-    levels,
     profile,
+    getLevelForGame,
     adaptiveDifficulty,
     generateUniqueProblemForGame,
     setProblem,

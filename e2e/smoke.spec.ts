@@ -32,28 +32,25 @@ test.beforeEach(async ({ page }) => {
 });
 
 test.describe('smart games — smoke', () => {
-  test('menu loads with profile switcher and at least one game card', async ({ page }) => {
+  test('menu loads with learner progress and at least one game card', async ({ page }) => {
     await page.goto('/study/');
-
-    // Profile switcher: both age tiers render as buttons with '5+' / '7+' labels.
-    await expect(page.getByRole('button', { name: /5\+/ })).toBeVisible();
-    await expect(page.getByRole('button', { name: /7\+/ })).toBeVisible();
 
     // At least one favourited game card is visible. 'word_cascade' ships in
     // DEFAULT_FAVOURITE_GAME_IDS (gameStore.ts) and renders as 'SÕNAKOSK' in
     // Estonian. If the default favourites list changes, pick another stable
     // title here.
     await expect(page.getByRole('button', { name: /SÕNAKOSK/i }).first()).toBeVisible();
+    await expect(page.getByRole('button', { name: /Muuda lemmikuid/i })).toBeVisible();
   });
 
-  test('profile selection visually toggles active tier', async ({ page }) => {
+  test('category expansion shows games without age-tier filtering', async ({ page }) => {
     await page.goto('/study/');
 
-    const advancedBtn = page.getByRole('button', { name: /7\+/ });
-    await advancedBtn.click();
+    await page.getByRole('button', { name: /Keelemängud/i }).click();
 
-    // Active tier receives a gradient class (Tailwind).
-    await expect(advancedBtn).toHaveClass(/from-purple-500/);
+    // Syllable Builder used to be hidden behind the 5+ profile tier. The menu
+    // now lists games from the learner-progress view instead of profile filters.
+    await expect(page.getByRole('button', { name: /SILBIMEISTER/i })).toBeVisible();
   });
 
   test('clicking a game card navigates to game route and shows game UI', async ({ page }) => {

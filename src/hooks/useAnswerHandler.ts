@@ -41,7 +41,7 @@ export function useAnswerHandler(): UseAnswerHandlerResult {
 
   // Global state
   const profile = useGameStore((state) => state.profile) as ProfileType;
-  const levels = useGameStore((state) => state.levels);
+  const getLevelForGame = useGameStore((state) => state.getLevelForGame);
   const recordAnswer = useGameStore((state) => state.recordAnswer);
   const earnStars = useGameStore((state) => state.earnStars);
   const addGlobalScore = useGameStore((state) => state.addScore);
@@ -126,7 +126,7 @@ export function useAnswerHandler(): UseAnswerHandlerResult {
       let allNewAchievements = [...answerAchievements];
 
       // Check for level completion and level-up (Phase 3) - after tracking the answer
-      const currentLevel = levels[profile]?.[gameType] || 1;
+      const currentLevel = getLevelForGame(gameType);
       // Get updated progress (after recordLevelAnswer)
       const updatedProgress = levelProgress
         ? {
@@ -434,7 +434,6 @@ export function useAnswerHandler(): UseAnswerHandlerResult {
       problem,
       currentStreak,
       profile,
-      levels,
       adaptiveDifficulty,
       gameStartTime,
       recordAnswer,
@@ -456,6 +455,7 @@ export function useAnswerHandler(): UseAnswerHandlerResult {
       addNotification,
       recordLevelAnswer,
       resetLevelProgress,
+      getLevelForGame,
       getRng,
       generateUniqueProblemForGame,
       playWin,
