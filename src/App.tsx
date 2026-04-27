@@ -10,12 +10,11 @@ import { StudySiteHeader } from './components/StudySiteHeader';
 
 const App: React.FC = () => {
   const gameState = usePlaySessionStore((state) => state.gameState);
-  const headerSurface = gameState === 'playing' || gameState === 'game_over' ? 'play' : 'menu';
 
   return (
     <ErrorBoundary>
       <div className="flex h-dvh min-h-screen flex-col overflow-hidden bg-slate-50 font-sans">
-        <StudySiteHeader surface={headerSurface} />
+        <StudySiteHeader />
         <div className="min-h-0 flex-1 overflow-hidden">
           <Routes>
             <Route

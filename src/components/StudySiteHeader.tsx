@@ -2,17 +2,12 @@ import React from 'react';
 import { getLocale, setLocale, type SupportedLocale } from '../i18n';
 import { useTranslation } from '../i18n/useTranslation';
 
-interface StudySiteHeaderProps {
-  surface?: 'menu' | 'play';
-}
-
-export const StudySiteHeader: React.FC<StudySiteHeaderProps> = ({ surface = 'menu' }) => {
+export const StudySiteHeader: React.FC = () => {
   const t = useTranslation();
   const locale = getLocale();
   const isEt = locale === 'et';
-  const kheLabel = isEt ? 'KHE avaleht' : 'KHE home';
+  const kheLabel = isEt ? 'KHE Games avaleht' : 'KHE Games home';
   const languageLabel = isEt ? 'Keel' : 'Language';
-  const widthClass = surface === 'play' ? 'max-w-2xl' : 'max-w-5xl';
 
   const handleLocaleChange = (nextLocale: SupportedLocale) => {
     if (nextLocale !== locale) setLocale(nextLocale);
@@ -20,11 +15,9 @@ export const StudySiteHeader: React.FC<StudySiteHeaderProps> = ({ surface = 'men
 
   return (
     <header className="w-full flex-shrink-0 border-b border-slate-200/80 bg-white/90 backdrop-blur-lg shadow-sm">
-      <div
-        className={`mx-auto flex min-h-[3.5rem] w-full ${widthClass} items-center gap-2 px-3 py-1.5 sm:gap-3 sm:px-4`}
-      >
+      <div className="mx-auto flex min-h-[3.5rem] w-full max-w-[1180px] items-center gap-2 px-3 py-1.5 sm:gap-3 sm:px-4">
         <a
-          href={`https://khe.ee/?lang=${locale}`}
+          href={`/?lang=${locale}`}
           aria-label={kheLabel}
           title={kheLabel}
           className="inline-flex h-11 min-w-11 items-center justify-center rounded-lg border border-slate-200 bg-white px-2 text-[0.68rem] font-black tracking-normal text-slate-800 shadow-sm transition-colors hover:bg-slate-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-500"
