@@ -106,8 +106,50 @@ describe('useShapeShiftGame', () => {
       result.current.handleDragEnd(350, 350, boardRect, null);
     });
 
-    expect(result.current.pieces[0]!.currentPosition).toEqual({ x: 5, y: 5 });
+    expect(result.current.pieces[0]!.currentPosition).toEqual({ x: 4, y: 4 });
     expect(result.current.isDragging).toBe(false);
+  });
+
+  it('should snap a near-correct drop onto the target position', () => {
+    const snapProblem: ShapeShiftProblem = {
+      ...mockProblem,
+      puzzle: {
+        ...mockProblem.puzzle,
+        gridSize: 100,
+        pieces: [
+          {
+            id: 'p1',
+            type: 'square',
+            color: 'red',
+            correctPosition: { x: 30, y: 30 },
+            correctRotation: 0,
+            size: 40,
+          },
+        ],
+      },
+      pieces: [
+        {
+          ...mockProblem.pieces[0]!,
+          correctPosition: { x: 30, y: 30 },
+          size: 40,
+        },
+      ],
+    };
+    const { result } = renderHook(() => useShapeShiftGame(snapProblem, mockOnAnswer, true, 500));
+    const boardRect = {
+      left: 100,
+      top: 100,
+      width: 500,
+      height: 500,
+    } as DOMRect;
+
+    act(() => {
+      result.current.handleStartDrag('p1', 300, 300, 0, 0, 1);
+      result.current.handleDragMove(380, 380);
+      result.current.handleDragEnd(380, 380, boardRect, null);
+    });
+
+    expect(result.current.pieces[0]!.currentPosition).toEqual({ x: 30, y: 30 });
   });
 
   it('should place hint piece correctly', () => {

@@ -2,6 +2,7 @@ import { useState, useCallback } from 'react';
 import { gameRegistry } from '../games/registry';
 import { getEffectiveLevel } from '../engine/adaptiveDifficulty';
 import { createRng } from '../engine/rng';
+import { useGameStore } from '../stores/gameStore';
 import type { Problem, ProfileType } from '../types/game';
 
 // Import registrations to ensure games are registered
@@ -50,10 +51,23 @@ const makeKey = (prob: Problem | null): string => {
       return `star:${prob.constellation.id}`;
     case 'shape_dash':
       return `shapedash:${prob.runLength}:${prob.obstacles.map((o) => `${o.x}-${o.type}`).join(';')}`;
+    case 'shape_shift':
+      return `shapeshift:${prob.puzzle.id}`;
     default: {
       // TypeScript narrowing - this should never happen but satisfies type checker
       return `${String((prob as Problem).type)}:${(prob as Problem).uid}`;
     }
+  }
+};
+
+const getContentItemId = (prob: Problem): string | null => {
+  switch (prob.type) {
+    case 'shape_shift':
+      return prob.puzzle.id;
+    case 'star_mapper':
+      return prob.constellation.id;
+    default:
+      return null;
   }
 };
 
@@ -92,10 +106,16 @@ export function useGameEngine() {
       }
 
       const generator = gameEntry.generator;
+      const contentPackId = gameEntry.contentPackId;
+      const playedContentIds = contentPackId
+        ? useGameStore.getState().getPlayedContent(contentPackId)
+        : [];
 
       // Try up to 50 times to generate a unique problem (increased from 30)
       do {
-        prob = generator(level, rng, profile as ProfileType);
+        prob = generator(level, rng, profile as ProfileType, {
+          avoidContentIds: playedContentIds,
+        });
         key = makeKey(prob);
         attempt++;
 
@@ -147,6 +167,11 @@ export function useGameEngine() {
           const nextWordBuffer = [wordLower, ...filtered].slice(0, 25);
           sharedLastWords[type] = nextWordBuffer;
         }
+      }
+
+      const contentItemId = getContentItemId(prob);
+      if (contentPackId && contentItemId) {
+        useGameStore.getState().recordPlayedContent(contentPackId, contentItemId);
       }
 
       return prob;

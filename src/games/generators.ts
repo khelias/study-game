@@ -115,6 +115,7 @@ import type {
   PieceState,
   ShapeType,
   GeneratorFunction,
+  GeneratorContext,
   SceneAnchor,
   SceneSubject,
   LetterObject,
@@ -1610,6 +1611,7 @@ export const Generators: Record<string, GeneratorFunction> = {
     level: number,
     rng: RngFunction = Math.random,
     _profile: ProfileType = 'starter',
+    context: GeneratorContext = {},
   ): ShapeShiftProblem => {
     // Select mode based on level
     const mode = level <= 3 ? 'match' : level <= 6 ? 'rotate' : level <= 10 ? 'build' : 'expert';
@@ -1622,16 +1624,25 @@ export const Generators: Record<string, GeneratorFunction> = {
     if (suitablePuzzles.length === 0) {
       throw new Error(`Shape Shift: no puzzles available for difficulty ${difficulty}`);
     }
+    const persistentAvoidIds = new Set(context.avoidContentIds ?? []);
+
     // Smart Shuffle: Avoid recently played puzzles
     // @ts-expect-error -- dynamic property on globalThis for session-scoped history
     if (!globalThis._shapeShiftHistory) globalThis._shapeShiftHistory = [];
     // @ts-expect-error -- dynamic property on globalThis for session-scoped history
     const history = globalThis._shapeShiftHistory as string[];
 
-    // Filter out recent 50% of history
-    const availablePuzzles = suitablePuzzles.filter((p) => !history.includes(p.id));
+    // First avoid persisted content-pack history, then session history. If the
+    // difficulty tier is exhausted, fall back to the session-only filter.
+    const persistentAvailablePuzzles = suitablePuzzles.filter((p) => !persistentAvoidIds.has(p.id));
+    const availablePuzzles = persistentAvailablePuzzles.filter((p) => !history.includes(p.id));
 
-    const pool = availablePuzzles.length > 0 ? availablePuzzles : suitablePuzzles;
+    const pool =
+      availablePuzzles.length > 0
+        ? availablePuzzles
+        : persistentAvailablePuzzles.length > 0
+          ? persistentAvailablePuzzles
+          : suitablePuzzles;
     if (availablePuzzles.length === 0) {
       // @ts-expect-error -- dynamic property on globalThis for session-scoped history
       globalThis._shapeShiftHistory = history.filter(
@@ -1665,12 +1676,17 @@ export const Generators: Record<string, GeneratorFunction> = {
     const generateDecoyPiece = (): PieceState => {
       const colors = ['red', 'blue', 'green', 'yellow', 'purple', 'orange'];
       const types: ShapeType[] = ['triangle', 'square', 'diamond', 'circle'];
+      const sourcePiece = puzzle.pieces[Math.floor(rng() * puzzle.pieces.length)];
+      const fallbackSize = Math.max(16, Math.round(puzzle.gridSize * 0.22));
+      const size = sourcePiece?.size ?? fallbackSize;
 
       return {
         id: 'decoy',
         type: types[Math.floor(rng() * types.length)] || 'square',
         color: colors[Math.floor(rng() * colors.length)] || 'gray',
-        size: 1 + Math.floor(rng() * 2),
+        size,
+        width: sourcePiece?.width,
+        height: sourcePiece?.height,
         correctPosition: { x: -1, y: -1 },
         correctRotation: 0,
         isDecoy: true,

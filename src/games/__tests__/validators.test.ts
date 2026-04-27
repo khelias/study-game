@@ -1,6 +1,11 @@
 import { describe, it, expect } from 'vitest';
-import { validateStarMapper, validateBattleLearn, validateShapeDash } from '../validators';
-import type { StarMapperProblem, BattleLearnProblem } from '../../types/game';
+import {
+  validateStarMapper,
+  validateBattleLearn,
+  validateShapeDash,
+  validateShapeShift,
+} from '../validators';
+import type { StarMapperProblem, BattleLearnProblem, ShapeShiftProblem } from '../../types/game';
 
 describe('validateStarMapper', () => {
   const baseConstellation = {
@@ -305,5 +310,75 @@ describe('validateShapeDash', () => {
         true,
       ),
     ).toBe(false);
+  });
+});
+
+describe('validateShapeShift', () => {
+  const sunRaysProblem: ShapeShiftProblem = {
+    type: 'shape_shift',
+    uid: 'sun-rays',
+    mode: 'match',
+    showHints: true,
+    puzzle: {
+      id: 'sun-test',
+      nameEt: 'Päike',
+      nameEn: 'Sun',
+      category: 'objects',
+      difficulty: 'easy',
+      gridSize: 100,
+      pieces: [
+        {
+          id: 'r_top',
+          type: 'triangle',
+          color: 'orange',
+          correctPosition: { x: 40, y: 10 },
+          correctRotation: 0,
+          size: 20,
+        },
+        {
+          id: 'r_bottom',
+          type: 'triangle',
+          color: 'orange',
+          correctPosition: { x: 40, y: 70 },
+          correctRotation: 180,
+          size: 20,
+        },
+      ],
+    },
+    pieces: [],
+  };
+
+  it('accepts interchangeable same-shape pieces when they occupy matching targets', () => {
+    const answer = [
+      {
+        ...sunRaysProblem.puzzle.pieces[0]!,
+        currentPosition: { x: 40, y: 70 },
+        currentRotation: 180,
+      },
+      {
+        ...sunRaysProblem.puzzle.pieces[1]!,
+        currentPosition: { x: 40, y: 10 },
+        currentRotation: 0,
+      },
+    ];
+
+    expect(validateShapeShift(sunRaysProblem, answer)).toBe(true);
+  });
+
+  it('rejects interchangeable pieces when the rotation does not match the target', () => {
+    const answer = [
+      {
+        ...sunRaysProblem.puzzle.pieces[0]!,
+        currentPosition: { x: 40, y: 70 },
+        currentRotation: 0,
+      },
+      {
+        ...sunRaysProblem.puzzle.pieces[1]!,
+        currentPosition: { x: 40, y: 10 },
+        currentRotation: 180,
+      },
+    ];
+
+    expect(validateShapeShift(sunRaysProblem, answer)).toBe(false);
   });
 });

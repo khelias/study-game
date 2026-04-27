@@ -6,11 +6,16 @@
  */
 
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { gridPieceToPercent, sortByDistanceFromCenter } from '../../engine/shapeShiftGrid';
+import {
+  getPieceGridDimensions,
+  gridPieceToPercent,
+  sortByDistanceFromCenter,
+} from '../../engine/shapeShiftGrid';
 import { useTranslation } from '../../i18n/useTranslation';
+import { getLocale } from '../../i18n';
 import { usePlaySessionStore } from '../../stores/playSessionStore';
 import { GAME_CONFIG } from '../../games/data';
-import type { ShapeShiftProblem } from '../../types/game';
+import type { ShapePiece, ShapeShiftProblem } from '../../types/game';
 import { useShapeShiftGame } from '../../games/shapeShift/useShapeShiftGame';
 import { PieceSvg } from '../../games/shapeShift/ShapeDefinitions';
 import { PaidHintButtons } from '../shared';
@@ -20,6 +25,10 @@ import { PaidHintButtons } from '../shared';
 const OUTLINE_BASE_COST = 1;
 const PLACE_PIECE_BASE_COST = 2;
 const OUTLINE_DURATION_MS = 3000;
+const TARGET_SLOT_OPACITY = 0.18;
+const TARGET_SLOT_ACTIVE_OPACITY = 0.26;
+const TARGET_SLOT_PLACED_OPACITY = 0.08;
+const TRAY_PIECE_MAX_PX = 80;
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
@@ -32,6 +41,22 @@ interface ShapeShiftViewProps {
   spendStars?: (count: number) => boolean;
 }
 
+const getBoardPieceStyle = (
+  piece: Pick<ShapePiece, 'size' | 'width' | 'height'>,
+  position: { x: number; y: number },
+  gridSize: number,
+): React.CSSProperties => {
+  const { width, height } = getPieceGridDimensions(piece);
+  const pct = gridPieceToPercent(position.x, position.y, width, gridSize, height);
+
+  return {
+    left: `${pct.left}%`,
+    top: `${pct.top}%`,
+    width: `${pct.width}%`,
+    height: `${pct.height}%`,
+  };
+};
+
 // ─── Component ──────────────────────────────────────────────────────────────
 
 export const ShapeShiftView: React.FC<ShapeShiftViewProps> = ({
@@ -42,6 +67,7 @@ export const ShapeShiftView: React.FC<ShapeShiftViewProps> = ({
   spendStars,
 }) => {
   const t = useTranslation();
+  const puzzleName = getLocale() === 'en' ? problem.puzzle.nameEn : problem.puzzle.nameEt;
   const addNotification = usePlaySessionStore((state) => state.addNotification);
 
   const boardRef = useRef<HTMLDivElement>(null);
@@ -119,13 +145,14 @@ export const ShapeShiftView: React.FC<ShapeShiftViewProps> = ({
         // Re-calculate tray size for this piece
         // (Logic duplicated from below, or we could hoist getTrayPieceSize)
         const gs = problem.puzzle.gridSize;
-        const TRAY_PIECE_MAX_PX = 80;
-        const rawPx = (boardWidthPx / gs) * piece.size;
-        const traySize = Math.min(rawPx, TRAY_PIECE_MAX_PX);
-        const boardSize = rawPx; // Size on board
+        const { width, height } = getPieceGridDimensions(piece);
+        const rawWidthPx = (boardWidthPx / gs) * width;
+        const rawHeightPx = (boardWidthPx / gs) * height;
+        const maxBoardSizePx = Math.max(rawWidthPx, rawHeightPx);
+        const trayScale = Math.min(1, TRAY_PIECE_MAX_PX / maxBoardSizePx);
 
-        if (traySize > 0) {
-          scale = boardSize / traySize;
+        if (trayScale > 0) {
+          scale = 1 / trayScale;
         }
       }
 
@@ -245,32 +272,68 @@ export const ShapeShiftView: React.FC<ShapeShiftViewProps> = ({
   // Sort pieces for z-index (center pieces on top)
   const placedPieces = pieces.filter((p) => p.currentPosition !== null);
   const trayPieces = pieces.filter((p) => p.currentPosition === null);
+  const requiredTargets = problem.puzzle.pieces.filter((p) => !p.isDecoy);
+  const placedRequiredIds = new Set(
+    pieces.filter((p) => !p.isDecoy && p.currentPosition !== null).map((p) => p.id),
+  );
+  const placedRequiredCount = placedRequiredIds.size;
+  const remainingRequiredCount = Math.max(0, requiredTargets.length - placedRequiredCount);
+  const hasPlacedAnyRequired = placedRequiredCount > 0;
+  const promptText =
+    remainingRequiredCount === 0
+      ? t.games.shape_shift.adjustPlacedPieces
+      : hasPlacedAnyRequired
+        ? t.games.shape_shift.remainingCount.replace('{count}', String(remainingRequiredCount))
+        : t.games.shape_shift.firstMovePrompt;
+  const boardShellClass = [
+    'relative mb-5 rounded-2xl shadow-xl overflow-hidden border-4 transition-all duration-200',
+    status === 'wrong'
+      ? 'border-rose-300 bg-rose-50/40 ring-4 ring-rose-100'
+      : dragState
+        ? 'border-teal-300 bg-teal-50/60 ring-4 ring-teal-100'
+        : 'border-slate-200 bg-slate-50',
+  ].join(' ');
+  const trayClass = [
+    'w-full max-w-2xl rounded-xl border-2 border-dashed p-4 min-h-[100px] flex items-center justify-center flex-wrap gap-4 transition-colors duration-200',
+    dragState ? 'border-teal-300 bg-teal-50/80' : 'border-slate-300 bg-slate-100/80',
+  ].join(' ');
 
   const placedSorted = sortByDistanceFromCenter(
     placedPieces,
     gs,
     (p) => p.currentPosition!,
-    (p) => p.size,
+    (p) => getPieceGridDimensions(p).width,
+    (p) => getPieceGridDimensions(p).height,
   );
 
   // Calculate size for tray items (limited max size)
-  const TRAY_PIECE_MAX_PX = 80;
-  const getTrayPieceSize = (gridSizeUnits: number) => {
-    if (boardWidthPx === 0) return 40;
-    const rawPx = (boardWidthPx / gs) * gridSizeUnits;
-    return Math.min(rawPx, TRAY_PIECE_MAX_PX);
+  const getTrayPieceSize = (piece: (typeof pieces)[number]) => {
+    const { width, height } = getPieceGridDimensions(piece);
+    if (boardWidthPx === 0) return { width: 40, height: 40 };
+
+    const cellSizePx = boardWidthPx / gs;
+    const rawWidthPx = cellSizePx * width;
+    const rawHeightPx = cellSizePx * height;
+    const scale = Math.min(1, TRAY_PIECE_MAX_PX / Math.max(rawWidthPx, rawHeightPx));
+
+    return {
+      width: rawWidthPx * scale,
+      height: rawHeightPx * scale,
+    };
   };
 
   // Ghost element for dragging
   const dragPiece = pieces.find((p) => p.id === dragState?.pieceId);
-  const ghostSize = dragPiece ? (boardWidthPx / gs) * dragPiece.size : 0;
+  const dragPieceDimensions = dragPiece ? getPieceGridDimensions(dragPiece) : null;
+  const ghostWidth = dragPieceDimensions ? (boardWidthPx / gs) * dragPieceDimensions.width : 0;
+  const ghostHeight = dragPieceDimensions ? (boardWidthPx / gs) * dragPieceDimensions.height : 0;
 
   return (
     <div className="w-full flex flex-col items-center px-4 max-w-3xl mx-auto pt-4 animate-in fade-in duration-300 select-none">
       {/* Game Board */}
       <div
         data-testid="shape-shift-board-shell"
-        className="relative mb-6 rounded-2xl shadow-xl bg-slate-50 overflow-hidden border-4 border-slate-200"
+        className={boardShellClass}
         style={{
           width: 'min(90vw, 500px)',
           aspectRatio: '1',
@@ -290,27 +353,49 @@ export const ShapeShiftView: React.FC<ShapeShiftViewProps> = ({
             }}
           />
 
-          {/* Hints Overlay */}
+          {/* Always show neutral target slots so the first move has a clear goal. */}
+          <div className="absolute inset-0 z-0 pointer-events-none" aria-hidden="true">
+            {requiredTargets.map((p) => {
+              const targetOpacity = dragState
+                ? TARGET_SLOT_ACTIVE_OPACITY
+                : placedRequiredIds.has(p.id)
+                  ? TARGET_SLOT_PLACED_OPACITY
+                  : TARGET_SLOT_OPACITY;
+
+              return (
+                <div
+                  key={`target-${p.id}`}
+                  data-testid={`shape-shift-target-${p.id}`}
+                  className="absolute transition-opacity duration-200"
+                  style={{
+                    ...getBoardPieceStyle(p, p.correctPosition, gs),
+                    opacity: targetOpacity,
+                  }}
+                >
+                  <PieceSvg
+                    type={p.type}
+                    color="gray"
+                    rotation={p.correctRotation}
+                    variant="target"
+                  />
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Paid outline hint: stronger color preview for a short burst. */}
           {showOutlineOverlay && (
-            <div className="absolute inset-0 z-0">
+            <div className="absolute inset-0 z-[5] pointer-events-none" aria-hidden="true">
               {problem.puzzle.pieces
                 .filter((p) => !p.isDecoy)
                 .map((p) => {
-                  const pct = gridPieceToPercent(
-                    p.correctPosition.x,
-                    p.correctPosition.y,
-                    p.size,
-                    gs,
-                  );
                   return (
                     <div
                       key={`outline-${p.id}`}
-                      className="absolute opacity-20 pointer-events-none"
+                      className="absolute drop-shadow-sm"
                       style={{
-                        left: `${pct.left}%`,
-                        top: `${pct.top}%`,
-                        width: `${pct.width}%`,
-                        height: `${pct.height}%`,
+                        ...getBoardPieceStyle(p, p.correctPosition, gs),
+                        opacity: 0.34,
                       }}
                     >
                       <PieceSvg type={p.type} color={p.color} rotation={p.correctRotation} />
@@ -320,9 +405,30 @@ export const ShapeShiftView: React.FC<ShapeShiftViewProps> = ({
             </div>
           )}
 
+          {status !== 'correct' && (
+            <div className="absolute left-3 right-3 top-3 z-20 flex flex-wrap items-center justify-between gap-2 pointer-events-none">
+              <span
+                data-testid="shape-shift-puzzle-name"
+                className="rounded-full bg-teal-50/95 px-3 py-1.5 text-xs font-black text-teal-800 shadow-sm ring-1 ring-teal-200"
+              >
+                {puzzleName}
+              </span>
+              <span
+                data-testid="shape-shift-board-prompt"
+                className="max-w-full rounded-full bg-white/90 px-3 py-1.5 text-xs font-bold text-slate-700 shadow-sm ring-1 ring-slate-200"
+              >
+                {promptText}
+              </span>
+              {status === 'wrong' && (
+                <span className="rounded-full bg-rose-500 px-3 py-1.5 text-xs font-black text-white shadow-sm">
+                  {t.games.shape_shift.tryAgain}
+                </span>
+              )}
+            </div>
+          )}
+
           {/* Placed Pieces */}
           {placedSorted.map((p) => {
-            const pct = gridPieceToPercent(p.currentPosition!.x, p.currentPosition!.y, p.size, gs);
             const isDragging = dragState?.pieceId === p.id;
 
             return (
@@ -331,10 +437,7 @@ export const ShapeShiftView: React.FC<ShapeShiftViewProps> = ({
                 data-testid={`shape-shift-board-piece-${p.id}`}
                 className={`absolute transition-transform ${isDragging ? 'opacity-0' : 'cursor-grab active:cursor-grabbing hover:brightness-110'}`}
                 style={{
-                  left: `${pct.left}%`,
-                  top: `${pct.top}%`,
-                  width: `${pct.width}%`,
-                  height: `${pct.height}%`,
+                  ...getBoardPieceStyle(p, p.currentPosition!, gs),
                   touchAction: 'none',
                 }}
                 onPointerDown={(e) => onPointerDown(e, p.id)}
@@ -361,10 +464,10 @@ export const ShapeShiftView: React.FC<ShapeShiftViewProps> = ({
           style={{
             left: dragState.x, // Current mouse position
             top: dragState.y,
-            width: ghostSize,
-            height: ghostSize,
-            marginLeft: -ghostSize / 2 - dragState.isoX * dragState.dragScale,
-            marginTop: -ghostSize / 2 - dragState.isoY * dragState.dragScale,
+            width: ghostWidth,
+            height: ghostHeight,
+            marginLeft: -ghostWidth / 2 - dragState.isoX * dragState.dragScale,
+            marginTop: -ghostHeight / 2 - dragState.isoY * dragState.dragScale,
           }}
         >
           <div className="w-full h-full filter drop-shadow-2xl opacity-90">
@@ -388,18 +491,16 @@ export const ShapeShiftView: React.FC<ShapeShiftViewProps> = ({
       )}
 
       {/* Tray */}
-      <div
-        ref={trayRef}
-        data-testid="shape-shift-tray"
-        className="w-full max-w-2xl bg-slate-100/80 rounded-xl border-2 border-dashed border-slate-300 p-4 min-h-[100px] flex items-center justify-center flex-wrap gap-4"
-      >
+      <div ref={trayRef} data-testid="shape-shift-tray" className={trayClass}>
         {trayPieces.length === 0 && status === 'idle' && (
-          <span className="text-slate-400 italic text-sm">{t.games.shape_shift.dragHint}</span>
+          <span className="text-slate-400 italic text-sm">
+            {t.games.shape_shift.allPiecesPlaced}
+          </span>
         )}
 
         {trayPieces.map((p) => {
           const isDragging = dragState?.pieceId === p.id;
-          const sizePx = getTrayPieceSize(p.size);
+          const traySize = getTrayPieceSize(p);
 
           return (
             <div
@@ -407,8 +508,8 @@ export const ShapeShiftView: React.FC<ShapeShiftViewProps> = ({
               data-testid={`shape-shift-tray-piece-${p.id}`}
               className={`transition-all ${isDragging ? 'opacity-0 w-0 h-0 m-0 overflow-hidden' : 'cursor-grab active:cursor-grabbing hover:scale-110'}`}
               style={{
-                width: sizePx,
-                height: sizePx,
+                width: traySize.width,
+                height: traySize.height,
                 touchAction: 'none',
               }}
               onPointerDown={(e) => onPointerDown(e, p.id)}

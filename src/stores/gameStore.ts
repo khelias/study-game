@@ -46,7 +46,8 @@ export const HEART_COST_STARS = 10;
 export const STAR_PURCHASE_AMOUNT = 50;
 
 const DEFAULT_FAVOURITE_GAME_IDS = ['battlelearn', 'word_cascade', 'addition_snake'];
-export const GAME_STORE_VERSION = 3;
+const MAX_PLAYED_CONTENT_IDS_PER_PACK = 100;
+export const GAME_STORE_VERSION = 4;
 const DEFAULT_LOCALE = 'et';
 
 export interface GameStore {
@@ -63,6 +64,7 @@ export interface GameStore {
   hasSeenTutorial: boolean;
   highScores: Record<string, number>; // High score per game type
   favouriteGameIds: string[]; // User-chosen games shown in Favourites section
+  playedContentByPack: Record<string, string[]>; // Content-pack item ids seen by this learner
 
   // Actions
   setProfile: (profile: string) => void;
@@ -89,6 +91,8 @@ export interface GameStore {
   setLevel: (gameType: string, level: number) => void; // Manually set level for a game
   updateHighScore: (gameType: string, score: number) => boolean; // Update high score, returns true if new record
   getHighScore: (gameType: string) => number; // Get high score for a game type
+  recordPlayedContent: (packId: string, itemId: string) => void;
+  getPlayedContent: (packId: string) => string[];
 }
 
 const DEFAULT_PROFILE: ProfileType = 'starter';
@@ -144,6 +148,7 @@ export function migrateGameStoreState(persistedState: unknown): unknown {
     hasSeenTutorial: false,
     highScores: {},
     favouriteGameIds: DEFAULT_FAVOURITE_GAME_IDS,
+    playedContentByPack: {},
   };
 
   // Merge levels properly
@@ -216,6 +221,9 @@ export function migrateGameStoreState(persistedState: unknown): unknown {
   if (!Array.isArray(stateObj.favouriteGameIds)) {
     stateObj.favouriteGameIds = DEFAULT_FAVOURITE_GAME_IDS;
   }
+  if (!stateObj.playedContentByPack || typeof stateObj.playedContentByPack !== 'object') {
+    stateObj.playedContentByPack = {};
+  }
 
   if (!isLearnerProfile(stateObj.activeLearnerProfile)) {
     stateObj.activeLearnerProfile = createActiveLearnerProfile(
@@ -243,6 +251,7 @@ export const useGameStore = create<GameStore>()(
       hasSeenTutorial: false,
       highScores: {},
       favouriteGameIds: DEFAULT_FAVOURITE_GAME_IDS,
+      playedContentByPack: {},
 
       // Actions
       setProfile: (profile: string) => {
@@ -404,6 +413,7 @@ export const useGameStore = create<GameStore>()(
             hasSeenTutorial: false,
             highScores: {},
             favouriteGameIds: DEFAULT_FAVOURITE_GAME_IDS,
+            playedContentByPack: {},
           });
         }
       },
@@ -552,6 +562,28 @@ export const useGameStore = create<GameStore>()(
         return state.highScores[baseType] || 0;
       },
 
+      recordPlayedContent: (packId: string, itemId: string) => {
+        if (!packId || !itemId) return;
+        const state = get();
+        const current = state.playedContentByPack[packId] ?? [];
+        const next = [itemId, ...current.filter((id) => id !== itemId)].slice(
+          0,
+          MAX_PLAYED_CONTENT_IDS_PER_PACK,
+        );
+
+        set({
+          playedContentByPack: {
+            ...state.playedContentByPack,
+            [packId]: next,
+          },
+        });
+      },
+
+      getPlayedContent: (packId: string) => {
+        const state = get();
+        return state.playedContentByPack[packId] ?? [];
+      },
+
       setFavouriteGameIds: (ids: string[]) => {
         set({ favouriteGameIds: ids });
       },
@@ -572,6 +604,7 @@ export const useGameStore = create<GameStore>()(
         hasSeenTutorial: state.hasSeenTutorial,
         highScores: state.highScores,
         favouriteGameIds: state.favouriteGameIds,
+        playedContentByPack: state.playedContentByPack,
       }),
       // Handle migration from old localStorage format
       migrate: migrateGameStoreState,

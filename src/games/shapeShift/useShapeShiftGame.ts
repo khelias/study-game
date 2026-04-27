@@ -1,6 +1,10 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { playSound } from '../../engine/audio';
-import { boardPxToGridTopLeft } from '../../engine/shapeShiftGrid';
+import {
+  boardPxToGridTopLeft,
+  getPieceGridDimensions,
+  snapGridTopLeftToTarget,
+} from '../../engine/shapeShiftGrid';
 import { validateShapeShift } from '../../games/validators';
 import type { ShapeShiftProblem, PieceState } from '../../types/game';
 
@@ -175,17 +179,20 @@ export function useShapeShiftGame(
       }
 
       // Handle Drop
-      const ghostSizePx = (boardWidthPx / problem.puzzle.gridSize) * piece.size;
-      const ghostTopLeftX = clientX - ghostSizePx / 2 - pointerOffsetX * dragScale;
-      const ghostTopLeftY = clientY - ghostSizePx / 2 - pointerOffsetY * dragScale;
+      const { width, height } = getPieceGridDimensions(piece);
+      const cellSizePx = boardWidthPx / problem.puzzle.gridSize;
+      const ghostWidthPx = cellSizePx * width;
+      const ghostHeightPx = cellSizePx * height;
+      const ghostTopLeftX = clientX - ghostWidthPx / 2 - pointerOffsetX * dragScale;
+      const ghostTopLeftY = clientY - ghostHeightPx / 2 - pointerOffsetY * dragScale;
 
-      const ghostCenterX = ghostTopLeftX + ghostSizePx / 2;
-      const ghostCenterY = ghostTopLeftY + ghostSizePx / 2;
+      const ghostCenterX = ghostTopLeftX + ghostWidthPx / 2;
+      const ghostCenterY = ghostTopLeftY + ghostHeightPx / 2;
 
       // Check Board Drop
       if (boardRect) {
         // Leeway: accept drop if center is near or inside board (margin 70% of piece size)
-        const margin = ghostSizePx * 0.7;
+        const margin = Math.max(ghostWidthPx, ghostHeightPx) * 0.7;
         const relX = ghostCenterX - boardRect.left;
         const relY = ghostCenterY - boardRect.top;
 
@@ -197,13 +204,15 @@ export function useShapeShiftGame(
           relY < boardRect.height + margin
         ) {
           // Snap using Center coordinates
-          const gridPos = boardPxToGridTopLeft(
+          const rawGridPos = boardPxToGridTopLeft(
             relX, // Pass center relative to board
             relY,
             boardRect.width,
             problem.puzzle.gridSize,
-            piece.size,
+            width,
+            height,
           );
+          const gridPos = snapGridTopLeftToTarget(rawGridPos, piece, problem.puzzle.pieces);
 
           updatePiecePosition(pieceId, gridPos);
           playSound('tap', soundEnabled);
@@ -219,7 +228,15 @@ export function useShapeShiftGame(
         updatePiecePosition(pieceId, null);
       }
     },
-    [pieces, problem.puzzle.gridSize, soundEnabled, boardWidthPx, rotatePiece, updatePiecePosition],
+    [
+      pieces,
+      problem.puzzle.gridSize,
+      problem.puzzle.pieces,
+      soundEnabled,
+      boardWidthPx,
+      rotatePiece,
+      updatePiecePosition,
+    ],
   );
 
   const placeHintPiece = useCallback(() => {

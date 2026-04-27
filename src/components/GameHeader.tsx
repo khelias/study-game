@@ -9,6 +9,7 @@ import { Home, Menu, X } from 'lucide-react';
 import { useTranslation } from '../i18n/useTranslation';
 import { useProfileText } from '../hooks/useProfileText';
 import { ResourceBadge } from './shared/ResourceBadge';
+import { KheBrandLink } from './shared/KheBrandLink';
 
 interface GameHeaderProps {
   score: number; // Current game session score
@@ -58,6 +59,7 @@ export const GameHeader: React.FC<GameHeaderProps> = ({
       <div className="w-full max-w-2xl mx-auto flex items-center justify-between gap-2 sm:gap-3 px-2 sm:px-4 p-2 sm:p-2.5 min-h-[56px] sm:min-h-[64px]">
         {/* Left: Home button + Stars */}
         <div className="flex items-center gap-2 flex-shrink-0">
+          <KheBrandLink className="hidden md:inline-flex" />
           <button
             onClick={onReturnToMenu}
             aria-label={t.gameScreen.returnToMenu}

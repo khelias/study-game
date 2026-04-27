@@ -53,6 +53,7 @@ describe('gameStore persist migration', () => {
     expect(state.stats.collectedStars).toBe(14);
     expect(state.hearts).toBe(5);
     expect(state.favouriteGameIds).toEqual(['battlelearn', 'word_cascade']);
+    expect(state.playedContentByPack).toEqual({});
     expect(state.levels.starter?.word_builder).toBe(6);
     expect(state.activeLearnerProfile.persona).toBe('kid');
     expect(state.activeLearnerProfile.displayName).toBe('5+');

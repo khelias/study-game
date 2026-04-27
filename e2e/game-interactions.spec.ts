@@ -112,6 +112,9 @@ test.describe('smart games — focused interaction QA', () => {
     const board = page.getByTestId('shape-shift-board');
     await expect(trayPiece).toBeVisible();
     await expect(board).toBeVisible();
+    await expect(page.getByTestId('shape-shift-puzzle-name')).toBeVisible();
+    await expect(page.getByTestId('shape-shift-board-prompt')).toBeVisible();
+    expect(await page.locator('[data-testid^="shape-shift-target-"]').count()).toBeGreaterThan(0);
 
     const boardBox = await board.boundingBox();
     expect(boardBox).not.toBeNull();

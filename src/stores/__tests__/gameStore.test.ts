@@ -349,4 +349,17 @@ describe('gameStore', () => {
       expect(useGameStore.getState().hasSeenTutorial).toBe(true);
     });
   });
+
+  describe('Content History', () => {
+    it('records played content ids per content pack without duplicates', () => {
+      const { recordPlayedContent, getPlayedContent } = useGameStore.getState();
+
+      recordPlayedContent('pack.shape_shift', 'sun');
+      recordPlayedContent('pack.shape_shift', 'house');
+      recordPlayedContent('pack.shape_shift', 'sun');
+
+      expect(getPlayedContent('pack.shape_shift')).toEqual(['sun', 'house']);
+      expect(getPlayedContent('other.pack')).toEqual([]);
+    });
+  });
 });

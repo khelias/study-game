@@ -1,6 +1,8 @@
 import { describe, it, expect } from 'vitest';
 import { useGameEngine } from '../useGameEngine';
 import { renderHook } from '@testing-library/react';
+import { SHAPE_SHIFT_PUZZLES_PACK } from '../../curriculum/packs/geometry/shapeShiftPuzzles';
+import { useGameStore } from '../../stores/gameStore';
 
 // Import game registrations to ensure games are registered
 import '../../games/registrations';
@@ -164,5 +166,65 @@ describe('useGameEngine - Problem UID Uniqueness', () => {
       }
     }
     expect(consecutiveRepeats).toBeLessThanOrEqual(1);
+  });
+
+  it('records generated Shape Shift puzzle ids in content-pack history', () => {
+    useGameStore.setState({ playedContentByPack: {} });
+    const { result } = renderHook(() => useGameEngine());
+    const adaptiveDifficulty = {
+      recentAccuracy: [],
+      averageResponseTime: [],
+      consecutiveCorrect: 0,
+      consecutiveWrong: 0,
+      difficultyMultiplier: 1,
+      levelAdjustment: 0,
+    };
+
+    const problem = result.current.generateUniqueProblemForGame(
+      'shape_shift',
+      1,
+      'starter',
+      adaptiveDifficulty,
+    );
+
+    expect(problem?.type).toBe('shape_shift');
+    if (problem?.type === 'shape_shift') {
+      expect(useGameStore.getState().getPlayedContent(SHAPE_SHIFT_PUZZLES_PACK.id)).toContain(
+        problem.puzzle.id,
+      );
+    }
+  });
+
+  it('avoids persisted Shape Shift puzzle ids while the difficulty tier has fresh content', () => {
+    const easyPuzzleIds = SHAPE_SHIFT_PUZZLES_PACK.items
+      .filter((puzzle) => puzzle.difficulty === 'easy')
+      .map((puzzle) => puzzle.id);
+    const allowedPuzzleId = easyPuzzleIds[0]!;
+    useGameStore.setState({
+      playedContentByPack: {
+        [SHAPE_SHIFT_PUZZLES_PACK.id]: easyPuzzleIds.filter((id) => id !== allowedPuzzleId),
+      },
+    });
+    const { result } = renderHook(() => useGameEngine());
+    const adaptiveDifficulty = {
+      recentAccuracy: [],
+      averageResponseTime: [],
+      consecutiveCorrect: 0,
+      consecutiveWrong: 0,
+      difficultyMultiplier: 1,
+      levelAdjustment: 0,
+    };
+
+    const problem = result.current.generateUniqueProblemForGame(
+      'shape_shift',
+      1,
+      'starter',
+      adaptiveDifficulty,
+    );
+
+    expect(problem?.type).toBe('shape_shift');
+    if (problem?.type === 'shape_shift') {
+      expect(problem.puzzle.id).toBe(allowedPuzzleId);
+    }
   });
 });

@@ -16,8 +16,8 @@ export const SHAPE_PATHS: Record<ShapeType, string> = {
   // Square filling the box
   square: 'M0,0 L100,0 L100,100 L0,100 Z',
 
-  // Rectangle - landscape by default
-  rectangle: 'M0,25 L100,25 L100,75 L0,75 Z',
+  // Rectangle fills its layout box; Shape Shift pieces can define width/height.
+  rectangle: 'M0,0 L100,0 L100,100 L0,100 Z',
 
   // Diamond
   diamond: 'M50,0 L100,50 L50,100 L0,50 Z',
@@ -61,6 +61,7 @@ interface PieceSvgProps {
   className?: string;
   opacity?: number;
   dropShadow?: boolean;
+  variant?: 'solid' | 'target';
 }
 
 export const PieceSvg: React.FC<PieceSvgProps> = ({
@@ -70,8 +71,10 @@ export const PieceSvg: React.FC<PieceSvgProps> = ({
   className = '',
   opacity = 1,
   dropShadow = false,
+  variant = 'solid',
 }) => {
   const { fill, stroke, strokeWidth } = getShapeStyle(color);
+  const isTarget = variant === 'target';
 
   return (
     <svg
@@ -85,9 +88,10 @@ export const PieceSvg: React.FC<PieceSvgProps> = ({
     >
       <path
         d={SHAPE_PATHS[type] || SHAPE_PATHS.square}
-        fill={fill}
-        stroke={stroke}
-        strokeWidth={strokeWidth}
+        fill={isTarget ? '#e2e8f0' : fill}
+        stroke={isTarget ? '#64748b' : stroke}
+        strokeWidth={isTarget ? 4 : strokeWidth}
+        strokeDasharray={isTarget ? '8 6' : undefined}
         vectorEffect="non-scaling-stroke"
         strokeLinejoin="round"
       />

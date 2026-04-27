@@ -45,6 +45,7 @@ import { useProfileText } from '../../hooks/useProfileText';
 import { getAchievementCopy } from '../../utils/achievementCopy';
 import { ResourceBadge } from '../../components/shared/ResourceBadge';
 import { SmartGamesLogo } from '../../components/shared/SmartGamesLogo';
+import { KheBrandLink } from '../../components/shared/KheBrandLink';
 import { SettingsMenu } from '../../components/SettingsMenu';
 import type { AchievementUnlock } from '../../types/achievement';
 import { gameIdToSlug } from '../../utils/gameSlug';
@@ -81,7 +82,9 @@ export const MenuScreen: React.FC = () => {
   const navigate = useNavigate();
   const t = useTranslation();
   const { formatText } = useProfileText();
-  const homeHref = `/?lang=${getLocale()}`;
+  const locale = getLocale();
+  const homeHref = `/?lang=${locale}`;
+  const gamesHomeLabel = locale === 'et' ? 'Tagasi mängude avalehele' : 'Back to games.khe.ee';
   const stars = useGameStore((state) => state.stars); // Persistent currency
   const hearts = useGameStore((state) => state.hearts); // Persistent global resource
   const unlockedAchievements = useGameStore((state) => state.unlockedAchievements);
@@ -196,11 +199,12 @@ export const MenuScreen: React.FC = () => {
           <div className="w-full max-w-4xl mx-auto flex items-center justify-between gap-2 sm:gap-3 px-2 sm:px-4 p-2 sm:p-2.5 min-h-[56px] sm:min-h-[64px]">
             {/* Left: App Icon (back to games.khe.ee) + Stars */}
             <div className="flex items-center gap-2 flex-shrink-0">
+              <KheBrandLink className="hidden sm:inline-flex" />
               <a
                 href={homeHref}
                 className="bg-slate-100 hover:bg-slate-200 border border-slate-200 p-2 rounded-lg transition-colors active:scale-95 flex items-center justify-center"
-                aria-label="Back to games.khe.ee"
-                title="Back to games.khe.ee"
+                aria-label={gamesHomeLabel}
+                title={gamesHomeLabel}
               >
                 <SmartGamesLogo />
               </a>

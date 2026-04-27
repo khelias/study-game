@@ -415,7 +415,9 @@ export interface ShapePiece {
   id: string;
   type: ShapeType;
   color: string; // Tailwind color: 'red' | 'blue' | 'green' | 'yellow' | 'purple' | 'orange' | 'pink' | 'cyan'
-  size: number; // Scale factor (1 = base unit)
+  size: number; // Legacy square size in grid units; used when width/height are omitted
+  width?: number; // Optional rectangular footprint in grid units
+  height?: number; // Optional rectangular footprint in grid units
   correctPosition: { x: number; y: number }; // Target grid position
   correctRotation: number; // Target rotation (0, 90, 180, 270)
   isDecoy?: boolean; // For expert mode - piece doesn't belong
@@ -584,8 +586,13 @@ export type Problem =
 export type RngFunction = () => number;
 
 // Generator function type
+export interface GeneratorContext {
+  avoidContentIds?: string[];
+}
+
 export type GeneratorFunction = (
   level: number,
   rng?: RngFunction,
   profile?: ProfileType,
+  context?: GeneratorContext,
 ) => Problem;

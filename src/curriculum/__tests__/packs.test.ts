@@ -87,6 +87,7 @@ import {
   getBattleLearnSequencePatterns,
 } from '../packs/math/battlelearn';
 import { SHAPE_SHIFT_PUZZLES_PACK } from '../packs/geometry/shapeShiftPuzzles';
+import { getPieceGridDimensions, pieceInBounds } from '../../engine/shapeShiftGrid';
 import type { Constellation } from '../../types/game';
 
 describe('curriculum', () => {
@@ -535,6 +536,23 @@ describe('curriculum', () => {
 
       for (const puzzle of SHAPE_SHIFT_PUZZLES_PACK.items) {
         expect(puzzle.pieces.length).toBeGreaterThan(0);
+      }
+    });
+
+    it('keeps every target piece inside the board', () => {
+      for (const puzzle of SHAPE_SHIFT_PUZZLES_PACK.items) {
+        for (const piece of puzzle.pieces) {
+          const { width, height } = getPieceGridDimensions(piece);
+          expect(
+            pieceInBounds(
+              piece.correctPosition.x,
+              piece.correctPosition.y,
+              width,
+              puzzle.gridSize,
+              height,
+            ),
+          ).toBe(true);
+        }
       }
     });
   });
