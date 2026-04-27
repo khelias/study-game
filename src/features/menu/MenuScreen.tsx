@@ -154,6 +154,11 @@ export const MenuScreen: React.FC = () => {
     };
   }, [showSettingsMenu]);
 
+  const achievementsProgress = Math.min(
+    100,
+    (unlockedAchievements.length / Math.max(1, TOTAL_ACHIEVEMENTS)) * 100,
+  );
+
   const handleStartGame = (gameType: string) => {
     playClick();
 
@@ -189,115 +194,9 @@ export const MenuScreen: React.FC = () => {
         ref={scrollContainerRef}
         className="flex-1 min-h-0 w-full overflow-y-auto overflow-x-hidden overscroll-contain"
       >
-        {/* Game toolbar - site navigation and language live in StudySiteHeader. */}
-        <div className="w-full bg-white/95 backdrop-blur-md border-b border-slate-200 sticky top-0 z-40 shadow-sm flex-shrink-0">
-          <div className="w-full max-w-5xl mx-auto flex items-center justify-between gap-2 sm:gap-3 px-3 sm:px-4 p-2 sm:p-2.5 min-h-[56px] sm:min-h-[64px]">
-            {/* Left: Stars */}
-            <div className="flex items-center gap-2 flex-shrink-0">
-              <ResourceBadge
-                type="stars"
-                value={stars}
-                compact={true}
-                onClick={() => {
-                  setShowShop(true);
-                  playClick();
-                }}
-              />
-            </div>
-
-            {/* Center: Achievements - Styled like progress bar */}
-            <div className="flex-1 flex flex-col items-center gap-1 min-w-0 mx-2 sm:mx-4">
-              <button
-                onClick={() => {
-                  setShowAchievements(true);
-                  playClick();
-                }}
-                className="w-full max-w-[120px] sm:max-w-[180px] flex flex-col items-center gap-1"
-                title={formatText(t.menuSpecific.showAchievements)}
-                aria-label={t.menuSpecific.showAchievements}
-              >
-                <div className="text-xs sm:text-sm font-bold text-slate-700 text-center inline-flex items-center justify-center gap-1">
-                  <Trophy size={14} aria-hidden className="text-amber-500" />
-                  {unlockedAchievements.length}
-                </div>
-                <div className="w-full h-2 sm:h-2.5 bg-slate-200 rounded-md overflow-hidden shadow-inner">
-                  <div
-                    className="h-full bg-emerald-500 transition-all duration-500 ease-out"
-                    style={{
-                      width: `${Math.min(100, (unlockedAchievements.length / Math.max(1, TOTAL_ACHIEVEMENTS)) * 100)}%`,
-                    }}
-                  />
-                </div>
-              </button>
-            </div>
-
-            {/* Right: Hearts + Menu */}
-            <div className="flex items-center gap-2 flex-shrink-0">
-              <ResourceBadge
-                type="hearts"
-                value={hearts}
-                maxValue={5}
-                compact={true}
-                onClick={() => {
-                  setShowShop(true);
-                  playClick();
-                }}
-              />
-              <div className="relative" ref={settingsMenuRef}>
-                <button
-                  onClick={() => {
-                    setShowSettingsMenu(!showSettingsMenu);
-                    playClick();
-                  }}
-                  aria-label={settingsLabel}
-                  className="bg-slate-100 hover:bg-slate-200 border border-slate-200 p-2 rounded-lg transition-colors active:scale-95 flex items-center justify-center"
-                  title={settingsLabel}
-                >
-                  {showSettingsMenu ? (
-                    <X size={18} className="w-4 h-4 sm:w-5 sm:h-5 text-slate-600" />
-                  ) : (
-                    <Menu size={18} className="w-4 h-4 sm:w-5 sm:h-5 text-slate-600" />
-                  )}
-                </button>
-                {showSettingsMenu && (
-                  <SettingsMenu
-                    soundEnabled={soundEnabled}
-                    onToggleSound={() => {
-                      toggleSound();
-                      playClick();
-                    }}
-                    onReturnToMenu={() => {
-                      // Not used in MenuScreen
-                    }}
-                    onClose={() => setShowSettingsMenu(false)}
-                    onShowAchievements={() => {
-                      setShowAchievements(true);
-                      setShowSettingsMenu(false);
-                    }}
-                    onShowStats={() => {
-                      setShowStats(true);
-                      setShowSettingsMenu(false);
-                    }}
-                    onShowShop={() => {
-                      setShowShop(true);
-                      setShowSettingsMenu(false);
-                    }}
-                    unlockedAchievements={unlockedAchievementObjects}
-                    isGameScreen={false}
-                    onDeleteProgress={() => {
-                      resetGame();
-                      setShowSettingsMenu(false);
-                    }}
-                  />
-                )}
-              </div>
-            </div>
-          </div>
-        </div>
-
         {/* Content area with padding; extra bottom for iOS safe area / browser chrome */}
         <div
-          className="w-full max-w-5xl mx-auto px-3 sm:px-4 pt-4 flex flex-col items-center"
+          className="w-full max-w-5xl mx-auto px-3 sm:px-4 pt-5 sm:pt-6 flex flex-col items-center"
           style={{
             paddingBottom: 'calc(4rem + env(safe-area-inset-bottom, 0px) + 1rem)',
           }}
@@ -331,8 +230,8 @@ export const MenuScreen: React.FC = () => {
           {showTutorial && <TutorialModal key="tutorial-modal" onClose={handleCloseTutorial} />}
 
           <div className="w-full mb-4 sm:mb-5">
-            <div className="flex items-center justify-between mb-3 sm:mb-4">
-              <div className="flex-1">
+            <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+              <div className="min-w-0">
                 <h1 className="text-2xl sm:text-3xl font-black text-slate-950 tracking-normal">
                   {formatText(t.menu.title)}
                 </h1>
@@ -340,14 +239,105 @@ export const MenuScreen: React.FC = () => {
                   {t.menuSpecific.subtitle}
                 </p>
               </div>
-              <button
-                onClick={() => setShowTutorial(true)}
-                className="flex-shrink-0 bg-white hover:bg-slate-100 border border-slate-200 p-2 text-slate-700 rounded-lg font-semibold transition-colors"
-                aria-label={formatText(t.menuSpecific.showTutorial)}
-                title={formatText(t.menuSpecific.showTutorial)}
-              >
-                <HelpCircle size={20} aria-hidden />
-              </button>
+              <div className="flex w-full flex-wrap items-center gap-2 lg:w-auto lg:justify-end">
+                <ResourceBadge
+                  type="stars"
+                  value={stars}
+                  compact={true}
+                  onClick={() => {
+                    setShowShop(true);
+                    playClick();
+                  }}
+                />
+                <button
+                  onClick={() => {
+                    setShowAchievements(true);
+                    playClick();
+                  }}
+                  className="inline-flex min-h-9 min-w-[9.5rem] flex-1 items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2 shadow-sm transition-colors hover:border-amber-300 hover:bg-amber-50 sm:flex-none"
+                  title={formatText(t.menuSpecific.showAchievements)}
+                  aria-label={t.menuSpecific.showAchievements}
+                >
+                  <span className="inline-flex items-center gap-1.5 text-xs font-black text-slate-700">
+                    <Trophy size={15} aria-hidden className="text-amber-500" />
+                    {unlockedAchievements.length}
+                  </span>
+                  <span className="h-2 min-w-14 flex-1 overflow-hidden rounded-md bg-slate-200 shadow-inner sm:w-24">
+                    <span
+                      className="block h-full bg-emerald-500 transition-all duration-500 ease-out"
+                      style={{
+                        width: `${achievementsProgress}%`,
+                      }}
+                    />
+                  </span>
+                </button>
+                <ResourceBadge
+                  type="hearts"
+                  value={hearts}
+                  maxValue={5}
+                  compact={true}
+                  onClick={() => {
+                    setShowShop(true);
+                    playClick();
+                  }}
+                />
+                <button
+                  onClick={() => setShowTutorial(true)}
+                  className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-700 shadow-sm transition-colors hover:bg-slate-100"
+                  aria-label={formatText(t.menuSpecific.showTutorial)}
+                  title={formatText(t.menuSpecific.showTutorial)}
+                >
+                  <HelpCircle size={20} aria-hidden />
+                </button>
+                <div className="relative" ref={settingsMenuRef}>
+                  <button
+                    onClick={() => {
+                      setShowSettingsMenu(!showSettingsMenu);
+                      playClick();
+                    }}
+                    aria-label={settingsLabel}
+                    className="flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-700 shadow-sm transition-colors hover:bg-slate-100 active:scale-95"
+                    title={settingsLabel}
+                  >
+                    {showSettingsMenu ? (
+                      <X size={18} className="text-slate-600" />
+                    ) : (
+                      <Menu size={18} className="text-slate-600" />
+                    )}
+                  </button>
+                  {showSettingsMenu && (
+                    <SettingsMenu
+                      soundEnabled={soundEnabled}
+                      onToggleSound={() => {
+                        toggleSound();
+                        playClick();
+                      }}
+                      onReturnToMenu={() => {
+                        // Not used in MenuScreen
+                      }}
+                      onClose={() => setShowSettingsMenu(false)}
+                      onShowAchievements={() => {
+                        setShowAchievements(true);
+                        setShowSettingsMenu(false);
+                      }}
+                      onShowStats={() => {
+                        setShowStats(true);
+                        setShowSettingsMenu(false);
+                      }}
+                      onShowShop={() => {
+                        setShowShop(true);
+                        setShowSettingsMenu(false);
+                      }}
+                      unlockedAchievements={unlockedAchievementObjects}
+                      isGameScreen={false}
+                      onDeleteProgress={() => {
+                        resetGame();
+                        setShowSettingsMenu(false);
+                      }}
+                    />
+                  )}
+                </div>
+              </div>
             </div>
           </div>
 
