@@ -89,6 +89,14 @@ interface Particle {
   text?: string; // For score popups
 }
 
+interface ShapeDashLabels {
+  attempt: string;
+  score: string;
+  shield: string;
+  oneMoreWrongWarning: string;
+  wrongGateNextWarning: string;
+}
+
 // Game state (all mutable state in a single ref object)
 interface GameState {
   scroll: number;
@@ -785,6 +793,7 @@ function drawGateWarning(
   width: number,
   pulsePhase: number,
   consecutiveWrong: number,
+  labels: Pick<ShapeDashLabels, 'oneMoreWrongWarning' | 'wrongGateNextWarning'>,
 ) {
   const pulse = 1 + Math.sin(pulsePhase * 4) * 0.1;
 
@@ -818,7 +827,7 @@ function drawGateWarning(
     ctx.font = 'bold 14px Arial';
     ctx.fillStyle = '#ff3366';
     const warningText =
-      consecutiveWrong === 1 ? '⚠️ One more wrong = CRASH!' : '⚠️ Wrong gate! Next one crashes!';
+      consecutiveWrong === 1 ? labels.oneMoreWrongWarning : labels.wrongGateNextWarning;
     ctx.strokeText(warningText, width / 2, 112);
     ctx.fillText(warningText, width / 2, 112);
     ctx.restore();
@@ -865,6 +874,7 @@ function drawHUD(
   starsCollected: number,
   totalStars: number,
   hasShield: boolean,
+  labels: Pick<ShapeDashLabels, 'attempt' | 'score' | 'shield'>,
   questionTimer?: number,
 ) {
   // Progress bar
@@ -894,11 +904,11 @@ function drawHUD(
 
   // Attempt counter (left)
   ctx.textAlign = 'left';
-  ctx.fillText(`Attempt ${attemptCount}`, 12, 26);
+  ctx.fillText(`${labels.attempt} ${attemptCount}`, 12, 26);
 
   // Score (right)
   ctx.textAlign = 'right';
-  ctx.fillText(`Score: ${score}`, width - 12, 26);
+  ctx.fillText(`${labels.score}: ${score}`, width - 12, 26);
 
   // V3: Combo multiplier (center-right)
   if (combo > 1) {
@@ -921,7 +931,7 @@ function drawHUD(
   // V3: Shield indicator (left below stars)
   if (hasShield) {
     ctx.fillStyle = '#00ffcc';
-    ctx.fillText(`🛡️ Shield`, 12, 62);
+    ctx.fillText(`🛡️ ${labels.shield}`, 12, 62);
   }
 
   // V3: Question timer (if active)
@@ -947,6 +957,14 @@ export const ShapeDashView: React.FC<ShapeDashViewProps> = ({
   spendStars,
 }) => {
   const t = useTranslation();
+  const shapeDashText = t.games.shape_dash;
+  const shapeDashLabels: ShapeDashLabels = {
+    attempt: shapeDashText.attemptLabel,
+    score: shapeDashText.scoreLabel,
+    shield: shapeDashText.shieldLabel,
+    oneMoreWrongWarning: shapeDashText.oneMoreWrongWarning,
+    wrongGateNextWarning: shapeDashText.wrongGateNextWarning,
+  };
   const [gameState, setGameState] = useState<'playing' | 'crashed' | 'won'>('playing');
   const [displayScore, setDisplayScore] = useState(0);
   const [displayAttempt, setDisplayAttempt] = useState(1);
@@ -1471,7 +1489,7 @@ export const ShapeDashView: React.FC<ShapeDashViewProps> = ({
             // Correct gate: +200 points, reset consecutive wrong counter, maintain combo
             state.score += 200 * state.combo;
             state.consecutiveWrongGates = 0;
-            state.feedbackMessage = '✓ Correct!';
+            state.feedbackMessage = `✓ ${shapeDashText.gateCorrect}`;
             state.feedbackType = 'correct';
             state.feedbackUntil = time + 1000;
             playSound('correct', soundEnabledRef.current);
@@ -1513,11 +1531,11 @@ export const ShapeDashView: React.FC<ShapeDashViewProps> = ({
                     '#00ffcc',
                   ),
                 );
-                state.feedbackMessage = '⚠️ Shield Lost!';
+                state.feedbackMessage = shapeDashText.shieldLost;
               } else {
                 state.combo = 1;
                 state.comboCount = 0;
-                state.feedbackMessage = '✗ Wrong Gate!';
+                state.feedbackMessage = `✗ ${shapeDashText.gateWrong}`;
               }
               state.feedbackType = 'wrong';
               state.feedbackUntil = time + 1500;
@@ -1646,6 +1664,7 @@ export const ShapeDashView: React.FC<ShapeDashViewProps> = ({
         state.starsCollected,
         state.totalStars,
         state.hasShield,
+        shapeDashLabels,
       );
 
       // V4: Draw gate warning if approaching
@@ -1659,7 +1678,14 @@ export const ShapeDashView: React.FC<ShapeDashViewProps> = ({
       if (approachingGateIndex !== null) {
         const gate = shapeGates[approachingGateIndex];
         if (gate) {
-          drawGateWarning(ctx, gate.prompt, cw, state.pulsePhase, state.consecutiveWrongGates);
+          drawGateWarning(
+            ctx,
+            gate.prompt,
+            cw,
+            state.pulsePhase,
+            state.consecutiveWrongGates,
+            shapeDashLabels,
+          );
         }
       }
 
@@ -1716,9 +1742,7 @@ export const ShapeDashView: React.FC<ShapeDashViewProps> = ({
   );
 
   const tapToRetry =
-    (t.games as Record<string, { tapToRetry?: string }>)?.['shape_dash']?.tapToRetry ??
-    (t.game as { retry?: string })?.retry ??
-    'Tap to try again';
+    shapeDashText.tapToRetry ?? (t.game as { retry?: string })?.retry ?? 'Tap to try again';
 
   return (
     <div className="flex flex-col items-center gap-3 w-full max-w-4xl relative">
@@ -1736,7 +1760,7 @@ export const ShapeDashView: React.FC<ShapeDashViewProps> = ({
         onKeyDown={handleKeyDown}
         role="button"
         tabIndex={0}
-        aria-label={gameState === 'crashed' ? 'Tap to try again' : 'Jump'}
+        aria-label={gameState === 'crashed' ? tapToRetry : shapeDashText.jumpLabel}
       >
         <canvas
           ref={canvasRef}
@@ -1754,13 +1778,15 @@ export const ShapeDashView: React.FC<ShapeDashViewProps> = ({
             }}
           >
             <span className="text-5xl">🎉</span>
-            <span className="text-3xl font-black text-white drop-shadow-lg">LEVEL COMPLETE!</span>
+            <span className="text-3xl font-black text-white drop-shadow-lg">
+              {shapeDashText.completeLabel}
+            </span>
             <div className="text-4xl">{'⭐'.repeat(displayRating)}</div>
             <span className="text-xl font-bold text-white drop-shadow-md">
-              Score: {displayScore}
+              {shapeDashText.scoreLabel}: {displayScore}
             </span>
             <span className="text-lg font-semibold text-white/90 drop-shadow-md">
-              Stars: {displayStarsCollected}/{displayTotalStars}
+              {shapeDashText.starsLabel}: {displayStarsCollected}/{displayTotalStars}
             </span>
           </div>
         )}
@@ -1777,7 +1803,7 @@ export const ShapeDashView: React.FC<ShapeDashViewProps> = ({
               {tapToRetry}
             </span>
             <span className="text-lg font-semibold text-white/90 drop-shadow-md">
-              Attempt {displayAttempt}
+              {shapeDashText.attemptLabel} {displayAttempt}
             </span>
           </div>
         )}
@@ -1787,7 +1813,7 @@ export const ShapeDashView: React.FC<ShapeDashViewProps> = ({
       {isPortrait && (
         <div className="text-xs text-amber-400 text-center px-4 py-2 bg-amber-950/30 rounded-lg border border-amber-700/30">
           <span className="inline-block mr-2">📱</span>
-          For best experience, rotate your device to landscape
+          {shapeDashText.portraitHint}
         </div>
       )}
 
@@ -1796,7 +1822,7 @@ export const ShapeDashView: React.FC<ShapeDashViewProps> = ({
         <kbd className="px-2 py-1 bg-slate-700 rounded text-xs font-semibold text-slate-200">
           SPACE
         </kbd>{' '}
-        or tap to jump • Double-jump available!
+        {shapeDashText.jumpHint}
       </div>
 
       {/* V4: Paid hint buttons */}

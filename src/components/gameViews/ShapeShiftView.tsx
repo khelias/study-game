@@ -182,6 +182,35 @@ export const ShapeShiftView: React.FC<ShapeShiftViewProps> = ({
     [dragState, handleDragEnd],
   );
 
+  useEffect(() => {
+    if (!dragState) return;
+
+    const handleWindowPointerMove = (e: PointerEvent) => {
+      e.preventDefault();
+      setDragState((prev) => (prev ? { ...prev, x: e.clientX, y: e.clientY } : null));
+      handleDragMove(e.clientX, e.clientY);
+    };
+
+    const handleWindowPointerEnd = (e: PointerEvent) => {
+      e.preventDefault();
+      const { board, tray } = boardRefValues.current;
+      const boardRect = board?.getBoundingClientRect() ?? null;
+      const trayRect = tray?.getBoundingClientRect() ?? null;
+      handleDragEnd(e.clientX, e.clientY, boardRect, trayRect);
+      setDragState(null);
+    };
+
+    window.addEventListener('pointermove', handleWindowPointerMove);
+    window.addEventListener('pointerup', handleWindowPointerEnd);
+    window.addEventListener('pointercancel', handleWindowPointerEnd);
+
+    return () => {
+      window.removeEventListener('pointermove', handleWindowPointerMove);
+      window.removeEventListener('pointerup', handleWindowPointerEnd);
+      window.removeEventListener('pointercancel', handleWindowPointerEnd);
+    };
+  }, [dragState, handleDragMove, handleDragEnd]);
+
   // ─── Hints ──────────────────────────────────────────────────────────────
 
   const handleHintClick = (hintId: string) => {
@@ -327,20 +356,8 @@ export const ShapeShiftView: React.FC<ShapeShiftViewProps> = ({
             top: dragState.y,
             width: ghostSize,
             height: ghostSize,
-            // Alignment correction:
-            // 1. We want the piece visual anchor to match mouse relative offset.
-            // 2. Mouse is at (Left, Top) of this div.
-            // 3. This Div is top-left anchored at mouse.
-            // 4. We shift margins so that Div's internal "anchor" is at mouse.
-            // anchor = (isoX * scale, isoY * scale) from top-left.
-            marginLeft: -(dragState.isoX * dragState.dragScale),
-            marginTop: -(dragState.isoY * dragState.dragScale),
-            // No transform needed if using margins.
-            // Wait, if no transform, (left, top) is top-left corner.
-            // Margin moves that corner back. So mouse stays at (0,0) relative to viewport?
-            // No. fixed position sets left/top. Margin offsets from there.
-            // So visually: (mouse) is over point (isoX*scale, isoY*scale) inside the ghost.
-            // This is correct.
+            marginLeft: -ghostSize / 2 - dragState.isoX * dragState.dragScale,
+            marginTop: -ghostSize / 2 - dragState.isoY * dragState.dragScale,
           }}
         >
           <div className="w-full h-full filter drop-shadow-2xl opacity-90">

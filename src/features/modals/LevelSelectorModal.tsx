@@ -78,7 +78,7 @@ export const LevelSelectorModal: React.FC<LevelSelectorModalProps> = ({
             <button
               onClick={onClose}
               className="p-2 rounded-full bg-slate-100 hover:bg-slate-200 transition-colors"
-              aria-label={t.statsModal.close}
+              aria-label={formatText(t.common.close)}
             >
               <X size={20} className="text-slate-600" />
             </button>

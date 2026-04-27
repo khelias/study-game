@@ -176,8 +176,8 @@ export function useShapeShiftGame(
 
       // Handle Drop
       const ghostSizePx = (boardWidthPx / problem.puzzle.gridSize) * piece.size;
-      const ghostTopLeftX = clientX - pointerOffsetX * dragScale;
-      const ghostTopLeftY = clientY - pointerOffsetY * dragScale;
+      const ghostTopLeftX = clientX - ghostSizePx / 2 - pointerOffsetX * dragScale;
+      const ghostTopLeftY = clientY - ghostSizePx / 2 - pointerOffsetY * dragScale;
 
       const ghostCenterX = ghostTopLeftX + ghostSizePx / 2;
       const ghostCenterY = ghostTopLeftY + ghostSizePx / 2;
