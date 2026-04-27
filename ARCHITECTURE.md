@@ -132,11 +132,11 @@ The registry pattern makes game additions data-driven: no switch statements outs
 - **`games/registry.ts`** — centralized registry; games register themselves as `{ id, component, generator, config, validator, allowedProfiles, skillIds?, contentPackId? }`. `skillIds` + `contentPackId` are present on curriculum-migrated bindings (Phase 1).
 - **`games/registrations.ts`** — imports everything and calls `gameRegistry.register(...)` for all 18 games. Module side effect on import. Imports `src/curriculum/` first so pack lookups resolve deterministically.
 
-Game-type-specific content files (`puzzles.ts`, `shapeShiftGrid.ts`, `sentenceTranslations.ts`) still live alongside `generators.ts` — this is the **Skill × Mechanic × Content welding** called out as debt in ROADMAP §2. Three migrations have landed: constellations → `ASTRONOMY_VISIBLE_FROM_ESTONIA_PACK` (Slice 1), syllables → `LANGUAGE_SYLLABIFICATION_{ET,EN}_PACK` (Slice 2), and math_snake's equation pool → `MATH_MIXED_BASICS_PACK` + `MATH_MULTIPLICATION_1_5_PACK` (Slice 3 — first `one mechanic, multiple bindings` case; `multiplication_snake` reuses MathSnakeView + engine with a focused ×1–5 pack and a cosmic visual theme). Three shapes of pack consumption now exist:
+Game-type-specific content files (`puzzles.ts`, `shapeShiftGrid.ts`, `sentenceTranslations.ts`) still live alongside `generators.ts` — this is the **Skill × Mechanic × Content welding** called out as debt in ROADMAP §2. Four migrations have landed: constellations → `ASTRONOMY_VISIBLE_FROM_ESTONIA_PACK` (Slice 1), syllables → `LANGUAGE_SYLLABIFICATION_{ET,EN}_PACK` (Slice 2), the snake family's arithmetic specs → six focused math packs (Slice 3), and Shape Dash's checkpoint/gate question bank → `MATH_GEOMETRY_SHAPES_PACK` (Slice 5). Three shapes of pack consumption now exist:
 
-- **Static single-pack**: binding sets `contentPackId`; generator calls `getPackItems(id)`. Used by `star_mapper`.
+- **Static single-pack**: binding sets `contentPackId`; generator calls `getPackItems(id)`. Used by `star_mapper` and `shape_dash`.
 - **Multi-locale skill**: binding sets only `skillIds`; generator calls `getPackItemsForLocale(skillId, locale)`. Used by `syllable_builder`.
-- **Procedural DSL pack**: pack items are spec-recipes, not static instances. The engine owns range-scaling logic; specs carry op kind + optional per-spec overrides. Used by `math_snake` (mixed specs) and `multiplication_snake` (mul-only specs, factor range [2,5]). Multiple bindings point to different packs → appear as distinct cards in the menu using the same underlying component.
+- **Procedural DSL pack**: pack items are spec-recipes, not static instances. The engine owns range-scaling logic; specs carry op kind + optional per-spec overrides. Used by the six snake bindings. Multiple bindings point to different packs → appear under one mechanic card in the menu using the same underlying component.
 
 ## Curriculum (skills + content packs)
 
@@ -147,6 +147,7 @@ Game-type-specific content files (`puzzles.ts`, `shapeShiftGrid.ts`, `sentenceTr
 - **`curriculum/skills/`** — one file per subject, registering `Skill` taxonomy entries.
 - **`curriculum/packs/<subject>/<pack>.ts`** — a `ContentPack<TItem>` export plus pack-scoped helper lookups (e.g. `getConstellationById(items, id)`). Helpers take `items` explicitly so the pack module stays stateless.
 - **`curriculum/packs/math/types.ts`** — re-exports the `ArithmeticSpec` / `EquationOp` DSL types from `src/types/game.ts`. Math packs are lists of specs (op + optional per-spec overrides), consumed by the `math_snake` engine which owns level-based range scaling.
+- **`curriculum/packs/math/geometry_shapes.ts`** — Shape Dash checkpoint and gate content. The pack items carry localized prompts/options; the generator owns only placement, shuffling, and obstacle/run geometry.
 - **`curriculum/index.ts`** — imports every skill + pack for side-effect registration. Any module that calls `getPackItems` must import this first (mechanics do so via `games/registrations.ts`).
 
 ## Component architecture

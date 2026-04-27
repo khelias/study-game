@@ -81,3 +81,14 @@ export const MATH_MULTIPLICATION_1_TO_10_SKILL: Skill = {
   },
   prerequisites: ['math.multiplication_1_to_5'],
 };
+
+export const MATH_GEOMETRY_SHAPES_SKILL: Skill = {
+  id: 'math.geometry_shapes',
+  name: { et: 'Geomeetrilised kujundid', en: 'Geometry shapes' },
+  taxonomy: {
+    subject: 'matemaatika',
+    grade: 1,
+    level: 'foundation',
+    topic: 'math.geometry.shapes',
+  },
+};

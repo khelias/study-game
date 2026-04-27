@@ -13,6 +13,14 @@ import { MATH_SUBTRACTION_WITHIN_100_PACK } from '../curriculum/packs/math/subtr
 import { MATH_MULTIPLICATION_1_5_PACK } from '../curriculum/packs/math/multiplication_1_5';
 import { MATH_MULTIPLICATION_1_10_PACK } from '../curriculum/packs/math/multiplication_1_10';
 import type { ArithmeticSpec } from '../curriculum/packs/math/types';
+import {
+  MATH_GEOMETRY_SHAPES_PACK,
+  getShapeDashCheckpointQuestions,
+  getShapeDashGateQuestions,
+  getShapeDashShapeLabel,
+  type ShapeDashGateShape,
+  type ShapeDashGeometryItem,
+} from '../curriculum/packs/math/geometry_shapes';
 import { PUZZLES } from './puzzles';
 import { getRandom, uid } from '../engine/rng';
 import { getLocale, getTranslations } from '../i18n/index';
@@ -1955,116 +1963,11 @@ export const Generators: Record<string, GeneratorFunction> = {
     const scrollSpeed = Math.min(280, baseSpeed);
     const runLength = 2800 + effectiveLevel * 400;
 
-    // Geometry question bank: large pool (sides, vertices, corners, shape names) – fallbacks for generator; i18n has same keys under games.shape_dash.questions
     const locale = getLocale();
-    const fallbackPrompts: Record<string, { et: string; en: string }> = {
-      triangleSides: {
-        et: 'Mitu külge on kolmnurgal?',
-        en: 'How many sides does a triangle have?',
-      },
-      squareSides: { et: 'Mitu külge on ruudul?', en: 'How many sides does a square have?' },
-      pentagonSides: {
-        et: 'Mitu külge on viisnurgal?',
-        en: 'How many sides does a pentagon have?',
-      },
-      hexagonSides: { et: 'Mitu külge on kuusnurgal?', en: 'How many sides does a hexagon have?' },
-      circleSides: { et: 'Mitu külge on ringil?', en: 'How many sides does a circle have?' },
-      rectangleSides: {
-        et: 'Mitu külge on ristkülikul?',
-        en: 'How many sides does a rectangle have?',
-      },
-      triangleVertices: {
-        et: 'Mitu tippu on kolmnurgal?',
-        en: 'How many vertices does a triangle have?',
-      },
-      squareVertices: { et: 'Mitu tippu on ruudul?', en: 'How many vertices does a square have?' },
-      rectangleCorners: {
-        et: 'Mitu nurka on ristkülikul?',
-        en: 'How many corners does a rectangle have?',
-      },
-      hexagonSidesAlt: { et: 'Mitu külge on kuusnurgal?', en: 'A hexagon has how many sides?' },
-      whichThree: { et: 'Millisel kujul on 3 külge?', en: 'Which shape has 3 sides?' },
-      whichFour: { et: 'Millisel kujul on 4 külge?', en: 'Which shape has 4 sides?' },
-      whichSix: { et: 'Millisel kujul on 6 külge?', en: 'Which shape has 6 sides?' },
-      circleEdges: { et: 'Mitu serva on ringil?', en: 'How many edges does a circle have?' },
-      whichFive: { et: 'Millisel kujul on 5 külge?', en: 'Which shape has 5 sides?' },
-      whichZero: { et: 'Millisel kujul on 0 külge?', en: 'Which shape has 0 sides?' },
-      octagonSides: {
-        et: 'Mitu külge on kaheksanurgal?',
-        en: 'How many sides does an octagon have?',
-      },
-      triangleCorners: {
-        et: 'Mitu nurka on kolmnurgal?',
-        en: 'How many corners does a triangle have?',
-      },
-      squareCorners: { et: 'Mitu nurka on ruudul?', en: 'How many corners does a square have?' },
-      pentagonVertices: {
-        et: 'Mitu tippu on viisnurgal?',
-        en: 'How many vertices does a pentagon have?',
-      },
-      hexagonVertices: {
-        et: 'Mitu tippu on kuusnurgal?',
-        en: 'How many vertices does a hexagon have?',
-      },
-      rectangleSidesCount: {
-        et: 'Mitu külge on ristkülikul?',
-        en: 'How many sides does a rectangle have?',
-      },
-      rhombusSides: { et: 'Mitu külge on rombil?', en: 'How many sides does a rhombus have?' },
-      ovalSides: { et: 'Mitu külge on ovaalil?', en: 'How many sides does an oval have?' },
-      starPoints: {
-        et: 'Mitu tipu on viisnurkstel tähel?',
-        en: 'A 5-pointed star has how many points?',
-      },
-      // V3: New question types
-      compare5and3: { et: 'Kumb on suurem: 5 või 3?', en: 'Which is bigger: 5 or 3?' },
-      compare7and4: { et: 'Kumb on suurem: 7 või 4?', en: 'Which is bigger: 7 or 4?' },
-      compare8and6: { et: 'Kumb on suurem: 8 või 6?', en: 'Which is bigger: 8 or 6?' },
-      compare10and9: { et: 'Kumb on suurem: 10 või 9?', en: 'Which is bigger: 10 or 9?' },
-      patternABAB: { et: 'Mis tuleb järgmisena: ▲ ■ ▲ ■ ?', en: 'What comes next: ▲ ■ ▲ ■ ?' },
-      patternABC: { et: 'Mis tuleb järgmisena: ● ▲ ■ ● ▲ ?', en: 'What comes next: ● ▲ ■ ● ▲ ?' },
-      patternAAB: { et: 'Mis tuleb järgmisena: ▲ ▲ ■ ▲ ▲ ?', en: 'What comes next: ▲ ▲ ■ ▲ ▲ ?' },
-    };
-    const questionBank: Array<{
-      options: string[];
-      correctIndex: number;
-      key: keyof typeof fallbackPrompts;
-    }> = [
-      { options: ['3', '4', '5', '6'], correctIndex: 0, key: 'triangleSides' },
-      { options: ['3', '4', '5', '6'], correctIndex: 1, key: 'squareSides' },
-      { options: ['3', '4', '5', '6'], correctIndex: 2, key: 'pentagonSides' },
-      { options: ['3', '4', '5', '6'], correctIndex: 3, key: 'hexagonSides' },
-      { options: ['0', '1', '2', '3'], correctIndex: 0, key: 'circleSides' },
-      { options: ['3', '4', '5', '6'], correctIndex: 1, key: 'rectangleSides' },
-      { options: ['2', '3', '4', '5'], correctIndex: 1, key: 'triangleVertices' },
-      { options: ['2', '3', '4', '5'], correctIndex: 2, key: 'squareVertices' },
-      { options: ['2', '3', '4', '5'], correctIndex: 2, key: 'rectangleCorners' },
-      { options: ['3', '4', '5', '6'], correctIndex: 3, key: 'hexagonSidesAlt' },
-      { options: ['Square', 'Triangle', 'Pentagon', 'Circle'], correctIndex: 1, key: 'whichThree' },
-      { options: ['Triangle', 'Square', 'Hexagon', 'Circle'], correctIndex: 1, key: 'whichFour' },
-      { options: ['Triangle', 'Square', 'Hexagon', 'Pentagon'], correctIndex: 2, key: 'whichSix' },
-      { options: ['0', '1', '2', '4'], correctIndex: 0, key: 'circleEdges' },
-      { options: ['Triangle', 'Square', 'Pentagon', 'Hexagon'], correctIndex: 2, key: 'whichFive' },
-      { options: ['Triangle', 'Square', 'Circle', 'Hexagon'], correctIndex: 2, key: 'whichZero' },
-      { options: ['6', '7', '8', '9'], correctIndex: 2, key: 'octagonSides' },
-      { options: ['2', '3', '4', '5'], correctIndex: 1, key: 'triangleCorners' },
-      { options: ['2', '3', '4', '5'], correctIndex: 2, key: 'squareCorners' },
-      { options: ['3', '4', '5', '6'], correctIndex: 2, key: 'pentagonVertices' },
-      { options: ['3', '4', '5', '6'], correctIndex: 3, key: 'hexagonVertices' },
-      { options: ['3', '4', '5', '6'], correctIndex: 1, key: 'rectangleSidesCount' },
-      { options: ['3', '4', '5', '6'], correctIndex: 1, key: 'rhombusSides' },
-      { options: ['0', '1', '2', '4'], correctIndex: 0, key: 'ovalSides' },
-      { options: ['4', '5', '6', '10'], correctIndex: 1, key: 'starPoints' },
-      // V3: Comparison questions (starter profile)
-      { options: ['3', '5', '4', '6'], correctIndex: 1, key: 'compare5and3' },
-      { options: ['4', '7', '5', '6'], correctIndex: 1, key: 'compare7and4' },
-      { options: ['6', '8', '7', '9'], correctIndex: 1, key: 'compare8and6' },
-      { options: ['9', '10', '8', '11'], correctIndex: 1, key: 'compare10and9' },
-      // V3: Pattern questions
-      { options: ['▲', '■', '●', '◆'], correctIndex: 0, key: 'patternABAB' },
-      { options: ['■', '●', '▲', '◆'], correctIndex: 0, key: 'patternABC' },
-      { options: ['■', '▲', '●', '◆'], correctIndex: 0, key: 'patternAAB' },
-    ];
+    const lang = locale === 'et' ? 'et' : 'en';
+    const geometryItems = getPackItems<ShapeDashGeometryItem>(MATH_GEOMETRY_SHAPES_PACK.id);
+    const questionBank = getShapeDashCheckpointQuestions(geometryItems);
+    const shapeGateBank = getShapeDashGateQuestions(geometryItems);
 
     const obstacles: ShapeDashObstacle[] = [];
     const numObstacles = 6 + Math.floor(effectiveLevel * 1.4);
@@ -2152,10 +2055,10 @@ export const Generators: Record<string, GeneratorFunction> = {
       const zone = safeZones[zoneIdx]!;
       const x = Math.floor(zone.start + rng() * Math.max(0, zone.end - zone.start - 40));
       const q = shuffledBank[c]!;
-      const lang = locale === 'et' ? 'et' : 'en';
-      const prompt = fallbackPrompts[q.key]?.[lang] ?? q.key;
-      const options = [...q.options].sort(() => rng() - 0.5);
-      const correctIndex = options.indexOf(q.options[q.correctIndex]!);
+      const prompt = q.prompt[lang];
+      const localizedOptions = q.options[lang];
+      const options = [...localizedOptions].sort(() => rng() - 0.5);
+      const correctIndex = options.indexOf(localizedOptions[q.correctIndex]!);
       const safeCorrectIndex = correctIndex >= 0 ? correctIndex : 0;
       checkpoints.push({
         id: `cp-${uid(rng)}`,
@@ -2223,53 +2126,10 @@ export const Generators: Record<string, GeneratorFunction> = {
     // V4: Generate shape gates (3 per run, ~every 30% of run length)
     const shapeGates: ShapeDashShapeGate[] = [];
     const numShapeGates = 3;
-    const shapeGateBank: Array<{
-      prompt: { et: string; en: string };
-      correctShape: 'triangle' | 'square' | 'pentagon' | 'hexagon' | 'circle';
-      correctLabel: { et: string; en: string };
-    }> = [
-      {
-        prompt: { et: '3 külge?', en: '3 sides?' },
-        correctShape: 'triangle',
-        correctLabel: { et: 'Kolmnurk', en: 'Triangle' },
-      },
-      {
-        prompt: { et: '4 külge?', en: '4 sides?' },
-        correctShape: 'square',
-        correctLabel: { et: 'Ruut', en: 'Square' },
-      },
-      {
-        prompt: { et: '5 külge?', en: '5 sides?' },
-        correctShape: 'pentagon',
-        correctLabel: { et: 'Viisnurk', en: 'Pentagon' },
-      },
-      {
-        prompt: { et: '6 külge?', en: '6 sides?' },
-        correctShape: 'hexagon',
-        correctLabel: { et: 'Kuusnurk', en: 'Hexagon' },
-      },
-      {
-        prompt: { et: '0 külge?', en: '0 sides?' },
-        correctShape: 'circle',
-        correctLabel: { et: 'Ring', en: 'Circle' },
-      },
-      {
-        prompt: { et: 'Milline on kolmnurk?', en: 'Which is a triangle?' },
-        correctShape: 'triangle',
-        correctLabel: { et: 'Kolmnurk', en: 'Triangle' },
-      },
-      {
-        prompt: { et: 'Milline on ring?', en: 'Which is a circle?' },
-        correctShape: 'circle',
-        correctLabel: { et: 'Ring', en: 'Circle' },
-      },
-    ];
-
     const shuffledGateBank = [...shapeGateBank].sort(() => rng() - 0.5);
-    const lang = locale === 'et' ? 'et' : 'en';
 
     // Define constants for gate positioning
-    const GATE_MIN_DISTANCE = 200; // Minimum distance from obstacles/checkpoints
+    const GATE_MIN_DISTANCE = 110; // Keep gates readable without requiring a full extra obstacle gap.
     const MAX_REPOSITION_ATTEMPTS = 10; // Max attempts to find valid position
     const REPOSITION_STEP_SIZE = 50; // Step size for repositioning attempts
     const MIN_GATE_PADDING = 100; // Minimum padding from run start
@@ -2305,7 +2165,7 @@ export const Generators: Record<string, GeneratorFunction> = {
       if (!validPosition) continue;
 
       // Generate 3 shape options: correct + 2 random wrong
-      const allShapes: Array<'triangle' | 'square' | 'pentagon' | 'hexagon' | 'circle'> = [
+      const allShapes: ShapeDashGateShape[] = [
         'triangle',
         'square',
         'pentagon',
@@ -2314,18 +2174,23 @@ export const Generators: Record<string, GeneratorFunction> = {
       ];
       const wrongShapes = allShapes.filter((s) => s !== gateData.correctShape);
       const shuffledWrong = [...wrongShapes].sort(() => rng() - 0.5);
-      const shapeLabels: Record<string, { et: string; en: string }> = {
-        triangle: { et: 'Kolmnurk', en: 'Triangle' },
-        square: { et: 'Ruut', en: 'Square' },
-        pentagon: { et: 'Viisnurk', en: 'Pentagon' },
-        hexagon: { et: 'Kuusnurk', en: 'Hexagon' },
-        circle: { et: 'Ring', en: 'Circle' },
-      };
 
       const shapes = [
-        { type: gateData.correctShape, label: gateData.correctLabel[lang], isCorrect: true },
-        { type: shuffledWrong[0]!, label: shapeLabels[shuffledWrong[0]!]![lang], isCorrect: false },
-        { type: shuffledWrong[1]!, label: shapeLabels[shuffledWrong[1]!]![lang], isCorrect: false },
+        {
+          type: gateData.correctShape,
+          label: getShapeDashShapeLabel(gateData.correctShape, lang),
+          isCorrect: true,
+        },
+        {
+          type: shuffledWrong[0]!,
+          label: getShapeDashShapeLabel(shuffledWrong[0]!, lang),
+          isCorrect: false,
+        },
+        {
+          type: shuffledWrong[1]!,
+          label: getShapeDashShapeLabel(shuffledWrong[1]!, lang),
+          isCorrect: false,
+        },
       ].sort(() => rng() - 0.5); // Randomize gate positions
 
       shapeGates.push({

@@ -27,6 +27,7 @@ import {
   MATH_SUBTRACTION_WITHIN_100_SKILL,
   MATH_MULTIPLICATION_1_TO_5_SKILL,
   MATH_MULTIPLICATION_1_TO_10_SKILL,
+  MATH_GEOMETRY_SHAPES_SKILL,
 } from '../curriculum/skills/math';
 import { MATH_ADDITION_WITHIN_20_PACK } from '../curriculum/packs/math/addition_within_20';
 import { MATH_ADDITION_WITHIN_100_PACK } from '../curriculum/packs/math/addition_within_100';
@@ -34,6 +35,7 @@ import { MATH_SUBTRACTION_WITHIN_20_PACK } from '../curriculum/packs/math/subtra
 import { MATH_SUBTRACTION_WITHIN_100_PACK } from '../curriculum/packs/math/subtraction_within_100';
 import { MATH_MULTIPLICATION_1_5_PACK } from '../curriculum/packs/math/multiplication_1_5';
 import { MATH_MULTIPLICATION_1_10_PACK } from '../curriculum/packs/math/multiplication_1_10';
+import { MATH_GEOMETRY_SHAPES_PACK } from '../curriculum/packs/math/geometry_shapes';
 import {
   BalanceScaleView,
   StandardGameView,
@@ -413,6 +415,8 @@ function registerAllGames(): void {
       config: shapeDashConfig,
       validator: validateShapeDash,
       allowedProfiles: shapeDashConfig.allowedProfiles,
+      skillIds: [MATH_GEOMETRY_SHAPES_SKILL.id],
+      contentPackId: MATH_GEOMETRY_SHAPES_PACK.id,
     });
   }
 

@@ -7,6 +7,8 @@
 
 import { describe, it, expect } from 'vitest';
 import { gameRegistry } from '../registry';
+import { MATH_GEOMETRY_SHAPES_SKILL } from '../../curriculum/skills/math';
+import { MATH_GEOMETRY_SHAPES_PACK } from '../../curriculum/packs/math/geometry_shapes';
 
 // Import registrations to ensure games are registered
 import '../registrations';
@@ -31,6 +33,13 @@ describe('GameRegistry', () => {
     const game = gameRegistry.get('balance_scale');
     expect(game).toBeDefined();
     expect(game?.id).toBe('balance_scale');
+  });
+
+  it('should bind shape_dash to the geometry curriculum pack', () => {
+    const game = gameRegistry.get('shape_dash');
+    expect(game).toBeDefined();
+    expect(game?.skillIds).toEqual([MATH_GEOMETRY_SHAPES_SKILL.id]);
+    expect(game?.contentPackId).toBe(MATH_GEOMETRY_SHAPES_PACK.id);
   });
 
   it('should return undefined for unknown game', () => {

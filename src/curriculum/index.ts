@@ -20,6 +20,7 @@ import {
   MATH_SUBTRACTION_WITHIN_100_SKILL,
   MATH_MULTIPLICATION_1_TO_5_SKILL,
   MATH_MULTIPLICATION_1_TO_10_SKILL,
+  MATH_GEOMETRY_SHAPES_SKILL,
 } from './skills/math';
 import { MATH_ADDITION_WITHIN_20_PACK } from './packs/math/addition_within_20';
 import { MATH_ADDITION_WITHIN_100_PACK } from './packs/math/addition_within_100';
@@ -27,6 +28,7 @@ import { MATH_SUBTRACTION_WITHIN_20_PACK } from './packs/math/subtraction_within
 import { MATH_SUBTRACTION_WITHIN_100_PACK } from './packs/math/subtraction_within_100';
 import { MATH_MULTIPLICATION_1_5_PACK } from './packs/math/multiplication_1_5';
 import { MATH_MULTIPLICATION_1_10_PACK } from './packs/math/multiplication_1_10';
+import { MATH_GEOMETRY_SHAPES_PACK } from './packs/math/geometry_shapes';
 
 let registered = false;
 
@@ -46,12 +48,14 @@ export function registerAll(): void {
   skillRegistry.register(MATH_SUBTRACTION_WITHIN_100_SKILL);
   skillRegistry.register(MATH_MULTIPLICATION_1_TO_5_SKILL);
   skillRegistry.register(MATH_MULTIPLICATION_1_TO_10_SKILL);
+  skillRegistry.register(MATH_GEOMETRY_SHAPES_SKILL);
   contentPackRegistry.register(MATH_ADDITION_WITHIN_20_PACK);
   contentPackRegistry.register(MATH_ADDITION_WITHIN_100_PACK);
   contentPackRegistry.register(MATH_SUBTRACTION_WITHIN_20_PACK);
   contentPackRegistry.register(MATH_SUBTRACTION_WITHIN_100_PACK);
   contentPackRegistry.register(MATH_MULTIPLICATION_1_5_PACK);
   contentPackRegistry.register(MATH_MULTIPLICATION_1_10_PACK);
+  contentPackRegistry.register(MATH_GEOMETRY_SHAPES_PACK);
   registered = true;
 }
 

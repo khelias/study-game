@@ -20,6 +20,7 @@ import {
   MATH_SUBTRACTION_WITHIN_100_SKILL,
   MATH_MULTIPLICATION_1_TO_5_SKILL,
   MATH_MULTIPLICATION_1_TO_10_SKILL,
+  MATH_GEOMETRY_SHAPES_SKILL,
 } from '../skills/math';
 import { MATH_ADDITION_WITHIN_20_PACK } from '../packs/math/addition_within_20';
 import { MATH_ADDITION_WITHIN_100_PACK } from '../packs/math/addition_within_100';
@@ -27,6 +28,12 @@ import { MATH_SUBTRACTION_WITHIN_20_PACK } from '../packs/math/subtraction_withi
 import { MATH_SUBTRACTION_WITHIN_100_PACK } from '../packs/math/subtraction_within_100';
 import { MATH_MULTIPLICATION_1_5_PACK } from '../packs/math/multiplication_1_5';
 import { MATH_MULTIPLICATION_1_10_PACK } from '../packs/math/multiplication_1_10';
+import {
+  MATH_GEOMETRY_SHAPES_PACK,
+  getShapeDashCheckpointQuestions,
+  getShapeDashGateQuestions,
+  getShapeDashShapeLabel,
+} from '../packs/math/geometry_shapes';
 import type { Constellation } from '../../types/game';
 
 describe('curriculum', () => {
@@ -218,6 +225,36 @@ describe('curriculum', () => {
     it('multiplication_1_10 caps factors at [2,10]', () => {
       for (const spec of MATH_MULTIPLICATION_1_10_PACK.items) {
         expect(spec.factorRange).toEqual([2, 10]);
+      }
+    });
+  });
+
+  describe('geometry shapes pack shape', () => {
+    const checkpointQuestions = getShapeDashCheckpointQuestions(MATH_GEOMETRY_SHAPES_PACK.items);
+    const gateQuestions = getShapeDashGateQuestions(MATH_GEOMETRY_SHAPES_PACK.items);
+
+    it('binds to the geometry skill and registers on import', () => {
+      expect(MATH_GEOMETRY_SHAPES_PACK.skillId).toBe(MATH_GEOMETRY_SHAPES_SKILL.id);
+      expect(skillRegistry.has(MATH_GEOMETRY_SHAPES_SKILL.id)).toBe(true);
+      expect(contentPackRegistry.has(MATH_GEOMETRY_SHAPES_PACK.id)).toBe(true);
+    });
+
+    it('contains checkpoint and gate content for Shape Dash', () => {
+      expect(checkpointQuestions.length).toBeGreaterThan(20);
+      expect(gateQuestions.length).toBeGreaterThanOrEqual(5);
+    });
+
+    it('keeps every checkpoint correct index inside both locale option arrays', () => {
+      for (const question of checkpointQuestions) {
+        expect(question.options.et[question.correctIndex]).toBeDefined();
+        expect(question.options.en[question.correctIndex]).toBeDefined();
+      }
+    });
+
+    it('has labels for every gate shape in both locales', () => {
+      for (const question of gateQuestions) {
+        expect(getShapeDashShapeLabel(question.correctShape, 'et')).not.toBe('');
+        expect(getShapeDashShapeLabel(question.correctShape, 'en')).not.toBe('');
       }
     });
   });

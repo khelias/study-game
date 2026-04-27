@@ -10,8 +10,14 @@ import type {
   PicturePairsProblem,
   StarMapperProblem,
   ShapeShiftProblem,
+  ShapeDashProblem,
   BattleLearnProblem,
 } from '../../types/game';
+import {
+  MATH_GEOMETRY_SHAPES_PACK,
+  getShapeDashCheckpointQuestions,
+  getShapeDashGateQuestions,
+} from '../../curriculum/packs/math/geometry_shapes';
 
 describe('Generators', () => {
   describe('balance_scale', () => {
@@ -1009,6 +1015,68 @@ describe('Generators', () => {
       expect(questions.size).toBeGreaterThanOrEqual(5);
       for (const question of questions) {
         expect(question).not.toContain(' / ');
+      }
+    });
+  });
+
+  describe('shape_dash', () => {
+    it('should generate checkpoint questions from the geometry curriculum pack', () => {
+      const generator = Generators.shape_dash;
+      if (!generator) throw new Error('shape_dash generator not found');
+
+      let problem: ShapeDashProblem | null = null;
+      for (let seed = 1; seed <= 100; seed++) {
+        const candidate = generator(6, createRng(seed), 'starter') as ShapeDashProblem;
+        if (candidate.checkpoints.length > 0) {
+          problem = candidate;
+          break;
+        }
+      }
+      const packCheckpointPrompts = new Set(
+        getShapeDashCheckpointQuestions(MATH_GEOMETRY_SHAPES_PACK.items).flatMap((item) => [
+          item.prompt.et,
+          item.prompt.en,
+        ]),
+      );
+
+      expect(problem).not.toBeNull();
+      if (!problem) throw new Error('shape_dash did not place any checkpoints for seeds 1-100');
+      expect(problem.type).toBe('shape_dash');
+
+      for (const checkpoint of problem.checkpoints) {
+        expect(packCheckpointPrompts.has(checkpoint.question.prompt)).toBe(true);
+        expect(checkpoint.question.options[checkpoint.question.correctIndex]).toBeDefined();
+      }
+    });
+
+    it('should keep checkpoint correct indices aligned after option shuffling', () => {
+      const generator = Generators.shape_dash;
+      if (!generator) throw new Error('shape_dash generator not found');
+
+      const problem = generator(6, createRng(54321), 'starter') as ShapeDashProblem;
+
+      for (const checkpoint of problem.checkpoints) {
+        expect(checkpoint.question.options[checkpoint.question.correctIndex]).toBeDefined();
+      }
+    });
+
+    it('should place shape gates with content from the geometry curriculum pack', () => {
+      const generator = Generators.shape_dash;
+      if (!generator) throw new Error('shape_dash generator not found');
+
+      const problem = generator(4, createRng(12345), 'starter') as ShapeDashProblem;
+      const packGatePrompts = new Set(
+        getShapeDashGateQuestions(MATH_GEOMETRY_SHAPES_PACK.items).flatMap((item) => [
+          item.prompt.et,
+          item.prompt.en,
+        ]),
+      );
+
+      expect(problem.shapeGates?.length).toBeGreaterThan(0);
+      for (const gate of problem.shapeGates ?? []) {
+        expect(packGatePrompts.has(gate.prompt)).toBe(true);
+        expect(gate.shapes).toHaveLength(3);
+        expect(gate.shapes.filter((shape) => shape.isCorrect)).toHaveLength(1);
       }
     });
   });
