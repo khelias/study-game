@@ -80,11 +80,6 @@ export const PackPickerModal: React.FC<PackPickerModalProps> = ({
                       className={`group relative w-full grid grid-cols-[auto_1fr_auto] items-center gap-3 p-3 rounded-lg border ${config.theme.border} ${config.theme.bg} hover:bg-white hover:shadow-md active:bg-slate-50 transition-colors text-left`}
                       aria-label={`${formatText(title)} - ${formatText(desc)}`}
                     >
-                      {isNew && (
-                        <div className="absolute right-2 top-2 bg-slate-900 text-white text-[10px] font-bold px-2 py-0.5 rounded-md shadow z-10">
-                          {formatText(t.menuSpecific.newGame)}
-                        </div>
-                      )}
                       <div
                         className={`flex h-11 w-11 items-center justify-center rounded-lg ${config.theme.iconBg} ${config.theme.text} flex-shrink-0`}
                       >
@@ -98,6 +93,11 @@ export const PackPickerModal: React.FC<PackPickerModalProps> = ({
                           {formatText(desc)}
                         </div>
                         <div className="mt-1 flex items-center gap-2 flex-wrap">
+                          {isNew && (
+                            <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-slate-900 text-white">
+                              {formatText(t.menuSpecific.newGame)}
+                            </span>
+                          )}
                           {difficultyText && (
                             <span
                               className={`text-[10px] font-bold px-2 py-0.5 rounded-md ${
