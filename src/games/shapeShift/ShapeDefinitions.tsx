@@ -79,7 +79,8 @@ export const PieceSvg: React.FC<PieceSvgProps> = ({
   return (
     <svg
       viewBox="0 0 100 100"
-      className={`${className} ${dropShadow ? 'filter drop-shadow-md' : ''}`}
+      preserveAspectRatio="none"
+      className={`block h-full w-full ${className} ${dropShadow ? 'filter drop-shadow-md' : ''}`}
       style={{
         transform: `rotate(${rotation}deg)`,
         opacity,
