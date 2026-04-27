@@ -58,6 +58,11 @@ import {
   getBalanceEquationProgression,
   type BalanceEquationProgressionItem,
 } from '../curriculum/packs/math/balance_equations';
+import {
+  MATH_ADDITION_MEMORY_PACK,
+  getMemoryMathProgression,
+  type MemoryMathProgressionItem,
+} from '../curriculum/packs/math/addition_memory';
 import { SHAPE_SHIFT_PUZZLES_PACK } from '../curriculum/packs/geometry/shapeShiftPuzzles';
 import { getRandom, uid } from '../engine/rng';
 import { getLocale, getTranslations } from '../i18n/index';
@@ -545,19 +550,25 @@ export const Generators: Record<string, GeneratorFunction> = {
   ): MemoryMathProblem => {
     const meta = profileMeta(profile);
     const harder = meta.difficultyOffset > 0;
+    const progression = getMemoryMathProgression(
+      getPackItems<MemoryMathProgressionItem>(MATH_ADDITION_MEMORY_PACK.id),
+      harder ? 'advanced' : 'starter',
+    );
     // Improved card count progression - smoother
-    const baseCards = harder ? 8 : 6;
-    const cardGrowth = Math.floor(level / 2.5); // Smoother growth
-    const cardCount = Math.min(baseCards + cardGrowth * 2, harder ? 14 : 12);
+    const cardGrowth = Math.floor(level / progression.cardGrowthDivisor); // Smoother growth
+    const cardCount = Math.min(
+      progression.baseCards + cardGrowth * progression.cardGrowthStep,
+      progression.maxCards,
+    );
     // Improved maxSum progression - smoother
-    const baseMax = harder ? 15 : 10;
-    const sumGrowth = Math.floor(level * 2); // Slower growth
-    const maxSum = Math.min(baseMax + sumGrowth, harder ? 35 : 25);
+    const sumGrowth = Math.floor(level * progression.sumGrowthMultiplier); // Slower growth
+    const maxSum = Math.min(progression.baseMaxSum + sumGrowth, progression.maxSum);
     const pairs: Array<{ eq: string; ans: number }> = [];
     const cards: Array<{ id: string; content: string; matched?: boolean }> = [];
 
     while (pairs.length < cardCount / 2) {
-      const sum = Math.floor(rng() * (maxSum - 3)) + 3;
+      const sum =
+        Math.floor(rng() * (maxSum - progression.minAnswerSum)) + progression.minAnswerSum;
       if (pairs.some((p) => p.ans === sum)) continue;
 
       const a = Math.floor(rng() * (sum - 1)) + 1;

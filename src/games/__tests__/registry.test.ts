@@ -14,6 +14,7 @@ import {
   MATH_COMPARE_NUMBERS_SKILL,
   MATH_TIME_READING_SKILL,
   MATH_BALANCE_EQUATIONS_SKILL,
+  MATH_ADDITION_MEMORY_SKILL,
 } from '../../curriculum/skills/math';
 import {
   LANGUAGE_SPATIAL_SENTENCES_SKILL,
@@ -26,6 +27,7 @@ import { MATH_UNIT_CONVERSIONS_PACK } from '../../curriculum/packs/math/unit_con
 import { MATH_COMPARE_NUMBERS_PACK } from '../../curriculum/packs/math/compare_numbers';
 import { MATH_TIME_READING_PACK } from '../../curriculum/packs/math/time_reading';
 import { MATH_BALANCE_EQUATIONS_PACK } from '../../curriculum/packs/math/balance_equations';
+import { MATH_ADDITION_MEMORY_PACK } from '../../curriculum/packs/math/addition_memory';
 import { SHAPE_SHIFT_PUZZLES_PACK } from '../../curriculum/packs/geometry/shapeShiftPuzzles';
 
 // Import registrations to ensure games are registered
@@ -93,6 +95,13 @@ describe('GameRegistry', () => {
     expect(game).toBeDefined();
     expect(game?.skillIds).toEqual([MATH_BALANCE_EQUATIONS_SKILL.id]);
     expect(game?.contentPackId).toBe(MATH_BALANCE_EQUATIONS_PACK.id);
+  });
+
+  it('should bind memory_math to the addition memory curriculum pack', () => {
+    const game = gameRegistry.get('memory_math');
+    expect(game).toBeDefined();
+    expect(game?.skillIds).toEqual([MATH_ADDITION_MEMORY_SKILL.id]);
+    expect(game?.contentPackId).toBe(MATH_ADDITION_MEMORY_PACK.id);
   });
 
   it('should bind shape_shift to the geometry puzzle curriculum pack', () => {

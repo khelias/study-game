@@ -39,6 +39,7 @@ import {
   MATH_COMPARE_NUMBERS_SKILL,
   MATH_TIME_READING_SKILL,
   MATH_BALANCE_EQUATIONS_SKILL,
+  MATH_ADDITION_MEMORY_SKILL,
 } from '../skills/math';
 import { MATH_ADDITION_WITHIN_20_PACK } from '../packs/math/addition_within_20';
 import { MATH_ADDITION_WITHIN_100_PACK } from '../packs/math/addition_within_100';
@@ -68,6 +69,7 @@ import {
   MATH_BALANCE_EQUATIONS_PACK,
   getBalanceEquationProgression,
 } from '../packs/math/balance_equations';
+import { MATH_ADDITION_MEMORY_PACK, getMemoryMathProgression } from '../packs/math/addition_memory';
 import { SHAPE_SHIFT_PUZZLES_PACK } from '../packs/geometry/shapeShiftPuzzles';
 import type { Constellation } from '../../types/game';
 
@@ -284,6 +286,7 @@ describe('curriculum', () => {
       { pack: MATH_COMPARE_NUMBERS_PACK, skill: MATH_COMPARE_NUMBERS_SKILL },
       { pack: MATH_TIME_READING_PACK, skill: MATH_TIME_READING_SKILL },
       { pack: MATH_BALANCE_EQUATIONS_PACK, skill: MATH_BALANCE_EQUATIONS_SKILL },
+      { pack: MATH_ADDITION_MEMORY_PACK, skill: MATH_ADDITION_MEMORY_SKILL },
     ];
 
     it('every math pack binds to its declared skill', () => {
@@ -403,6 +406,17 @@ describe('curriculum', () => {
       });
       expect(progression.distractorOffsetMin).toBeLessThan(0);
       expect(progression.distractorOffsetMax).toBeGreaterThan(0);
+    });
+
+    it('addition memory pack defines starter and advanced progression', () => {
+      const starter = getMemoryMathProgression(MATH_ADDITION_MEMORY_PACK.items, 'starter');
+      const advanced = getMemoryMathProgression(MATH_ADDITION_MEMORY_PACK.items, 'advanced');
+
+      expect(starter).toMatchObject({ baseCards: 6, maxCards: 12, baseMaxSum: 10 });
+      expect(advanced).toMatchObject({ baseCards: 8, maxCards: 14, baseMaxSum: 15 });
+      expect(MATH_ADDITION_MEMORY_PACK.items.every((item) => item.cardGrowthStep % 2 === 0)).toBe(
+        true,
+      );
     });
   });
 

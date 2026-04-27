@@ -38,6 +38,7 @@ import {
   MATH_COMPARE_NUMBERS_SKILL,
   MATH_TIME_READING_SKILL,
   MATH_BALANCE_EQUATIONS_SKILL,
+  MATH_ADDITION_MEMORY_SKILL,
 } from '../curriculum/skills/math';
 import { MATH_ADDITION_WITHIN_20_PACK } from '../curriculum/packs/math/addition_within_20';
 import { MATH_ADDITION_WITHIN_100_PACK } from '../curriculum/packs/math/addition_within_100';
@@ -51,6 +52,7 @@ import { MATH_UNIT_CONVERSIONS_PACK } from '../curriculum/packs/math/unit_conver
 import { MATH_COMPARE_NUMBERS_PACK } from '../curriculum/packs/math/compare_numbers';
 import { MATH_TIME_READING_PACK } from '../curriculum/packs/math/time_reading';
 import { MATH_BALANCE_EQUATIONS_PACK } from '../curriculum/packs/math/balance_equations';
+import { MATH_ADDITION_MEMORY_PACK } from '../curriculum/packs/math/addition_memory';
 import { SHAPE_SHIFT_PUZZLES_PACK } from '../curriculum/packs/geometry/shapeShiftPuzzles';
 import {
   BalanceScaleView,
@@ -191,6 +193,8 @@ function registerAllGames(): void {
       config: memoryMathConfig,
       validator: validateMemoryMath,
       allowedProfiles: memoryMathConfig.allowedProfiles,
+      skillIds: [MATH_ADDITION_MEMORY_SKILL.id],
+      contentPackId: MATH_ADDITION_MEMORY_PACK.id,
     });
   }
 

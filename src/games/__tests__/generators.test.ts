@@ -17,6 +17,7 @@ import type {
   BattleLearnProblem,
   UnitConversionProblem,
   TimeMatchProblem,
+  MemoryMathProblem,
 } from '../../types/game';
 import {
   MATH_GEOMETRY_SHAPES_PACK,
@@ -44,6 +45,10 @@ import {
   MATH_BALANCE_EQUATIONS_PACK,
   getBalanceEquationProgression,
 } from '../../curriculum/packs/math/balance_equations';
+import {
+  MATH_ADDITION_MEMORY_PACK,
+  getMemoryMathProgression,
+} from '../../curriculum/packs/math/addition_memory';
 
 describe('Generators', () => {
   describe('balance_scale', () => {
@@ -129,6 +134,37 @@ describe('Generators', () => {
       const rightSum = problem.display.right.reduce((a, b) => a + b, 0) + problem.answer;
 
       expect(leftSum).toBe(rightSum);
+    });
+  });
+
+  describe('memory_math', () => {
+    it('should generate addition pairs from the curriculum progression', () => {
+      const rng = createRng(12345);
+      const generator = Generators.memory_math;
+      if (!generator) throw new Error('memory_math generator not found');
+      const problem = generator(1, rng, 'starter') as MemoryMathProblem;
+      const progression = getMemoryMathProgression(MATH_ADDITION_MEMORY_PACK.items, 'starter');
+      const maxSum = Math.min(
+        progression.baseMaxSum + Math.floor(1 * progression.sumGrowthMultiplier),
+        progression.maxSum,
+      );
+
+      expect(problem.type).toBe('memory_math');
+      expect(problem.cards).toHaveLength(progression.baseCards);
+      expect(problem.pairs).toHaveLength(progression.baseCards / 2);
+      expect(problem.pairs.every((pair) => pair.ans >= progression.minAnswerSum)).toBe(true);
+      expect(problem.pairs.every((pair) => pair.ans < maxSum)).toBe(true);
+    });
+
+    it('should use the advanced memory progression for advanced profile', () => {
+      const rng = createRng(12345);
+      const generator = Generators.memory_math;
+      if (!generator) throw new Error('memory_math generator not found');
+      const problem = generator(1, rng, 'advanced') as MemoryMathProblem;
+      const progression = getMemoryMathProgression(MATH_ADDITION_MEMORY_PACK.items, 'advanced');
+
+      expect(problem.cards).toHaveLength(progression.baseCards);
+      expect(problem.pairs).toHaveLength(progression.baseCards / 2);
     });
   });
 

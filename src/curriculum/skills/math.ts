@@ -147,3 +147,14 @@ export const MATH_BALANCE_EQUATIONS_SKILL: Skill = {
     topic: 'math.algebra.balance_equations',
   },
 };
+
+export const MATH_ADDITION_MEMORY_SKILL: Skill = {
+  id: 'math.addition_memory',
+  name: { et: 'Liitmistehete meeldejätmine', en: 'Addition memory' },
+  taxonomy: {
+    subject: 'matemaatika',
+    grade: 1,
+    level: 'foundation',
+    topic: 'math.addition.memory_matching',
+  },
+};
