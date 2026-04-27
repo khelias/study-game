@@ -233,7 +233,7 @@ export const MenuScreen: React.FC = () => {
             <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
               <div className="min-w-0">
                 <h1 className="text-2xl sm:text-3xl font-black text-slate-950 tracking-normal">
-                  {formatText(t.menu.title)}
+                  {formatText(t.menuSpecific.heading)}
                 </h1>
                 <p className="text-xs sm:text-sm text-slate-600 mt-1 font-medium">
                   {t.menuSpecific.subtitle}

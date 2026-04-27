@@ -349,6 +349,7 @@ export const et = {
 
   // Menu specific
   menuSpecific: {
+    heading: 'Vali mäng',
     subtitle: 'Harjuta ja õpi',
     starsLabel: 'tähte',
     achievementsCount: 'saavutust - kliki, et näha kõiki',

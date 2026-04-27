@@ -349,6 +349,7 @@ export const en = {
 
   // Menu specific
   menuSpecific: {
+    heading: 'Choose a game',
     subtitle: 'Practice and learn',
     starsLabel: 'stars',
     achievementsCount: 'achievements - click to see all',
