@@ -63,6 +63,15 @@ import {
   getMemoryMathProgression,
   type MemoryMathProgressionItem,
 } from '../curriculum/packs/math/addition_memory';
+import {
+  MATH_GRID_NAVIGATION_PACK,
+  getRoboPathGridSize,
+  getRoboPathObstacleStage,
+  getRoboPathProfile,
+  getRoboPathSettings,
+  type RoboPathProgressionItem,
+  type RoboPathProgressionProfile,
+} from '../curriculum/packs/math/grid_navigation';
 import { SHAPE_SHIFT_PUZZLES_PACK } from '../curriculum/packs/geometry/shapeShiftPuzzles';
 import { getRandom, uid } from '../engine/rng';
 import { getLocale, getTranslations } from '../i18n/index';
@@ -906,47 +915,35 @@ export const Generators: Record<string, GeneratorFunction> = {
   ): RoboPathProblem => {
     const meta = profileMeta(profile);
     const harder = meta.difficultyOffset > 0;
+    const progressionItems = getPackItems<RoboPathProgressionItem>(MATH_GRID_NAVIGATION_PACK.id);
+    const progressionProfile: RoboPathProgressionProfile = harder ? 'advanced' : 'starter';
+    const profileProgression = getRoboPathProfile(progressionItems, progressionProfile);
+    const obstacleStage = getRoboPathObstacleStage(progressionItems, level);
+    const settings = getRoboPathSettings(progressionItems);
 
     // Improved grid size progression - scales better with levels
     // Starter: 3x3 (1-2), 4x4 (3-5), 5x5 (6-10), 6x6 (11-15), 7x7 (16+)
     // Advanced: 4x4 (1-2), 5x5 (3-5), 6x6 (6-10), 7x7 (11-15), 8x8 (16+)
-    const baseGrid = harder ? 4 : 3;
-    let gridGrowth = 0;
-    if (level >= 16)
-      gridGrowth = harder ? 4 : 4; // 8x8 advanced, 7x7 starter
-    else if (level >= 11)
-      gridGrowth = harder ? 3 : 3; // 7x7 both
-    else if (level >= 6)
-      gridGrowth = harder ? 2 : 2; // 6x6 both
-    else if (level >= 3) gridGrowth = harder ? 1 : 1; // 5x5 both
-    const gridSize = Math.min(baseGrid + gridGrowth, harder ? 8 : 7);
+    const gridSize = getRoboPathGridSize(progressionItems, progressionProfile, level);
 
     // Improved obstacle count progression - more obstacles, better scaling
     // Level 1: 0-1, Level 2-3: 1-2, Level 4-5: 2-3, Level 6-8: 3-4, Level 9-12: 4-5, Level 13+: 5-7
     const baseObstacles =
-      level === 1
-        ? harder
-          ? 1
-          : 0
-        : level <= 3
-          ? 1 + Math.floor(level / 2)
-          : level <= 5
-            ? 2 + Math.floor((level - 3) / 2)
-            : level <= 8
-              ? 3 + Math.floor((level - 5) / 2)
-              : level <= 12
-                ? 4 + Math.floor((level - 8) / 2)
-                : 5 + Math.floor((level - 12) / 3);
-
-    const obstacleVariance = level <= 3 ? 1 : level <= 8 ? 1 : 2;
+      obstacleStage.baseObstacles +
+      Math.floor((level - obstacleStage.levelOffset) / obstacleStage.growthDivisor);
+    const obstacleBonus =
+      level === 1 ? profileProgression.firstLevelObstacleBonus : profileProgression.obstacleBonus;
     const obstacleCount = Math.min(
-      baseObstacles + (harder ? 1 : 0) + Math.floor(rng() * obstacleVariance),
-      Math.max(5, Math.floor(gridSize * gridSize * 0.25)), // Max 25% of grid cells
+      baseObstacles + obstacleBonus + Math.floor(rng() * obstacleStage.obstacleVariance),
+      Math.max(
+        settings.maxObstacleFloor,
+        Math.floor(gridSize * gridSize * settings.maxObstacleRatio),
+      ), // Max 25% of grid cells
     );
 
     const start = { x: 0, y: 0, dir: 'N' };
     const maxCells = gridSize * gridSize;
-    const maxObstacles = Math.max(0, maxCells - 4); // Reserve space for start, goal, and path
+    const maxObstacles = Math.max(0, maxCells - settings.reservedCells); // Reserve space for start, goal, and path
     const cappedObstacleCount = Math.min(obstacleCount, maxObstacles);
 
     const directions: Array<[number, number]> = [
@@ -1017,8 +1014,13 @@ export const Generators: Record<string, GeneratorFunction> = {
     };
 
     // Calculate minimum distance based on grid size (at least 50% of diagonal)
-    const minDistance = Math.max(2, Math.ceil(Math.sqrt(gridSize * gridSize * 2) * 0.5));
-    const maxDistance = Math.floor(Math.sqrt(gridSize * gridSize * 2) * 0.9); // Max 90% of diagonal
+    const minDistance = Math.max(
+      2,
+      Math.ceil(Math.sqrt(gridSize * gridSize * 2) * settings.minGoalDistanceRatio),
+    );
+    const maxDistance = Math.floor(
+      Math.sqrt(gridSize * gridSize * 2) * settings.maxGoalDistanceRatio,
+    ); // Max 90% of diagonal
 
     let end = { x: 0, y: 0 };
     let obstacles: Array<{ x: number; y: number }> = [];

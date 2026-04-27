@@ -18,6 +18,7 @@ import type {
   UnitConversionProblem,
   TimeMatchProblem,
   MemoryMathProblem,
+  RoboPathProblem,
 } from '../../types/game';
 import {
   MATH_GEOMETRY_SHAPES_PACK,
@@ -49,6 +50,11 @@ import {
   MATH_ADDITION_MEMORY_PACK,
   getMemoryMathProgression,
 } from '../../curriculum/packs/math/addition_memory';
+import {
+  MATH_GRID_NAVIGATION_PACK,
+  getRoboPathGridSize,
+  getRoboPathSettings,
+} from '../../curriculum/packs/math/grid_navigation';
 
 describe('Generators', () => {
   describe('balance_scale', () => {
@@ -165,6 +171,38 @@ describe('Generators', () => {
 
       expect(problem.cards).toHaveLength(progression.baseCards);
       expect(problem.pairs).toHaveLength(progression.baseCards / 2);
+    });
+  });
+
+  describe('robo_path', () => {
+    it('should generate a grid navigation problem from the curriculum progression', () => {
+      const rng = createRng(12345);
+      const generator = Generators.robo_path;
+      if (!generator) throw new Error('robo_path generator not found');
+      const problem = generator(1, rng, 'starter') as RoboPathProblem;
+      const settings = getRoboPathSettings(MATH_GRID_NAVIGATION_PACK.items);
+      const expectedGridSize = getRoboPathGridSize(MATH_GRID_NAVIGATION_PACK.items, 'starter', 1);
+      const obstacleCap = Math.max(
+        settings.maxObstacleFloor,
+        Math.floor(expectedGridSize * expectedGridSize * settings.maxObstacleRatio),
+      );
+
+      expect(problem.type).toBe('robo_path');
+      expect(problem.gridSize).toBe(expectedGridSize);
+      expect(problem.grid).toHaveLength(expectedGridSize);
+      expect(problem.obstacles.length).toBeLessThanOrEqual(obstacleCap);
+      expect(problem.start).toEqual([0, 0]);
+    });
+
+    it('should use the advanced grid navigation progression for advanced profile', () => {
+      const rng = createRng(12345);
+      const generator = Generators.robo_path;
+      if (!generator) throw new Error('robo_path generator not found');
+      const problem = generator(1, rng, 'advanced') as RoboPathProblem;
+
+      expect(problem.gridSize).toBe(
+        getRoboPathGridSize(MATH_GRID_NAVIGATION_PACK.items, 'advanced', 1),
+      );
     });
   });
 

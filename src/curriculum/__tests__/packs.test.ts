@@ -40,6 +40,7 @@ import {
   MATH_TIME_READING_SKILL,
   MATH_BALANCE_EQUATIONS_SKILL,
   MATH_ADDITION_MEMORY_SKILL,
+  MATH_GRID_NAVIGATION_SKILL,
 } from '../skills/math';
 import { MATH_ADDITION_WITHIN_20_PACK } from '../packs/math/addition_within_20';
 import { MATH_ADDITION_WITHIN_100_PACK } from '../packs/math/addition_within_100';
@@ -70,6 +71,12 @@ import {
   getBalanceEquationProgression,
 } from '../packs/math/balance_equations';
 import { MATH_ADDITION_MEMORY_PACK, getMemoryMathProgression } from '../packs/math/addition_memory';
+import {
+  MATH_GRID_NAVIGATION_PACK,
+  getRoboPathGridSize,
+  getRoboPathObstacleStage,
+  getRoboPathSettings,
+} from '../packs/math/grid_navigation';
 import { SHAPE_SHIFT_PUZZLES_PACK } from '../packs/geometry/shapeShiftPuzzles';
 import type { Constellation } from '../../types/game';
 
@@ -287,6 +294,7 @@ describe('curriculum', () => {
       { pack: MATH_TIME_READING_PACK, skill: MATH_TIME_READING_SKILL },
       { pack: MATH_BALANCE_EQUATIONS_PACK, skill: MATH_BALANCE_EQUATIONS_SKILL },
       { pack: MATH_ADDITION_MEMORY_PACK, skill: MATH_ADDITION_MEMORY_SKILL },
+      { pack: MATH_GRID_NAVIGATION_PACK, skill: MATH_GRID_NAVIGATION_SKILL },
     ];
 
     it('every math pack binds to its declared skill', () => {
@@ -417,6 +425,17 @@ describe('curriculum', () => {
       expect(MATH_ADDITION_MEMORY_PACK.items.every((item) => item.cardGrowthStep % 2 === 0)).toBe(
         true,
       );
+    });
+
+    it('grid navigation pack defines robo path grid and obstacle progression', () => {
+      const settings = getRoboPathSettings(MATH_GRID_NAVIGATION_PACK.items);
+
+      expect(getRoboPathGridSize(MATH_GRID_NAVIGATION_PACK.items, 'starter', 1)).toBe(3);
+      expect(getRoboPathGridSize(MATH_GRID_NAVIGATION_PACK.items, 'advanced', 1)).toBe(4);
+      expect(getRoboPathGridSize(MATH_GRID_NAVIGATION_PACK.items, 'starter', 16)).toBe(7);
+      expect(getRoboPathGridSize(MATH_GRID_NAVIGATION_PACK.items, 'advanced', 16)).toBe(8);
+      expect(getRoboPathObstacleStage(MATH_GRID_NAVIGATION_PACK.items, 9).obstacleVariance).toBe(2);
+      expect(settings.maxObstacleRatio).toBe(0.25);
     });
   });
 

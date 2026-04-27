@@ -158,3 +158,14 @@ export const MATH_ADDITION_MEMORY_SKILL: Skill = {
     topic: 'math.addition.memory_matching',
   },
 };
+
+export const MATH_GRID_NAVIGATION_SKILL: Skill = {
+  id: 'math.grid_navigation',
+  name: { et: 'Ruudustikul liikumine', en: 'Grid navigation' },
+  taxonomy: {
+    subject: 'matemaatika',
+    grade: 2,
+    level: 'foundation',
+    topic: 'math.geometry.grid_navigation',
+  },
+};
