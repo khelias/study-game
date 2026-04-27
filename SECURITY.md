@@ -14,4 +14,3 @@ Only the current `main` branch and the live deployment are supported. This is a
 personal portfolio project, so there is no formal SLA, but I treat reports that
 could affect users, data, deployment credentials, or service availability as
 high priority.
-
