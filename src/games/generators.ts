@@ -43,6 +43,11 @@ import {
   type UnitConversionCategory,
   type UnitConversionItem,
 } from '../curriculum/packs/math/unit_conversions';
+import {
+  MATH_COMPARE_NUMBERS_PACK,
+  getCompareNumberStage,
+  type CompareNumberStageItem,
+} from '../curriculum/packs/math/compare_numbers';
 import { SHAPE_SHIFT_PUZZLES_PACK } from '../curriculum/packs/geometry/shapeShiftPuzzles';
 import { getRandom, uid } from '../engine/rng';
 import { getLocale, getTranslations } from '../i18n/index';
@@ -1378,9 +1383,10 @@ export const Generators: Record<string, GeneratorFunction> = {
   ): CompareSizesProblem => {
     const meta = profileMeta(profile);
     const effectiveLevel = level + meta.difficultyOffset;
-
-    // Constants for visual representation
-    const MAX_DICE_VALUE = 6;
+    const stage = getCompareNumberStage(
+      getPackItems<CompareNumberStageItem>(MATH_COMPARE_NUMBERS_PACK.id),
+      effectiveLevel,
+    );
 
     // REDESIGNED Level progression - More challenging and balanced:
     // 1: Dice (1-6) with symbols - concrete visual + symbol practice
@@ -1391,108 +1397,73 @@ export const Generators: Record<string, GeneratorFunction> = {
     // 10+: Numbers (1-50+) with very close values
 
     const showSymbols = true; // Always show symbols - this is the focus!
-    const useDice = effectiveLevel <= 5;
-    const showNumbers = effectiveLevel >= 4;
-
-    const maxValue =
-      effectiveLevel <= 1
-        ? MAX_DICE_VALUE
-        : effectiveLevel <= 3
-          ? MAX_DICE_VALUE
-          : effectiveLevel <= 5
-            ? MAX_DICE_VALUE * 2 // double dice
-            : effectiveLevel <= 7
-              ? 20
-              : effectiveLevel <= 9
-                ? 30
-                : effectiveLevel <= 11
-                  ? 50
-                  : 100;
-
-    // Difficulty affects how close the values are - more challenging gaps
-    const minDifference =
-      effectiveLevel <= 1
-        ? 2
-        : effectiveLevel <= 3
-          ? 1
-          : effectiveLevel <= 5
-            ? 1
-            : effectiveLevel <= 7
-              ? 1
-              : 1;
-
-    // Equal appears from level 2+ (effectiveLevel > 1)
-    const equalChance =
-      effectiveLevel <= 1
-        ? 0
-        : effectiveLevel <= 3
-          ? 0.2 // 20% chance at level 2-3
-          : effectiveLevel <= 5
-            ? 0.25 // 25% chance
-            : effectiveLevel <= 7
-              ? 0.3 // 30% chance
-              : 0.35; // 35% chance at higher levels
 
     let leftValue: number;
     let rightValue: number;
     let answer: 'left' | 'right' | 'equal';
 
-    if (rng() < equalChance) {
+    if (rng() < stage.equalChance) {
       // Equal case
-      leftValue = Math.floor(rng() * maxValue) + 1;
+      leftValue = Math.floor(rng() * stage.maxValue) + 1;
       rightValue = leftValue;
       answer = 'equal';
     } else {
       // Different values - use smaller gaps for more challenge
-      leftValue = Math.floor(rng() * maxValue) + 1;
+      leftValue = Math.floor(rng() * stage.maxValue) + 1;
 
       // Ensure minimum difference but prefer smaller gaps at higher levels
       let rightValue_temp: number;
       let attempts = 0;
       const MAX_DIFFICULTY_GAP = 5;
       const maxGap =
-        effectiveLevel <= 3 ? maxValue : Math.min(MAX_DIFFICULTY_GAP, Math.floor(maxValue / 4));
+        effectiveLevel <= 3
+          ? stage.maxValue
+          : Math.min(MAX_DIFFICULTY_GAP, Math.floor(stage.maxValue / 4));
       const RANDOM_VALUE_CHANCE = 0.3; // 30% chance for any value
 
       do {
         // At higher levels, prefer values close to leftValue for increased difficulty
         if (effectiveLevel >= 6 && rng() > RANDOM_VALUE_CHANCE) {
           // 70% chance to generate a nearby value
-          const offset = Math.floor(rng() * maxGap) + minDifference;
+          const offset = Math.floor(rng() * maxGap) + stage.minDifference;
           rightValue_temp = rng() > 0.5 ? leftValue + offset : leftValue - offset;
           // Clamp to valid range
-          rightValue_temp = Math.max(1, Math.min(maxValue, rightValue_temp));
+          rightValue_temp = Math.max(1, Math.min(stage.maxValue, rightValue_temp));
         } else {
           // 30% chance for any value (or always at lower levels)
-          rightValue_temp = Math.floor(rng() * maxValue) + 1;
+          rightValue_temp = Math.floor(rng() * stage.maxValue) + 1;
         }
         attempts++;
-      } while (Math.abs(leftValue - rightValue_temp) < minDifference && attempts < 20);
+      } while (Math.abs(leftValue - rightValue_temp) < stage.minDifference && attempts < 20);
 
       rightValue = rightValue_temp;
       answer = leftValue > rightValue ? 'left' : 'right';
     }
 
     // Determine representation mode - prefer visual at higher levels without numbers
-    let representationMode: 'dice' | 'number' | 'mixed' = 'number';
-    const DICE_MODE_PROBABILITY = 0.6; // 60% dice, 40% numbers
+    let representationMode: 'dice' | 'number' = 'number';
 
-    if (useDice && !showNumbers) {
+    if (stage.displayMode === 'dice') {
       // Pure dice mode (levels 1-3)
       representationMode = 'dice';
-    } else if (useDice && showNumbers) {
+    } else if (stage.displayMode === 'dice_with_numbers') {
       // Dice with numbers (levels 4-5)
       representationMode = 'dice';
-    } else if (effectiveLevel >= 6 && effectiveLevel <= 9 && leftValue <= 12 && rightValue <= 12) {
+    } else if (
+      stage.displayMode === 'small_dice_or_number' &&
+      leftValue <= (stage.smallDiceMaxValue ?? stage.maxDiceValue) &&
+      rightValue <= (stage.smallDiceMaxValue ?? stage.maxDiceValue)
+    ) {
       // At levels 6-9, use dice for smaller numbers (more visual challenge)
-      representationMode = rng() > 1 - DICE_MODE_PROBABILITY ? 'dice' : 'number';
+      representationMode = rng() > 1 - (stage.diceModeProbability ?? 0) ? 'dice' : 'number';
     }
+    const showNumbers = stage.showNumbers || representationMode === 'number';
 
     // Create visual representations
     const leftVisual =
-      representationMode === 'dice' ? '🎲'.repeat(Math.min(leftValue, MAX_DICE_VALUE)) : '';
+      representationMode === 'dice' ? '🎲'.repeat(Math.min(leftValue, stage.maxDiceValue)) : '';
     const rightVisual =
-      representationMode === 'dice' ? '🎲'.repeat(Math.min(rightValue, MAX_DICE_VALUE)) : '';
+      representationMode === 'dice' ? '🎲'.repeat(Math.min(rightValue, stage.maxDiceValue)) : '';
 
     // Create display strings
     const leftDisplay =
@@ -1501,10 +1472,7 @@ export const Generators: Record<string, GeneratorFunction> = {
       showNumbers || representationMode === 'number' ? String(rightValue) : rightVisual;
 
     // ALWAYS provide symbol options (>, <, =) based on level
-    const options: Array<'left' | 'right' | 'equal'> =
-      effectiveLevel <= 1
-        ? ['left', 'right'] // Only > and < at level 1
-        : ['left', 'right', 'equal']; // Add = from level 2+
+    const options: Array<'left' | 'right' | 'equal'> = [...stage.symbolOptions];
 
     return {
       type: 'compare_sizes',
@@ -1520,7 +1488,7 @@ export const Generators: Record<string, GeneratorFunction> = {
       },
       answer,
       options,
-      showNumbers: showNumbers || representationMode === 'number',
+      showNumbers,
       showSymbols,
       uid: uid(rng),
     };

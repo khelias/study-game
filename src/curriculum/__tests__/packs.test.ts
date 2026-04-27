@@ -36,6 +36,7 @@ import {
   MATH_GEOMETRY_SHAPES_SKILL,
   MATH_PATTERN_SEQUENCES_SKILL,
   MATH_UNIT_CONVERSIONS_SKILL,
+  MATH_COMPARE_NUMBERS_SKILL,
 } from '../skills/math';
 import { MATH_ADDITION_WITHIN_20_PACK } from '../packs/math/addition_within_20';
 import { MATH_ADDITION_WITHIN_100_PACK } from '../packs/math/addition_within_100';
@@ -59,6 +60,7 @@ import {
   MATH_UNIT_CONVERSIONS_PACK,
   getUnitConversionsByCategory,
 } from '../packs/math/unit_conversions';
+import { MATH_COMPARE_NUMBERS_PACK, getCompareNumberStage } from '../packs/math/compare_numbers';
 import { SHAPE_SHIFT_PUZZLES_PACK } from '../packs/geometry/shapeShiftPuzzles';
 import type { Constellation } from '../../types/game';
 
@@ -272,6 +274,7 @@ describe('curriculum', () => {
       { pack: MATH_MULTIPLICATION_1_10_PACK, skill: MATH_MULTIPLICATION_1_TO_10_SKILL },
       { pack: MATH_PATTERN_SEQUENCES_PACK, skill: MATH_PATTERN_SEQUENCES_SKILL },
       { pack: MATH_UNIT_CONVERSIONS_PACK, skill: MATH_UNIT_CONVERSIONS_SKILL },
+      { pack: MATH_COMPARE_NUMBERS_PACK, skill: MATH_COMPARE_NUMBERS_SKILL },
     ];
 
     it('every math pack binds to its declared skill', () => {
@@ -355,6 +358,18 @@ describe('curriculum', () => {
       expect(byCategory.mass.map((item) => item.from)).toEqual(['kg', 't']);
       expect(byCategory.volume.map((item) => item.from)).toEqual(['l', 'l']);
       expect(MATH_UNIT_CONVERSIONS_PACK.items.every((item) => item.factor > 1)).toBe(true);
+    });
+
+    it('compare number pack defines staged comparison difficulty', () => {
+      const level1 = getCompareNumberStage(MATH_COMPARE_NUMBERS_PACK.items, 1);
+      const level4 = getCompareNumberStage(MATH_COMPARE_NUMBERS_PACK.items, 4);
+      const level12 = getCompareNumberStage(MATH_COMPARE_NUMBERS_PACK.items, 12);
+
+      expect(level1.symbolOptions).toEqual(['left', 'right']);
+      expect(level1.equalChance).toBe(0);
+      expect(level4.symbolOptions).toEqual(['left', 'right', 'equal']);
+      expect(level4.showNumbers).toBe(true);
+      expect(level12.maxValue).toBe(100);
     });
   });
 

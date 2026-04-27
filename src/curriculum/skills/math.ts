@@ -114,3 +114,14 @@ export const MATH_UNIT_CONVERSIONS_SKILL: Skill = {
     topic: 'math.measurement.unit_conversions',
   },
 };
+
+export const MATH_COMPARE_NUMBERS_SKILL: Skill = {
+  id: 'math.compare_numbers',
+  name: { et: 'Arvude võrdlemine', en: 'Comparing numbers' },
+  taxonomy: {
+    subject: 'matemaatika',
+    grade: 1,
+    level: 'foundation',
+    topic: 'math.numbers.comparison',
+  },
+};

@@ -31,6 +31,10 @@ import {
   getPatternThemes,
 } from '../../curriculum/packs/math/pattern_sequences';
 import { MATH_UNIT_CONVERSIONS_PACK } from '../../curriculum/packs/math/unit_conversions';
+import {
+  MATH_COMPARE_NUMBERS_PACK,
+  getCompareNumberStage,
+} from '../../curriculum/packs/math/compare_numbers';
 
 describe('Generators', () => {
   describe('balance_scale', () => {
@@ -717,6 +721,18 @@ describe('Generators', () => {
       expect(problem.options).toContain('left');
       expect(problem.options).toContain('right');
       expect(problem.options).not.toContain('equal');
+    });
+
+    it('should use the number comparison curriculum stage', () => {
+      const rng = createRng(12345);
+      const generator = Generators.compare_sizes;
+      if (!generator) throw new Error('compare_sizes generator not found');
+      const problem = generator(1, rng, 'starter') as CompareSizesProblem;
+      const stage = getCompareNumberStage(MATH_COMPARE_NUMBERS_PACK.items, 1);
+
+      expect(problem.options).toEqual([...stage.symbolOptions]);
+      expect(problem.leftItem.value).toBeLessThanOrEqual(stage.maxValue);
+      expect(problem.rightItem.value).toBeLessThanOrEqual(stage.maxValue);
     });
 
     it('should have 3 options from level 2+', () => {
