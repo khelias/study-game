@@ -20,31 +20,31 @@ Kohalikud QA artefaktid loodi kausta `/tmp/study-game-qa/`:
 
 Kõik mängude route'id renderdasid ilma `Tundmatu mängutüüp`, üldise error screeni ja püütud console erroriteta. Iga route sai vähemalt ühe päris browseri interaktsiooni.
 
-| Mäng | Route | Interaktsioon | Tulemus |
-| --- | --- | --- | --- |
-| Word Builder | `/study/games/word-builder` | tähe vajutus | OK |
-| Word Cascade | `/study/games/word-cascade` | langeva tähe vajutus | OK |
-| Syllable Builder | `/study/games/syllable-builder` | silbi vajutus | OK |
-| Pattern | `/study/games/pattern` | vastuse vajutus | OK |
-| Sentence Logic | `/study/games/sentence-logic` | pildi-vastuse vajutus | OK |
-| Memory Math | `/study/games/memory-math` | kahe kaardi vajutus | OK |
-| Picture Pairs | `/study/games/picture-pairs` | kaartide vajutus pärast peek-faasi | OK |
-| Robo Path | `/study/games/robo-path` | käsk + robotikäivitus | OK |
-| Addition Snake | `/study/games/addition-snake` | suunanupp | OK |
-| Addition Big Snake | `/study/games/addition-big-snake` | suunanupp | OK |
-| Subtraction Snake | `/study/games/subtraction-snake` | suunanupp | OK |
-| Subtraction Big Snake | `/study/games/subtraction-big-snake` | suunanupp | OK |
-| Multiplication Snake | `/study/games/multiplication-snake` | suunanupp | OK |
-| Multiplication Big Snake | `/study/games/multiplication-big-snake` | suunanupp | OK |
-| Letter Match | `/study/games/letter-match` | vastuse vajutus | OK |
-| Unit Conversion | `/study/games/unit-conversion` | vastuse vajutus | OK |
-| Compare Sizes | `/study/games/compare-sizes` | võrdluse vajutus | OK |
-| Star Mapper | `/study/games/star-mapper` | tähtede vajutused | OK |
-| Shape Shift | `/study/games/shape-shift` | tray drag + hint check | parandatud ja OK |
-| BattleLearn | `/study/games/battlelearn` | ruudustiku lahtri vajutus | OK |
-| Shape Dash | `/study/games/shape-dash` | hüppe vajutus | parandatud ja OK |
-| Balance Scale | `/study/games/balance-scale` | vastuse vajutus | OK |
-| Time Match | `/study/games/time-match` | kellaaja vastuse vajutus | OK |
+| Mäng                     | Route                                   | Interaktsioon                      | Tulemus          |
+| ------------------------ | --------------------------------------- | ---------------------------------- | ---------------- |
+| Word Builder             | `/study/games/word-builder`             | tähe vajutus                       | OK               |
+| Word Cascade             | `/study/games/word-cascade`             | langeva tähe vajutus               | OK               |
+| Syllable Builder         | `/study/games/syllable-builder`         | silbi vajutus                      | OK               |
+| Pattern                  | `/study/games/pattern`                  | vastuse vajutus                    | OK               |
+| Sentence Logic           | `/study/games/sentence-logic`           | pildi-vastuse vajutus              | OK               |
+| Memory Math              | `/study/games/memory-math`              | kahe kaardi vajutus                | OK               |
+| Picture Pairs            | `/study/games/picture-pairs`            | kaartide vajutus pärast peek-faasi | OK               |
+| Robo Path                | `/study/games/robo-path`                | käsk + robotikäivitus              | OK               |
+| Addition Snake           | `/study/games/addition-snake`           | suunanupp                          | OK               |
+| Addition Big Snake       | `/study/games/addition-big-snake`       | suunanupp                          | OK               |
+| Subtraction Snake        | `/study/games/subtraction-snake`        | suunanupp                          | OK               |
+| Subtraction Big Snake    | `/study/games/subtraction-big-snake`    | suunanupp                          | OK               |
+| Multiplication Snake     | `/study/games/multiplication-snake`     | suunanupp                          | OK               |
+| Multiplication Big Snake | `/study/games/multiplication-big-snake` | suunanupp                          | OK               |
+| Letter Match             | `/study/games/letter-match`             | vastuse vajutus                    | OK               |
+| Unit Conversion          | `/study/games/unit-conversion`          | vastuse vajutus                    | OK               |
+| Compare Sizes            | `/study/games/compare-sizes`            | võrdluse vajutus                   | OK               |
+| Star Mapper              | `/study/games/star-mapper`              | tähtede vajutused                  | OK               |
+| Shape Shift              | `/study/games/shape-shift`              | tray drag + hint check             | parandatud ja OK |
+| BattleLearn              | `/study/games/battlelearn`              | ruudustiku lahtri vajutus          | OK               |
+| Shape Dash               | `/study/games/shape-dash`               | hüppe vajutus                      | parandatud ja OK |
+| Balance Scale            | `/study/games/balance-scale`            | vastuse vajutus                    | OK               |
+| Time Match               | `/study/games/time-match`               | kellaaja vastuse vajutus           | OK               |
 
 ## Suuremate Probleemide Kaart
 

@@ -94,15 +94,15 @@ This baseline is the first point where the project can be evaluated as a whole p
 
 **Next product-quality priorities before Phase 2.**
 
-| Priority | Area | Decision / work |
-| --- | --- | --- |
+| Priority        | Area                | Decision / work                                                                                                                                                                  |
+| --------------- | ------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Done 2026-04-27 | Regression coverage | Focused interaction E2E now covers Shape Shift drag/drop, Shape Dash jump/run, BattleLearn question modal + answer, one standard answer-card game, and Picture Pairs after peek. |
-| P0 | Economy semantics | Decide whether stars are currency, score, or lifetime achievement. Remove or dev-gate free star purchase before production. |
-| P1 | Shape Shift UX | Show a lightweight target/outline/onboarding state by default; the current empty board asks too much from a new player. |
-| P1 | Shape Dash UX | Decide portrait strategy: either a true portrait layout or a hard landscape-first presentation. Current portrait works but wastes space. |
-| P1 | Stats/achievements | Align copy and contrast: locked achievements are too washed out; stats should not confuse current balance with lifetime collection. |
-| P1 | Content packs | Audit item counts, difficulty bands, locale coverage, and learning outcomes for every pack. Expand shallow packs before adding more mechanics. |
-| P2 | Standard games | Add short inline task prompts and richer feedback loops to Word Builder, Syllables, Letter Match, Unit Conversion, Compare Sizes, and Sentence Logic. |
+| P0              | Economy semantics   | Decide whether stars are currency, score, or lifetime achievement. Remove or dev-gate free star purchase before production.                                                      |
+| P1              | Shape Shift UX      | Show a lightweight target/outline/onboarding state by default; the current empty board asks too much from a new player.                                                          |
+| P1              | Shape Dash UX       | Decide portrait strategy: either a true portrait layout or a hard landscape-first presentation. Current portrait works but wastes space.                                         |
+| P1              | Stats/achievements  | Align copy and contrast: locked achievements are too washed out; stats should not confuse current balance with lifetime collection.                                              |
+| P1              | Content packs       | Audit item counts, difficulty bands, locale coverage, and learning outcomes for every pack. Expand shallow packs before adding more mechanics.                                   |
+| P2              | Standard games      | Add short inline task prompts and richer feedback loops to Word Builder, Syllables, Letter Match, Unit Conversion, Compare Sizes, and Sentence Logic.                            |
 
 The practical conclusion: **Phase 1 is architecturally close, but a Phase 1.5 product-quality pass should happen before backend/auth/sync.** The backend would otherwise preserve and sync unclear product semantics.
 
