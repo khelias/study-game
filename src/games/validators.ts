@@ -205,7 +205,7 @@ export const validateStarMapper: AnswerValidator = (
 /**
  * Validator for shape shift games.
  * Requires exact position (x, y) and rotation (with symmetry for circle, square, etc.).
- * Coordinate model: see src/games/shapeShiftGrid.ts.
+ * Coordinate model: see src/engine/shapeShiftGrid.ts.
  */
 export const validateShapeShift: AnswerValidator = (
   problem: Problem,

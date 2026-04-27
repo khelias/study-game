@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { playSound } from '../../engine/audio';
+import { boardPxToGridTopLeft } from '../../engine/shapeShiftGrid';
 import { validateShapeShift } from '../../games/validators';
-import { boardPxToGridTopLeft } from '../../games/shapeShiftGrid';
 import type { ShapeShiftProblem, PieceState } from '../../types/game';
 
 // Constants for interaction

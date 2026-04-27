@@ -6,8 +6,8 @@
  */
 
 import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { gridPieceToPercent, sortByDistanceFromCenter } from '../../engine/shapeShiftGrid';
 import { useTranslation } from '../../i18n/useTranslation';
-import { gridPieceToPercent, sortByDistanceFromCenter } from '../../games/shapeShiftGrid';
 import { usePlaySessionStore } from '../../stores/playSessionStore';
 import { GAME_CONFIG } from '../../games/data';
 import type { ShapeShiftProblem } from '../../types/game';
