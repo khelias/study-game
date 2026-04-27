@@ -103,3 +103,14 @@ export const MATH_PATTERN_SEQUENCES_SKILL: Skill = {
     topic: 'math.patterns.sequences',
   },
 };
+
+export const MATH_UNIT_CONVERSIONS_SKILL: Skill = {
+  id: 'math.unit_conversions',
+  name: { et: 'Ühikute teisendamine', en: 'Unit conversions' },
+  taxonomy: {
+    subject: 'matemaatika',
+    grade: 3,
+    level: 'foundation',
+    topic: 'math.measurement.unit_conversions',
+  },
+};

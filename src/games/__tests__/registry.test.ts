@@ -10,6 +10,7 @@ import { gameRegistry } from '../registry';
 import {
   MATH_GEOMETRY_SHAPES_SKILL,
   MATH_PATTERN_SEQUENCES_SKILL,
+  MATH_UNIT_CONVERSIONS_SKILL,
 } from '../../curriculum/skills/math';
 import {
   LANGUAGE_SPATIAL_SENTENCES_SKILL,
@@ -18,6 +19,7 @@ import {
 import { LANGUAGE_SPATIAL_SENTENCES_PACK } from '../../curriculum/packs/language/spatialSentences';
 import { MATH_GEOMETRY_SHAPES_PACK } from '../../curriculum/packs/math/geometry_shapes';
 import { MATH_PATTERN_SEQUENCES_PACK } from '../../curriculum/packs/math/pattern_sequences';
+import { MATH_UNIT_CONVERSIONS_PACK } from '../../curriculum/packs/math/unit_conversions';
 import { SHAPE_SHIFT_PUZZLES_PACK } from '../../curriculum/packs/geometry/shapeShiftPuzzles';
 
 // Import registrations to ensure games are registered
@@ -57,6 +59,13 @@ describe('GameRegistry', () => {
     expect(game).toBeDefined();
     expect(game?.skillIds).toEqual([MATH_PATTERN_SEQUENCES_SKILL.id]);
     expect(game?.contentPackId).toBe(MATH_PATTERN_SEQUENCES_PACK.id);
+  });
+
+  it('should bind unit_conversion to the unit conversion curriculum pack', () => {
+    const game = gameRegistry.get('unit_conversion');
+    expect(game).toBeDefined();
+    expect(game?.skillIds).toEqual([MATH_UNIT_CONVERSIONS_SKILL.id]);
+    expect(game?.contentPackId).toBe(MATH_UNIT_CONVERSIONS_PACK.id);
   });
 
   it('should bind shape_shift to the geometry puzzle curriculum pack', () => {

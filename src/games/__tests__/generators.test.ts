@@ -15,6 +15,7 @@ import type {
   ShapeShiftProblem,
   ShapeDashProblem,
   BattleLearnProblem,
+  UnitConversionProblem,
 } from '../../types/game';
 import {
   MATH_GEOMETRY_SHAPES_PACK,
@@ -29,6 +30,7 @@ import {
   getPatternTemplates,
   getPatternThemes,
 } from '../../curriculum/packs/math/pattern_sequences';
+import { MATH_UNIT_CONVERSIONS_PACK } from '../../curriculum/packs/math/unit_conversions';
 
 describe('Generators', () => {
   describe('balance_scale', () => {
@@ -585,6 +587,26 @@ describe('Generators', () => {
       const advancedProblem = generator(1, rng2, 'advanced') as WordBuilderProblem;
 
       expect(advancedProblem.target.length).toBeGreaterThanOrEqual(starterProblem.target.length);
+    });
+  });
+
+  describe('unit_conversion', () => {
+    it('should generate a valid unit conversion problem from the curriculum pack', () => {
+      const rng = createRng(12345);
+      const generator = Generators.unit_conversion;
+      if (!generator) throw new Error('unit_conversion generator not found');
+      const problem = generator(4, rng, 'starter') as UnitConversionProblem;
+      const source = MATH_UNIT_CONVERSIONS_PACK.items.find(
+        (item) =>
+          item.category === problem.category &&
+          item.from === problem.fromUnit &&
+          item.to === problem.toUnit,
+      );
+
+      expect(problem.type).toBe('unit_conversion');
+      expect(source).toBeDefined();
+      expect(problem.answer).toBe(problem.value * (source?.factor ?? 0));
+      expect(problem.options).toContain(problem.answer);
     });
   });
 

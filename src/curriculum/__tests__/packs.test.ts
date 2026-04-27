@@ -35,6 +35,7 @@ import {
   MATH_MULTIPLICATION_1_TO_10_SKILL,
   MATH_GEOMETRY_SHAPES_SKILL,
   MATH_PATTERN_SEQUENCES_SKILL,
+  MATH_UNIT_CONVERSIONS_SKILL,
 } from '../skills/math';
 import { MATH_ADDITION_WITHIN_20_PACK } from '../packs/math/addition_within_20';
 import { MATH_ADDITION_WITHIN_100_PACK } from '../packs/math/addition_within_100';
@@ -54,6 +55,10 @@ import {
   getPatternTemplatesForLevel,
   getPatternThemes,
 } from '../packs/math/pattern_sequences';
+import {
+  MATH_UNIT_CONVERSIONS_PACK,
+  getUnitConversionsByCategory,
+} from '../packs/math/unit_conversions';
 import { SHAPE_SHIFT_PUZZLES_PACK } from '../packs/geometry/shapeShiftPuzzles';
 import type { Constellation } from '../../types/game';
 
@@ -266,6 +271,7 @@ describe('curriculum', () => {
       { pack: MATH_MULTIPLICATION_1_5_PACK, skill: MATH_MULTIPLICATION_1_TO_5_SKILL },
       { pack: MATH_MULTIPLICATION_1_10_PACK, skill: MATH_MULTIPLICATION_1_TO_10_SKILL },
       { pack: MATH_PATTERN_SEQUENCES_PACK, skill: MATH_PATTERN_SEQUENCES_SKILL },
+      { pack: MATH_UNIT_CONVERSIONS_PACK, skill: MATH_UNIT_CONVERSIONS_SKILL },
     ];
 
     it('every math pack binds to its declared skill', () => {
@@ -341,6 +347,14 @@ describe('curriculum', () => {
       expect(getPatternTemplatesForLevel(MATH_PATTERN_SEQUENCES_PACK.items, 6, true)).toHaveLength(
         4,
       );
+    });
+
+    it('unit conversion pack groups supported measurement categories', () => {
+      const byCategory = getUnitConversionsByCategory(MATH_UNIT_CONVERSIONS_PACK.items);
+      expect(byCategory.length.map((item) => item.from)).toEqual(['m', 'km', 'cm']);
+      expect(byCategory.mass.map((item) => item.from)).toEqual(['kg', 't']);
+      expect(byCategory.volume.map((item) => item.from)).toEqual(['l', 'l']);
+      expect(MATH_UNIT_CONVERSIONS_PACK.items.every((item) => item.factor > 1)).toBe(true);
     });
   });
 

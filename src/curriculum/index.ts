@@ -31,6 +31,7 @@ import {
   MATH_MULTIPLICATION_1_TO_10_SKILL,
   MATH_GEOMETRY_SHAPES_SKILL,
   MATH_PATTERN_SEQUENCES_SKILL,
+  MATH_UNIT_CONVERSIONS_SKILL,
 } from './skills/math';
 import { MATH_ADDITION_WITHIN_20_PACK } from './packs/math/addition_within_20';
 import { MATH_ADDITION_WITHIN_100_PACK } from './packs/math/addition_within_100';
@@ -40,6 +41,7 @@ import { MATH_MULTIPLICATION_1_5_PACK } from './packs/math/multiplication_1_5';
 import { MATH_MULTIPLICATION_1_10_PACK } from './packs/math/multiplication_1_10';
 import { MATH_GEOMETRY_SHAPES_PACK } from './packs/math/geometry_shapes';
 import { MATH_PATTERN_SEQUENCES_PACK } from './packs/math/pattern_sequences';
+import { MATH_UNIT_CONVERSIONS_PACK } from './packs/math/unit_conversions';
 import { SHAPE_SHIFT_PUZZLES_PACK } from './packs/geometry/shapeShiftPuzzles';
 
 let registered = false;
@@ -67,6 +69,7 @@ export function registerAll(): void {
   skillRegistry.register(MATH_MULTIPLICATION_1_TO_10_SKILL);
   skillRegistry.register(MATH_GEOMETRY_SHAPES_SKILL);
   skillRegistry.register(MATH_PATTERN_SEQUENCES_SKILL);
+  skillRegistry.register(MATH_UNIT_CONVERSIONS_SKILL);
   contentPackRegistry.register(MATH_ADDITION_WITHIN_20_PACK);
   contentPackRegistry.register(MATH_ADDITION_WITHIN_100_PACK);
   contentPackRegistry.register(MATH_SUBTRACTION_WITHIN_20_PACK);
@@ -75,6 +78,7 @@ export function registerAll(): void {
   contentPackRegistry.register(MATH_MULTIPLICATION_1_10_PACK);
   contentPackRegistry.register(MATH_GEOMETRY_SHAPES_PACK);
   contentPackRegistry.register(MATH_PATTERN_SEQUENCES_PACK);
+  contentPackRegistry.register(MATH_UNIT_CONVERSIONS_PACK);
   contentPackRegistry.register(SHAPE_SHIFT_PUZZLES_PACK);
   registered = true;
 }
