@@ -24,6 +24,11 @@ import {
 import { SHAPE_SHIFT_PUZZLES_PACK } from '../../curriculum/packs/geometry/shapeShiftPuzzles';
 import { LANGUAGE_SPATIAL_SENTENCES_PACK } from '../../curriculum/packs/language/spatialSentences';
 import { LANGUAGE_VOCABULARY_ET_PACK } from '../../curriculum/packs/language/vocabulary';
+import {
+  MATH_PATTERN_SEQUENCES_PACK,
+  getPatternTemplates,
+  getPatternThemes,
+} from '../../curriculum/packs/math/pattern_sequences';
 
 describe('Generators', () => {
   describe('balance_scale', () => {
@@ -319,6 +324,24 @@ describe('Generators', () => {
       const problem5 = generator(5, rng2, 'starter') as PatternProblem;
 
       expect(problem5.sequence.length).toBeGreaterThanOrEqual(problem1.sequence.length);
+    });
+
+    it('should source symbols and rules from the pattern sequence pack', () => {
+      const rng = createRng(12345);
+      const generator = Generators.pattern;
+      if (!generator) throw new Error('pattern generator not found');
+      const problem = generator(3, rng, 'starter') as PatternProblem;
+      const symbols = new Set(
+        getPatternThemes(MATH_PATTERN_SEQUENCES_PACK.items).flatMap((theme) => theme.symbols),
+      );
+      const ruleIds = new Set(
+        getPatternTemplates(MATH_PATTERN_SEQUENCES_PACK.items).map((template) => template.id),
+      );
+
+      expect(ruleIds.has(problem.patternRule)).toBe(true);
+      for (const symbol of [...problem.sequence, problem.answer, ...problem.options]) {
+        expect(symbols.has(symbol)).toBe(true);
+      }
     });
   });
 

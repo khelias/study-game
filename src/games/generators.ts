@@ -31,6 +31,12 @@ import {
   type ShapeDashGateShape,
   type ShapeDashGeometryItem,
 } from '../curriculum/packs/math/geometry_shapes';
+import {
+  MATH_PATTERN_SEQUENCES_PACK,
+  getPatternTemplatesForLevel,
+  getPatternThemes,
+  type PatternSequenceItem,
+} from '../curriculum/packs/math/pattern_sequences';
 import { SHAPE_SHIFT_PUZZLES_PACK } from '../curriculum/packs/geometry/shapeShiftPuzzles';
 import { getRandom, uid } from '../engine/rng';
 import { getLocale, getTranslations } from '../i18n/index';
@@ -65,7 +71,6 @@ import type {
   SceneAnchor,
   SceneSubject,
   LetterObject,
-  PatternRuleId,
   BattleLearnProblem,
   BattleLearnCellType,
   ShapeDashProblem,
@@ -451,17 +456,12 @@ export const Generators: Record<string, GeneratorFunction> = {
     rng: RngFunction = Math.random,
     profile: ProfileType = 'starter',
   ): PatternProblem => {
-    const THEMES = [
-      ['🔴', '🔵', '🟢', '🟡'],
-      ['🐶', '🐱', '🐸', '🦁'],
-      ['🍎', '🍌', '🍇', '🍉'],
-      ['⚽', '🏀', '🎾', '🎱'],
-      ['🚗', '🚕', '🚙', '🚌'],
-    ];
-    const items = getRandom(THEMES, rng);
-    if (!items) {
+    const patternItems = getPackItems<PatternSequenceItem>(MATH_PATTERN_SEQUENCES_PACK.id);
+    const theme = getRandom(getPatternThemes(patternItems), rng);
+    if (!theme) {
       throw new Error('No theme found for pattern game');
     }
+    const items = [...theme.symbols];
     const pool = [...items].sort(() => rng() - 0.5);
     const A = pool[0];
     const B = pool[1];
@@ -473,52 +473,7 @@ export const Generators: Record<string, GeneratorFunction> = {
     const meta = profileMeta(profile);
     const harder = meta.difficultyOffset > 0;
 
-    type PatternTemplate = {
-      id: PatternRuleId;
-      cycle: number[];
-      length: number;
-    };
-
-    const templates: Record<PatternRuleId, PatternTemplate> = {
-      repeat_ab: { id: 'repeat_ab', cycle: [0, 1], length: 4 },
-      repeat_abc: { id: 'repeat_abc', cycle: [0, 1, 2], length: 5 },
-      repeat_abcd: { id: 'repeat_abcd', cycle: [0, 1, 2, 3], length: 6 },
-      repeat_aab: { id: 'repeat_aab', cycle: [0, 0, 1], length: 5 },
-      repeat_aabb: { id: 'repeat_aabb', cycle: [0, 0, 1, 1], length: 5 },
-      repeat_aabc: { id: 'repeat_aabc', cycle: [0, 0, 1, 2], length: 6 },
-    };
-
-    const pickTemplates = (): PatternTemplate[] => {
-      if (!harder) {
-        if (level <= 2) {
-          return [templates.repeat_ab, templates.repeat_aab];
-        }
-        if (level <= 4) {
-          return [templates.repeat_ab, templates.repeat_aab, templates.repeat_abc];
-        }
-        return [
-          templates.repeat_ab,
-          templates.repeat_aab,
-          templates.repeat_abc,
-          templates.repeat_aabb,
-        ];
-      }
-
-      if (level <= 2) {
-        return [templates.repeat_ab, templates.repeat_abc];
-      }
-      if (level <= 4) {
-        return [templates.repeat_aab, templates.repeat_abc, templates.repeat_aabb];
-      }
-      return [
-        templates.repeat_abc,
-        templates.repeat_aabb,
-        templates.repeat_abcd,
-        templates.repeat_aabc,
-      ];
-    };
-
-    const templatePool = pickTemplates();
+    const templatePool = getPatternTemplatesForLevel(patternItems, level, harder);
     const picked = getRandom(templatePool, rng);
     if (!picked) {
       throw new Error('No pattern template found');

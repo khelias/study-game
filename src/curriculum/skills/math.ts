@@ -92,3 +92,14 @@ export const MATH_GEOMETRY_SHAPES_SKILL: Skill = {
     topic: 'math.geometry.shapes',
   },
 };
+
+export const MATH_PATTERN_SEQUENCES_SKILL: Skill = {
+  id: 'math.pattern_sequences',
+  name: { et: 'Mustrijadad', en: 'Pattern sequences' },
+  taxonomy: {
+    subject: 'matemaatika',
+    grade: 1,
+    level: 'foundation',
+    topic: 'math.patterns.sequences',
+  },
+};
