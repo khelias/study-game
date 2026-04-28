@@ -24,6 +24,8 @@ import {
   getSpatialSentenceScenesForLevel,
 } from '../packs/language/spatialSentences';
 import {
+  getVocabularyWordsAvailableForLevel,
+  getVocabularyWordsForLevel,
   groupWordsByLength,
   LANGUAGE_VOCABULARY_EN_PACK,
   LANGUAGE_VOCABULARY_ET_PACK,
@@ -278,6 +280,39 @@ describe('curriculum', () => {
         expect(db[6]?.length).toBeGreaterThan(0);
         expect(db[7]?.length).toBeGreaterThan(0);
       }
+    });
+
+    it('annotates words with difficulty, level, and learning outcomes', () => {
+      for (const pack of [LANGUAGE_VOCABULARY_ET_PACK, LANGUAGE_VOCABULARY_EN_PACK]) {
+        for (const word of pack.items) {
+          expect(['easy', 'medium', 'hard']).toContain(word.difficulty);
+          expect(word.minLevel).toBeGreaterThanOrEqual(1);
+          expect(word.learningOutcome.et).not.toBe('');
+          expect(word.learningOutcome.en).not.toBe('');
+        }
+      }
+    });
+
+    it('selects vocabulary words by profile and level metadata', () => {
+      const starterLevel1 = getVocabularyWordsForLevel(
+        LANGUAGE_VOCABULARY_ET_PACK.items,
+        'starter',
+        1,
+      );
+      const advancedLevel1 = getVocabularyWordsForLevel(
+        LANGUAGE_VOCABULARY_ET_PACK.items,
+        'advanced',
+        1,
+      );
+      const level10Available = getVocabularyWordsAvailableForLevel(
+        LANGUAGE_VOCABULARY_ET_PACK.items,
+        'starter',
+        10,
+      );
+
+      expect(starterLevel1.every((word) => word.w.length === 3)).toBe(true);
+      expect(advancedLevel1.every((word) => word.w.length === 4)).toBe(true);
+      expect(level10Available.some((word) => word.difficulty === 'hard')).toBe(true);
     });
 
     it('returns locale-specific vocabulary through registry lookup', () => {

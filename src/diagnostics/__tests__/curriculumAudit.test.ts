@@ -63,6 +63,8 @@ describe('curriculum audit report', () => {
     );
     const syllablesEt = report.packs.find((row) => row.packId === 'language.syllabification.et');
     const syllablesEn = report.packs.find((row) => row.packId === 'language.syllabification.en');
+    const vocabularyEt = report.packs.find((row) => row.packId === 'language.vocabulary.et');
+    const vocabularyEn = report.packs.find((row) => row.packId === 'language.vocabulary.en');
     const time = report.packs.find((row) => row.packId === 'math.time_reading.core');
 
     expect(shapeShift?.difficultySignals).toContain('difficulty=easy/hard/medium');
@@ -76,6 +78,14 @@ describe('curriculum audit report', () => {
     expect(syllablesEn?.difficultySignals).toEqual(
       expect.arrayContaining(['difficulty=easy/hard/medium', 'levels=1-open-ended']),
     );
+    expect(vocabularyEt?.difficultySignals).toEqual(
+      expect.arrayContaining(['difficulty=easy/hard/medium', 'levels=1-open-ended']),
+    );
+    expect(vocabularyEn?.difficultySignals).toEqual(
+      expect.arrayContaining(['difficulty=easy/hard/medium', 'levels=1-open-ended']),
+    );
+    expect(vocabularyEt?.warnings).not.toContain('no_explicit_difficulty_signal');
+    expect(vocabularyEn?.warnings).not.toContain('no_explicit_difficulty_signal');
     expect(time?.difficultySignals).toContain('levels=1-open-ended');
   });
 

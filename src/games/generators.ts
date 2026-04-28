@@ -13,7 +13,12 @@ import {
   type SyllableWord,
   type VocabularyWord,
 } from '../curriculum/packs/language/types';
-import { ALPHABET, groupWordsByLength } from '../curriculum/packs/language/vocabulary';
+import {
+  ALPHABET,
+  getVocabularyWordsAvailableForLevel,
+  getVocabularyWordsForLength,
+  getVocabularyWordsForLevel,
+} from '../curriculum/packs/language/vocabulary';
 import {
   LANGUAGE_SPATIAL_SENTENCES_PACK,
   generateSentence,
@@ -138,16 +143,6 @@ import type {
 } from '../types/game';
 
 const profileMeta = (profileId: ProfileType) => PROFILES[profileId] || PROFILES.starter;
-
-function getVocabularyWordDb(locale: 'et' | 'en'): Record<number, VocabularyWord[]> {
-  const words = getPackItemsForLocale<VocabularyWord>(LANGUAGE_VOCABULARY_SKILL.id, locale);
-  return groupWordsByLength(words);
-}
-
-// Helper function to check if a word contains diacritical marks
-function hasDiacritics(word: string): boolean {
-  return /[ŠŽÕÄÖÜ]/i.test(word);
-}
 
 // Helper function to apply letter case based on level
 function applyLetterCase(word: string, level: number, rng: RngFunction): string {
@@ -390,43 +385,11 @@ export const Generators: Record<string, GeneratorFunction> = {
     rng: RngFunction = Math.random,
     profile: ProfileType = 'starter',
   ): WordBuilderProblem => {
-    const meta = profileMeta(profile);
     const locale = getLocale();
-
-    // Word length selection based on level
-    let len: number;
-    if (level <= 2) len = 3;
-    else if (level <= 4) len = 4;
-    else if (level <= 7) len = 5;
-    else if (level <= 9) len = 6;
-    else len = 7;
-
-    // Profile boost - advanced gets slightly longer words
-    if (meta.difficultyOffset > 0) {
-      len = Math.min(len + 1, 7);
-    }
-
-    const wordDb = getVocabularyWordDb(locale);
-
-    // Filter words by diacritics for levels 1-2 (Estonian only)
-    let availableWords = wordDb[len] || wordDb[4] || [];
-    if (locale !== 'en' && level <= 2) {
-      // For levels 1-2, prefer words without diacritics
-      const simpleWords = availableWords.filter((w) => !hasDiacritics(w.w));
-      if (simpleWords.length > 0) {
-        availableWords = simpleWords;
-      }
-    }
-
-    // Fallback if no words available
-    if (!availableWords || availableWords.length === 0) {
-      for (let i = len - 1; i >= 3 && (!availableWords || availableWords.length === 0); i--) {
-        availableWords = wordDb[i] || [];
-      }
-      if (!availableWords || availableWords.length === 0) {
-        availableWords = wordDb[4] || [];
-      }
-    }
+    const words = getPackItemsForLocale<VocabularyWord>(LANGUAGE_VOCABULARY_SKILL.id, locale);
+    const availableWords = getVocabularyWordsForLevel(words, profile, level, {
+      preferWithoutDiacritics: locale !== 'en' && level <= 2,
+    });
 
     const wordObj = getRandom(availableWords, rng);
     if (!wordObj) {
@@ -479,10 +442,10 @@ export const Generators: Record<string, GeneratorFunction> = {
   word_cascade: (
     level: number,
     rng: RngFunction = Math.random,
-    _profile: ProfileType = 'starter',
+    profile: ProfileType = 'starter',
   ): WordCascadeProblem => {
     const locale = getLocale();
-    const db = getVocabularyWordDb(locale);
+    const words = getPackItemsForLocale<VocabularyWord>(LANGUAGE_VOCABULARY_SKILL.id, locale);
 
     // Levels map to word lengths (start short, grow gradually)
     // Allow longer words at earlier levels to increase variety
@@ -501,7 +464,9 @@ export const Generators: Record<string, GeneratorFunction> = {
       desiredLen = Math.max(3, Math.min(7, 3 + Math.floor(level / 2)));
     }
 
-    const bucket = db[desiredLen] ?? db[desiredLen - 1] ?? db[desiredLen + 1] ?? db[3] ?? [];
+    const bucket = getVocabularyWordsForLength(words, desiredLen, profile, level, {
+      fallbackLengths: [desiredLen - 1, desiredLen + 1, 3, 4, 5, 6, 7],
+    });
     const chosen = (bucket.length > 0 ? getRandom(bucket, rng) : null) ?? {
       w: 'KASS',
       e: '🐱',
@@ -631,8 +596,8 @@ export const Generators: Record<string, GeneratorFunction> = {
     const meta = profileMeta(profile);
     const harder = meta.difficultyOffset > 0;
     const locale = getLocale();
-    const wordDb = getVocabularyWordDb(locale);
-    const allWords: Array<{ w: string; e: string }> = Object.values(wordDb).flat();
+    const words = getPackItemsForLocale<VocabularyWord>(LANGUAGE_VOCABULARY_SKILL.id, locale);
+    const allWords = getVocabularyWordsAvailableForLevel(words, profile, level);
     if (allWords.length < 4) throw new Error('Not enough words for picture_pairs');
 
     // Pair count: scales with level; cap at 12 pairs (4×6) so grid fits on small screens
@@ -858,7 +823,7 @@ export const Generators: Record<string, GeneratorFunction> = {
   letter_match: (
     level: number,
     rng: RngFunction = Math.random,
-    _profile: ProfileType = 'starter',
+    profile: ProfileType = 'starter',
   ): LetterMatchProblem => {
     // Select uppercase letter - this is what is shown
     const targetUpper = getRandom(ALPHABET, rng);
@@ -896,17 +861,15 @@ export const Generators: Record<string, GeneratorFunction> = {
     }
 
     // Find a word that contains the target letter (for emoji)
-    let wordObj: VocabularyWord | null = null;
-    const wordDb = getVocabularyWordDb('et');
-    for (const len of Object.keys(wordDb)) {
-      const words = wordDb[parseInt(len)];
-      if (words && words.length > 0) {
-        wordObj = getRandom(
-          words.filter((w) => w.w.includes(targetUpper)),
-          rng,
-        );
-        if (wordObj) break;
-      }
+    let wordObj: Pick<VocabularyWord, 'w' | 'e'> | null = null;
+    const vocabularyWords = getVocabularyWordsAvailableForLevel(
+      getPackItemsForLocale<VocabularyWord>(LANGUAGE_VOCABULARY_SKILL.id, 'et'),
+      profile,
+      level,
+    );
+    const letterWords = vocabularyWords.filter((word) => word.w.includes(targetUpper));
+    if (letterWords.length > 0) {
+      wordObj = getRandom(letterWords, rng);
     }
     if (!wordObj) {
       wordObj = { w: targetUpper, e: '❓' };

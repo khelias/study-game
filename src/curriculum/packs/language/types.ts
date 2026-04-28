@@ -26,10 +26,23 @@ export interface SyllableWordMetadata {
 
 export type SyllableWord = SyllableWordBase & SyllableWordMetadata;
 
-export interface VocabularyWord {
+export type VocabularyWordFocus = 'short_words' | 'core_words' | 'longer_words';
+export type VocabularyWordProgressionProfile = 'starter' | 'advanced';
+
+export interface VocabularyWordBase {
   w: string;
   e: string;
 }
+
+export interface VocabularyWordMetadata {
+  difficulty: Difficulty;
+  minLevel: number;
+  maxLevel?: number;
+  focus: VocabularyWordFocus;
+  learningOutcome: Record<LocaleCode, string>;
+}
+
+export type VocabularyWord = VocabularyWordBase & VocabularyWordMetadata;
 
 interface SyllableWordBounds {
   targetSyllables: number;

@@ -7,12 +7,17 @@
 
 import type { ContentPack } from '../../types';
 import { LANGUAGE_VOCABULARY_SKILL } from '../../skills/language';
-import type { VocabularyWord } from './types';
+import type {
+  VocabularyWord,
+  VocabularyWordBase,
+  VocabularyWordMetadata,
+  VocabularyWordProgressionProfile,
+} from './types';
 
 export const ALPHABET: string[] = 'ABCDEFGHIJKLMNOPRSŠZŽTUVÕÄÖÜ'.split('');
 
 // Based on emojis; Estonian words for language learning games, mostly <=7 letters
-const ESTONIAN_WORDS: readonly VocabularyWord[] = [
+const RAW_ESTONIAN_WORDS: readonly VocabularyWordBase[] = [
   // nature and weather
   { w: 'PUU', e: '🌳' },
   { w: 'LILL', e: '🌸' },
@@ -278,7 +283,7 @@ const ESTONIAN_WORDS: readonly VocabularyWord[] = [
   { w: 'ROBOT', e: '🤖' },
 ];
 
-const ENGLISH_WORDS: readonly VocabularyWord[] = [
+const RAW_ENGLISH_WORDS: readonly VocabularyWordBase[] = [
   // 3-letter words
   { w: 'CAT', e: '🐱' },
   { w: 'DOG', e: '🐶' },
@@ -382,6 +387,96 @@ const ENGLISH_WORDS: readonly VocabularyWord[] = [
   { w: 'PRETZEL', e: '🥨' },
 ];
 
+const VOCABULARY_METADATA_BY_FOCUS: Record<
+  'short_words' | 'core_words' | 'longer_words',
+  VocabularyWordMetadata
+> = {
+  short_words: {
+    difficulty: 'easy',
+    minLevel: 1,
+    focus: 'short_words',
+    learningOutcome: {
+      et: 'Lühikeste 3-4-täheliste sõnade lugemine',
+      en: 'Read short 3-4 letter words',
+    },
+  },
+  core_words: {
+    difficulty: 'medium',
+    minLevel: 3,
+    focus: 'core_words',
+    learningOutcome: {
+      et: '5-6-täheliste tuttavate sõnade lugemine',
+      en: 'Read familiar 5-6 letter words',
+    },
+  },
+  longer_words: {
+    difficulty: 'hard',
+    minLevel: 8,
+    focus: 'longer_words',
+    learningOutcome: {
+      et: 'Pikemate sõnade lugemine ja tähtede järjestamine',
+      en: 'Read and sequence longer words',
+    },
+  },
+};
+
+function vocabularyFocusForLength(length: number): VocabularyWordMetadata['focus'] {
+  if (length <= 4) return 'short_words';
+  if (length <= 6) return 'core_words';
+  return 'longer_words';
+}
+
+function getVocabularyMetadata(word: VocabularyWordBase): VocabularyWordMetadata {
+  return VOCABULARY_METADATA_BY_FOCUS[vocabularyFocusForLength(word.w.length)];
+}
+
+function hasVocabularyDiacritics(word: string): boolean {
+  return /[ŠŽÕÄÖÜ]/i.test(word);
+}
+
+function uniqueNumbers(values: readonly number[]): number[] {
+  return Array.from(new Set(values)).filter((value) => value >= 1);
+}
+
+function effectiveVocabularyLevel(profile: VocabularyWordProgressionProfile, level = 1): number {
+  return profile === 'advanced' ? level + 2 : level;
+}
+
+function isUnlockedForLevel(
+  word: VocabularyWord,
+  profile: VocabularyWordProgressionProfile,
+  level = 1,
+): boolean {
+  const effectiveLevel = effectiveVocabularyLevel(profile, level);
+  return (
+    effectiveLevel >= word.minLevel &&
+    (word.maxLevel === undefined || effectiveLevel <= word.maxLevel)
+  );
+}
+
+export function withVocabularyWordMetadata(
+  words: readonly VocabularyWordBase[],
+): readonly VocabularyWord[] {
+  return words.map((word) => ({
+    ...word,
+    ...getVocabularyMetadata(word),
+  }));
+}
+
+export function getVocabularyWordLengthForLevel(
+  level: number,
+  profile: VocabularyWordProgressionProfile,
+): number {
+  let length: number;
+  if (level <= 2) length = 3;
+  else if (level <= 4) length = 4;
+  else if (level <= 7) length = 5;
+  else if (level <= 9) length = 6;
+  else length = 7;
+
+  return profile === 'advanced' ? Math.min(length + 1, 7) : length;
+}
+
 export function groupWordsByLength(
   items: readonly VocabularyWord[],
 ): Record<number, VocabularyWord[]> {
@@ -393,11 +488,73 @@ export function groupWordsByLength(
   }, {});
 }
 
+export function getVocabularyWordsForLength(
+  items: readonly VocabularyWord[],
+  desiredLength: number,
+  profile: VocabularyWordProgressionProfile,
+  level = 1,
+  options: {
+    fallbackLengths?: readonly number[];
+    preferWithoutDiacritics?: boolean;
+  } = {},
+): VocabularyWord[] {
+  const byLength = groupWordsByLength(items);
+  const lengths = uniqueNumbers([
+    desiredLength,
+    ...(options.fallbackLengths ?? [desiredLength - 1, desiredLength + 1, 4, 3, 5, 6, 7]),
+  ]);
+
+  for (const length of lengths) {
+    const unlocked = (byLength[length] ?? []).filter((word) =>
+      isUnlockedForLevel(word, profile, level),
+    );
+    if (unlocked.length === 0) continue;
+
+    if (options.preferWithoutDiacritics) {
+      const simpleWords = unlocked.filter((word) => !hasVocabularyDiacritics(word.w));
+      if (simpleWords.length > 0) return simpleWords;
+    }
+
+    return unlocked;
+  }
+
+  return lengths.flatMap((length) => byLength[length] ?? []);
+}
+
+export function getVocabularyWordsForLevel(
+  items: readonly VocabularyWord[],
+  profile: VocabularyWordProgressionProfile,
+  level = 1,
+  options: { preferWithoutDiacritics?: boolean } = {},
+): VocabularyWord[] {
+  const desiredLength = getVocabularyWordLengthForLevel(level, profile);
+  const fallbackLengths = Array.from(
+    { length: Math.max(0, desiredLength - 3) },
+    (_, index) => desiredLength - index - 1,
+  );
+  return getVocabularyWordsForLength(items, desiredLength, profile, level, {
+    fallbackLengths: [...fallbackLengths, 4, 3, 5, 6, 7],
+    ...options,
+  });
+}
+
+export function getVocabularyWordsAvailableForLevel(
+  items: readonly VocabularyWord[],
+  profile: VocabularyWordProgressionProfile,
+  level = 1,
+): VocabularyWord[] {
+  const unlocked = items.filter((word) => isUnlockedForLevel(word, profile, level));
+  return unlocked.length > 0 ? unlocked : [...items];
+}
+
+const ESTONIAN_WORDS = withVocabularyWordMetadata(RAW_ESTONIAN_WORDS);
+const ENGLISH_WORDS = withVocabularyWordMetadata(RAW_ENGLISH_WORDS);
+
 export const LANGUAGE_VOCABULARY_ET_PACK: ContentPack<VocabularyWord> = {
   id: 'language.vocabulary.et',
   skillId: LANGUAGE_VOCABULARY_SKILL.id,
   locale: 'et',
-  version: '1.0.0',
+  version: '1.1.0',
   title: {
     et: 'Eesti sõnavara',
     en: 'Estonian vocabulary',
@@ -409,7 +566,7 @@ export const LANGUAGE_VOCABULARY_EN_PACK: ContentPack<VocabularyWord> = {
   id: 'language.vocabulary.en',
   skillId: LANGUAGE_VOCABULARY_SKILL.id,
   locale: 'en',
-  version: '1.0.0',
+  version: '1.1.0',
   title: {
     et: 'Inglise sõnavara',
     en: 'English vocabulary',

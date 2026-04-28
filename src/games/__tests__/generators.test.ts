@@ -33,7 +33,11 @@ import {
 } from '../../curriculum/packs/language/spatialSentences';
 import { LANGUAGE_SYLLABIFICATION_ET_PACK } from '../../curriculum/packs/language/syllables_et';
 import { getSyllableWordsForLevel } from '../../curriculum/packs/language/types';
-import { LANGUAGE_VOCABULARY_ET_PACK } from '../../curriculum/packs/language/vocabulary';
+import {
+  LANGUAGE_VOCABULARY_ET_PACK,
+  getVocabularyWordsAvailableForLevel,
+  getVocabularyWordsForLevel,
+} from '../../curriculum/packs/language/vocabulary';
 import {
   MATH_PATTERN_SEQUENCES_PACK,
   getPatternTemplates,
@@ -390,9 +394,15 @@ describe('Generators', () => {
       const source = LANGUAGE_VOCABULARY_ET_PACK.items.find(
         (item) => item.w === problem.target.toUpperCase(),
       );
+      const allowedTargets = new Set(
+        getVocabularyWordsForLevel(LANGUAGE_VOCABULARY_ET_PACK.items, 'starter', 1, {
+          preferWithoutDiacritics: true,
+        }).map((item) => item.w),
+      );
 
       expect(source).toBeDefined();
       expect(problem.emoji).toBe(source?.e);
+      expect(allowedTargets.has(problem.target.toUpperCase())).toBe(true);
     });
   });
 
@@ -631,9 +641,15 @@ describe('Generators', () => {
       const sourceByWord = new Map(
         LANGUAGE_VOCABULARY_ET_PACK.items.map((item) => [item.w, item.e]),
       );
+      const availableWords = new Set(
+        getVocabularyWordsAvailableForLevel(LANGUAGE_VOCABULARY_ET_PACK.items, 'advanced', 3).map(
+          (item) => item.w,
+        ),
+      );
 
       for (const pair of problem.pairs) {
         expect(sourceByWord.get(pair.word)).toBe(pair.emoji);
+        expect(availableWords.has(pair.word)).toBe(true);
       }
     });
   });
