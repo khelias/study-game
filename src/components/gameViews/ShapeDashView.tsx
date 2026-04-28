@@ -986,6 +986,7 @@ export const ShapeDashView: React.FC<ShapeDashViewProps> = ({
   const soundEnabledRef = useRef(soundEnabled);
   const gameStateRef = useRef(gameState);
   const setGameStateRef = useRef(setGameState);
+  const canvasSizeRef = useRef({ width: CANVAS_MAX_WIDTH, height: CANVAS_HEIGHT_BASE });
   const lastTimeRef = useRef(0);
   const jumpRequestedRef = useRef(false);
   const lastGroundedRef = useRef(false);
@@ -1037,6 +1038,10 @@ export const ShapeDashView: React.FC<ShapeDashViewProps> = ({
     gameStateRef.current = gameState;
     setGameStateRef.current = setGameState;
   }, [problem, onAnswer, soundEnabled, gameState]);
+
+  useEffect(() => {
+    canvasSizeRef.current = { width: canvasWidth, height: canvasHeight };
+  }, [canvasWidth, canvasHeight]);
 
   // Reset game state when problem changes
   useEffect(() => {
@@ -1234,10 +1239,11 @@ export const ShapeDashView: React.FC<ShapeDashViewProps> = ({
       lastTimeRef.current = time;
 
       const state = stateRef.current;
+      const { width: activeCanvasWidth, height: activeCanvasHeight } = canvasSizeRef.current;
 
       // V4: Calculate dynamic ground Y based on canvas height (for portrait mode support)
-      const groundY = canvasHeight - 90;
-      const playerX = getPlayerX(canvasWidth);
+      const groundY = activeCanvasHeight - 90;
+      const playerX = getPlayerX(activeCanvasWidth);
 
       // V4: Check for slow time effect
       const isSlowTime = time < state.slowTimeUntil;
@@ -1391,7 +1397,7 @@ export const ShapeDashView: React.FC<ShapeDashViewProps> = ({
           const r = obs.radius ?? 18;
           const cx = obsScreenX + r;
           const cy = groundY - r - offsetY;
-          if (obsScreenX + r * 2 < -20 || obsScreenX > canvasWidth + 20) continue;
+          if (obsScreenX + r * 2 < -20 || obsScreenX > activeCanvasWidth + 20) continue;
           const closestX = Math.max(playerLeft + 6, Math.min(cx, playerRight - 6));
           const closestY = Math.max(playerTop + 6, Math.min(cy, playerBottom - 6));
           const distSq = (closestX - cx) ** 2 + (closestY - cy) ** 2;
@@ -1404,7 +1410,7 @@ export const ShapeDashView: React.FC<ShapeDashViewProps> = ({
           const obsRight = obsScreenX + w;
           const obsTop = groundY - h - offsetY;
           const obsBottom = groundY - offsetY;
-          if (obsScreenX + w < -20 || obsScreenX > canvasWidth + 20) continue;
+          if (obsScreenX + w < -20 || obsScreenX > activeCanvasWidth + 20) continue;
           if (
             playerRight - 6 > obsLeft + 6 &&
             playerLeft + 6 < obsRight - 6 &&
@@ -1538,7 +1544,9 @@ export const ShapeDashView: React.FC<ShapeDashViewProps> = ({
       // Win detection
       if (hasReachedFinish(nextScroll, prob.runLength)) {
         // Add initial victory fireworks immediately
-        state.particles.push(...createFireworkParticles(canvasWidth * 0.5, canvasHeight * 0.25));
+        state.particles.push(
+          ...createFireworkParticles(activeCanvasWidth * 0.5, activeCanvasHeight * 0.25),
+        );
         setDisplayScore(state.score);
         setDisplayAttempt(state.attemptCount);
         setDisplayStarsCollected(state.starsCollected);
@@ -1566,8 +1574,8 @@ export const ShapeDashView: React.FC<ShapeDashViewProps> = ({
       }
 
       // Rendering
-      const cw = canvasWidth;
-      const ch = canvasHeight;
+      const cw = activeCanvasWidth;
+      const ch = activeCanvasHeight;
       ctx.clearRect(0, 0, cw, ch);
 
       // Apply screen shake
@@ -1749,7 +1757,7 @@ export const ShapeDashView: React.FC<ShapeDashViewProps> = ({
   const playAreaLabel = shapeDashText.playAreaLabel ?? shapeDashText.title ?? 'Shape Dash';
 
   return (
-    <div className="flex flex-col items-center gap-2 w-full max-w-4xl relative sm:gap-3">
+    <div className="shape-dash-shell flex flex-col items-center gap-2 w-full max-w-4xl relative sm:gap-3">
       <div
         ref={containerRef}
         className="relative rounded-2xl overflow-hidden border-2 border-emerald-400 shadow-xl bg-slate-900 cursor-pointer focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 w-full"
@@ -1815,8 +1823,9 @@ export const ShapeDashView: React.FC<ShapeDashViewProps> = ({
       <button
         type="button"
         data-testid="shape-dash-jump-button"
-        className="flex min-h-[48px] w-full max-w-xs items-center justify-center gap-2 rounded-xl border border-emerald-300 bg-emerald-400 px-5 py-2.5 text-base font-black text-slate-950 shadow-lg shadow-emerald-500/20 transition-transform active:scale-95 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-500 sm:min-h-[52px] sm:py-3"
+        className="shape-dash-jump-button flex min-h-[48px] w-full max-w-xs items-center justify-center gap-2 rounded-xl border border-emerald-300 bg-emerald-400 px-5 py-2.5 text-base font-black text-slate-950 shadow-lg shadow-emerald-500/20 transition-transform active:scale-95 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-500 sm:min-h-[52px] sm:py-3"
         onClick={handleJumpButtonClick}
+        aria-label={gameState === 'crashed' ? tapToRetry : shapeDashText.jumpLabel}
       >
         <ArrowUp size={22} strokeWidth={3} aria-hidden="true" />
         <span>{gameState === 'crashed' ? tapToRetry : shapeDashText.jumpLabel}</span>

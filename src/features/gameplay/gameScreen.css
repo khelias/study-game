@@ -56,3 +56,37 @@
 .animate-star-collect {
   animation: star-collect 0.5s ease-out;
 }
+
+@media (max-width: 640px), (max-height: 640px) {
+  .shape-dash-shell {
+    padding-bottom: 0;
+  }
+
+  .shape-dash-jump-button {
+    position: fixed;
+    right: max(0.875rem, env(safe-area-inset-right));
+    bottom: max(0.75rem, env(safe-area-inset-bottom));
+    left: auto;
+    z-index: 70;
+    width: 4rem;
+    min-width: 4rem;
+    max-width: 4rem;
+    height: 4rem;
+    min-height: 4rem;
+    padding: 0;
+    border-radius: 9999px;
+    translate: 0 0;
+  }
+
+  .shape-dash-jump-button span {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border-width: 0;
+  }
+}

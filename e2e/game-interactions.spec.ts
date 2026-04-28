@@ -144,6 +144,24 @@ test.describe('smart games — focused interaction QA', () => {
 
     const runner = page.getByTestId('shape-dash-jump-button');
     await expect(runner).toBeVisible();
+    await expect(runner).toBeInViewport();
+    const playerPixels = await page.locator('canvas').evaluate((canvas) => {
+      const drawing = canvas as HTMLCanvasElement;
+      const context = drawing.getContext('2d');
+      if (!context) return 0;
+
+      const image = context.getImageData(45, 30, 120, 120).data;
+      let count = 0;
+      for (let i = 0; i < image.length; i += 4) {
+        const red = image[i] ?? 0;
+        const green = image[i + 1] ?? 0;
+        const blue = image[i + 2] ?? 0;
+        const alpha = image[i + 3] ?? 0;
+        if (alpha > 150 && green > 140 && red < 120 && blue < 180) count += 1;
+      }
+      return count;
+    });
+    expect(playerPixels).toBeGreaterThan(100);
     const runnerBox = await runner.boundingBox();
     expect(runnerBox).not.toBeNull();
     if (!runnerBox) return;
@@ -173,7 +191,6 @@ test.describe('smart games — focused interaction QA', () => {
     await waitForGameReady(page);
 
     const runner = page.getByTestId('shape-dash-jump-button');
-    await runner.scrollIntoViewIfNeeded();
     await expect(runner).toBeInViewport();
     await runner.click();
 
