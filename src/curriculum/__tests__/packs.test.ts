@@ -755,6 +755,47 @@ describe('curriculum', () => {
       }
     });
 
+    it('keeps Shape Shift puzzles readable and broad enough per tier', () => {
+      const allowedShapeTypes = new Set([
+        'circle',
+        'diamond',
+        'half_square',
+        'hexagon',
+        'rectangle',
+        'square',
+        'triangle',
+      ]);
+      const countsByDifficulty = new Map<string, number>();
+
+      expect(SHAPE_SHIFT_PUZZLES_PACK.items.length).toBeGreaterThanOrEqual(20);
+
+      for (const puzzle of SHAPE_SHIFT_PUZZLES_PACK.items) {
+        countsByDifficulty.set(
+          puzzle.difficulty,
+          (countsByDifficulty.get(puzzle.difficulty) ?? 0) + 1,
+        );
+        expect(puzzle.nameEt).not.toBe('');
+        expect(puzzle.nameEn).not.toBe('');
+        expect(puzzle.category).toMatch(/^[a-z_]+$/);
+        expect(puzzle.gridSize).toBe(100);
+
+        const pieceIds = puzzle.pieces.map((piece) => piece.id);
+        expect(new Set(pieceIds).size).toBe(pieceIds.length);
+
+        for (const piece of puzzle.pieces) {
+          expect(allowedShapeTypes.has(piece.type)).toBe(true);
+          expect(piece.color).not.toBe('');
+          expect(piece.size).toBeGreaterThan(0);
+          expect(piece.width ?? piece.size).toBeGreaterThan(0);
+          expect(piece.height ?? piece.size).toBeGreaterThan(0);
+        }
+      }
+
+      expect(countsByDifficulty.get('easy')).toBeGreaterThanOrEqual(6);
+      expect(countsByDifficulty.get('medium')).toBeGreaterThanOrEqual(6);
+      expect(countsByDifficulty.get('hard')).toBeGreaterThanOrEqual(5);
+    });
+
     it('keeps every target piece inside the board', () => {
       for (const puzzle of SHAPE_SHIFT_PUZZLES_PACK.items) {
         for (const piece of puzzle.pieces) {
