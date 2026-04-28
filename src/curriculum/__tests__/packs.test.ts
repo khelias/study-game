@@ -414,17 +414,30 @@ describe('curriculum', () => {
       expect(MATH_TIME_READING_PACK.items.every((item) => 60 % item.stepMinutes === 0)).toBe(true);
     });
 
-    it('balance equation pack defines sum growth and distractor settings', () => {
-      const progression = getBalanceEquationProgression(MATH_BALANCE_EQUATIONS_PACK.items);
+    it('balance equation pack defines level stages and distractor settings', () => {
+      const level1 = getBalanceEquationProgression(MATH_BALANCE_EQUATIONS_PACK.items, 1);
+      const level5 = getBalanceEquationProgression(MATH_BALANCE_EQUATIONS_PACK.items, 5);
+      const level15 = getBalanceEquationProgression(MATH_BALANCE_EQUATIONS_PACK.items, 15);
 
-      expect(progression).toMatchObject({
-        baseMinSum: 4,
-        baseMaxSum: 7,
+      expect(MATH_BALANCE_EQUATIONS_PACK.items).toHaveLength(6);
+      expect(level1).toMatchObject({
+        minLevel: 1,
+        maxLevel: 2,
+        minSum: 4,
+        maxSum: 7,
         minVisibleWeight: 2,
         optionCount: 3,
       });
-      expect(progression.distractorOffsetMin).toBeLessThan(0);
-      expect(progression.distractorOffsetMax).toBeGreaterThan(0);
+      expect(level5).toMatchObject({ minLevel: 5, maxLevel: 6, optionCount: 4 });
+      expect(level15).toMatchObject({ minLevel: 15, optionCount: 5 });
+
+      for (const stage of MATH_BALANCE_EQUATIONS_PACK.items) {
+        expect(stage.maxSum).toBeGreaterThanOrEqual(stage.minSum);
+        expect(stage.minSum).toBeGreaterThanOrEqual(stage.minVisibleWeight * 2);
+        expect(stage.distractorOffsets).not.toContain(0);
+        expect(stage.distractorOffsets.some((offset) => offset < 0)).toBe(true);
+        expect(stage.distractorOffsets.some((offset) => offset > 0)).toBe(true);
+      }
     });
 
     it('addition memory pack defines starter and advanced progression', () => {

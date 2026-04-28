@@ -1,0 +1,68 @@
+import { describe, expect, it } from 'vitest';
+
+import { buildCurriculumAuditReport } from '../curriculumAudit';
+
+describe('curriculum audit report', () => {
+  it('covers the registered skills, packs, and game bindings', () => {
+    const report = buildCurriculumAuditReport();
+
+    expect(report.summary.totalSkills).toBeGreaterThan(15);
+    expect(report.summary.totalPacks).toBeGreaterThan(20);
+    expect(report.summary.totalGameBindings).toBeGreaterThan(20);
+    expect(report.summary.unboundPacks).toBe(0);
+    expect(report.summary.skillsWithoutPacks).toBe(0);
+    expect(report.summary.skillsWithoutConsumers).toBe(0);
+  });
+
+  it('maps locale-backed vocabulary packs to the games that resolve by skill', () => {
+    const report = buildCurriculumAuditReport();
+    const vocabularyEt = report.packs.find((row) => row.packId === 'language.vocabulary.et');
+
+    expect(vocabularyEt).toBeDefined();
+    expect(vocabularyEt?.consumers.map((consumer) => consumer.gameId)).toEqual([
+      'letter_match',
+      'picture_pairs',
+      'word_builder',
+      'word_cascade',
+    ]);
+    expect(vocabularyEt?.consumers.every((consumer) => consumer.mode === 'skill-locale')).toBe(
+      true,
+    );
+  });
+
+  it('flags shallow procedural packs without losing their direct consumers', () => {
+    const report = buildCurriculumAuditReport();
+    const additionMemory = report.packs.find((row) => row.packId === 'math.addition_memory.core');
+
+    expect(additionMemory).toBeDefined();
+    expect(additionMemory?.itemCount).toBe(2);
+    expect(additionMemory?.warnings).toContain('shallow_item_count<6');
+    expect(additionMemory?.consumers).toEqual([
+      { gameId: 'memory_math', mechanic: 'memory_math', mode: 'direct-pack' },
+    ]);
+  });
+
+  it('surfaces authored difficulty and level-range signals when packs declare them', () => {
+    const report = buildCurriculumAuditReport();
+    const shapeShift = report.packs.find(
+      (row) => row.packId === 'math.geometry_shapes.shape_shift_puzzles',
+    );
+    const time = report.packs.find((row) => row.packId === 'math.time_reading.core');
+
+    expect(shapeShift?.difficultySignals).toContain('difficulty=easy/hard/medium');
+    expect(time?.difficultySignals).toContain('levels=1-open-ended');
+  });
+
+  it('tracks the expanded balance equation stage pack as level-ranged content', () => {
+    const report = buildCurriculumAuditReport();
+    const balance = report.packs.find((row) => row.packId === 'math.balance_equations.core');
+
+    expect(balance).toBeDefined();
+    expect(balance?.itemCount).toBe(6);
+    expect(balance?.difficultySignals).toContain('levels=1-open-ended');
+    expect(balance?.warnings).not.toContain('shallow_item_count<6');
+    expect(balance?.consumers).toEqual([
+      { gameId: 'balance_scale', mechanic: 'balance_scale', mode: 'direct-pack' },
+    ]);
+  });
+});

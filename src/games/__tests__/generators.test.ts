@@ -94,16 +94,28 @@ describe('Generators', () => {
       const generator = Generators.balance_scale;
       if (!generator) throw new Error('balance_scale generator not found');
       const problem = generator(1, rng, 'starter') as BalanceScaleProblem;
-      const progression = getBalanceEquationProgression(MATH_BALANCE_EQUATIONS_PACK.items);
+      const progression = getBalanceEquationProgression(MATH_BALANCE_EQUATIONS_PACK.items, 1);
       const leftSum = problem.display.left.reduce((a, b) => a + b, 0);
-      const levelMin = progression.baseMinSum + Math.floor(1 * progression.minSumLevelGrowth);
-      const levelMax = progression.baseMaxSum + Math.floor(1 * progression.maxSumLevelGrowth);
 
-      expect(leftSum).toBeGreaterThanOrEqual(levelMin);
-      expect(leftSum).toBeLessThanOrEqual(levelMax);
+      expect(leftSum).toBeGreaterThanOrEqual(progression.minSum);
+      expect(leftSum).toBeLessThanOrEqual(progression.maxSum);
       expect(problem.display.left.every((value) => value >= progression.minVisibleWeight)).toBe(
         true,
       );
+      expect(problem.options).toHaveLength(progression.optionCount);
+    });
+
+    it('should select later balance equation stages by level', () => {
+      const rng = createRng(12345);
+      const generator = Generators.balance_scale;
+      if (!generator) throw new Error('balance_scale generator not found');
+      const problem = generator(15, rng, 'starter') as BalanceScaleProblem;
+      const progression = getBalanceEquationProgression(MATH_BALANCE_EQUATIONS_PACK.items, 15);
+      const leftSum = problem.display.left.reduce((a, b) => a + b, 0);
+
+      expect(progression.minLevel).toBe(15);
+      expect(leftSum).toBeGreaterThanOrEqual(progression.minSum);
+      expect(leftSum).toBeLessThanOrEqual(progression.maxSum);
       expect(problem.options).toHaveLength(progression.optionCount);
     });
 

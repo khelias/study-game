@@ -66,7 +66,7 @@ Today all four are welded together inside the `games/` folder. The roadmap's bac
 - **Monetization scaffolding has never been exercised.** Feature flags are defined, nothing gates on them. Plumbing without a fixture.
 - **Product QA debt is now the blocker before backend work.** The browser pass found the app is stable enough to load and play, but not yet cohesive enough as a product: individual games use different density/color conventions, some mechanics need clearer onboarding, and the economy/progression surfaces compete for attention.
 - **Economy semantics are unclear.** Hearts, spendable stars, collected stars, free star purchase, paid hints, achievements, and stats all exist, but the product meaning is not consistent. `ShopModal` still exposes "buy stars" as free, and stats labels do not clearly distinguish earned lifetime stars from current spendable balance.
-- **Content-pack depth is uneven.** The registry now has 19 skills and 22 packs, but several packs are still progression specs rather than deep content banks: `math.balance_equations.core` has 1 item, addition/multiplication memory/arithmetic packs often have 2-3 spec items, `math.time_reading.core` has 5, and `language.spatial_sentences.scene_pack` has 8 scenes. This is enough for procedural smoke coverage, not enough for a durable learning product.
+- **Content-pack depth is uneven.** The registry now has 19 skills and 22 packs, but several packs are still progression specs rather than deep content banks: addition/multiplication memory/arithmetic packs often have 2-3 spec items, `math.time_reading.core` has 5, and `language.spatial_sentences.scene_pack` has 8 scenes. `math.balance_equations.core` has been expanded to 6 level stages, but most shallow procedural packs are still enough for smoke coverage, not enough for a durable learning product.
 
 ---
 
@@ -102,7 +102,7 @@ This baseline is the first point where the project can be evaluated as a whole p
 | Done 2026-04-27 | Shape Shift UX      | First pass shipped: puzzle names, target shadows, rectangular piece footprints, compatible-piece snap/validation, and played-content history. Continue content-quality curation.  |
 | Done 2026-04-27 | Shape Dash UX       | Compact portrait playfield, dedicated jump button, later first gate, vertical jump-height gates, forgiving star hitboxes, safer spawn corridors, and content-pack play history.   |
 | P1              | Stats/achievements  | Align copy and contrast: locked achievements are too washed out; stats should not confuse current balance with lifetime collection.                                               |
-| P1              | Content packs       | Audit item counts, difficulty bands, locale coverage, and learning outcomes for every pack. Expand shallow packs before adding more mechanics.                                    |
+| P1              | Content packs       | Audit recorded in [docs/qa/2026-04-28-content-pack-audit.md](docs/qa/2026-04-28-content-pack-audit.md). Next: expand shallow packs before adding more mechanics.                  |
 | P2              | Standard games      | Add short inline task prompts and richer feedback loops to Word Builder, Syllables, Letter Match, Unit Conversion, Compare Sizes, and Sentence Logic.                             |
 
 The practical conclusion: **Phase 1 is architecturally close, but a Phase 1.5 product-quality pass should happen before backend/auth/sync.** The backend would otherwise preserve and sync unclear product semantics.
@@ -253,10 +253,11 @@ This phase is inserted after the 2026-04-27 full-game browser QA. It does not ch
   - contrast of locked achievements
   - legacy uppercase/internal game names in achievement descriptions
   - stats labels for current vs. lifetime values
-- Run a content-pack audit:
+- Keep the content-pack audit current:
   - pack id, skill id, locale, item count, difficulty range, generator consumer, and learning outcome
   - flag shallow packs that are only procedural specs
   - identify which packs need more real authored content before new features
+  - current baseline: [docs/qa/2026-04-28-content-pack-audit.md](docs/qa/2026-04-28-content-pack-audit.md)
 - Normalize the per-game UI baseline:
   - consistent task prompt placement
   - consistent success/error feedback intensity
@@ -477,3 +478,5 @@ Named so they don't creep in quietly:
 - **2026-04-27** — Phase 1.5 Slice 1 landed: focused interaction E2E added for high-risk mechanics. Coverage now exercises Shape Shift drag/drop, Shape Dash jump input, BattleLearn modal-answer flow, Letter Match answer recording, and Picture Pairs post-peek card taps. Stable QA hooks were added only where role/text selectors were not enough; BattleLearn's hidden cell-type hook is dev-only.
 - **2026-04-27** — Phase 1.5 Slice 2 landed: economy semantics settled. `gameStore.stars` is the spendable star balance; `stats.collectedStars` is lifetime earned stars for statistics and achievements. Spending stars on hints/hearts no longer lowers lifetime earned stars, and temporary free star top-up stays in the shop until real purchases exist without counting as earned-star progress.
 - **2026-04-27** — Phase 1.5 Slice 3 landed: Shape Shift first-pass QA fixes. The board now shows puzzle names and target shadows by default; the shape model supports rectangular footprints; authored targets are bounds-tested; same-shape pieces such as sun rays can snap and validate interchangeably; generated content-pack item ids are stored in `gameStore.playedContentByPack` and passed back to generators to reduce repeats. The weakest existing puzzles were curated in-place: butterfly and sword were redrawn, and fish/cat/rocket/robot gained the missing details that make them readable. Broader content-quality expansion remains open under the content-pack audit.
+- **2026-04-28** — Phase 1.5 Slice 4 landed: content-pack audit baseline added in `docs/qa/2026-04-28-content-pack-audit.md`, backed by `buildCurriculumAuditReport()` in `src/diagnostics/curriculumAudit.ts`. Baseline state: 19 skills, 22 packs, 23 game bindings, no unbound packs/skills, and 9 shallow packs below the audit minimum of 6 items.
+- **2026-04-28** — Phase 1.5 Slice 5 landed: `math.balance_equations.core` expanded from one global progression config to 6 explicit level stages with sum ranges, advanced-profile boosts, option counts, and staged distractor offsets. `Generators.balance_scale` now resolves the stage by level. Audit state after the slice: 8 shallow packs below the minimum; next recommended slice is `math.time_reading.core`.

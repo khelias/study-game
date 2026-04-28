@@ -329,14 +329,11 @@ export const Generators: Record<string, GeneratorFunction> = {
     const meta = profileMeta(profile);
     const progression = getBalanceEquationProgression(
       getPackItems<BalanceEquationProgressionItem>(MATH_BALANCE_EQUATIONS_PACK.id),
+      level,
     );
-    // Improved progression: Level 1 = 4-7, Level 5 = 10-15, Level 10 = 15-22
-    // Start easier
-    const levelGrowth = Math.floor(level * progression.minSumLevelGrowth); // Smoother growth
-    const profileBoost = meta.difficultyOffset * progression.profileBoostMultiplier; // Advanced profile +3 (not +4)
-    const minSum = progression.baseMinSum + levelGrowth + profileBoost;
-    const maxSum =
-      progression.baseMaxSum + Math.floor(level * progression.maxSumLevelGrowth) + profileBoost;
+    const profileBoost = meta.difficultyOffset > 0 ? progression.advancedSumBoost : 0;
+    const minSum = progression.minSum + profileBoost;
+    const maxSum = progression.maxSum + profileBoost;
     const total = Math.floor(rng() * (maxSum - minSum + 1)) + minSum;
     const randomVisibleWeight = () =>
       Math.floor(rng() * (total - 2 * progression.minVisibleWeight + 1)) +
@@ -356,14 +353,21 @@ export const Generators: Record<string, GeneratorFunction> = {
     while (opts.size < progression.optionCount && safety < 50) {
       safety++;
       const offset =
-        Math.floor(
-          rng() * (progression.distractorOffsetMax - progression.distractorOffsetMin + 1),
-        ) + progression.distractorOffsetMin;
+        progression.distractorOffsets[Math.floor(rng() * progression.distractorOffsets.length)] ??
+        1;
       const r = rHidden + offset;
       if (r > 0 && r !== rHidden) opts.add(r);
     }
+    safety = 0;
+    while (opts.size < progression.optionCount && safety < 50) {
+      safety++;
+      const fallback = Math.floor(rng() * progression.fallbackMaxOption) + 1;
+      if (fallback !== rHidden) opts.add(fallback);
+    }
+    let fallbackCandidate = 1;
     while (opts.size < progression.optionCount) {
-      opts.add(Math.floor(rng() * progression.fallbackMaxOption) + 1);
+      if (fallbackCandidate !== rHidden) opts.add(fallbackCandidate);
+      fallbackCandidate++;
     }
 
     return {
