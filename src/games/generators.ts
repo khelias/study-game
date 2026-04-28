@@ -1715,10 +1715,11 @@ export const Generators: Record<string, GeneratorFunction> = {
     const meta = profileMeta(profile);
     const effectiveLevel = Math.max(1, level + meta.difficultyOffset);
 
-    // Base scroll speed and run length scale with level
-    const baseSpeed = 120 + effectiveLevel * 18;
-    const scrollSpeed = Math.min(280, baseSpeed);
-    const runLength = 3400 + effectiveLevel * 420;
+    // Base scroll speed and run length scale with level. Early levels should
+    // teach the rhythm before they ask for fast gate reads and dense jumps.
+    const baseSpeed = 96 + effectiveLevel * 14;
+    const scrollSpeed = Math.min(250, baseSpeed);
+    const runLength = 2850 + effectiveLevel * 300;
 
     const locale = getLocale();
     const lang = locale === 'et' ? 'et' : 'en';
@@ -1737,7 +1738,7 @@ export const Generators: Record<string, GeneratorFunction> = {
     };
 
     let obstacles: ShapeDashObstacle[] = [];
-    const numObstacles = 6 + Math.floor(effectiveLevel * 1.4);
+    const numObstacles = 4 + Math.floor(effectiveLevel * 1.15);
     const numCheckpoints = Math.min(2, 1 + Math.floor(effectiveLevel / 4));
 
     // Difficulty scales with level: fewer “easy” first obstacles, slightly tighter gaps at higher levels
@@ -1769,7 +1770,9 @@ export const Generators: Record<string, GeneratorFunction> = {
       if (lastX > runLength - endObstaclePadding) break;
 
       let type: 'spike' | 'block' | 'circle' | 'floating';
-      if (rng() < harderBias) {
+      if (effectiveLevel <= 2) {
+        type = 'spike';
+      } else if (rng() < harderBias) {
         type = rng() > 0.5 ? 'circle' : 'floating';
       } else {
         type = obstacleTypes[Math.floor(rng() * obstacleTypes.length)]!;
@@ -1789,7 +1792,7 @@ export const Generators: Record<string, GeneratorFunction> = {
           x: lastX,
           type: 'circle',
           radius: 16 + Math.floor(rng() * 6),
-          offsetY: rng() > 0.6 ? 20 + Math.floor(rng() * 25) : 0,
+          offsetY: effectiveLevel <= 2 ? 0 : rng() > 0.6 ? 20 + Math.floor(rng() * 25) : 0,
         });
       } else {
         obstacles.push({
@@ -1843,7 +1846,7 @@ export const Generators: Record<string, GeneratorFunction> = {
 
     // V4: Generate shape gates (3 per run, ~every 30% of run length)
     const shapeGates: ShapeDashShapeGate[] = [];
-    const numShapeGates = 3;
+    const numShapeGates = effectiveLevel <= 2 ? 2 : 3;
     const selectedGateBank = pickPackItems(shapeGateBank, numShapeGates);
 
     // Define constants for gate positioning
@@ -1906,12 +1909,12 @@ export const Generators: Record<string, GeneratorFunction> = {
       const wrongShapes = allShapes.filter((s) => s !== gateData.correctShape);
       const shuffledWrong = [...wrongShapes].sort(() => rng() - 0.5);
 
-      const shapes = [
-        {
-          type: gateData.correctShape,
-          label: getShapeDashShapeLabel(gateData.correctShape, lang),
-          isCorrect: true,
-        },
+      const correctShape = {
+        type: gateData.correctShape,
+        label: getShapeDashShapeLabel(gateData.correctShape, lang),
+        isCorrect: true,
+      };
+      const wrongShapeOptions = [
         {
           type: shuffledWrong[0]!,
           label: getShapeDashShapeLabel(shuffledWrong[0]!, lang),
@@ -1922,7 +1925,14 @@ export const Generators: Record<string, GeneratorFunction> = {
           label: getShapeDashShapeLabel(shuffledWrong[1]!, lang),
           isCorrect: false,
         },
-      ].sort(() => rng() - 0.5); // Randomize gate positions
+      ].sort(() => rng() - 0.5);
+
+      const shapes = [correctShape, ...wrongShapeOptions].sort(() => rng() - 0.5);
+      if (effectiveLevel <= 2) {
+        const earlyCorrectLane = g === 0 ? 2 : 1; // First gate on ground, second with a normal jump.
+        shapes.splice(shapes.indexOf(correctShape), 1);
+        shapes.splice(earlyCorrectLane, 0, correctShape);
+      }
 
       shapeGates.push({
         id: `gate-${uid(rng)}`,
@@ -1930,6 +1940,16 @@ export const Generators: Record<string, GeneratorFunction> = {
         contentItemId: gateData.id,
         prompt: gateData.prompt[lang],
         shapes,
+      });
+    }
+    shapeGates.sort((a, b) => a.x - b.x);
+    if (effectiveLevel <= 2) {
+      shapeGates.forEach((gate, index) => {
+        const targetLane = index === 0 ? 2 : 1;
+        const currentLane = gate.shapes.findIndex((shape) => shape.isCorrect);
+        if (currentLane < 0 || currentLane === targetLane) return;
+        const [correctShape] = gate.shapes.splice(currentLane, 1);
+        if (correctShape) gate.shapes.splice(targetLane, 0, correctShape);
       });
     }
 

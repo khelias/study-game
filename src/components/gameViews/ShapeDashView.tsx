@@ -33,11 +33,9 @@ import {
   checkBoostZone,
   checkShapeGatePass,
   getApproachingGateIndex,
-  GATE_WIDTH,
-  GATE_HEIGHT,
-  GATE_ZONE_WIDTH,
-  GATE_SPACING,
-  getGateStackTopY,
+  GATE_ZONE_HEIGHT,
+  GATE_STACK_GROUND_CLEARANCE,
+  getGateLayout,
   hasReachedFinish,
 } from '../../engine/shapeDash';
 import { useTranslation } from '../../i18n/useTranslation';
@@ -56,12 +54,53 @@ interface ShapeDashViewProps {
   spendStars?: (count: number) => boolean;
 }
 
-// V4: Responsive canvas with aspect ratio
-const CANVAS_ASPECT_RATIO = 16 / 10; // 1.6:1 aspect ratio for landscape
+// V4: Responsive canvas with a taller mobile playfield so vertical gate lanes remain playable.
+const CANVAS_DESKTOP_ASPECT_RATIO = 16 / 10; // 1.6:1 aspect ratio for wide screens
+const CANVAS_MOBILE_ASPECT_RATIO = 1.1;
 const CANVAS_MAX_WIDTH = 896; // 4xl max-width
 const CANVAS_HEIGHT_BASE = 400;
+const CANVAS_MIN_HEIGHT = 236;
 
-const GROUND_Y = CANVAS_HEIGHT_BASE - 90;
+const GROUND_DEPTH_MIN = 46;
+const GROUND_DEPTH_MAX = 72;
+const GATE_TARGET_TOP_MARGIN = 28;
+const GATE_MIN_SCALE = 0.78;
+
+function clamp(value: number, min: number, max: number): number {
+  return Math.min(max, Math.max(min, value));
+}
+
+function getCanvasAspectRatio(width: number): number {
+  const narrowProgress = clamp((560 - width) / 240, 0, 1);
+  return (
+    CANVAS_DESKTOP_ASPECT_RATIO -
+    (CANVAS_DESKTOP_ASPECT_RATIO - CANVAS_MOBILE_ASPECT_RATIO) * narrowProgress
+  );
+}
+
+function getCanvasHeight(width: number, viewportHeight: number): number {
+  const targetHeight = width / getCanvasAspectRatio(width);
+  const viewportCap =
+    viewportHeight > 0 ? Math.max(CANVAS_MIN_HEIGHT, viewportHeight - 84) : CANVAS_HEIGHT_BASE;
+  return Math.floor(
+    clamp(Math.min(targetHeight, viewportCap), CANVAS_MIN_HEIGHT, CANVAS_HEIGHT_BASE),
+  );
+}
+
+function getGroundDepth(canvasHeight: number): number {
+  return clamp(Math.round(canvasHeight * 0.18), GROUND_DEPTH_MIN, GROUND_DEPTH_MAX);
+}
+
+function getGroundY(canvasHeight: number): number {
+  return canvasHeight - getGroundDepth(canvasHeight);
+}
+
+function getResponsiveGateScale(groundY: number): number {
+  const availableHeight = groundY - GATE_TARGET_TOP_MARGIN - GATE_STACK_GROUND_CLEARANCE;
+  return clamp(availableHeight / GATE_ZONE_HEIGHT, GATE_MIN_SCALE, 1);
+}
+
+const GROUND_Y = getGroundY(CANVAS_HEIGHT_BASE);
 const PLAYER_X = 140;
 const PLAYER_MIN_X = 76;
 const PLAYER_SMALL_SCREEN_RATIO = 0.24;
@@ -737,20 +776,22 @@ function drawShapeGates(
   },
   scrollOffset: number,
   groundY: number,
+  gateScale: number,
   pulsePhase: number,
   revealed: boolean = false,
 ) {
   const gateScreenX = gate.x - scrollOffset;
-  const gateX = gateScreenX - GATE_WIDTH / 2;
-  const startY = getGateStackTopY(groundY);
+  const gateLayout = getGateLayout(groundY, gateScale);
+  const gateX = gateScreenX - gateLayout.width / 2;
+  const startY = gateLayout.stackTopY;
 
   for (let i = 0; i < 3; i++) {
     const shape = gate.shapes[i];
     if (!shape) continue;
 
-    const gateY = startY + i * (GATE_HEIGHT + GATE_SPACING);
-    const gateCenterX = gateX + GATE_WIDTH / 2;
-    const gateCenterY = gateY + GATE_HEIGHT / 2;
+    const gateY = startY + i * (gateLayout.height + gateLayout.spacing);
+    const gateCenterX = gateX + gateLayout.width / 2;
+    const gateCenterY = gateY + gateLayout.height / 2;
 
     // Draw gate frame
     const isCorrect = shape.isCorrect;
@@ -765,13 +806,13 @@ function drawShapeGates(
     }
 
     ctx.strokeStyle = frameColor;
-    ctx.lineWidth = 4;
-    ctx.strokeRect(gateX, gateY, GATE_WIDTH, GATE_HEIGHT);
+    ctx.lineWidth = Math.max(2.5, 4 * gateScale);
+    ctx.strokeRect(gateX, gateY, gateLayout.width, gateLayout.height);
 
     ctx.restore();
 
     // Draw shape inside gate
-    const shapeSize = 15;
+    const shapeSize = 15 * gateScale;
     const shapeColor = revealed && isCorrect ? '#00ff88' : '#00ffcc';
     drawShape(
       ctx,
@@ -785,9 +826,9 @@ function drawShapeGates(
 
     // Draw label below shape
     ctx.fillStyle = '#ffffff';
-    ctx.font = 'bold 12px Arial';
+    ctx.font = `bold ${Math.max(10, 12 * gateScale)}px Arial`;
     ctx.textAlign = 'center';
-    ctx.fillText(shape.label, gateCenterX, gateY + GATE_HEIGHT - 9);
+    ctx.fillText(shape.label, gateCenterX, gateY + gateLayout.height - 8 * gateScale);
   }
 }
 
@@ -1060,7 +1101,7 @@ export const ShapeDashView: React.FC<ShapeDashViewProps> = ({
 
   const doRetry = useCallback(() => {
     const state = stateRef.current;
-    const groundY = canvasHeight - 90;
+    const groundY = getGroundY(canvasHeight);
     state.scroll = 0;
     state.playerY = groundY - PLAYER_SIZE;
     state.playerVelY = 0;
@@ -1156,7 +1197,7 @@ export const ShapeDashView: React.FC<ShapeDashViewProps> = ({
 
   useEffect(() => {
     const state = stateRef.current;
-    const groundY = canvasHeight - 90;
+    const groundY = getGroundY(canvasHeight);
     state.scroll = 0;
     state.playerY = groundY - PLAYER_SIZE;
     state.playerVelY = 0;
@@ -1190,19 +1231,19 @@ export const ShapeDashView: React.FC<ShapeDashViewProps> = ({
     containerRef.current?.focus({ preventScroll: true });
   }, []);
 
-  // Keep the runner in a landscape playfield even inside portrait pages. A tall
-  // canvas adds vertical dead space because the game world scrolls horizontally.
+  // Keep the runner wide on desktop, but give narrow screens enough height for
+  // all three gate lanes above the ground.
   useEffect(() => {
     const updateCanvasSize = () => {
       if (!containerRef.current) return;
       const container = containerRef.current;
       const rect = container.getBoundingClientRect();
 
-      const width = Math.min(rect.width, CANVAS_MAX_WIDTH);
-      const height = width / CANVAS_ASPECT_RATIO;
+      const width = Math.max(1, Math.min(Math.floor(rect.width), CANVAS_MAX_WIDTH));
+      const height = getCanvasHeight(width, window.innerHeight);
 
-      setCanvasWidth(Math.floor(width));
-      setCanvasHeight(Math.floor(height));
+      setCanvasWidth(width);
+      setCanvasHeight(height);
     };
 
     updateCanvasSize();
@@ -1241,8 +1282,9 @@ export const ShapeDashView: React.FC<ShapeDashViewProps> = ({
       const state = stateRef.current;
       const { width: activeCanvasWidth, height: activeCanvasHeight } = canvasSizeRef.current;
 
-      // V4: Calculate dynamic ground Y based on canvas height (for portrait mode support)
-      const groundY = activeCanvasHeight - 90;
+      // V4: Calculate dynamic ground and gate scale so narrow screens keep all lanes playable.
+      const groundY = getGroundY(activeCanvasHeight);
+      const gateScale = getResponsiveGateScale(groundY);
       const playerX = getPlayerX(activeCanvasWidth);
 
       // V4: Check for slow time effect
@@ -1472,6 +1514,7 @@ export const ShapeDashView: React.FC<ShapeDashViewProps> = ({
         nextScroll,
         state.passedGateIds,
         groundY,
+        gateScale,
       );
 
       if (gatePass) {
@@ -1606,11 +1649,15 @@ export const ShapeDashView: React.FC<ShapeDashViewProps> = ({
       for (const gate of shapeGates) {
         if (state.passedGateIds.has(gate.id)) continue;
         const gateScreenX = gate.x - nextScroll;
+        const gateLayout = getGateLayout(groundY, gateScale);
         // Only draw if gate zone is visible
-        if (gateScreenX + GATE_ZONE_WIDTH / 2 < -20 || gateScreenX - GATE_ZONE_WIDTH / 2 > cw + 20)
+        if (
+          gateScreenX + gateLayout.zoneWidth / 2 < -20 ||
+          gateScreenX - gateLayout.zoneWidth / 2 > cw + 20
+        )
           continue;
         const revealed = state.revealedGateId === gate.id;
-        drawShapeGates(ctx, gate, nextScroll, groundY, state.pulsePhase, revealed);
+        drawShapeGates(ctx, gate, nextScroll, groundY, gateScale, state.pulsePhase, revealed);
       }
 
       // V3: Draw collectible stars
@@ -1762,7 +1809,7 @@ export const ShapeDashView: React.FC<ShapeDashViewProps> = ({
         ref={containerRef}
         className="relative rounded-2xl overflow-hidden border-2 border-emerald-400 shadow-xl bg-slate-900 cursor-pointer focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 w-full"
         style={{
-          aspectRatio: CANVAS_ASPECT_RATIO,
+          aspectRatio: `${canvasWidth} / ${canvasHeight}`,
           maxWidth: '100%',
           boxShadow: '0 0 40px rgba(0, 255, 136, 0.2)',
         }}

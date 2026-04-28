@@ -68,11 +68,11 @@
     bottom: max(0.75rem, env(safe-area-inset-bottom));
     left: auto;
     z-index: 70;
-    width: 4rem;
-    min-width: 4rem;
-    max-width: 4rem;
-    height: 4rem;
-    min-height: 4rem;
+    width: 3.5rem;
+    min-width: 3.5rem;
+    max-width: 3.5rem;
+    height: 3.5rem;
+    min-height: 3.5rem;
     padding: 0;
     border-radius: 9999px;
     translate: 0 0;

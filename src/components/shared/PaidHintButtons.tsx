@@ -44,7 +44,7 @@ export const PaidHintButtons: React.FC<PaidHintButtonsProps> = ({
 
   const containerClass =
     placement === 'inline'
-      ? 'flex flex-wrap justify-center gap-3'
+      ? 'flex flex-wrap justify-center gap-2 sm:gap-3'
       : 'fixed bottom-4 right-4 flex flex-col gap-3';
   const containerStyle = placement === 'fixed' ? { zIndex: Z_INDEX.HINTS } : undefined;
 
@@ -63,11 +63,11 @@ export const PaidHintButtons: React.FC<PaidHintButtonsProps> = ({
             data-testid={`paid-hint-${hint.id}`}
             onClick={() => !isDisabled && onHintClick(hint.id)}
             disabled={isDisabled}
-            className="relative p-4 rounded-full shadow-lg transition-all bg-yellow-400 hover:bg-yellow-500 text-yellow-900 hover:scale-110 active:scale-95 disabled:bg-slate-200 disabled:text-slate-400 disabled:cursor-not-allowed"
+            className="relative rounded-full bg-yellow-400 p-3 text-yellow-900 shadow-lg transition-all hover:scale-110 hover:bg-yellow-500 active:scale-95 disabled:cursor-not-allowed disabled:bg-slate-200 disabled:text-slate-400 sm:p-4"
             title={labelText}
             aria-label={labelText}
           >
-            <span className="text-2xl leading-none">{hint.icon}</span>
+            <span className="text-xl leading-none sm:text-2xl">{hint.icon}</span>
             {/* Cost badge */}
             <span className="absolute -top-1 -right-1 bg-amber-600 text-white text-xs font-bold rounded-full px-1.5 py-0.5 shadow-md">
               {hint.cost}⭐

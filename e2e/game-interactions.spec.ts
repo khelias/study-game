@@ -150,7 +150,11 @@ test.describe('smart games — focused interaction QA', () => {
       const context = drawing.getContext('2d');
       if (!context) return 0;
 
-      const image = context.getImageData(45, 30, 120, 120).data;
+      const sampleX = 0;
+      const sampleY = Math.floor(drawing.height * 0.42);
+      const sampleWidth = Math.floor(drawing.width * 0.58);
+      const sampleHeight = Math.floor(drawing.height * 0.48);
+      const image = context.getImageData(sampleX, sampleY, sampleWidth, sampleHeight).data;
       let count = 0;
       for (let i = 0; i < image.length; i += 4) {
         const red = image[i] ?? 0;

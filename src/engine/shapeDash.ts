@@ -255,9 +255,41 @@ export const GATE_HEIGHT = 54;
 export const GATE_SPACING = 12; // Space between vertical answer lanes
 export const GATE_ZONE_WIDTH = GATE_WIDTH; // Horizontal pass window for one answer stack
 export const GATE_ZONE_HEIGHT = GATE_HEIGHT * 3 + GATE_SPACING * 2;
+export const GATE_STACK_MIN_TOP_Y = 12;
+export const GATE_STACK_GROUND_CLEARANCE = 12;
 
-export function getGateStackTopY(groundY: number): number {
-  return Math.max(56, groundY - GATE_ZONE_HEIGHT - 12);
+export interface GateLayout {
+  width: number;
+  height: number;
+  spacing: number;
+  zoneWidth: number;
+  zoneHeight: number;
+  stackTopY: number;
+}
+
+export function getGateLayout(groundY: number, gateScale: number = 1): GateLayout {
+  const scale = Math.max(0.5, Math.min(1.2, gateScale));
+  const width = GATE_WIDTH * scale;
+  const height = GATE_HEIGHT * scale;
+  const spacing = GATE_SPACING * scale;
+  const zoneHeight = height * 3 + spacing * 2;
+  const stackTopY = Math.max(
+    GATE_STACK_MIN_TOP_Y,
+    groundY - zoneHeight - GATE_STACK_GROUND_CLEARANCE,
+  );
+
+  return {
+    width,
+    height,
+    spacing,
+    zoneWidth: width,
+    zoneHeight,
+    stackTopY,
+  };
+}
+
+export function getGateStackTopY(groundY: number, gateScale: number = 1): number {
+  return getGateLayout(groundY, gateScale).stackTopY;
 }
 
 /**
@@ -292,29 +324,31 @@ export function checkShapeGatePass(
   scrollOffset: number,
   passedGateIds: Set<string>,
   groundY: number = 310,
+  gateScale: number = 1,
 ): { gateIndex: number; gateChoice: number } | null {
   const playerCenterX = playerState.x + PLAYER_WIDTH / 2;
   const playerCenterY = playerState.y - PLAYER_HEIGHT / 2;
-  const gateStackTopY = getGateStackTopY(groundY);
-  const gateStackBottomY = gateStackTopY + GATE_ZONE_HEIGHT;
+  const gateLayout = getGateLayout(groundY, gateScale);
+  const gateStackTopY = gateLayout.stackTopY;
+  const gateStackBottomY = gateStackTopY + gateLayout.zoneHeight;
 
   for (let i = 0; i < shapeGates.length; i++) {
     const gate = shapeGates[i]!;
     if (passedGateIds.has(gate.id)) continue;
     const gateScreenX = gate.x - scrollOffset;
-    const gateZoneLeft = gateScreenX - GATE_WIDTH / 2;
-    const gateZoneRight = gateScreenX + GATE_WIDTH / 2;
+    const gateZoneLeft = gateScreenX - gateLayout.zoneWidth / 2;
+    const gateZoneRight = gateScreenX + gateLayout.zoneWidth / 2;
 
     if (playerCenterX < gateZoneLeft || playerCenterX > gateZoneRight) continue;
     if (playerCenterY < gateStackTopY || playerCenterY > gateStackBottomY) continue;
 
     const relativeY = playerCenterY - gateStackTopY;
-    const laneSlotHeight = GATE_HEIGHT + GATE_SPACING;
+    const laneSlotHeight = gateLayout.height + gateLayout.spacing;
     const gateSlot = Math.floor(relativeY / laneSlotHeight);
     const posWithinSlot = relativeY % laneSlotHeight;
 
     // Player is between answer lanes, so do not register a choice yet.
-    if (posWithinSlot > GATE_HEIGHT) continue;
+    if (posWithinSlot > gateLayout.height) continue;
 
     const gateChoice = Math.max(0, Math.min(2, gateSlot)); // 0=top, 1=middle, 2=bottom
     return { gateIndex: i, gateChoice };
