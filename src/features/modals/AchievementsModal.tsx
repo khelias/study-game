@@ -1,10 +1,10 @@
 import React from 'react';
-import { X } from 'lucide-react';
 import { ACHIEVEMENTS, CORE_GAME_TYPES_FOR_ALL_GAMES } from '../../engine/achievements';
 import { useTranslation } from '../../i18n/useTranslation';
 import { useProfileText } from '../../hooks/useProfileText';
 import { getAchievementCopy } from '../../utils/achievementCopy';
 import type { Stats } from '../../types/stats';
+import { AppModal, AppModalHeader } from '../../components/shared';
 
 interface AchievementsModalProps {
   unlockedAchievements: string[];
@@ -111,47 +111,23 @@ export const AchievementsModal: React.FC<AchievementsModalProps> = ({
   const unlockedSet: Set<string> = new Set(unlockedAchievements);
 
   return (
-    <div
-      className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-300"
-      style={{
-        position: 'fixed',
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-        margin: 0,
-        padding: '1rem',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-      }}
-      onClick={(e: React.MouseEvent<HTMLDivElement>) => e.target === e.currentTarget && onClose()}
-    >
-      <div
-        className="bg-white rounded-3xl p-6 max-w-2xl w-full shadow-2xl max-h-[90vh] overflow-y-auto"
-        style={{ margin: '0 auto' }}
-      >
-        <div className="flex justify-between items-center mb-6">
-          <h2 className="text-2xl font-black text-slate-800">
-            {formatText(t.achievements.modalTitle)}
-          </h2>
-          <button
-            onClick={onClose}
-            className="p-2 rounded-full bg-slate-100 hover:bg-slate-200 transition-colors"
-            aria-label={formatText(t.common.close)}
-          >
-            <X size={20} className="text-slate-600" />
-          </button>
-        </div>
+    <AppModal labelledBy="achievements-modal-title" onClose={onClose} size="2xl">
+      <AppModalHeader
+        title={formatText(t.achievements.modalTitle)}
+        titleId="achievements-modal-title"
+        onClose={onClose}
+        closeLabel={formatText(t.common.close)}
+      />
 
-        <div className="mb-4 text-center">
+      <div className="p-5 sm:p-6">
+        <div className="mb-5 rounded-xl border border-purple-100 bg-purple-50/70 p-4 text-center">
           <div className="text-4xl font-black text-purple-600 mb-2">
             {unlockedAchievements.length} / {allAchievements.length}
           </div>
           <p className="text-sm text-slate-600">{formatText(t.achievements.collectedLabel)}</p>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
           {allAchievements.map((achievement) => {
             const isUnlocked: boolean = unlockedSet.has(achievement.id);
             const copy = getAchievementCopy(t, achievement.id);
@@ -219,6 +195,6 @@ export const AchievementsModal: React.FC<AchievementsModalProps> = ({
           })}
         </div>
       </div>
-    </div>
+    </AppModal>
   );
 };

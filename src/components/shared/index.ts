@@ -16,6 +16,7 @@ export { SmartGamesLogo } from './SmartGamesLogo';
 export { GameProblemModal } from './GameProblemModal';
 export { FeedbackModal } from './FeedbackModal';
 export type { FeedbackModalVariant } from './FeedbackModal';
+export { AppModal, AppModalHeader } from './AppModal';
 export { GameStatsBar } from './GameStatsBar';
 export type { GameStat } from './GameStatsBar';
 export { PaidHintButtons } from './PaidHintButtons';

@@ -11,6 +11,7 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { X } from 'lucide-react';
 import { useTranslation } from '../i18n/useTranslation';
 import { useProfileText } from '../hooks/useProfileText';
+import { AppModal } from './shared';
 import type { Notification, NotificationType } from '../types/notification';
 import { Z_INDEX } from '../utils/zIndex';
 
@@ -557,62 +558,51 @@ const LevelUpPopup: React.FC<LevelUpPopupProps> = ({
   formatText,
 }) => {
   return (
-    <div
-      className={`
-        fixed inset-0 flex items-center justify-center
-        bg-black/60 backdrop-blur-sm p-4
-        transition-all duration-200
-        ${isShowing ? 'opacity-100' : 'opacity-0'}
+    <AppModal
+      labelledBy={`${notification.id}-levelup-title`}
+      onClose={onDismiss}
+      size="sm"
+      zIndex={Z_INDEX.NOTIFICATIONS}
+      className={`transition-opacity duration-200 ${isShowing ? 'opacity-100' : 'opacity-0'}`}
+      panelClassName={`
+        relative border-4 border-purple-300 bg-gradient-to-br from-purple-500 via-pink-500 to-rose-500 text-center
+        transition-transform duration-200
+        ${isShowing ? 'scale-100' : 'scale-95'}
       `}
-      style={{ zIndex: Z_INDEX.NOTIFICATIONS }}
-      onClick={(event) => event.target === event.currentTarget && onDismiss()}
+      contentClassName="p-7 text-center sm:p-8"
     >
-      <div
-        className={`
-          bg-gradient-to-br from-purple-500 via-pink-500 to-rose-500
-          rounded-3xl p-7 sm:p-8 max-w-sm w-full shadow-2xl text-center relative
-          border-4 border-purple-300
-          transition-all duration-200
-          ${isShowing ? 'scale-100' : 'scale-95'}
-        `}
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby={`${notification.id}-levelup-title`}
-        aria-describedby={`${notification.id}-levelup-message`}
+      <button
+        onClick={(event) => {
+          event.stopPropagation();
+          onDismiss();
+        }}
+        className="absolute right-4 top-4 rounded-lg p-2 transition-colors hover:bg-white/20"
+        aria-label={closeLabel}
       >
-        <button
-          onClick={(event) => {
-            event.stopPropagation();
-            onDismiss();
-          }}
-          className="absolute top-4 right-4 p-2 rounded-full bg-white/20 hover:bg-white/30 transition-colors"
-          aria-label={closeLabel}
-        >
-          <X size={20} className="text-white" />
-        </button>
-        <div className="mx-auto w-24 h-24 sm:w-28 sm:h-28 bg-white/20 rounded-full flex items-center justify-center mb-4 text-6xl sm:text-7xl animate-pulse">
-          {resolveLevelUpEmoji(notification.emoji)}
-        </div>
-        <h2
-          id={`${notification.id}-levelup-title`}
-          className="text-3xl sm:text-4xl font-black text-white mb-2"
-        >
-          {notification.title ? formatText(notification.title) : titleFallback}
-        </h2>
-        <p
-          id={`${notification.id}-levelup-message`}
-          className="text-white text-lg sm:text-xl font-bold mb-6"
-        >
-          {notification.message ? formatText(notification.message) : messageFallback}
-        </p>
-        <button
-          onClick={onDismiss}
-          className="w-full py-3 sm:py-4 bg-white/20 hover:bg-white/30 rounded-xl text-lg sm:text-xl font-black text-white shadow-lg active:scale-95 transition-all"
-        >
-          {buttonLabel}
-        </button>
+        <X size={20} className="text-white" />
+      </button>
+      <div className="mx-auto mb-4 flex h-24 w-24 items-center justify-center rounded-2xl bg-white/20 text-6xl shadow-inner sm:h-28 sm:w-28 sm:text-7xl">
+        {resolveLevelUpEmoji(notification.emoji)}
       </div>
-    </div>
+      <h2
+        id={`${notification.id}-levelup-title`}
+        className="mb-2 text-3xl font-black text-white sm:text-4xl"
+      >
+        {notification.title ? formatText(notification.title) : titleFallback}
+      </h2>
+      <p
+        id={`${notification.id}-levelup-message`}
+        className="mb-6 text-lg font-bold text-white sm:text-xl"
+      >
+        {notification.message ? formatText(notification.message) : messageFallback}
+      </p>
+      <button
+        onClick={onDismiss}
+        className="w-full rounded-xl bg-white/20 py-3 text-lg font-black text-white shadow-lg transition-all hover:bg-white/30 active:scale-95 sm:py-4 sm:text-xl"
+      >
+        {buttonLabel}
+      </button>
+    </AppModal>
   );
 };
 
@@ -644,59 +634,49 @@ const AchievementPopup: React.FC<AchievementPopupProps> = ({
   if (!achievement) return null;
 
   return (
-    <div
-      className={`
-        fixed inset-0 flex items-center justify-center
-        bg-black/60 backdrop-blur-sm p-4
-        transition-all duration-200
-        ${isShowing ? 'opacity-100' : 'opacity-0'}
+    <AppModal
+      labelledBy={`${notification.id}-achievement-title`}
+      onClose={onDismiss}
+      size="sm"
+      zIndex={Z_INDEX.NOTIFICATIONS}
+      className={`transition-opacity duration-200 ${isShowing ? 'opacity-100' : 'opacity-0'}`}
+      panelClassName={`
+        relative border-4 border-yellow-400 bg-gradient-to-br from-yellow-50 to-orange-50 text-center
+        transition-transform duration-200
+        ${isShowing ? 'scale-100 animate-bounce-short' : 'scale-95'}
       `}
-      style={{ zIndex: Z_INDEX.NOTIFICATIONS }}
-      onClick={(event) => event.target === event.currentTarget && onDismiss()}
+      contentClassName="p-7 text-center sm:p-8"
     >
-      <div
-        className={`
-          bg-gradient-to-br from-yellow-50 to-orange-50
-          rounded-3xl p-7 sm:p-8 max-w-sm w-full shadow-2xl text-center
-          border-4 border-yellow-400 relative
-          transition-all duration-200
-          ${isShowing ? 'scale-100 animate-bounce-short' : 'scale-95'}
-        `}
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby={`${notification.id}-achievement-title`}
+      <button
+        onClick={(event) => {
+          event.stopPropagation();
+          onDismiss();
+        }}
+        className="absolute right-4 top-4 rounded-lg bg-white/80 p-2 transition-colors hover:bg-white"
+        aria-label={closeLabel}
       >
-        <button
-          onClick={(event) => {
-            event.stopPropagation();
-            onDismiss();
-          }}
-          className="absolute top-4 right-4 p-2 rounded-full bg-white/80 hover:bg-white transition-colors"
-          aria-label={closeLabel}
-        >
-          <X size={20} className="text-slate-600" />
-        </button>
-        <div className="mx-auto w-24 h-24 sm:w-28 sm:h-28 bg-gradient-to-br from-yellow-200 to-orange-200 rounded-full flex items-center justify-center mb-4 text-6xl sm:text-7xl shadow-inner animate-pulse">
-          {achievement.icon}
-        </div>
-        <div className="text-2xl font-black text-yellow-600 mb-2">{titleFallback}</div>
-        <h2
-          id={`${notification.id}-achievement-title`}
-          className="text-2xl sm:text-3xl font-black text-slate-800 mb-2"
-        >
-          {formatText(achievement.title)}
-        </h2>
-        <p className="text-slate-600 mb-6 font-semibold">{formatText(achievement.desc)}</p>
-        <div className="flex gap-2 justify-center">
-          {Array.from({ length: 5 }).map((_, i) => (
-            <div
-              key={i}
-              className="w-2 h-2 bg-yellow-400 rounded-full animate-ping"
-              style={{ animationDelay: `${i * 0.1}s` }}
-            />
-          ))}
-        </div>
+        <X size={20} className="text-slate-600" />
+      </button>
+      <div className="mx-auto mb-4 flex h-24 w-24 items-center justify-center rounded-2xl bg-gradient-to-br from-yellow-200 to-orange-200 text-6xl shadow-inner sm:h-28 sm:w-28 sm:text-7xl">
+        {achievement.icon}
       </div>
-    </div>
+      <div className="mb-2 text-2xl font-black text-yellow-600">{titleFallback}</div>
+      <h2
+        id={`${notification.id}-achievement-title`}
+        className="mb-2 text-2xl font-black text-slate-800 sm:text-3xl"
+      >
+        {formatText(achievement.title)}
+      </h2>
+      <p className="mb-6 font-semibold text-slate-600">{formatText(achievement.desc)}</p>
+      <div className="flex justify-center gap-2">
+        {Array.from({ length: 5 }).map((_, i) => (
+          <div
+            key={i}
+            className="h-2 w-2 rounded-full bg-yellow-400 animate-ping"
+            style={{ animationDelay: `${i * 0.1}s` }}
+          />
+        ))}
+      </div>
+    </AppModal>
   );
 };

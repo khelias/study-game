@@ -13,6 +13,7 @@
 
 import React, { useEffect, useRef } from 'react';
 import { X } from 'lucide-react';
+import { AppModal } from './AppModal';
 
 interface GameProblemModalProps {
   isOpen: boolean;
@@ -47,7 +48,6 @@ export const GameProblemModal: React.FC<GameProblemModalProps> = ({
   eliminatedIndices = [],
   children,
 }) => {
-  const modalRef = useRef<HTMLDivElement>(null);
   const firstOptionRef = useRef<HTMLButtonElement>(null);
 
   // Focus first option when modal opens
@@ -57,114 +57,85 @@ export const GameProblemModal: React.FC<GameProblemModalProps> = ({
     }
   }, [isOpen]);
 
-  // Handle escape key
-  useEffect(() => {
-    const handleEscape = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && onClose && isOpen) {
-        onClose();
-      }
-    };
-
-    if (isOpen) {
-      document.addEventListener('keydown', handleEscape);
-      return () => document.removeEventListener('keydown', handleEscape);
-    }
-    return undefined;
-  }, [isOpen, onClose]);
-
   if (!isOpen) return null;
 
   const isCompact = variant === 'compact';
 
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 animate-in fade-in duration-200"
-      style={{ backgroundColor: 'rgba(0, 0, 0, 0.5)' }}
-      onClick={(e) => {
-        // Close on backdrop click if dismissible
-        if (e.target === e.currentTarget && onClose) {
-          onClose();
-        }
-      }}
+    <AppModal
+      labelledBy={title ? 'problem-title' : undefined}
+      onClose={onClose}
+      size={isCompact ? 'md' : 'lg'}
+      testId="game-problem-modal"
+      panelClassName="border-2 bg-gradient-to-br from-white via-slate-50 to-white"
+      contentClassName={isCompact ? 'p-4' : 'p-6 sm:p-8'}
     >
-      <div
-        ref={modalRef}
-        data-testid="game-problem-modal"
-        className={`bg-gradient-to-br from-white via-slate-50 to-white rounded-2xl shadow-2xl border-2 border-slate-200 w-full animate-in zoom-in duration-300 ${
-          isCompact ? 'max-w-md p-4' : 'max-w-lg p-6 sm:p-8'
-        }`}
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="problem-title"
-      >
-        {/* Header */}
-        <div className="flex items-center justify-between mb-4">
-          {title && (
-            <div className="flex items-center gap-2">
-              {icon && <div className="text-xl">{icon}</div>}
-              <h2
-                id="problem-title"
-                className={`font-bold text-gray-800 ${isCompact ? 'text-base' : 'text-lg sm:text-xl'}`}
-              >
-                {title}
-              </h2>
-            </div>
-          )}
-          {onClose && (
-            <button
-              onClick={onClose}
-              className="ml-auto p-1 hover:bg-slate-100 rounded-lg transition-colors"
-              aria-label="Close"
+      {/* Header */}
+      <div className="flex items-center justify-between mb-4">
+        {title && (
+          <div className="flex items-center gap-2">
+            {icon && <div className="text-xl">{icon}</div>}
+            <h2
+              id="problem-title"
+              className={`font-bold text-gray-800 ${isCompact ? 'text-base' : 'text-lg sm:text-xl'}`}
             >
-              <X size={20} className="text-gray-500" />
-            </button>
-          )}
-        </div>
-
-        {/* Problem Prompt */}
-        <div className={`text-center ${isCompact ? 'mb-4' : 'mb-6'}`}>
-          <p
-            className={`font-medium text-gray-700 ${isCompact ? 'text-base' : 'text-xl sm:text-2xl'}`}
+              {title}
+            </h2>
+          </div>
+        )}
+        {onClose && (
+          <button
+            onClick={onClose}
+            className="ml-auto p-1 hover:bg-slate-100 rounded-lg transition-colors"
+            aria-label="Close"
           >
-            {prompt}
-          </p>
-        </div>
+            <X size={20} className="text-gray-500" />
+          </button>
+        )}
+      </div>
 
-        {/* Options Grid */}
-        <div
-          className={`grid ${options.length === 2 ? 'grid-cols-2' : 'grid-cols-2'} gap-3 ${isCompact ? 'gap-2' : 'gap-3'}`}
+      {/* Problem Prompt */}
+      <div className={`text-center ${isCompact ? 'mb-4' : 'mb-6'}`}>
+        <p
+          className={`font-medium text-gray-700 ${isCompact ? 'text-base' : 'text-xl sm:text-2xl'}`}
         >
-          {(() => {
-            const firstInteractiveIndex = options.findIndex(
-              (_, i) => !eliminatedIndices.includes(i),
-            );
-            return options.map((option, index) => {
-              const isEliminated = eliminatedIndices.includes(index);
-              if (isEliminated) {
-                return (
-                  <div
-                    key={index}
-                    className={`
+          {prompt}
+        </p>
+      </div>
+
+      {/* Options Grid */}
+      <div
+        className={`grid ${options.length === 2 ? 'grid-cols-2' : 'grid-cols-2'} gap-3 ${isCompact ? 'gap-2' : 'gap-3'}`}
+      >
+        {(() => {
+          const firstInteractiveIndex = options.findIndex((_, i) => !eliminatedIndices.includes(i));
+          return options.map((option, index) => {
+            const isEliminated = eliminatedIndices.includes(index);
+            if (isEliminated) {
+              return (
+                <div
+                  key={index}
+                  className={`
                     ${isCompact ? 'px-4 py-3 text-base' : 'px-6 py-4 text-lg sm:text-xl'}
                     rounded-xl border-2 border-dashed border-slate-200 bg-slate-100/50
                     min-h-[3.5rem] sm:min-h-[4rem]
                   `}
-                    aria-hidden
-                  />
-                );
-              }
-              const isSelected = selectedOption === index;
-              const isCorrect = index === correctIndex;
-              const showResult = isSelected && selectedOption !== null;
+                  aria-hidden
+                />
+              );
+            }
+            const isSelected = selectedOption === index;
+            const isCorrect = index === correctIndex;
+            const showResult = isSelected && selectedOption !== null;
 
-              return (
-                <button
-                  key={index}
-                  ref={index === firstInteractiveIndex ? firstOptionRef : null}
-                  data-testid={`game-problem-option-${index}`}
-                  onClick={() => onOptionSelect(index)}
-                  disabled={disabled || selectedOption !== null}
-                  className={`
+            return (
+              <button
+                key={index}
+                ref={index === firstInteractiveIndex ? firstOptionRef : null}
+                data-testid={`game-problem-option-${index}`}
+                onClick={() => onOptionSelect(index)}
+                disabled={disabled || selectedOption !== null}
+                className={`
                   ${isCompact ? 'px-4 py-3 text-base' : 'px-6 py-4 text-lg sm:text-xl'}
                   rounded-xl font-bold transition-all duration-200 
                   border-2 shadow-md
@@ -178,16 +149,15 @@ export const GameProblemModal: React.FC<GameProblemModalProps> = ({
                   }
                   disabled:opacity-50 disabled:cursor-not-allowed
                 `}
-                >
-                  {option}
-                </button>
-              );
-            });
-          })()}
-        </div>
-
-        {children && <div className="mt-4 flex justify-center">{children}</div>}
+              >
+                {option}
+              </button>
+            );
+          });
+        })()}
       </div>
-    </div>
+
+      {children && <div className="mt-4 flex justify-center">{children}</div>}
+    </AppModal>
   );
 };

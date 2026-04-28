@@ -1558,8 +1558,9 @@ export const Generators: Record<string, GeneratorFunction> = {
     // @ts-expect-error -- dynamic property on globalThis for session-scoped history
     let history = globalThis._shapeShiftHistory as string[];
 
-    // Avoid the current session first so an exhausted persisted history cannot
-    // make the just-solved puzzle appear to stay on screen.
+    // Prefer persisted fresh content, then avoid the current session inside
+    // that pool. If persisted history is exhausted, fall back to session-only
+    // avoidance so the just-solved puzzle does not look stuck on screen.
     let sessionAvailablePuzzles = suitablePuzzles.filter((p) => !history.includes(p.id));
     if (sessionAvailablePuzzles.length === 0) {
       // @ts-expect-error -- dynamic property on globalThis for session-scoped history
@@ -1570,8 +1571,16 @@ export const Generators: Record<string, GeneratorFunction> = {
       history = globalThis._shapeShiftHistory as string[];
       sessionAvailablePuzzles = suitablePuzzles;
     }
-    const freshPuzzles = sessionAvailablePuzzles.filter((p) => !persistentAvoidIds.has(p.id));
-    const pool = freshPuzzles.length > 0 ? freshPuzzles : sessionAvailablePuzzles;
+    const persistedFreshPuzzles = suitablePuzzles.filter((p) => !persistentAvoidIds.has(p.id));
+    const freshSessionAvailablePuzzles = persistedFreshPuzzles.filter(
+      (p) => !history.includes(p.id),
+    );
+    const pool =
+      freshSessionAvailablePuzzles.length > 0
+        ? freshSessionAvailablePuzzles
+        : persistedFreshPuzzles.length > 0
+          ? persistedFreshPuzzles
+          : sessionAvailablePuzzles;
 
     const puzzleIndex = Math.floor(rng() * pool.length);
     const puzzle = (pool[puzzleIndex] ?? puzzles[0])!;

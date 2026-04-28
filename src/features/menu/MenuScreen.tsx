@@ -42,6 +42,7 @@ import { useTranslation } from '../../i18n/useTranslation';
 import { useProfileText } from '../../hooks/useProfileText';
 import { getAchievementCopy } from '../../utils/achievementCopy';
 import { SettingsMenu } from '../../components/SettingsMenu';
+import { AppModal, AppModalHeader } from '../../components/shared';
 import type { AchievementUnlock } from '../../types/achievement';
 import { gameIdToSlug } from '../../utils/gameSlug';
 import { getLocale } from '../../i18n';
@@ -401,94 +402,104 @@ export const MenuScreen: React.FC = () => {
 
           {/* Edit Favourites modal */}
           {showEditFavourites && (
-            <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 animate-in fade-in duration-200">
-              <div className="bg-white rounded-lg shadow-xl max-w-md w-full max-h-[85vh] flex flex-col border border-slate-200 animate-in zoom-in-95 duration-200">
-                <div className="p-4 border-b border-slate-200">
-                  <h2 className="text-lg font-bold text-slate-800">
-                    {formatText(t.menuSpecific.editFavouritesTitle)}
-                  </h2>
-                </div>
-                <div className="p-4 overflow-y-auto flex-1">
-                  {Object.values(CATEGORIES).map((category) => {
-                    const categoryGames = Object.entries(GAME_CONFIG).filter(
-                      ([_key, conf]) => conf.category === category.id,
-                    );
-                    if (categoryGames.length === 0) return null;
-                    const CategoryIcon =
-                      CATEGORY_ICON_MAP[category.id as keyof typeof CATEGORY_ICON_MAP] ?? BookOpen;
-                    const categoryName = formatText(
-                      t.categories[category.id as keyof typeof t.categories]?.name ?? category.name,
-                    );
-                    return (
-                      <div key={category.id} className="mb-4">
-                        <div className="flex items-center gap-2 mb-2 px-1 text-slate-500 text-sm font-semibold">
-                          <CategoryIcon className="w-4 h-4" aria-hidden />
-                          <span>{categoryName}</span>
-                        </div>
-                        {categoryGames.map(([key, conf]) => {
-                          const isChecked = editFavouritesDraft.includes(key);
-                          const gameName: string = (t.games[key as keyof typeof t.games]?.title ??
-                            conf.title) as string;
-                          const GameIcon = ICON_MAP[conf.icon as keyof typeof ICON_MAP] || Type;
-                          return (
-                            <label
-                              key={key}
-                              className="flex items-center gap-3 py-2.5 px-3 rounded-lg hover:bg-slate-50 cursor-pointer"
-                            >
-                              <input
-                                type="checkbox"
-                                checked={isChecked}
-                                onChange={() => {
-                                  if (isChecked) {
-                                    setEditFavouritesDraft((prev) =>
-                                      prev.filter((id) => id !== key),
-                                    );
-                                  } else {
-                                    setEditFavouritesDraft((prev) => [...prev, key]);
-                                  }
-                                }}
-                                className="w-5 h-5 rounded border-2 border-slate-300 text-emerald-600 focus:ring-emerald-500"
-                              />
-                              <span
-                                className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg ${conf.theme.iconBg} ${conf.theme.text}`}
-                                aria-hidden
-                              >
-                                <GameIcon size={18} />
-                              </span>
-                              <span className="font-semibold text-slate-800">
-                                {formatText(gameName)}
-                              </span>
-                            </label>
-                          );
-                        })}
+            <AppModal
+              labelledBy="edit-favourites-title"
+              onClose={() => {
+                playClick();
+                setShowEditFavourites(false);
+              }}
+              closeOnBackdrop={false}
+              size="md"
+              scrollable={false}
+              contentClassName="flex max-h-[calc(100dvh-2rem)] flex-col"
+            >
+              <AppModalHeader
+                title={formatText(t.menuSpecific.editFavouritesTitle)}
+                titleId="edit-favourites-title"
+                onClose={() => {
+                  playClick();
+                  setShowEditFavourites(false);
+                }}
+                closeLabel={formatText(t.common.close)}
+              />
+              <div className="min-h-0 flex-1 overflow-y-auto p-4">
+                {Object.values(CATEGORIES).map((category) => {
+                  const categoryGames = Object.entries(GAME_CONFIG).filter(
+                    ([_key, conf]) => conf.category === category.id,
+                  );
+                  if (categoryGames.length === 0) return null;
+                  const CategoryIcon =
+                    CATEGORY_ICON_MAP[category.id as keyof typeof CATEGORY_ICON_MAP] ?? BookOpen;
+                  const categoryName = formatText(
+                    t.categories[category.id as keyof typeof t.categories]?.name ?? category.name,
+                  );
+                  return (
+                    <div key={category.id} className="mb-4">
+                      <div className="flex items-center gap-2 mb-2 px-1 text-slate-500 text-sm font-semibold">
+                        <CategoryIcon className="w-4 h-4" aria-hidden />
+                        <span>{categoryName}</span>
                       </div>
-                    );
-                  })}
-                </div>
-                <div className="p-4 border-t border-slate-200 flex gap-2 justify-end">
-                  <button
-                    onClick={() => {
-                      playClick();
-                      setShowEditFavourites(false);
-                    }}
-                    className="px-4 py-2 rounded-lg border border-slate-200 font-semibold text-slate-700 hover:bg-slate-50"
-                  >
-                    {formatText(t.common.cancel)}
-                  </button>
-                  <button
-                    onClick={() => {
-                      playClick();
-                      setFavouriteGameIds(editFavouritesDraft);
-                      setShowEditFavourites(false);
-                      if (editFavouritesDraft.length === 0) setShowFavourites(false);
-                    }}
-                    className="px-4 py-2 rounded-lg bg-emerald-600 text-white font-semibold hover:bg-emerald-700"
-                  >
-                    {formatText(t.menuSpecific.save)}
-                  </button>
-                </div>
+                      {categoryGames.map(([key, conf]) => {
+                        const isChecked = editFavouritesDraft.includes(key);
+                        const gameName: string = (t.games[key as keyof typeof t.games]?.title ??
+                          conf.title) as string;
+                        const GameIcon = ICON_MAP[conf.icon as keyof typeof ICON_MAP] || Type;
+                        return (
+                          <label
+                            key={key}
+                            className="flex items-center gap-3 py-2.5 px-3 rounded-lg hover:bg-slate-50 cursor-pointer"
+                          >
+                            <input
+                              type="checkbox"
+                              checked={isChecked}
+                              onChange={() => {
+                                if (isChecked) {
+                                  setEditFavouritesDraft((prev) => prev.filter((id) => id !== key));
+                                } else {
+                                  setEditFavouritesDraft((prev) => [...prev, key]);
+                                }
+                              }}
+                              className="w-5 h-5 rounded border-2 border-slate-300 text-emerald-600 focus:ring-emerald-500"
+                            />
+                            <span
+                              className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg ${conf.theme.iconBg} ${conf.theme.text}`}
+                              aria-hidden
+                            >
+                              <GameIcon size={18} />
+                            </span>
+                            <span className="font-semibold text-slate-800">
+                              {formatText(gameName)}
+                            </span>
+                          </label>
+                        );
+                      })}
+                    </div>
+                  );
+                })}
               </div>
-            </div>
+              <div className="flex justify-end gap-2 border-t border-slate-200 bg-white p-4">
+                <button
+                  onClick={() => {
+                    playClick();
+                    setShowEditFavourites(false);
+                  }}
+                  className="px-4 py-2 rounded-lg border border-slate-200 font-semibold text-slate-700 hover:bg-slate-50"
+                >
+                  {formatText(t.common.cancel)}
+                </button>
+                <button
+                  onClick={() => {
+                    playClick();
+                    setFavouriteGameIds(editFavouritesDraft);
+                    setShowEditFavourites(false);
+                    if (editFavouritesDraft.length === 0) setShowFavourites(false);
+                  }}
+                  className="px-4 py-2 rounded-lg bg-emerald-600 text-white font-semibold hover:bg-emerald-700"
+                >
+                  {formatText(t.menuSpecific.save)}
+                </button>
+              </div>
+            </AppModal>
           )}
 
           {/* Games by category - Refined */}

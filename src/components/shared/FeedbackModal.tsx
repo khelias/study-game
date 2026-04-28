@@ -7,7 +7,7 @@
  */
 
 import React, { useEffect, useRef } from 'react';
-import { Z_INDEX } from '../../utils/zIndex';
+import { AppModal } from './AppModal';
 
 export type FeedbackModalVariant = 'wrong' | 'info' | 'default';
 
@@ -66,55 +66,37 @@ export const FeedbackModal: React.FC<FeedbackModalProps> = ({
     }
   }, [isOpen]);
 
-  useEffect(() => {
-    const handleEscape = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && isOpen) onClose();
-    };
-    if (isOpen) {
-      document.addEventListener('keydown', handleEscape);
-      return () => document.removeEventListener('keydown', handleEscape);
-    }
-    return undefined;
-  }, [isOpen, onClose]);
-
   if (!isOpen) return null;
 
   return (
-    <div
-      className="fixed inset-0 flex items-center justify-center p-4 animate-in fade-in duration-200"
-      style={{ zIndex: Z_INDEX.MODALS, backgroundColor: 'rgba(0, 0, 0, 0.5)' }}
-      onClick={(e) => {
-        if (e.target === e.currentTarget) onClose();
-      }}
+    <AppModal
+      labelledBy={title ? 'feedback-modal-title' : undefined}
+      onClose={onClose}
+      size="md"
+      panelClassName={`border-2 ${style.border} bg-gradient-to-br ${style.bg}`}
+      contentClassName="p-5 sm:p-6"
     >
-      <div
-        className={`bg-gradient-to-br ${style.bg} rounded-2xl shadow-2xl border-2 ${style.border} w-full max-w-md animate-in zoom-in duration-300 p-5 sm:p-6`}
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby={title ? 'feedback-modal-title' : undefined}
-      >
-        {title && (
-          <h2
-            id="feedback-modal-title"
-            className={`text-lg sm:text-xl font-black mb-3 ${style.title}`}
-          >
-            {title}
-          </h2>
-        )}
-        <div className="text-sm sm:text-base text-slate-700 mb-5 [&_p]:mb-2 [&_p:last-child]:mb-0">
-          {children}
-        </div>
-        <div className="flex justify-end">
-          <button
-            ref={buttonRef}
-            type="button"
-            onClick={onClose}
-            className={`px-5 py-2.5 rounded-xl font-bold border-2 shadow-md transition-colors ${buttonStyle}`}
-          >
-            {buttonLabel}
-          </button>
-        </div>
+      {title && (
+        <h2
+          id="feedback-modal-title"
+          className={`text-lg sm:text-xl font-black mb-3 ${style.title}`}
+        >
+          {title}
+        </h2>
+      )}
+      <div className="text-sm sm:text-base text-slate-700 mb-5 [&_p]:mb-2 [&_p:last-child]:mb-0">
+        {children}
       </div>
-    </div>
+      <div className="flex justify-end">
+        <button
+          ref={buttonRef}
+          type="button"
+          onClick={onClose}
+          className={`px-5 py-2.5 rounded-xl font-bold border-2 shadow-md transition-colors ${buttonStyle}`}
+        >
+          {buttonLabel}
+        </button>
+      </div>
+    </AppModal>
   );
 };

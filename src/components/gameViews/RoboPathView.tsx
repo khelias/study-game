@@ -11,7 +11,7 @@ import { useTranslation } from '../../i18n/useTranslation';
 import { useProfileText } from '../../hooks/useProfileText';
 import { ControlPad } from '../ControlPad';
 import { GAME_CONFIG } from '../../games/data';
-import { PaidHintButtons } from '../shared';
+import { AppModal, PaidHintButtons } from '../shared';
 import type { RoboPathProblem } from '../../types/game';
 
 type AnswerHandler = (answer: boolean) => void;
@@ -322,41 +322,49 @@ export const RoboPathView: React.FC<RoboPathViewProps> = ({
     <div className="w-full flex flex-col items-center px-4 sm:px-6 max-w-2xl mx-auto pt-4 sm:pt-6 animate-in fade-in duration-300">
       {/* Retry Modal */}
       {showRetryModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl p-6 sm:p-8 max-w-md w-full shadow-2xl animate-in zoom-in duration-300">
-            <div className="text-center mb-4">
-              <div className="text-4xl mb-3">🎯</div>
-              <h3 className="text-xl sm:text-2xl font-black text-slate-800 mb-2">
-                {formatText(t.roboPath.greatJob)}
-              </h3>
-              <p className="text-sm sm:text-base text-slate-600 mb-4">
-                {formatText(t.roboPath.youUsed)} {finalMoves} {formatText(t.roboPath.commands)}.
-                {problem.optimalMoves && (
-                  <span className="block mt-2">
-                    {formatText(t.roboPath.optimalIs)} {problem.optimalMoves}.
-                  </span>
-                )}
-              </p>
-              <p className="text-sm text-slate-500 mb-6">
-                {formatText(t.roboPath.tryAgainForBetter)}
-              </p>
-            </div>
-            <div className="flex gap-3">
-              <button
-                onClick={handleRetry}
-                className="flex-1 bg-orange-500 hover:bg-orange-600 text-white font-bold py-3 px-4 rounded-xl transition-colors shadow-lg"
-              >
-                {formatText(t.roboPath.tryAgainButton)}
-              </button>
-              <button
-                onClick={handleContinue}
-                className="flex-1 bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-4 rounded-xl transition-colors shadow-lg"
-              >
-                {formatText(t.roboPath.continueButton)}
-              </button>
-            </div>
+        <AppModal
+          labelledBy="robo-path-retry-title"
+          onClose={handleRetry}
+          closeOnBackdrop={false}
+          closeOnEscape={false}
+          size="md"
+          contentClassName="p-6 sm:p-8"
+        >
+          <div className="text-center mb-4">
+            <div className="text-4xl mb-3">🎯</div>
+            <h3
+              id="robo-path-retry-title"
+              className="text-xl sm:text-2xl font-black text-slate-800 mb-2"
+            >
+              {formatText(t.roboPath.greatJob)}
+            </h3>
+            <p className="text-sm sm:text-base text-slate-600 mb-4">
+              {formatText(t.roboPath.youUsed)} {finalMoves} {formatText(t.roboPath.commands)}.
+              {problem.optimalMoves && (
+                <span className="block mt-2">
+                  {formatText(t.roboPath.optimalIs)} {problem.optimalMoves}.
+                </span>
+              )}
+            </p>
+            <p className="text-sm text-slate-500 mb-6">
+              {formatText(t.roboPath.tryAgainForBetter)}
+            </p>
           </div>
-        </div>
+          <div className="flex gap-3">
+            <button
+              onClick={handleRetry}
+              className="flex-1 bg-orange-500 hover:bg-orange-600 text-white font-bold py-3 px-4 rounded-xl transition-colors shadow-lg"
+            >
+              {formatText(t.roboPath.tryAgainButton)}
+            </button>
+            <button
+              onClick={handleContinue}
+              className="flex-1 bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-4 rounded-xl transition-colors shadow-lg"
+            >
+              {formatText(t.roboPath.continueButton)}
+            </button>
+          </div>
+        </AppModal>
       )}
 
       <div className="w-full mb-2 text-[10px] sm:text-xs font-semibold text-slate-500 flex flex-wrap items-center justify-center gap-2">
