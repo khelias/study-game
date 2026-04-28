@@ -13,6 +13,7 @@ import { ALPHABET, groupWordsByLength } from '../curriculum/packs/language/vocab
 import {
   LANGUAGE_SPATIAL_SENTENCES_PACK,
   generateSentence,
+  getSpatialSentenceScenesForLevel,
   getSceneName,
   type SpatialSentenceScene,
 } from '../curriculum/packs/language/spatialSentences';
@@ -727,14 +728,9 @@ export const Generators: Record<string, GeneratorFunction> = {
     rng: RngFunction = Math.random,
     _profile: ProfileType = 'starter',
   ): SentenceLogicProblem => {
-    // 1. Select scene based on level progression
+    // 1. Select scene based on curriculum progression
     const allScenes = getPackItems<SpatialSentenceScene>(LANGUAGE_SPATIAL_SENTENCES_PACK.id);
-    const scenePool =
-      level <= 2
-        ? allScenes.filter((scene) => scene.positions.length <= 4)
-        : level <= 5
-          ? allScenes.filter((scene) => scene.positions.length <= 5)
-          : allScenes;
+    const scenePool = getSpatialSentenceScenesForLevel(allScenes, level);
 
     const scene = getRandom([...scenePool], rng);
     if (!scene) throw new Error('No scene found for sentence_logic game');

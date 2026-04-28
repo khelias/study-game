@@ -20,6 +20,7 @@ import type { SyllableWord, VocabularyWord } from '../packs/language/types';
 import {
   LANGUAGE_SPATIAL_SENTENCES_PACK,
   generateSentence,
+  getSpatialSentenceScenesForLevel,
 } from '../packs/language/spatialSentences';
 import {
   groupWordsByLength,
@@ -273,10 +274,29 @@ describe('curriculum', () => {
 
       for (const scene of LANGUAGE_SPATIAL_SENTENCES_PACK.items) {
         expect(scene.id).not.toBe('');
+        expect(['easy', 'medium', 'hard']).toContain(scene.difficulty);
+        expect(scene.minLevel).toBeGreaterThanOrEqual(1);
+        expect(scene.learningOutcome.et).not.toBe('');
+        expect(scene.learningOutcome.en).not.toBe('');
         expect(scene.subjects.length).toBeGreaterThan(0);
         expect(scene.anchors.length).toBeGreaterThan(0);
         expect(scene.positions.length).toBeGreaterThan(0);
       }
+    });
+
+    it('selects spatial sentence scenes by level metadata', () => {
+      const level1 = getSpatialSentenceScenesForLevel(LANGUAGE_SPATIAL_SENTENCES_PACK.items, 1);
+      const level3 = getSpatialSentenceScenesForLevel(LANGUAGE_SPATIAL_SENTENCES_PACK.items, 3);
+      const level6 = getSpatialSentenceScenesForLevel(LANGUAGE_SPATIAL_SENTENCES_PACK.items, 6);
+
+      expect(level1.map((scene) => scene.id)).toEqual(['space']);
+      expect(level3.map((scene) => scene.id).sort()).toEqual([
+        'beach',
+        'forest',
+        'space',
+        'street',
+      ]);
+      expect(level6).toHaveLength(LANGUAGE_SPATIAL_SENTENCES_PACK.items.length);
     });
 
     it('can generate localized sentences from scene content', () => {

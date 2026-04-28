@@ -58,9 +58,16 @@ describe('curriculum audit report', () => {
     const shapeShift = report.packs.find(
       (row) => row.packId === 'math.geometry_shapes.shape_shift_puzzles',
     );
+    const spatial = report.packs.find(
+      (row) => row.packId === 'language.spatial_sentences.scene_pack',
+    );
     const time = report.packs.find((row) => row.packId === 'math.time_reading.core');
 
     expect(shapeShift?.difficultySignals).toContain('difficulty=easy/hard/medium');
+    expect(spatial?.difficultySignals).toEqual(
+      expect.arrayContaining(['difficulty=easy/hard/medium', 'levels=1-open-ended']),
+    );
+    expect(spatial?.warnings).not.toContain('no_explicit_difficulty_signal');
     expect(time?.difficultySignals).toContain('levels=1-open-ended');
   });
 

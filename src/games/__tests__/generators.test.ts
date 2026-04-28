@@ -26,7 +26,10 @@ import {
   getShapeDashGateQuestions,
 } from '../../curriculum/packs/math/geometry_shapes';
 import { SHAPE_SHIFT_PUZZLES_PACK } from '../../curriculum/packs/geometry/shapeShiftPuzzles';
-import { LANGUAGE_SPATIAL_SENTENCES_PACK } from '../../curriculum/packs/language/spatialSentences';
+import {
+  LANGUAGE_SPATIAL_SENTENCES_PACK,
+  getSpatialSentenceScenesForLevel,
+} from '../../curriculum/packs/language/spatialSentences';
 import { LANGUAGE_VOCABULARY_ET_PACK } from '../../curriculum/packs/language/vocabulary';
 import {
   MATH_PATTERN_SEQUENCES_PACK,
@@ -507,9 +510,15 @@ describe('Generators', () => {
       const sceneById = new Map(
         LANGUAGE_SPATIAL_SENTENCES_PACK.items.map((scene) => [scene.id, scene]),
       );
+      const allowedSceneIds = new Set(
+        getSpatialSentenceScenesForLevel(LANGUAGE_SPATIAL_SENTENCES_PACK.items, 1).map(
+          (scene) => scene.id,
+        ),
+      );
 
       for (const problem of earlyProblems) {
         const scene = sceneById.get(problem.scene);
+        expect(allowedSceneIds.has(problem.scene)).toBe(true);
         expect(scene?.positions.length).toBeLessThanOrEqual(4);
       }
     });

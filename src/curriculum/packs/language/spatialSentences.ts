@@ -3,11 +3,24 @@
  * Supports Estonian and English
  */
 
-import type { ContentPack } from '../../types';
+import type { ContentPack, LocaleCode } from '../../types';
 import { LANGUAGE_SPATIAL_SENTENCES_SKILL } from '../../skills/language';
-import type { Scene, SceneSubject, SceneAnchor } from '../../../types/game';
+import type { Difficulty, Scene, SceneSubject, SceneAnchor } from '../../../types/game';
 
-export type SpatialSentenceScene = Scene & { id: string };
+export type SpatialSentenceFocus =
+  | 'core_prepositions'
+  | 'five_position_context'
+  | 'inside_container_context';
+
+export interface SpatialSentenceMetadata {
+  difficulty: Difficulty;
+  minLevel: number;
+  maxLevel?: number;
+  focus: SpatialSentenceFocus;
+  learningOutcome: Record<LocaleCode, string>;
+}
+
+export type SpatialSentenceScene = Scene & SpatialSentenceMetadata & { id: string };
 
 // English translations for Estonian object names
 const OBJECT_TRANSLATIONS: Record<string, { en: string }> = {
@@ -178,7 +191,7 @@ export function generateSentence(
   }
 }
 
-export const SCENE_DB: Record<string, Scene> = {
+export const SCENE_DB = {
   forest: {
     bg: 'bg-gradient-to-b from-green-200 to-green-300',
     name: 'Forest',
@@ -358,13 +371,109 @@ export const SCENE_DB: Record<string, Scene> = {
     ],
     positions: ['ON', 'UNDER', 'NEXT_TO', 'IN_FRONT', 'BEHIND'],
   },
+} satisfies Record<string, Scene>;
+
+type SpatialSentenceSceneId = keyof typeof SCENE_DB;
+
+const SCENE_METADATA: Record<SpatialSentenceSceneId, SpatialSentenceMetadata> = {
+  forest: {
+    difficulty: 'medium',
+    minLevel: 3,
+    focus: 'five_position_context',
+    learningOutcome: {
+      et: 'Asukohalaused viie põhisuhtega loodusstseenis',
+      en: 'Spatial sentences with five core relations in a nature scene',
+    },
+  },
+  space: {
+    difficulty: 'easy',
+    minLevel: 1,
+    focus: 'core_prepositions',
+    learningOutcome: {
+      et: 'Esimesed asukohasuhted: kohal, all, kõrval ja ees',
+      en: 'First spatial relations: on, under, next to, and in front',
+    },
+  },
+  room: {
+    difficulty: 'hard',
+    minLevel: 6,
+    focus: 'inside_container_context',
+    learningOutcome: {
+      et: 'Toa asjad ja sees-suhe segatud asukohalausetes',
+      en: 'Room objects and inside relations in mixed spatial sentences',
+    },
+  },
+  school: {
+    difficulty: 'hard',
+    minLevel: 6,
+    focus: 'inside_container_context',
+    learningOutcome: {
+      et: 'Koolistseen sees-suhte ja kuue valikuga',
+      en: 'School scene with inside relations and six possible positions',
+    },
+  },
+  park: {
+    difficulty: 'hard',
+    minLevel: 6,
+    focus: 'inside_container_context',
+    learningOutcome: {
+      et: 'Pargistseen tuttavate esemete ja sees-suhtega',
+      en: 'Park scene with familiar objects and inside relations',
+    },
+  },
+  beach: {
+    difficulty: 'medium',
+    minLevel: 3,
+    focus: 'five_position_context',
+    learningOutcome: {
+      et: 'Rannastseen viie asukohavalikuga',
+      en: 'Beach scene with five spatial choices',
+    },
+  },
+  kitchen: {
+    difficulty: 'hard',
+    minLevel: 6,
+    focus: 'inside_container_context',
+    learningOutcome: {
+      et: 'Köögistseen mahutite ja sees-suhtega',
+      en: 'Kitchen scene with containers and inside relations',
+    },
+  },
+  street: {
+    difficulty: 'medium',
+    minLevel: 3,
+    focus: 'five_position_context',
+    learningOutcome: {
+      et: 'Tänavastseen ees/taga/kõrval suhete kordamiseks',
+      en: 'Street scene for reviewing in front, behind, and next to',
+    },
+  },
 };
+
+export function getSpatialSentenceScenesForLevel(
+  items: readonly SpatialSentenceScene[],
+  level = 1,
+): SpatialSentenceScene[] {
+  const scenes = items.filter(
+    (scene) => level >= scene.minLevel && (scene.maxLevel === undefined || level <= scene.maxLevel),
+  );
+  if (scenes.length === 0) {
+    throw new Error(`No spatial sentence scenes found for level ${level}`);
+  }
+  return scenes;
+}
 
 export const LANGUAGE_SPATIAL_SENTENCES_PACK: ContentPack<SpatialSentenceScene> = {
   id: 'language.spatial_sentences.scene_pack',
   skillId: LANGUAGE_SPATIAL_SENTENCES_SKILL.id,
   locale: 'et',
-  version: '1.0.0',
+  version: '1.1.0',
   title: { et: 'Asukohalausete stseenid', en: 'Spatial sentence scenes' },
-  items: Object.entries(SCENE_DB).map(([id, scene]) => ({ id, ...scene })),
+  items: (Object.entries(SCENE_DB) as Array<[SpatialSentenceSceneId, Scene]>).map(
+    ([id, scene]) => ({
+      id,
+      ...scene,
+      ...SCENE_METADATA[id],
+    }),
+  ),
 };
