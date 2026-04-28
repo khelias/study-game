@@ -48,7 +48,7 @@ export const STAR_PURCHASE_AMOUNT = 50;
 const DEFAULT_FAVOURITE_GAME_IDS = ['battlelearn', 'word_cascade', 'addition_snake'];
 const MAX_PLAYED_CONTENT_IDS_PER_PACK = 100;
 export const GAME_STORE_VERSION = 4;
-const DEFAULT_LOCALE = 'et';
+const DEFAULT_LOCALE = 'en';
 
 export interface GameStore {
   // State

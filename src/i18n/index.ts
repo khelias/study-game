@@ -28,7 +28,7 @@ const translations: Record<SupportedLocale, Translations> = {
 };
 
 // Default locale
-const DEFAULT_LOCALE: SupportedLocale = 'et';
+const DEFAULT_LOCALE: SupportedLocale = 'en';
 const LOCALE_STORAGE_KEY = 'app_locale';
 
 function normalizeLocale(value: string | null | undefined): SupportedLocale | null {
