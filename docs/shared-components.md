@@ -383,14 +383,6 @@ import { lazy } from 'react';
 const Target = lazy(() => import('lucide-react').then((m) => ({ default: m.Target })));
 ```
 
-#### Debounce Rapid Changes
-
-```tsx
-const debouncedValue = useDebounce(value, 300);
-
-const stats: GameStat[] = [{ id: 'counter', value: debouncedValue }];
-```
-
 ### 9. Common Mistakes to Avoid
 
 ❌ **Don't use modal for continuous problems**

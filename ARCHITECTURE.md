@@ -116,12 +116,11 @@ Top-level hooks in `src/hooks/`. All are idiomatic React hooks — they either e
 - **`useAnswerHandler`** — answer → score/stats/achievement pipeline; coordinates engine + both stores.
 - **`useGameAudio`** — gated sound playback driven by `soundEnabled`.
 - **`useGameTips`** — tip/hint surfacing based on game state.
-- **`useGameHints`** — generates game-type-specific hint content.
 - **`useMathSnakeMovement`** — returns the directional-input handler for Math Snake games (extracted from `GameScreen`; returns `undefined` for non-snake games).
 - **`useGameScreenEffects`** — bundles six gameplay-screen lifecycle effects (settings-click-outside, compact-layout query, initial problem generation, level-progress reset, auto-open game description, escape-to-close).
 - **`useUnlockedAchievementCopies`** — reads unlocked-achievement IDs and enriches them with i18n copy; returns both raw IDs and enriched `AchievementUnlock[]`.
 - **`useWrongStrikes`** — consecutive-wrong tracking used by games with crash-on-N-wrong mechanics.
-- **`useAchievements`**, **`useGameState`**, **`useProfileText`**, **`useLocalStorage`** — smaller utility hooks. `useProfileText` is now a compatibility wrapper for legacy call sites; visible copy is no longer switched by the hidden generator profile.
+- **`useProfileText`** — compatibility wrapper for legacy call sites; visible copy is no longer switched by the hidden generator profile.
 
 ## Game data and registry
 
@@ -298,8 +297,6 @@ Practical defaults, not premature optimization:
 
 - `React.memo` / `useCallback` / `useMemo` used where profiling showed real wins (game views, heavy animated components).
 - Vite automatic code splitting at route boundaries.
-- `src/utils/performance.ts` — debounce + throttle helpers.
-- `src/utils/performanceOptimizations.ts` — device detection for motion-scale tuning.
 - The build warns when any chunk exceeds 500 kB gzipped; current main bundle is ~191 kB gzipped.
 
 ## Accessibility
