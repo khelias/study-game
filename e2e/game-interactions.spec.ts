@@ -2,6 +2,7 @@ import { expect, test, type Page } from '@playwright/test';
 import { GAME_CONFIG } from '../src/games/data';
 
 const GAME_STORE_KEY = 'smart_adv_v45_pro';
+const LOCALE_STORAGE_KEY = 'app_locale';
 const ANALYTICS_CONSENT_KEY = 'khe.analyticsConsent.v1';
 const GAME_IDS = Object.keys(GAME_CONFIG);
 
@@ -80,14 +81,17 @@ test.beforeEach(async ({ page }) => {
   await page.addInitScript(
     ({
       storeKey,
+      localeKey,
       analyticsConsentKey,
       seededStore,
     }: {
       storeKey: string;
+      localeKey: string;
       analyticsConsentKey: string;
       seededStore: ReturnType<typeof seededStoreState>;
     }) => {
       window.localStorage.setItem(storeKey, JSON.stringify(seededStore));
+      window.localStorage.setItem(localeKey, 'et');
       window.localStorage.setItem(
         analyticsConsentKey,
         JSON.stringify({ value: 'denied', updatedAt: '2026-04-27T00:00:00.000Z' }),
@@ -95,6 +99,7 @@ test.beforeEach(async ({ page }) => {
     },
     {
       storeKey: GAME_STORE_KEY,
+      localeKey: LOCALE_STORAGE_KEY,
       analyticsConsentKey: ANALYTICS_CONSENT_KEY,
       seededStore: seededStoreState(),
     },

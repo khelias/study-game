@@ -15,6 +15,7 @@ import { test, expect } from '@playwright/test';
  */
 
 const GAME_STORE_KEY = 'smart_adv_v45_pro';
+const LOCALE_STORAGE_KEY = 'app_locale';
 
 /**
  * Pre-seed `hasSeenTutorial: true` so the first-run welcome modal never
@@ -23,12 +24,16 @@ const GAME_STORE_KEY = 'smart_adv_v45_pro';
  * on rehydrate, so we don't need to list every field.
  */
 test.beforeEach(async ({ page }) => {
-  await page.addInitScript((storeKey: string) => {
-    window.localStorage.setItem(
-      storeKey,
-      JSON.stringify({ state: { hasSeenTutorial: true }, version: 0 }),
-    );
-  }, GAME_STORE_KEY);
+  await page.addInitScript(
+    ({ storeKey, localeKey }: { storeKey: string; localeKey: string }) => {
+      window.localStorage.setItem(
+        storeKey,
+        JSON.stringify({ state: { hasSeenTutorial: true }, version: 0 }),
+      );
+      window.localStorage.setItem(localeKey, 'et');
+    },
+    { storeKey: GAME_STORE_KEY, localeKey: LOCALE_STORAGE_KEY },
+  );
 });
 
 test.describe('smart games — smoke', () => {

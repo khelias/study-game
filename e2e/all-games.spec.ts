@@ -3,6 +3,7 @@ import { GAME_CONFIG } from '../src/games/data';
 import { gameIdToSlug } from '../src/utils/gameSlug';
 
 const GAME_STORE_KEY = 'smart_adv_v45_pro';
+const LOCALE_STORAGE_KEY = 'app_locale';
 const GAME_IDS = Object.keys(GAME_CONFIG);
 const SEEDED_STORE = seededStoreState(GAME_IDS);
 
@@ -53,14 +54,17 @@ test.beforeEach(async ({ page }) => {
   await page.addInitScript(
     ({
       storeKey,
+      localeKey,
       seededStore,
     }: {
       storeKey: string;
+      localeKey: string;
       seededStore: ReturnType<typeof seededStoreState>;
     }) => {
       window.localStorage.setItem(storeKey, JSON.stringify(seededStore));
+      window.localStorage.setItem(localeKey, 'et');
     },
-    { storeKey: GAME_STORE_KEY, seededStore: SEEDED_STORE },
+    { storeKey: GAME_STORE_KEY, localeKey: LOCALE_STORAGE_KEY, seededStore: SEEDED_STORE },
   );
 });
 
