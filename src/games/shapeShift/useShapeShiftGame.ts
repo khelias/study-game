@@ -24,6 +24,7 @@ export function useShapeShiftGame(
   soundEnabled: boolean,
   boardWidthPx: number,
 ) {
+  const problemKey = `${problem.uid}:${problem.puzzle.id}`;
   const [pieces, setPieces] = useState<PieceState[]>(() => getInitialPieces(problem));
   const [status, setStatus] = useState<'idle' | 'correct' | 'wrong'>('idle');
   const [isDragging, setIsDragging] = useState(false);
@@ -43,9 +44,9 @@ export function useShapeShiftGame(
 
   // Reset state when problem changes. React allows this previous-prop pattern
   // during render, and it avoids showing stale pieces for a paint.
-  const [prevUid, setPrevUid] = useState(problem.uid);
-  if (prevUid !== problem.uid) {
-    setPrevUid(problem.uid);
+  const [prevProblemKey, setPrevProblemKey] = useState(problemKey);
+  if (prevProblemKey !== problemKey) {
+    setPrevProblemKey(problemKey);
     setPieces(getInitialPieces(problem));
     setStatus('idle');
     setIsDragging(false);
@@ -53,7 +54,7 @@ export function useShapeShiftGame(
   // Ref updates must happen outside render; reset the hash when uid changes.
   useEffect(() => {
     lastCheckedHash.current = '';
-  }, [problem.uid]);
+  }, [problemKey]);
 
   // Check for completion
   useEffect(() => {

@@ -100,6 +100,8 @@ export const GameScreenView: React.FC<GameScreenViewProps> = ({
   const { formatText } = useProfileText();
   const baseGameType = gameType.replace('_adv', '');
   const tipPlacement = baseGameType === 'shape_dash' ? 'inline' : 'fixed';
+  const problemRenderKey =
+    problem?.type === 'shape_shift' ? `${problem.uid}:${problem.puzzle.id}` : problem?.uid;
   const gameAndTipClassName =
     tipPlacement === 'inline'
       ? 'w-full flex flex-col items-center gap-3 pb-8'
@@ -157,9 +159,9 @@ export const GameScreenView: React.FC<GameScreenViewProps> = ({
         {!problem ? (
           <Loader2 className="animate-spin mt-20 text-slate-400" size={48} />
         ) : (
-          <div key={problem.uid} className={gameAndTipClassName}>
+          <div key={problemRenderKey} className={gameAndTipClassName}>
             <GameRenderer
-              key={`${problem.type}-${problem.uid}-${'target' in problem ? problem.target : ''}`}
+              key={`${problem.type}-${problemRenderKey}-${'target' in problem ? problem.target : ''}`}
               gameType={gameType}
               problem={problem}
               onAnswer={onAnswer}

@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { beforeEach, describe, it, expect } from 'vitest';
 import { useGameEngine } from '../useGameEngine';
 import { renderHook } from '@testing-library/react';
 import { SHAPE_SHIFT_PUZZLES_PACK } from '../../curriculum/packs/geometry/shapeShiftPuzzles';
@@ -9,6 +9,11 @@ import { useGameStore } from '../../stores/gameStore';
 import '../../games/registrations';
 
 describe('useGameEngine - Problem UID Uniqueness', () => {
+  beforeEach(() => {
+    // @ts-expect-error -- Shape Shift keeps a session-level repeat buffer on globalThis
+    delete globalThis._shapeShiftHistory;
+  });
+
   it('generates unique problem UIDs on consecutive calls', () => {
     const { result } = renderHook(() => useGameEngine());
 

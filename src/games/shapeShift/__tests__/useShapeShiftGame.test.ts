@@ -167,7 +167,7 @@ describe('useShapeShiftGame', () => {
   it('should clear placed pieces when a new puzzle problem arrives', () => {
     const nextProblem: ShapeShiftProblem = {
       ...mockProblem,
-      uid: 'next-uid',
+      uid: mockProblem.uid,
       puzzle: {
         ...mockProblem.puzzle,
         id: 'next-puzzle',

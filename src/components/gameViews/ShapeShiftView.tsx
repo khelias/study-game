@@ -68,6 +68,7 @@ export const ShapeShiftView: React.FC<ShapeShiftViewProps> = ({
 }) => {
   const t = useTranslation();
   const puzzleName = getLocale() === 'en' ? problem.puzzle.nameEn : problem.puzzle.nameEt;
+  const problemKey = `${problem.uid}:${problem.puzzle.id}`;
   const addNotification = usePlaySessionStore((state) => state.addNotification);
 
   const boardRef = useRef<HTMLDivElement>(null);
@@ -364,7 +365,7 @@ export const ShapeShiftView: React.FC<ShapeShiftViewProps> = ({
 
               return (
                 <div
-                  key={`target-${p.id}`}
+                  key={`${problemKey}-target-${p.id}`}
                   data-testid={`shape-shift-target-${p.id}`}
                   className="absolute transition-opacity duration-200"
                   style={{
@@ -391,7 +392,7 @@ export const ShapeShiftView: React.FC<ShapeShiftViewProps> = ({
                 .map((p) => {
                   return (
                     <div
-                      key={`outline-${p.id}`}
+                      key={`${problemKey}-outline-${p.id}`}
                       className="absolute drop-shadow-sm"
                       style={{
                         ...getBoardPieceStyle(p, p.correctPosition, gs),
@@ -433,7 +434,7 @@ export const ShapeShiftView: React.FC<ShapeShiftViewProps> = ({
 
             return (
               <div
-                key={p.id}
+                key={`${problemKey}-board-${p.id}`}
                 data-testid={`shape-shift-board-piece-${p.id}`}
                 className={`absolute transition-transform ${isDragging ? 'opacity-0' : 'cursor-grab active:cursor-grabbing hover:brightness-110'}`}
                 style={{
@@ -504,7 +505,7 @@ export const ShapeShiftView: React.FC<ShapeShiftViewProps> = ({
 
           return (
             <div
-              key={p.id}
+              key={`${problemKey}-tray-${p.id}`}
               data-testid={`shape-shift-tray-piece-${p.id}`}
               className={`transition-all ${isDragging ? 'opacity-0 w-0 h-0 m-0 overflow-hidden' : 'cursor-grab active:cursor-grabbing hover:scale-110'}`}
               style={{
