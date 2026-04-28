@@ -33,7 +33,11 @@ import {
   getPatternTemplates,
   getPatternThemes,
 } from '../../curriculum/packs/math/pattern_sequences';
-import { MATH_UNIT_CONVERSIONS_PACK } from '../../curriculum/packs/math/unit_conversions';
+import {
+  MATH_UNIT_CONVERSIONS_PACK,
+  getUnitConversionItems,
+  getUnitConversionStage,
+} from '../../curriculum/packs/math/unit_conversions';
 import {
   MATH_COMPARE_NUMBERS_PACK,
   getCompareNumberStage,
@@ -770,7 +774,7 @@ describe('Generators', () => {
       const generator = Generators.unit_conversion;
       if (!generator) throw new Error('unit_conversion generator not found');
       const problem = generator(4, rng, 'starter') as UnitConversionProblem;
-      const source = MATH_UNIT_CONVERSIONS_PACK.items.find(
+      const source = getUnitConversionItems(MATH_UNIT_CONVERSIONS_PACK.items).find(
         (item) =>
           item.category === problem.category &&
           item.from === problem.fromUnit &&
@@ -781,6 +785,26 @@ describe('Generators', () => {
       expect(source).toBeDefined();
       expect(problem.answer).toBe(problem.value * (source?.factor ?? 0));
       expect(problem.options).toContain(problem.answer);
+    });
+
+    it('should use unit conversion stage ranges and option count', () => {
+      const rng = createRng(54321);
+      const generator = Generators.unit_conversion;
+      if (!generator) throw new Error('unit_conversion generator not found');
+      const problem = generator(11, rng, 'advanced') as UnitConversionProblem;
+      const stage = getUnitConversionStage(MATH_UNIT_CONVERSIONS_PACK.items, 'advanced', 11);
+      const source = getUnitConversionItems(MATH_UNIT_CONVERSIONS_PACK.items).find(
+        (item) =>
+          item.category === problem.category &&
+          item.from === problem.fromUnit &&
+          item.to === problem.toUnit,
+      );
+
+      expect(problem.value).toBeGreaterThanOrEqual(stage.minValue);
+      expect(problem.value).toBeLessThanOrEqual(stage.maxValue);
+      expect(problem.options).toHaveLength(stage.optionCount);
+      expect(source).toBeDefined();
+      expect(source && stage.conversionIds.includes(source.id)).toBe(true);
     });
   });
 

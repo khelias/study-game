@@ -1,9 +1,20 @@
-import type { ContentPack } from '../../types';
+import type { ContentPack, LocaleCode } from '../../types';
 import { MATH_UNIT_CONVERSIONS_SKILL } from '../../skills/math';
 
 export type UnitConversionCategory = 'length' | 'mass' | 'volume';
+export type UnitConversionProgressionProfile = 'starter' | 'advanced';
+export type UnitConversionFocus =
+  | 'first_length_mass'
+  | 'add_volume'
+  | 'starter_mixed_review'
+  | 'advanced_core_units'
+  | 'advanced_large_units'
+  | 'advanced_wide_range'
+  | 'advanced_fluent_review';
 
-export interface UnitConversionItem {
+export interface UnitConversionDefinitionItem {
+  kind: 'conversion';
+  id: string;
   category: UnitConversionCategory;
   from: string;
   to: string;
@@ -11,31 +22,262 @@ export interface UnitConversionItem {
   emoji: string;
 }
 
-const ITEMS: readonly UnitConversionItem[] = [
-  { category: 'length', from: 'm', to: 'cm', factor: 100, emoji: '📏' },
-  { category: 'length', from: 'km', to: 'm', factor: 1000, emoji: '📐' },
-  { category: 'length', from: 'cm', to: 'mm', factor: 10, emoji: '📏' },
-  { category: 'mass', from: 'kg', to: 'g', factor: 1000, emoji: '⚖️' },
-  { category: 'mass', from: 't', to: 'kg', factor: 1000, emoji: '🏋️' },
-  { category: 'volume', from: 'l', to: 'ml', factor: 1000, emoji: '🧪' },
-  { category: 'volume', from: 'l', to: 'dl', factor: 10, emoji: '🥛' },
+export interface UnitConversionStageItem {
+  kind: 'stage';
+  profile: UnitConversionProgressionProfile;
+  minLevel: number;
+  maxLevel?: number;
+  focus: UnitConversionFocus;
+  learningOutcome: Record<LocaleCode, string>;
+  conversionIds: readonly string[];
+  minValue: number;
+  maxValue: number;
+  optionCount: number;
+}
+
+export type UnitConversionItem = UnitConversionDefinitionItem | UnitConversionStageItem;
+
+const CONVERSIONS: readonly UnitConversionDefinitionItem[] = [
+  {
+    kind: 'conversion',
+    id: 'length_m_cm',
+    category: 'length',
+    from: 'm',
+    to: 'cm',
+    factor: 100,
+    emoji: '📏',
+  },
+  {
+    kind: 'conversion',
+    id: 'length_km_m',
+    category: 'length',
+    from: 'km',
+    to: 'm',
+    factor: 1000,
+    emoji: '📐',
+  },
+  {
+    kind: 'conversion',
+    id: 'length_cm_mm',
+    category: 'length',
+    from: 'cm',
+    to: 'mm',
+    factor: 10,
+    emoji: '📏',
+  },
+  {
+    kind: 'conversion',
+    id: 'mass_kg_g',
+    category: 'mass',
+    from: 'kg',
+    to: 'g',
+    factor: 1000,
+    emoji: '⚖️',
+  },
+  {
+    kind: 'conversion',
+    id: 'mass_t_kg',
+    category: 'mass',
+    from: 't',
+    to: 'kg',
+    factor: 1000,
+    emoji: '🏋️',
+  },
+  {
+    kind: 'conversion',
+    id: 'volume_l_ml',
+    category: 'volume',
+    from: 'l',
+    to: 'ml',
+    factor: 1000,
+    emoji: '🧪',
+  },
+  {
+    kind: 'conversion',
+    id: 'volume_l_dl',
+    category: 'volume',
+    from: 'l',
+    to: 'dl',
+    factor: 10,
+    emoji: '🥛',
+  },
 ];
+
+const STAGES: readonly UnitConversionStageItem[] = [
+  {
+    kind: 'stage',
+    profile: 'starter',
+    minLevel: 1,
+    maxLevel: 3,
+    focus: 'first_length_mass',
+    learningOutcome: {
+      et: 'Esimesed pikkuse ja massi teisendused',
+      en: 'First length and mass conversions',
+    },
+    conversionIds: ['length_m_cm', 'mass_kg_g'],
+    minValue: 1,
+    maxValue: 5,
+    optionCount: 4,
+  },
+  {
+    kind: 'stage',
+    profile: 'starter',
+    minLevel: 4,
+    maxLevel: 6,
+    focus: 'add_volume',
+    learningOutcome: {
+      et: 'Lisanduvad liitri ja milliliitri teisendused',
+      en: 'Add litre and millilitre conversions',
+    },
+    conversionIds: ['length_m_cm', 'mass_kg_g', 'volume_l_ml'],
+    minValue: 1,
+    maxValue: 10,
+    optionCount: 4,
+  },
+  {
+    kind: 'stage',
+    profile: 'starter',
+    minLevel: 7,
+    focus: 'starter_mixed_review',
+    learningOutcome: {
+      et: 'Segatud kordus tuttavate ühikutega',
+      en: 'Mixed review with familiar units',
+    },
+    conversionIds: ['length_m_cm', 'mass_kg_g', 'volume_l_ml', 'volume_l_dl'],
+    minValue: 1,
+    maxValue: 20,
+    optionCount: 4,
+  },
+  {
+    kind: 'stage',
+    profile: 'advanced',
+    minLevel: 1,
+    maxLevel: 3,
+    focus: 'advanced_core_units',
+    learningOutcome: {
+      et: 'Põhiühikute teisendamine suuremate arvudega',
+      en: 'Core unit conversions with larger numbers',
+    },
+    conversionIds: ['length_m_cm', 'mass_kg_g', 'volume_l_ml'],
+    minValue: 10,
+    maxValue: 50,
+    optionCount: 4,
+  },
+  {
+    kind: 'stage',
+    profile: 'advanced',
+    minLevel: 4,
+    maxLevel: 7,
+    focus: 'advanced_large_units',
+    learningOutcome: {
+      et: 'Kilomeetri ja tonni kaasamine',
+      en: 'Include kilometre and tonne conversions',
+    },
+    conversionIds: [
+      'length_m_cm',
+      'length_km_m',
+      'length_cm_mm',
+      'mass_kg_g',
+      'mass_t_kg',
+      'volume_l_ml',
+      'volume_l_dl',
+    ],
+    minValue: 50,
+    maxValue: 100,
+    optionCount: 4,
+  },
+  {
+    kind: 'stage',
+    profile: 'advanced',
+    minLevel: 8,
+    maxLevel: 10,
+    focus: 'advanced_wide_range',
+    learningOutcome: {
+      et: 'Kõigi ühikute teisendamine laiemas arvupiirkonnas',
+      en: 'Convert all units across a wider number range',
+    },
+    conversionIds: [
+      'length_m_cm',
+      'length_km_m',
+      'length_cm_mm',
+      'mass_kg_g',
+      'mass_t_kg',
+      'volume_l_ml',
+      'volume_l_dl',
+    ],
+    minValue: 100,
+    maxValue: 500,
+    optionCount: 4,
+  },
+  {
+    kind: 'stage',
+    profile: 'advanced',
+    minLevel: 11,
+    focus: 'advanced_fluent_review',
+    learningOutcome: {
+      et: 'Sorav segakordus kõigi teisendustega',
+      en: 'Fluent mixed review with all conversions',
+    },
+    conversionIds: [
+      'length_m_cm',
+      'length_km_m',
+      'length_cm_mm',
+      'mass_kg_g',
+      'mass_t_kg',
+      'volume_l_ml',
+      'volume_l_dl',
+    ],
+    minValue: 100,
+    maxValue: 1000,
+    optionCount: 4,
+  },
+];
+
+const ITEMS: readonly UnitConversionItem[] = [...CONVERSIONS, ...STAGES];
 
 export function getUnitConversionsByCategory(
   items: readonly UnitConversionItem[],
-): Record<UnitConversionCategory, UnitConversionItem[]> {
+): Record<UnitConversionCategory, UnitConversionDefinitionItem[]> {
+  const conversions = items.filter(
+    (item): item is UnitConversionDefinitionItem => item.kind === 'conversion',
+  );
+
   return {
-    length: items.filter((item) => item.category === 'length'),
-    mass: items.filter((item) => item.category === 'mass'),
-    volume: items.filter((item) => item.category === 'volume'),
+    length: conversions.filter((item) => item.category === 'length'),
+    mass: conversions.filter((item) => item.category === 'mass'),
+    volume: conversions.filter((item) => item.category === 'volume'),
   };
+}
+
+export function getUnitConversionItems(
+  items: readonly UnitConversionItem[],
+): UnitConversionDefinitionItem[] {
+  return items.filter((item): item is UnitConversionDefinitionItem => item.kind === 'conversion');
+}
+
+export function getUnitConversionStage(
+  items: readonly UnitConversionItem[],
+  profile: UnitConversionProgressionProfile,
+  level = 1,
+): UnitConversionStageItem {
+  const stage = items.find(
+    (item): item is UnitConversionStageItem =>
+      item.kind === 'stage' &&
+      item.profile === profile &&
+      level >= item.minLevel &&
+      (item.maxLevel === undefined || level <= item.maxLevel),
+  );
+  if (!stage) {
+    throw new Error(`No unit conversion stage found for ${profile} level ${level}`);
+  }
+  return stage;
 }
 
 export const MATH_UNIT_CONVERSIONS_PACK: ContentPack<UnitConversionItem> = {
   id: 'math.unit_conversions.core',
   skillId: MATH_UNIT_CONVERSIONS_SKILL.id,
   locale: 'et',
-  version: '1.0.0',
+  version: '1.1.0',
   title: {
     et: 'Ühikute teisendused',
     en: 'Unit conversions',

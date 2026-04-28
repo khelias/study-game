@@ -39,8 +39,9 @@ import {
 } from '../curriculum/packs/math/pattern_sequences';
 import {
   MATH_UNIT_CONVERSIONS_PACK,
-  getUnitConversionsByCategory,
-  type UnitConversionCategory,
+  getUnitConversionItems,
+  getUnitConversionStage,
+  type UnitConversionDefinitionItem,
   type UnitConversionItem,
 } from '../curriculum/packs/math/unit_conversions';
 import {
@@ -1306,88 +1307,17 @@ export const Generators: Record<string, GeneratorFunction> = {
     profile: ProfileType = 'starter',
   ): UnitConversionProblem => {
     const meta = profileMeta(profile);
-    const harder = meta.difficultyOffset > 0;
-    const conversions = getUnitConversionsByCategory(
-      getPackItems<UnitConversionItem>(MATH_UNIT_CONVERSIONS_PACK.id),
+    const progressionProfile = meta.difficultyOffset > 0 ? 'advanced' : 'starter';
+    const packItems = getPackItems<UnitConversionItem>(MATH_UNIT_CONVERSIONS_PACK.id);
+    const stage = getUnitConversionStage(packItems, progressionProfile, level);
+    const conversionsById = new Map(
+      getUnitConversionItems(packItems).map((conversion) => [conversion.id, conversion]),
     );
-    const primaryConversion = (category: UnitConversionCategory): UnitConversionItem => {
-      const conversion = conversions[category][0];
-      if (!conversion) throw new Error(`No ${category} conversion found for unit_conversion game`);
-      return conversion;
-    };
-
-    let selectedConversion: UnitConversionItem | null = null;
-    let value: number;
-    let unitType: UnitConversionCategory;
-
-    if (harder) {
-      // Advanced profile (levels 1-15)
-      if (level <= 3) {
-        // Levels 1-3: Basic conversions (m↔cm, kg↔g, l↔ml), numbers 10-50
-        const basicTypes: UnitConversionCategory[] = ['length', 'mass', 'volume'];
-        unitType = getRandom(basicTypes, rng) || 'length';
-        const availableConversions =
-          unitType === 'length'
-            ? [primaryConversion('length')]
-            : unitType === 'mass'
-              ? [primaryConversion('mass')]
-              : [primaryConversion('volume')];
-        selectedConversion = getRandom(availableConversions, rng);
-        value = Math.floor(rng() * 41) + 10; // 10-50
-      } else if (level <= 7) {
-        // Levels 4-7: Add km↔m, t↔kg, numbers 50-100
-        const types: UnitConversionCategory[] = ['length', 'mass', 'volume'];
-        unitType = getRandom(types, rng) || 'length';
-        selectedConversion = getRandom(conversions[unitType], rng);
-        value = Math.floor(rng() * 51) + 50; // 50-100
-      } else if (level <= 10) {
-        // Levels 8-10: All units, numbers 100-500
-        const types: UnitConversionCategory[] = ['length', 'mass', 'volume'];
-        unitType = getRandom(types, rng) || 'length';
-        selectedConversion = getRandom(conversions[unitType], rng);
-        value = Math.floor(rng() * 401) + 100; // 100-500
-      } else {
-        // Levels 11-15: Complex, numbers up to 1000
-        const types: UnitConversionCategory[] = ['length', 'mass', 'volume'];
-        unitType = getRandom(types, rng) || 'length';
-        selectedConversion = getRandom(conversions[unitType], rng);
-        value = Math.floor(rng() * 901) + 100; // 100-1000
-      }
-    } else {
-      // Starter profile (levels 1-10)
-      if (level <= 3) {
-        // Levels 1-3: Only m↔cm, kg↔g, numbers 1-5
-        const basicTypes: UnitConversionCategory[] = ['length', 'mass'];
-        unitType = getRandom(basicTypes, rng) || 'length';
-        selectedConversion =
-          unitType === 'length' ? primaryConversion('length') : primaryConversion('mass');
-        value = Math.floor(rng() * 5) + 1; // 1-5
-      } else if (level <= 6) {
-        // Levels 4-6: Add l↔ml, numbers 1-10
-        const types: UnitConversionCategory[] = ['length', 'mass', 'volume'];
-        unitType = getRandom(types, rng) || 'length';
-        const availableConversions =
-          unitType === 'length'
-            ? [primaryConversion('length')]
-            : unitType === 'mass'
-              ? [primaryConversion('mass')]
-              : [primaryConversion('volume')];
-        selectedConversion = getRandom(availableConversions, rng);
-        value = Math.floor(rng() * 10) + 1; // 1-10
-      } else {
-        // Levels 7-10: All basic units, numbers 1-20
-        const types: UnitConversionCategory[] = ['length', 'mass', 'volume'];
-        unitType = getRandom(types, rng) || 'length';
-        const availableConversions =
-          unitType === 'length'
-            ? [primaryConversion('length')]
-            : unitType === 'mass'
-              ? [primaryConversion('mass')]
-              : conversions.volume;
-        selectedConversion = getRandom(availableConversions, rng);
-        value = Math.floor(rng() * 20) + 1; // 1-20
-      }
-    }
+    const stageConversions = stage.conversionIds
+      .map((conversionId) => conversionsById.get(conversionId))
+      .filter((conversion): conversion is UnitConversionDefinitionItem => Boolean(conversion));
+    const selectedConversion = getRandom(stageConversions, rng);
+    const value = Math.floor(rng() * (stage.maxValue - stage.minValue + 1)) + stage.minValue;
 
     if (!selectedConversion) {
       throw new Error('No conversion found for unit_conversion game');
@@ -1410,12 +1340,14 @@ export const Generators: Record<string, GeneratorFunction> = {
       wrongAnswers.push(Math.floor(correctAnswer * 10));
     }
 
-    // Select 3 unique wrong answers
-    const uniqueWrong = [...new Set(wrongAnswers)].sort(() => rng() - 0.5).slice(0, 3);
+    const distractorCount = stage.optionCount - 1;
+    const uniqueWrong = [...new Set(wrongAnswers)]
+      .sort(() => rng() - 0.5)
+      .slice(0, distractorCount);
 
     // If we don't have enough unique wrong answers, generate more (with safety limit)
     let attempts = 0;
-    while (uniqueWrong.length < 3 && attempts < 20) {
+    while (uniqueWrong.length < distractorCount && attempts < 20) {
       attempts++;
       const offset = Math.floor(rng() * correctAnswer * 0.3) + 1;
       const wrong = rng() > 0.5 ? correctAnswer + offset : correctAnswer - offset;
@@ -1424,14 +1356,16 @@ export const Generators: Record<string, GeneratorFunction> = {
       }
     }
 
-    const options = [correctAnswer, ...uniqueWrong.slice(0, 3)].sort(() => rng() - 0.5);
+    const options = [correctAnswer, ...uniqueWrong.slice(0, distractorCount)].sort(
+      () => rng() - 0.5,
+    );
 
     return {
       type: 'unit_conversion',
       value,
       fromUnit: selectedConversion.from,
       toUnit: selectedConversion.to,
-      category: unitType,
+      category: selectedConversion.category,
       answer: correctAnswer,
       options,
       uid: uid(rng),

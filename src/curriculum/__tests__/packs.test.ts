@@ -63,6 +63,8 @@ import {
 } from '../packs/math/pattern_sequences';
 import {
   MATH_UNIT_CONVERSIONS_PACK,
+  getUnitConversionItems,
+  getUnitConversionStage,
   getUnitConversionsByCategory,
 } from '../packs/math/unit_conversions';
 import { MATH_COMPARE_NUMBERS_PACK, getCompareNumberStage } from '../packs/math/compare_numbers';
@@ -385,10 +387,23 @@ describe('curriculum', () => {
 
     it('unit conversion pack groups supported measurement categories', () => {
       const byCategory = getUnitConversionsByCategory(MATH_UNIT_CONVERSIONS_PACK.items);
+      const conversions = getUnitConversionItems(MATH_UNIT_CONVERSIONS_PACK.items);
+      const starterLevel1 = getUnitConversionStage(MATH_UNIT_CONVERSIONS_PACK.items, 'starter', 1);
+      const starterLevel7 = getUnitConversionStage(MATH_UNIT_CONVERSIONS_PACK.items, 'starter', 7);
+      const advancedLevel11 = getUnitConversionStage(
+        MATH_UNIT_CONVERSIONS_PACK.items,
+        'advanced',
+        11,
+      );
+
       expect(byCategory.length.map((item) => item.from)).toEqual(['m', 'km', 'cm']);
       expect(byCategory.mass.map((item) => item.from)).toEqual(['kg', 't']);
       expect(byCategory.volume.map((item) => item.from)).toEqual(['l', 'l']);
-      expect(MATH_UNIT_CONVERSIONS_PACK.items.every((item) => item.factor > 1)).toBe(true);
+      expect(conversions.every((item) => item.factor > 1)).toBe(true);
+      expect(starterLevel1.conversionIds).toEqual(['length_m_cm', 'mass_kg_g']);
+      expect(starterLevel7.maxValue).toBe(20);
+      expect(advancedLevel11.maxValue).toBe(1000);
+      expect(advancedLevel11.conversionIds).toHaveLength(conversions.length);
     });
 
     it('compare number pack defines staged comparison difficulty', () => {
