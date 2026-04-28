@@ -45,6 +45,7 @@ export interface CurriculumAuditReport {
     totalPacks: number;
     totalGameBindings: number;
     packsBelowMinimum: number;
+    shallowPacks: number;
     unboundPacks: number;
     skillsWithoutPacks: number;
     skillsWithoutConsumers: number;
@@ -65,6 +66,17 @@ interface LevelBounds {
   max?: number;
   hasOpenEndedMax: boolean;
 }
+
+interface ArithmeticSpecCoverage {
+  covered: boolean;
+  signals: string[];
+}
+
+const EXPECTED_ARITHMETIC_OPS_BY_SKILL_PREFIX: Record<string, readonly string[]> = {
+  'math.addition_': ['add_result', 'add_missing'],
+  'math.subtraction_': ['sub_result', 'sub_missing_minuend', 'sub_missing_subtrahend'],
+  'math.multiplication_': ['mul_result', 'mul_missing'],
+};
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
@@ -149,6 +161,92 @@ function collectNumericRanges(items: readonly unknown[]): string[] {
   return uniqueSorted(ranges);
 }
 
+function getArithmeticOps(items: readonly unknown[]): string[] {
+  const ops: string[] = [];
+
+  for (const item of items) {
+    if (isRecord(item) && typeof item.op === 'string') {
+      ops.push(item.op);
+    }
+  }
+
+  return uniqueSorted(ops);
+}
+
+function getExpectedArithmeticOps(skillId: SkillId): readonly string[] | null {
+  const match = Object.entries(EXPECTED_ARITHMETIC_OPS_BY_SKILL_PREFIX).find(([prefix]) =>
+    skillId.startsWith(prefix),
+  );
+  return match?.[1] ?? null;
+}
+
+function hasNumericRange(
+  item: Record<string, unknown>,
+  key: 'valueRange' | 'factorRange',
+): boolean {
+  const range = item[key];
+  return (
+    Array.isArray(range) &&
+    range.length === 2 &&
+    typeof range[0] === 'number' &&
+    typeof range[1] === 'number' &&
+    range[0] <= range[1]
+  );
+}
+
+function inspectArithmeticSpecCoverage(
+  skillId: SkillId,
+  items: readonly unknown[],
+): ArithmeticSpecCoverage {
+  const ops = getArithmeticOps(items);
+  if (ops.length === 0 || ops.length !== items.length) {
+    return { covered: false, signals: [] };
+  }
+
+  const expectedOps = getExpectedArithmeticOps(skillId);
+  if (!expectedOps) {
+    return { covered: false, signals: [`arithmetic-spec=unclassified`, `ops=${ops.join(',')}`] };
+  }
+
+  const missingOps = expectedOps.filter((op) => !ops.includes(op));
+  const records = items.filter(isRecord);
+  const needsFactorRange = skillId.startsWith('math.multiplication_');
+  const needsValueRange =
+    skillId.startsWith('math.addition_') || skillId.startsWith('math.subtraction_');
+  const hasRequiredRanges = needsFactorRange
+    ? records.every((item) => hasNumericRange(item, 'factorRange'))
+    : !needsValueRange || records.every((item) => hasNumericRange(item, 'valueRange'));
+  const unlockLevels = uniqueSorted(
+    records
+      .map((item) => item.unlockLevel)
+      .filter((value): value is number => typeof value === 'number'),
+  );
+  const signals = [
+    missingOps.length === 0 && hasRequiredRanges
+      ? 'arithmetic-spec=covered'
+      : 'arithmetic-spec=incomplete',
+    `ops=${ops.join(',')}`,
+  ];
+
+  if (missingOps.length > 0) {
+    signals.push(`missingOps=${missingOps.join(',')}`);
+  }
+
+  if (needsValueRange) {
+    signals.push(`valueRanges=${hasRequiredRanges ? 'covered' : 'missing'}`);
+  }
+
+  if (needsFactorRange) {
+    signals.push(`factorRanges=${hasRequiredRanges ? 'covered' : 'missing'}`);
+  }
+
+  if (unlockLevels.length > 0) {
+    signals.push(`unlockLevels=${unlockLevels.join(',')}`);
+  }
+
+  return { covered: missingOps.length === 0 && hasRequiredRanges, signals };
+}
+
 function hasEmbeddedLocalization(value: unknown, depth = 0): boolean {
   if (depth > 8) return false;
 
@@ -169,13 +267,14 @@ function hasEmbeddedLocalization(value: unknown, depth = 0): boolean {
   return Object.values(value).some((item) => hasEmbeddedLocalization(item, depth + 1));
 }
 
-function summarizeDifficultySignals(items: readonly unknown[]): string[] {
+function summarizeDifficultySignals(skillId: SkillId, items: readonly unknown[]): string[] {
   const signals: string[] = [];
   const difficulties = collectDifficultyValues(items);
   const levelBounds = collectLevelBounds(items);
   const numericRanges = collectNumericRanges(items);
   const kinds = collectItemKinds(items);
   const kindNames = Object.keys(kinds).sort();
+  const arithmeticSpecCoverage = inspectArithmeticSpecCoverage(skillId, items);
 
   if (difficulties.length > 0) {
     signals.push(`difficulty=${difficulties.join('/')}`);
@@ -191,6 +290,8 @@ function summarizeDifficultySignals(items: readonly unknown[]): string[] {
   if (kindNames.length > 0) {
     signals.push(`kinds=${kindNames.map((kind) => `${kind}:${kinds[kind] ?? 0}`).join(',')}`);
   }
+
+  signals.push(...arithmeticSpecCoverage.signals);
 
   return signals;
 }
@@ -234,10 +335,11 @@ function buildPackWarnings(
   minimumItemCount: number,
 ): string[] {
   const warnings: string[] = [];
+  const hasCoveredArithmeticSpec = row.difficultySignals.includes('arithmetic-spec=covered');
 
   if (row.itemCount === 0) {
     warnings.push('empty_pack');
-  } else if (row.itemCount < minimumItemCount) {
+  } else if (row.itemCount < minimumItemCount && !hasCoveredArithmeticSpec) {
     warnings.push(`shallow_item_count<${minimumItemCount}`);
   }
 
@@ -280,7 +382,7 @@ export function buildCurriculumAuditReport(options: AuditOptions = {}): Curricul
     const skillPacks = contentPackRegistry.getBySkill(pack.skillId);
     const skillLocales = uniqueSorted(skillPacks.map((skillPack) => skillPack.locale));
     const consumers = getConsumers(pack, games);
-    const difficultySignals = summarizeDifficultySignals(pack.items);
+    const difficultySignals = summarizeDifficultySignals(pack.skillId, pack.items);
     const baseRow = {
       packId: pack.id,
       skillId: pack.skillId,
@@ -329,6 +431,9 @@ export function buildCurriculumAuditReport(options: AuditOptions = {}): Curricul
       totalPacks: packs.length,
       totalGameBindings: games.length,
       packsBelowMinimum: packRows.filter((row) => row.itemCount < minimumItemCount).length,
+      shallowPacks: packRows.filter((row) =>
+        row.warnings.includes(`shallow_item_count<${minimumItemCount}`),
+      ).length,
       unboundPacks: packRows.filter((row) => row.consumers.length === 0).length,
       skillsWithoutPacks: skillRows.filter((row) => row.packIds.length === 0).length,
       skillsWithoutConsumers: skillRows.filter((row) => row.consumerGameIds.length === 0).length,

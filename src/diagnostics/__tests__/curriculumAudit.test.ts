@@ -30,16 +30,27 @@ describe('curriculum audit report', () => {
     );
   });
 
-  it('flags shallow procedural packs without losing their direct consumers', () => {
+  it('exempts covered arithmetic spec pools from shallow-pack warnings', () => {
     const report = buildCurriculumAuditReport();
-    const addition = report.packs.find((row) => row.packId === 'math.addition_within_20');
+    const specPackIds = [
+      'math.addition_within_20',
+      'math.addition_within_100',
+      'math.subtraction_within_20',
+      'math.subtraction_within_100',
+      'math.multiplication_1_5',
+      'math.multiplication_1_10',
+    ];
 
-    expect(addition).toBeDefined();
-    expect(addition?.itemCount).toBe(2);
-    expect(addition?.warnings).toContain('shallow_item_count<6');
-    expect(addition?.consumers).toEqual([
-      { gameId: 'addition_snake', mechanic: 'math_snake', mode: 'direct-pack' },
-    ]);
+    expect(report.summary.packsBelowMinimum).toBe(6);
+    expect(report.summary.shallowPacks).toBe(0);
+
+    for (const packId of specPackIds) {
+      const row = report.packs.find((pack) => pack.packId === packId);
+      if (!row) throw new Error(`${packId} missing from audit report`);
+      expect(row.difficultySignals).toContain('arithmetic-spec=covered');
+      expect(row.warnings).not.toContain('shallow_item_count<6');
+      expect(row.consumers.every((consumer) => consumer.mechanic === 'math_snake')).toBe(true);
+    }
   });
 
   it('surfaces authored difficulty and level-range signals when packs declare them', () => {
