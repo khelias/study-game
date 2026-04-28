@@ -330,10 +330,10 @@ const RAW_ENGLISH_WORDS: readonly VocabularyWordBase[] = [
   { w: 'ZEBRA', e: '🦓' },
   { w: 'CLOUD', e: '☁️' },
   { w: 'RIVER', e: '🏞️' },
-  { w: 'PLANT', e: '🌱' },
+  { w: 'PLANT', e: '🪴' },
   { w: 'CHAIR', e: '🪑' },
   { w: 'HOUSE', e: '🏡' },
-  { w: 'CLOCK', e: '🕐' },
+  { w: 'CLOCK', e: '🕰️' },
 
   // 6-letter words
   { w: 'BANANA', e: '🍌' },
@@ -347,12 +347,12 @@ const RAW_ENGLISH_WORDS: readonly VocabularyWordBase[] = [
   { w: 'RABBIT', e: '🐰' },
   { w: 'TURTLE', e: '🐢' },
   { w: 'MONKEY', e: '🐵' },
-  { w: 'PIGEON', e: '🕊️' },
+  { w: 'PARROT', e: '🦜' },
   { w: 'SPIDER', e: '🕷️' },
   { w: 'DRAGON', e: '🐉' },
   { w: 'FLOWER', e: '🌸' },
-  { w: 'GARDEN', e: '🌻' },
-  { w: 'SPRING', e: '🌱' },
+  { w: 'TOMATO', e: '🍅' },
+  { w: 'ROCKET', e: '🚀' },
   { w: 'PENCIL', e: '✏️' },
 
   // 7-letter words

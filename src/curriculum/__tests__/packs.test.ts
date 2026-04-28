@@ -347,6 +347,26 @@ describe('curriculum', () => {
       expect(duplicateEmojiAnchors).toEqual([]);
     });
 
+    it('keeps English vocabulary age-appropriate and picture-pair safe', () => {
+      const reviewedOutWords = new Set(['GARDEN', 'PIGEON', 'SPRING']);
+      const emojiToWords = new Map<string, string[]>();
+
+      for (const word of LANGUAGE_VOCABULARY_EN_PACK.items) {
+        const wordsForEmoji = emojiToWords.get(word.e) ?? [];
+        wordsForEmoji.push(word.w);
+        emojiToWords.set(word.e, wordsForEmoji);
+
+        expect(word.w.length).toBeLessThanOrEqual(7);
+        expect(word.w).toMatch(/^[A-Z]+$/);
+        expect(reviewedOutWords.has(word.w)).toBe(false);
+      }
+
+      const duplicateEmojiAnchors = Array.from(emojiToWords.entries())
+        .filter(([, words]) => words.length > 1)
+        .map(([emoji, words]) => `${emoji}:${words.join(',')}`);
+      expect(duplicateEmojiAnchors).toEqual([]);
+    });
+
     it('selects vocabulary words by profile and level metadata', () => {
       const starterLevel1 = getVocabularyWordsForLevel(
         LANGUAGE_VOCABULARY_ET_PACK.items,
