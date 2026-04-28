@@ -253,7 +253,11 @@ export const WordCascadeView: React.FC<WordCascadeViewProps> = ({
 
   return (
     <div className="w-full flex flex-col items-center px-4 sm:px-6 max-w-2xl mx-auto pt-4 sm:pt-6 animate-in fade-in duration-300">
-      <div className="text-6xl sm:text-8xl mb-2 sm:mb-3 filter drop-shadow-xl" aria-hidden="true">
+      <div
+        data-testid="word-cascade-emoji"
+        className="text-6xl sm:text-8xl mb-2 sm:mb-3 filter drop-shadow-xl"
+        aria-hidden="true"
+      >
         {problem.emoji}
       </div>
 

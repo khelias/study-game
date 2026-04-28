@@ -251,7 +251,10 @@ export const WordGameView: React.FC<WordGameViewProps> = ({
 
   return (
     <div className="w-full flex flex-col items-center px-4 sm:px-6 max-w-2xl mx-auto pt-4 sm:pt-6 animate-in fade-in duration-300">
-      <div className="text-6xl sm:text-9xl mb-4 sm:mb-8 animate-bounce filter drop-shadow-xl">
+      <div
+        data-testid="word-builder-emoji"
+        className="text-6xl sm:text-9xl mb-4 sm:mb-8 animate-bounce filter drop-shadow-xl"
+      >
         {problem.emoji}
       </div>
 

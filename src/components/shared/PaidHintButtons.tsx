@@ -60,6 +60,7 @@ export const PaidHintButtons: React.FC<PaidHintButtonsProps> = ({
           <button
             type="button"
             key={hint.id}
+            data-testid={`paid-hint-${hint.id}`}
             onClick={() => !isDisabled && onHintClick(hint.id)}
             disabled={isDisabled}
             className="relative p-4 rounded-full shadow-lg transition-all bg-yellow-400 hover:bg-yellow-500 text-yellow-900 hover:scale-110 active:scale-95 disabled:bg-slate-200 disabled:text-slate-400 disabled:cursor-not-allowed"

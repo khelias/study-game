@@ -34,8 +34,8 @@ Peamine product-risk ei ole enam registri või metadata puudujääk. Arithmetic
 snake'i packid on teadlikult väikesed DSL-spec poolid ja audit loeb need
 kaetuks, kui operation family, range'id ja unlockid on olemas. Kõigil packidel
 on nüüd consumer ja explicit difficulty või progression signaal. Järgmine risk
-on authored content'i kvaliteet: sõnamängude UI smoke, kontrollitud sõnavara
-pildiankrute päris renderdus ja laiem copy-toimetus.
+on authored content'i kvaliteet: kontrollitud sõnavara pildiankrute päris
+renderdus, high-risk mängumehaanika smoke'id ja laiem copy-toimetus.
 
 ## Packide Tabel
 
@@ -66,16 +66,15 @@ pildiankrute päris renderdus ja laiem copy-toimetus.
 
 ## Prioriteedid
 
-1. **Tee sõnamängude UI smoke.** `picture_pairs`, `letter_match`,
-   `word_builder` ja `word_cascade` peaksid pärast ET/EN sõnavara copy review'd
-   läbima ühe mänguvooru mõlemas locale'is, et uued pildiankrud oleksid päris
-   UI-s loetavad.
-2. **Hoia authored-content kvaliteedi järjekord nähtaval.** Shape Shift ja
+1. **Hoia authored-content kvaliteedi järjekord nähtaval.** Shape Shift ja
    vocabulary on mahult korras, kuid järgmine kvaliteedihüpe tuleb sisulise
    rühmituse ja toimetamise, mitte registri migratsiooni kaudu.
-3. **Kasuta metadata't adaptiivses valikus järjekindlalt.** Sõnamängud on nüüd
+2. **Kasuta metadata't adaptiivses valikus järjekindlalt.** Sõnamängud on nüüd
    metadata külge seotud; järgmine samalaadne töö peaks olema UI või mastery
    vaates selle info nähtavaks tegemine.
+3. **Laienda UI smoke'i vajaduse järgi.** Vocabulary mängudel on nüüd mõlema
+   locale'i smoke; sama muster sobib järgmistele copy- või content-heavy
+   mängudele, kui nende packid muutuvad.
 
 ## Soovitatud Järgmine Slice
 
@@ -88,13 +87,16 @@ tähte, kasutama ainult eesti suurtähti, vältima duplicate emoji vasteid ja
 hoidma reviewed-out sõnad väljas. EN packi copy review eemaldas duplicate
 emoji riski ning asendas nõrgad ankrud selgemate 5-6 tähega sõnadega.
 
-Kõige praktilisem järgmine slice on sõnamängude UI smoke:
+Vocabulary-game UI smoke on nüüd kaetud Playwright testiga
+`e2e/vocabulary-games.spec.ts`: `word_builder`, `word_cascade`,
+`picture_pairs` ja `letter_match` avatakse nii `et` kui `en` locale'is,
+kontrollitakse locale chrome'i ja sõna-emoji renderdust ning käivitatakse
+vastuse või reveal flow.
 
-- käivitada kohalik build/dev server;
-- avada `word_builder`, `word_cascade`, `picture_pairs` ja `letter_match`;
-- läbida üks eestikeelne ja üks ingliskeelne mänguvoor või lisada Playwright
-  smoke, mis kontrollib, et sõna-emoji paarid renderduvad ning vastuse flow ei
-  murdu.
+Kõige praktilisem järgmine slice on otsustada, kas authored-content töö jätkub
+Shape Shift puzzle laiendusega või minnakse metadata kasutamise juurde UI/mastery
+vaates:
 
-See kinnitab, et copy audit ei ole ainult andmetaseme roheline kontroll, vaid
-ka päris mänguvaates loetav.
+- Shape Shift: lisada 3-5 uut puzzle'it ja katta bounds/readability testidega;
+- UI/mastery: näidata packi difficulty/focus infot õppija progressivaates;
+- content QA: teha sama smoke muster järgmisele kõige pildikesksemale mängule.
