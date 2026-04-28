@@ -5,6 +5,8 @@ import { Stats } from '../types/stats';
 import { AchievementUnlock } from '../types/achievement';
 import { useTranslation } from '../i18n/useTranslation';
 import { useProfileText } from '../hooks/useProfileText';
+import { getLocale } from '../i18n';
+import { getGameCurriculumSummary } from '../games/curriculumSummary';
 
 interface StatsDashboardProps {
   stats: Stats;
@@ -116,6 +118,7 @@ interface GameTypeStatsProps {
 export const GameTypeStats: React.FC<GameTypeStatsProps> = ({ stats }) => {
   const t = useTranslation();
   const { formatText } = useProfileText();
+  const locale = getLocale();
   const gameTypes: Record<string, number> = stats.gamesByType || {};
   const totalGames: number = Object.values(gameTypes).reduce((a, b) => a + b, 0);
 
@@ -139,12 +142,23 @@ export const GameTypeStats: React.FC<GameTypeStatsProps> = ({ stats }) => {
         const baseType = type.replace('_adv', '');
         const gameLabel: string = (t.games[baseType as keyof typeof t.games]?.title ??
           type.replace(/_/g, ' ')) as string;
+        const curriculumSummary = getGameCurriculumSummary(baseType, locale);
         return (
           <div key={type} className="space-y-1">
             <div className="flex justify-between items-center text-sm">
-              <span className="font-semibold text-slate-700 capitalize">
-                {formatText(gameLabel)}
-              </span>
+              <div className="min-w-0 pr-3">
+                <div className="font-semibold text-slate-700 capitalize">
+                  {formatText(gameLabel)}
+                </div>
+                {curriculumSummary && (
+                  <div
+                    className="truncate text-[11px] font-semibold text-slate-500"
+                    title={formatText(curriculumSummary.title)}
+                  >
+                    {formatText(curriculumSummary.label)}
+                  </div>
+                )}
+              </div>
               <span className="text-slate-500">
                 {count} {formatText(t.stats.gamesLabel)}
               </span>

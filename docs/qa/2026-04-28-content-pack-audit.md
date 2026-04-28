@@ -70,9 +70,10 @@ renderdus, high-risk mängumehaanika smoke'id ja laiem copy-toimetus.
    vocabulary on mahult korras, kuid järgmine kvaliteedihüpe tuleb sisulise
    rühmituse ja toimetamise, mitte registri migratsiooni kaudu.
 2. **Kasuta metadata't adaptiivses valikus järjekindlalt.** Sõnamängud on nüüd
-   metadata külge seotud ja menu UI näitab packi pealkirja, item count'i,
-   difficulty tier'e ning fookuste arvu. Järgmine samalaadne töö peaks viima
-   sama info mastery/progressivaatesse või kasutama seda adaptiivses valikus.
+   metadata külge seotud ning menu ja stats/progress UI näitavad packi
+   pealkirja, item count'i, difficulty tier'e ning fookuste arvu. Järgmine
+   samalaadne töö peaks kasutama seda infot adaptiivses valikus või detailsemas
+   mastery mudelis.
 3. **Laienda UI smoke'i vajaduse järgi.** Vocabulary mängudel on nüüd mõlema
    locale'i smoke; sama muster sobib järgmistele copy- või content-heavy
    mängudele, kui nende packid muutuvad.
@@ -98,13 +99,15 @@ Shape Shift puzzle pack on samuti laiendatud 20 itemini: lisatud on uued
 loetavad easy/medium/hard pusled ning testid kontrollivad nüüd localized nimesid,
 piece id unikaalsust, shape tüüpe, mõõtmeid, tier'i mahtu ja board bounds'e.
 
-Pack metadata on nüüd õppija menüüs nähtav: mängukaardid ja mechanic pack picker
+Pack metadata on nüüd õppija menüüs ja progressi/statistika vaates nähtav:
+mängukaardid, mechanic pack picker, enim mängitud mängud ja kõrgeimad tasemed
 näitavad sama kokkuvõtet (`pack title · item count · difficulty · focus count`)
 ning aria/title tekstis on ka fookuste pikemad learning-outcome nimed.
 
 Kõige praktilisem järgmine slice on otsustada, kas authored-content töö jätkub
 veel ühe pildikeskse packi smoke'iga või viiakse metadata kasutamine järgmisse
-õppija progressi/mastery vaatesse:
+adaptiivse valiku/mastery sammu:
 
-- UI/mastery: siduda packi difficulty/focus info õppija progressi detailvaatega;
+- mastery: kasutada packi difficulty/focus infot harjutuste valiku või skill
+  detailide järjestamisel;
 - content QA: teha sama smoke muster järgmisele kõige pildikesksemale mängule.
