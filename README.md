@@ -68,11 +68,12 @@ npm run preview   # serve dist/ locally
 
 ## Testing & quality gates
 
-The quality gate is enforced in [`.github/workflows/ci.yml`](.github/workflows/ci.yml): lint, typecheck, format check, unit tests with core coverage thresholds, build, and a separate Playwright E2E job. Every commit to `main` must pass all of these.
+The quality gate is enforced in [`.github/workflows/ci.yml`](.github/workflows/ci.yml): lint, dead-code check, typecheck, format check, unit tests with core coverage thresholds, build, and a separate Playwright E2E job. Every commit to `main` must pass all of these.
 
 | Command                 | Purpose                                                                     |
 | ----------------------- | --------------------------------------------------------------------------- |
 | `npm run lint`          | ESLint 9 + typescript-eslint                                                |
+| `npm run lint:dead`     | Knip unused file/dependency check with intentional scaffolding allowlist    |
 | `npm run typecheck`     | `tsc --noEmit` (strict mode, `noUncheckedIndexedAccess`, no implicit `any`) |
 | `npm run format:check`  | Prettier check (run `npm run format` to write)                              |
 | `npm run test`          | Vitest in watch mode                                                        |

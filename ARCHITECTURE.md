@@ -20,6 +20,7 @@
 - **Vitest** 1.6 with **Happy DOM** 20, **React Testing Library** 16.
 - **Playwright** 1.59 — E2E.
 - **ESLint** 9 with typescript-eslint 8 and `eslint-config-prettier`.
+- **Knip** 6 — unused file/dependency detection; intentionally inactive scaffolding is allowlisted in `knip.jsonc`.
 - **Prettier** 3 — formatting; checked in CI.
 
 ## Project structure
@@ -242,6 +243,7 @@ See [`README.md` → Testing & quality gates](README.md#testing--quality-gates).
 Enforced by CI. Every push to `main` runs the full gate; PRs are expected to land green.
 
 - **ESLint** 9 with typescript-eslint and `eslint-config-prettier`.
+- **Knip** — `npm run lint:dead` checks unused files and dependencies. `knip.jsonc` allowlists only documented inactive scaffolding (`src/monetization/`, `src/services/persistence/`) plus the static analytics-consent browser asset.
 - **TypeScript** strict mode: `strict: true`, `noUncheckedIndexedAccess`, no implicit `any`, no unused locals/parameters. Dedicated `npm run typecheck` script runs `tsc --noEmit` before build.
 - **Prettier** — single source of formatting; `npm run format` writes, `npm run format:check` verifies (CI uses the latter).
 - **Import discipline** — conventions enforced by reviewers; ADR-0001 anticipates an eventual ESLint import-restriction rule at context boundaries.
@@ -348,7 +350,7 @@ are listed here as the next natural slice boundaries.
 
 Two-workflow setup in `.github/workflows/`:
 
-- **`ci.yml`** — quality gate on every push and PR: lint, typecheck, format check, unit tests, build, and a separate Playwright E2E job.
+- **`ci.yml`** — quality gate on every push and PR: lint, dead-code check, typecheck, format check, unit tests, build, and a separate Playwright E2E job.
 - **`deploy.yml`** — on push to `main` only, runs on a self-hosted runner on the homelab VM: builds, then `cp -r dist/* /srv/data/games/study/` into the directory nginx serves as `games.khe.ee/study/`.
 
 There is no runtime backend today; Phase 2 adds one per ROADMAP §4.

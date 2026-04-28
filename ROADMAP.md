@@ -46,7 +46,7 @@ Today all four are welded together inside the `games/` folder. The roadmap's bac
 - Persistence adapter pattern already scaffolded (`src/services/persistence/`: `apiAdapter.ts` + `localStorageAdapter.ts` behind `persistenceService.ts`).
 - i18n scaffolding live (`src/i18n/locales/{et,en}.ts`).
 - Monetization scaffolding live (`src/monetization/` — feature flags, tiers, hooks, no active gates).
-- CI/CD: GitHub Actions quality gate (lint / typecheck / format-check / unit / E2E / build) plus self-hosted-runner deploy → `games.khe.ee/study/`. See `.github/workflows/ci.yml` + `deploy.yml`.
+- CI/CD: GitHub Actions quality gate (lint / dead-code check / typecheck / format-check / unit / E2E / build) plus self-hosted-runner deploy → `games.khe.ee/study/`. See `.github/workflows/ci.yml` + `deploy.yml`.
 - Playwright E2E safety net: four smoke scenarios covering menu load, category expansion, game navigation, balance-scale answer → stats.
 - Whole-game Playwright QA: every `GAME_CONFIG` game route now has a render smoke that fails on route errors, lingering loading state, `console.error`, or page exceptions.
 - Manual full-game browser QA baseline recorded in [docs/qa/2026-04-27-full-game-qa.md](docs/qa/2026-04-27-full-game-qa.md): menu/modals plus all 23 game routes were opened in the in-app browser and each route received at least one real interaction. Immediate findings already fixed: Shape Dash hardcoded English strings, Shop/Level close aria labels, and Shape Shift drag anchoring/release.
