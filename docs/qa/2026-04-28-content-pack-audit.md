@@ -108,6 +108,9 @@ Progress UI pind on nüüd ühemõtteline: vanad kasutamata `LearningProgress` j
 `GameProgression` komponendid eemaldati, sest neid ei importinud ega renderdanud
 ükski aktiivne vaade. Edasine progress/mastery töö peaks jätkama nähtaval
 `StatsModal` / `StatsDashboard` pinnal või looma uue pinna teadliku disainiotsusena.
+Sama cleanup eemaldas ka nende komponentide kasutamata i18n võtmed ning vanad
+progression recommendation / success score helperid; aktiivseks jäid ainult
+level-up ja star-reward progression reeglid.
 
 Kõige praktilisem järgmine slice on otsustada, kas authored-content töö jätkub
 veel ühe pildikeskse packi smoke'iga või viiakse metadata kasutamine järgmisse

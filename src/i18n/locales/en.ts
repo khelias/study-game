@@ -194,35 +194,6 @@ export const en = {
     gamesLabel: 'games',
   },
 
-  // Learning progress
-  learningProgress: {
-    title: 'Learning Progress',
-    scoreLabel: 'Learning score',
-    stages: {
-      master: 'Master',
-      advanced: 'Advanced',
-      practicing: 'Practicing',
-      beginner: 'Beginner',
-    },
-    metrics: {
-      accuracy: 'Accuracy',
-      level: 'Level',
-      games: 'Games',
-    },
-    encouragement: {
-      high: '🎉 Great job! You are a true master!',
-      low: '💪 Keep practicing! Every step counts!',
-    },
-    skillOverviewTitle: 'Skills overview',
-    skills: {
-      reading: 'Reading',
-      math: 'Math',
-      logic: 'Logic',
-      memory: 'Memory',
-    },
-    skillSummary: '{games} games • Level {level}',
-  },
-
   // Achievements
   achievements: {
     title: 'Achievements',
@@ -692,26 +663,6 @@ export const en = {
     buy50Stars: 'Add {count} Stars',
     noHeartsToPlay: 'You have no hearts to play!',
     buyHeartsToContinue: 'Use earned stars to refill hearts and continue playing.',
-  },
-
-  // Progression
-  progression: {
-    startGame: 'Start this game!',
-    doingGreat: 'You are doing great! Try a higher level.',
-    maybeTooHard: 'Maybe the game is too hard? Try an easier level.',
-    keepPracticing: 'Keep practicing!',
-  },
-
-  // Progression card
-  progressionCard: {
-    recommendation: 'Recommendation',
-    successScore: 'Success score',
-    currentLevel: 'Current level',
-    selectLevel: 'Select Level',
-    selectNewLevel: 'Select new level',
-    game: 'Game',
-    nextLevel: 'Next',
-    starsCollectedLabel: '{current} / {total} stars collected',
   },
 
   // Robo path game

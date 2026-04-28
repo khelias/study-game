@@ -194,35 +194,6 @@ export const et = {
     gamesLabel: 'mängu',
   },
 
-  // Learning progress
-  learningProgress: {
-    title: 'Õppimise edenemine',
-    scoreLabel: 'Õppimise skoor',
-    stages: {
-      master: 'Meister',
-      advanced: 'Edasijõudnud',
-      practicing: 'Harjutab',
-      beginner: 'Algaja',
-    },
-    metrics: {
-      accuracy: 'Täpsus',
-      level: 'Tase',
-      games: 'Mängud',
-    },
-    encouragement: {
-      high: '🎉 Väga tubli! Sa oled tõeline meister!',
-      low: '💪 Harjuta edasi! Iga samm loeb!',
-    },
-    skillOverviewTitle: 'Oskuste ülevaade',
-    skills: {
-      reading: 'Lugemine',
-      math: 'Matemaatika',
-      logic: 'Loogika',
-      memory: 'Mälu',
-    },
-    skillSummary: '{games} mängu • Tase {level}',
-  },
-
   // Achievements
   achievements: {
     title: 'Saavutused',
@@ -692,26 +663,6 @@ export const et = {
     buy50Stars: 'Lisa {count} tähte',
     noHeartsToPlay: 'Sul pole südameid mängimiseks!',
     buyHeartsToContinue: 'Kasuta teenitud tähti, et südameid juurde võtta.',
-  },
-
-  // Progression
-  progression: {
-    startGame: 'Alusta seda mängu!',
-    doingGreat: 'Sul läheb väga hästi! Proovi kõrgemat taset.',
-    maybeTooHard: 'Võib-olla on mäng liiga raske? Proovi lihtsamat taset.',
-    keepPracticing: 'Jätka harjutamist!',
-  },
-
-  // Progression card
-  progressionCard: {
-    recommendation: 'Soovitus',
-    successScore: 'Edu skoor',
-    currentLevel: 'Praegune tase',
-    selectLevel: 'Vali tase',
-    selectNewLevel: 'Vali uus tase',
-    game: 'Mäng',
-    nextLevel: 'Järgmine',
-    starsCollectedLabel: '{current} / {total} tähte kogutud',
   },
 
   // Robo path game

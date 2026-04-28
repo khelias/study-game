@@ -22,23 +22,6 @@ export interface LevelConfig {
   attempts?: number;
 }
 
-// Difficulty calculation result
-export interface DifficultyResult {
-  effectiveLevel: number;
-  baseLevel: number;
-  difficultyOffset: number;
-  isEasy: boolean;
-  isMedium: boolean;
-  isHard: boolean;
-}
-
-// Progression recommendation
-export interface ProgressionRecommendation {
-  message: string;
-  action: 'start' | 'level_up' | 'level_down' | 'continue';
-  priority: 'high' | 'medium' | 'low';
-}
-
 // Difficulty result for game
 export interface GameDifficulty {
   effectiveLevel: number;

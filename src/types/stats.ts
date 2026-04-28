@@ -18,12 +18,6 @@ export interface Stats {
   maxSnakeLength: number; // Maximum snake length achieved in math snake
 }
 
-// Performance metrics for adaptive difficulty
-export interface PerformanceMetrics {
-  accuracy: number;
-  averageTime: number;
-}
-
 // Game session statistics
 export interface GameSession {
   startTime: number | null;
