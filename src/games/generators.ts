@@ -491,10 +491,7 @@ export const Generators: Record<string, GeneratorFunction> = {
     profile: ProfileType = 'starter',
   ): WordCascadeProblem => {
     const locale = getLocale();
-    const words = getPackItemsForLocale<VocabularyWord>(
-      LANGUAGE_LONG_VOCABULARY_SKILL.id,
-      locale,
-    );
+    const words = getPackItemsForLocale<VocabularyWord>(LANGUAGE_LONG_VOCABULARY_SKILL.id, locale);
 
     const desiredLen = level <= 3 ? 9 : 10;
     const bucket = getVocabularyWordsForLength(words, desiredLen, profile, level, {

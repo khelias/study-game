@@ -6,10 +6,7 @@
  */
 
 import type { ContentPack } from '../../types';
-import {
-  LANGUAGE_LONG_VOCABULARY_SKILL,
-  LANGUAGE_VOCABULARY_SKILL,
-} from '../../skills/language';
+import { LANGUAGE_LONG_VOCABULARY_SKILL, LANGUAGE_VOCABULARY_SKILL } from '../../skills/language';
 import type {
   VocabularyWord,
   VocabularyWordBase,

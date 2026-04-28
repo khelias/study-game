@@ -423,13 +423,9 @@ describe('curriculum', () => {
         expect(pack.items.every((word) => word.focus === 'longer_words')).toBe(true);
         expect(pack.items.every((word) => word.minLevel === 1)).toBe(true);
 
-        const levelOneLongWords = getVocabularyWordsForLength(
-          pack.items,
-          9,
-          'starter',
-          1,
-          { fallbackLengths: [10, 8] },
-        );
+        const levelOneLongWords = getVocabularyWordsForLength(pack.items, 9, 'starter', 1, {
+          fallbackLengths: [10, 8],
+        });
         expect(levelOneLongWords.length).toBeGreaterThan(0);
         expect(levelOneLongWords.every((word) => word.w.length >= 8)).toBe(true);
       }
