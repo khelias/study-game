@@ -223,7 +223,6 @@ const RAW_ESTONIAN_WORDS: readonly VocabularyWordBase[] = [
   // home (added)
   { w: 'AKEN', e: '🪟' },
   { w: 'PALK', e: '🪵' },
-  { w: 'PIRN', e: '💡' },
   { w: 'SEIN', e: '🧱' },
   { w: 'PANN', e: '🍳' },
   { w: 'VANN', e: '🛁' },
@@ -368,10 +367,8 @@ const RAW_ENGLISH_WORDS: readonly VocabularyWordBase[] = [
   { w: 'DRAGON', e: '🐉' },
   { w: 'FLOWER', e: '🌸' },
   { w: 'GARDEN', e: '🌻' },
-  { w: 'SNOW', e: '❄️' },
   { w: 'SPRING', e: '🌱' },
   { w: 'PENCIL', e: '✏️' },
-  { w: 'WATER', e: '💧' },
 
   // 7-letter words
   { w: 'CHICKEN', e: '🐔' },

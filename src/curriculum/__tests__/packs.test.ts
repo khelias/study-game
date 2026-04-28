@@ -293,6 +293,18 @@ describe('curriculum', () => {
       }
     });
 
+    it('keeps vocabulary words unique, uppercase, and visually anchored', () => {
+      for (const pack of [LANGUAGE_VOCABULARY_ET_PACK, LANGUAGE_VOCABULARY_EN_PACK]) {
+        const words = pack.items.map((word) => word.w);
+
+        expect(new Set(words).size).toBe(words.length);
+        for (const word of pack.items) {
+          expect(word.w).toBe(word.w.toUpperCase());
+          expect(word.e).not.toBe('');
+        }
+      }
+    });
+
     it('selects vocabulary words by profile and level metadata', () => {
       const starterLevel1 = getVocabularyWordsForLevel(
         LANGUAGE_VOCABULARY_ET_PACK.items,
