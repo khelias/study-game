@@ -45,6 +45,7 @@ import { SettingsMenu } from '../../components/SettingsMenu';
 import type { AchievementUnlock } from '../../types/achievement';
 import { gameIdToSlug } from '../../utils/gameSlug';
 import { getLocale } from '../../i18n';
+import { getGameCurriculumSummary } from '../../games/curriculumSummary';
 
 const ICON_MAP = {
   Type,
@@ -77,6 +78,7 @@ export const MenuScreen: React.FC = () => {
   const navigate = useNavigate();
   const t = useTranslation();
   const { formatText } = useProfileText();
+  const locale = getLocale();
   const stars = useGameStore((state) => state.stars); // Persistent currency
   const hearts = useGameStore((state) => state.hearts); // Persistent global resource
   const unlockedAchievements = useGameStore((state) => state.unlockedAchievements);
@@ -389,6 +391,7 @@ export const MenuScreen: React.FC = () => {
                       badge={isNew ? formatText(t.menuSpecific.newGame) : null}
                       delay={0}
                       highScore={getHighScore(key)}
+                      curriculumSummary={getGameCurriculumSummary(key, locale)}
                     />
                   );
                 })}
@@ -594,6 +597,7 @@ export const MenuScreen: React.FC = () => {
                             badge={isNew ? formatText(t.menuSpecific.newGame) : null}
                             delay={idx * 50}
                             highScore={getHighScore(key)}
+                            curriculumSummary={getGameCurriculumSummary(key, locale)}
                           />
                         );
                       })}
@@ -620,6 +624,7 @@ export const MenuScreen: React.FC = () => {
                     level: getLevelForGame(key),
                     highScore: getHighScore(key),
                     isNew: gameStats === 0,
+                    curriculumSummary: getGameCurriculumSummary(key, locale),
                   };
                 });
               return (
@@ -641,7 +646,7 @@ export const MenuScreen: React.FC = () => {
             Self-hosted in Tallinn
             <span className="mx-2 opacity-50">·</span>
             <a
-              href={`/privacy?lang=${getLocale()}`}
+              href={`/privacy?lang=${locale}`}
               className="text-slate-400 hover:text-slate-600 transition-colors no-underline"
             >
               Privacy

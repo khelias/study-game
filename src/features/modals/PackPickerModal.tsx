@@ -8,6 +8,11 @@ import { useProfileText } from '../../hooks/useProfileText';
 import { FocusTrap } from '../../components/AccessibilityHelpers';
 import type { GameConfig, MechanicConfig } from '../../types/game';
 
+interface CurriculumSummaryLabel {
+  label: string;
+  title: string;
+}
+
 interface PackPickerModalProps {
   mechanicConfig: MechanicConfig;
   bindings: Array<{
@@ -16,6 +21,7 @@ interface PackPickerModalProps {
     level: number;
     highScore: number;
     isNew: boolean;
+    curriculumSummary?: CurriculumSummaryLabel | null;
   }>;
   onSelect: (gameId: string) => void;
   onClose: () => void;
@@ -62,7 +68,9 @@ export const PackPickerModal: React.FC<PackPickerModalProps> = ({
 
           <div className="p-4 overflow-y-auto flex-1">
             <ul className="flex flex-col gap-2">
-              {bindings.map(({ config, iconComponent, level, highScore, isNew }) => {
+              {bindings.map((binding) => {
+                const { config, iconComponent, level, highScore, isNew, curriculumSummary } =
+                  binding;
                 const Icon = iconComponent || Type;
                 const title: string = (t.games[config.id as keyof typeof t.games]?.title ??
                   config.title) as string;
@@ -78,7 +86,9 @@ export const PackPickerModal: React.FC<PackPickerModalProps> = ({
                     <button
                       onClick={() => onSelect(config.id)}
                       className={`group relative w-full grid grid-cols-[auto_1fr_auto] items-center gap-3 p-3 rounded-lg border ${config.theme.border} ${config.theme.bg} hover:bg-white hover:shadow-md active:bg-slate-50 transition-colors text-left`}
-                      aria-label={`${formatText(title)} - ${formatText(desc)}`}
+                      aria-label={`${formatText(title)} - ${formatText(desc)}${
+                        curriculumSummary ? ` - ${formatText(curriculumSummary.title)}` : ''
+                      }`}
                     >
                       <div
                         className={`flex h-11 w-11 items-center justify-center rounded-lg ${config.theme.iconBg} ${config.theme.text} flex-shrink-0`}
@@ -92,6 +102,14 @@ export const PackPickerModal: React.FC<PackPickerModalProps> = ({
                         <div className="text-xs font-semibold text-slate-600 truncate">
                           {formatText(desc)}
                         </div>
+                        {curriculumSummary && (
+                          <div
+                            className="mt-0.5 truncate text-[11px] font-semibold text-slate-500"
+                            title={formatText(curriculumSummary.title)}
+                          >
+                            {formatText(curriculumSummary.label)}
+                          </div>
+                        )}
                         <div className="mt-1 flex items-center gap-2 flex-wrap">
                           {isNew && (
                             <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-slate-900 text-white">

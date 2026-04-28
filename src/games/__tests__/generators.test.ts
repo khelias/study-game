@@ -1,6 +1,7 @@
-import { describe, it, expect } from 'vitest';
+import { beforeEach, describe, it, expect } from 'vitest';
 import { Generators } from '../generators';
 import { createRng } from '../../engine/rng';
+import { setLocale } from '../../i18n';
 import type {
   BalanceScaleProblem,
   WordBuilderProblem,
@@ -75,6 +76,10 @@ import {
   getBattleLearnQuestionStage,
 } from '../../curriculum/packs/math/battlelearn';
 import { SPIKE_WIDTH } from '../../engine/shapeDash';
+
+beforeEach(() => {
+  setLocale('et');
+});
 
 describe('Generators', () => {
   describe('balance_scale', () => {

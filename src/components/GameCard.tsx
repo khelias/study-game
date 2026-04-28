@@ -13,6 +13,11 @@ interface Progress {
   total: number;
 }
 
+interface CurriculumSummaryLabel {
+  label: string;
+  title: string;
+}
+
 interface GameCardProps {
   gameConfig: GameConfig & {
     iconComponent?: LucideIcon | React.ComponentType<{ size?: number; className?: string }>;
@@ -24,6 +29,7 @@ interface GameCardProps {
   badge?: string | null;
   delay?: number;
   highScore?: number; // Optional high score to display
+  curriculumSummary?: CurriculumSummaryLabel | null;
 }
 
 export const GameCard: React.FC<GameCardProps> = ({
@@ -35,6 +41,7 @@ export const GameCard: React.FC<GameCardProps> = ({
   badge = null,
   delay = 0,
   highScore,
+  curriculumSummary = null,
 }) => {
   const t = useTranslation();
   const { formatText } = useProfileText();
@@ -53,7 +60,9 @@ export const GameCard: React.FC<GameCardProps> = ({
         gameConfig.difficulty) as string)
     : null;
   const levelLabel = formatText(t.game.level);
-  const ariaLabel = `${formatText(gameTitle)} - ${formatText(gameDesc)} - ${levelLabel} ${level}`;
+  const ariaLabel = `${formatText(gameTitle)} - ${formatText(gameDesc)}${
+    curriculumSummary ? ` - ${formatText(curriculumSummary.title)}` : ''
+  } - ${levelLabel} ${level}`;
 
   return (
     <FadeIn delay={delay} className="h-full">
@@ -92,6 +101,14 @@ export const GameCard: React.FC<GameCardProps> = ({
           <p className="mt-0.5 line-clamp-2 text-xs font-medium leading-snug text-slate-600 sm:text-sm">
             {formatText(gameDesc)}
           </p>
+          {curriculumSummary && (
+            <p
+              className="mt-1 truncate text-[11px] font-semibold leading-snug text-slate-500"
+              title={formatText(curriculumSummary.title)}
+            >
+              {formatText(curriculumSummary.label)}
+            </p>
+          )}
 
           <div className="mt-1.5 flex items-center gap-1.5 flex-wrap">
             {badge && (
