@@ -1,19 +1,121 @@
-import type { ContentPack } from '../../types';
+import type { ContentPack, LocaleCode } from '../../types';
 import { MATH_TIME_READING_SKILL } from '../../skills/math';
 
+export type TimeReadingFocus =
+  | 'full_hour'
+  | 'half_hour'
+  | 'quarter_hour'
+  | 'ten_minutes'
+  | 'five_minutes'
+  | 'near_hour'
+  | 'digital_24h'
+  | 'mixed_review';
+
 export interface TimeReadingStageItem {
+  kind: 'stage';
   minLevel: number;
   maxLevel?: number;
+  focus: TimeReadingFocus;
+  learningOutcome: Record<LocaleCode, string>;
   stepMinutes: number;
+  allowedMinutes?: readonly number[];
   optionCount: number;
+  distractorMinuteOffsets: readonly number[];
 }
 
 const ITEMS: readonly TimeReadingStageItem[] = [
-  { minLevel: 1, maxLevel: 2, stepMinutes: 30, optionCount: 3 },
-  { minLevel: 3, maxLevel: 4, stepMinutes: 15, optionCount: 4 },
-  { minLevel: 5, maxLevel: 5, stepMinutes: 10, optionCount: 4 },
-  { minLevel: 6, maxLevel: 6, stepMinutes: 10, optionCount: 6 },
-  { minLevel: 7, stepMinutes: 5, optionCount: 6 },
+  {
+    kind: 'stage',
+    minLevel: 1,
+    maxLevel: 1,
+    focus: 'full_hour',
+    learningOutcome: { et: 'Täistunni lugemine', en: 'Read full hours' },
+    stepMinutes: 60,
+    allowedMinutes: [0],
+    optionCount: 3,
+    distractorMinuteOffsets: [60, 120],
+  },
+  {
+    kind: 'stage',
+    minLevel: 2,
+    maxLevel: 2,
+    focus: 'half_hour',
+    learningOutcome: { et: 'Täis- ja pooltunni eristamine', en: 'Read full and half hours' },
+    stepMinutes: 30,
+    allowedMinutes: [0, 30],
+    optionCount: 3,
+    distractorMinuteOffsets: [30, 60, 90],
+  },
+  {
+    kind: 'stage',
+    minLevel: 3,
+    maxLevel: 4,
+    focus: 'quarter_hour',
+    learningOutcome: { et: 'Veerandtundide lugemine', en: 'Read quarter hours' },
+    stepMinutes: 15,
+    allowedMinutes: [0, 15, 30, 45],
+    optionCount: 4,
+    distractorMinuteOffsets: [15, 30, 45],
+  },
+  {
+    kind: 'stage',
+    minLevel: 5,
+    maxLevel: 5,
+    focus: 'ten_minutes',
+    learningOutcome: { et: '10-minutilise täpsusega aeg', en: 'Read time to 10 minutes' },
+    stepMinutes: 10,
+    optionCount: 4,
+    distractorMinuteOffsets: [10, 20, 30],
+  },
+  {
+    kind: 'stage',
+    minLevel: 6,
+    maxLevel: 7,
+    focus: 'five_minutes',
+    learningOutcome: { et: '5-minutilise täpsusega aeg', en: 'Read time to 5 minutes' },
+    stepMinutes: 5,
+    optionCount: 5,
+    distractorMinuteOffsets: [5, 10, 15, 30],
+  },
+  {
+    kind: 'stage',
+    minLevel: 8,
+    maxLevel: 9,
+    focus: 'near_hour',
+    learningOutcome: {
+      et: 'Aeg vahetult enne ja pärast täistundi',
+      en: 'Read times just before and after the hour',
+    },
+    stepMinutes: 5,
+    allowedMinutes: [0, 5, 10, 50, 55],
+    optionCount: 5,
+    distractorMinuteOffsets: [5, 10, 15, 60],
+  },
+  {
+    kind: 'stage',
+    minLevel: 10,
+    maxLevel: 12,
+    focus: 'digital_24h',
+    learningOutcome: {
+      et: 'Analoogkellalt 24h ajale vastamine',
+      en: 'Match analog time to 24h time',
+    },
+    stepMinutes: 5,
+    optionCount: 6,
+    distractorMinuteOffsets: [5, 10, 15, 30, 60],
+  },
+  {
+    kind: 'stage',
+    minLevel: 13,
+    focus: 'mixed_review',
+    learningOutcome: {
+      et: 'Segatud kordus 5-minutilise täpsusega',
+      en: 'Mixed review to 5 minutes',
+    },
+    stepMinutes: 5,
+    optionCount: 6,
+    distractorMinuteOffsets: [5, 10, 15, 20, 30, 45, 60],
+  },
 ];
 
 export function getTimeReadingStage(
@@ -33,7 +135,7 @@ export const MATH_TIME_READING_PACK: ContentPack<TimeReadingStageItem> = {
   id: 'math.time_reading.core',
   skillId: MATH_TIME_READING_SKILL.id,
   locale: 'et',
-  version: '1.0.0',
+  version: '1.1.0',
   title: {
     et: 'Kellaaja lugemise astmed',
     en: 'Reading time stages',

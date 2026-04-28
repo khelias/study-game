@@ -23,7 +23,7 @@ item count'i, locale'i, skilli õpitargetit ja lihtsaid difficulty signaale
 | Packid ilma tarbijata  | 0       |
 | Skillid ilma packita   | 0       |
 | Skillid ilma tarbijata | 0       |
-| Packid alla 6 itemi    | 8       |
+| Packid alla 6 itemi    | 7       |
 
 Hea uudis: Phase 1 migratsioon on struktuurselt seotud. Igal skillil on pack,
 igal packil on vähemalt üks game consumer ja ükski pack ei vedele registris
@@ -57,7 +57,7 @@ Peamine product-risk: osa packe on endiselt progression-specid, mitte sisukad
 | `math.pattern_sequences.core`              | Mustrijadad                 | 11     | `pattern`                                                       | `template:6`, `theme:5`                | OK                                           |
 | `math.subtraction_within_100`              | Lahutamine kuni 100         | 3      | `subtraction_big_snake`                                         | `valueRange 10-100`                    | Õhuke spec                                   |
 | `math.subtraction_within_20`               | Lahutamine kuni 20          | 3      | `subtraction_snake`                                             | `valueRange 4-20`, `valueRange 5-20`   | Õhuke spec                                   |
-| `math.time_reading.core`                   | Kellaaja lugemine           | 5      | `time_match`                                                    | `levels=1-open-ended`                  | Napilt alla miinimumi                        |
+| `math.time_reading.core`                   | Kellaaja lugemine           | 8      | `time_match`                                                    | `levels=1-open-ended`, `stage:8`       | OK                                           |
 | `math.unit_conversions.core`               | Ühikute teisendamine        | 7      | `unit_conversion`                                               | puudub                                 | Maht OK; lisa staged difficulty              |
 
 ## Prioriteedid
@@ -66,9 +66,10 @@ Peamine product-risk: osa packe on endiselt progression-specid, mitte sisukad
    `language.syllabification.*` ja `language.spatial_sentences.scene_pack`
    on mahult kasutatavad, kuid neil puudub selge raskus või õpitulemuse tag.
    See takistab päriselt adaptiivset valikut.
-2. **Laienda kõige õhemaid procedural packe.** Esimene järjekord:
-   `math.addition_memory.core` ja `math.time_reading.core`. Need annavad
-   standardmängudele kiireima product-kvaliteedi tõusu.
+2. **Laienda kõige õhemaid procedural packe.** Järgmine järjekord:
+   `math.addition_memory.core`, seejärel otsustada arithmetic snake'i specide
+   auditikriteerium. Need annavad standardmängudele kiireima
+   product-kvaliteedi tõusu.
 3. **Otsusta arithmetic specide sihttase.** Snake'i `add/sub/mul` packid on
    teadlikult DSL-specid, mitte ülesandepangad. Kui see jääb nii, peaks nende
    auditikriteerium olema "spec coverage", mitte item count.
@@ -77,14 +78,15 @@ Peamine product-risk: osa packe on endiselt progression-specid, mitte sisukad
 
 ## Soovitatud Järgmine Slice
 
-`math.balance_equations.core` on nüüd laiendatud 6 level-stage'iks. Kõige
-praktilisem järgmine slice on `math.time_reading.core`:
+`math.balance_equations.core` on laiendatud 6 level-stage'iks ja
+`math.time_reading.core` 8 õppesisu stage'iks. Kõige praktilisem järgmine slice
+on `math.addition_memory.core`:
 
-- laiendada 5 stage'i 7-9 stage'iks;
-- lisada selgemad õpitulemused: täistund, pooltund, veerandtund, 10 min,
-  5 min, enne/pärast, digitaalkell;
-- testida, et option count ja minute precision kasvavad leveliga;
-- pärast seda teha sama muster `math.addition_memory.core` jaoks.
+- jagada starter/advanced kaks globaalset progression configut level-stage'ideks;
+- lisada selged answer-sum range'id ja card-count progression;
+- testida, et starter/advanced stage valik säilib;
+- pärast seda otsustada, kas snake'i arithmetic packide kriteerium on item count
+  või spec coverage.
 
 See annab väikese, hästi testitava muudatuse ning tõstab kohe ühe standardmängu
 sisulist kvaliteeti.

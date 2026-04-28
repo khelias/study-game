@@ -722,18 +722,33 @@ describe('Generators', () => {
       const stage = getTimeReadingStage(MATH_TIME_READING_PACK.items, 1);
 
       expect(problem.type).toBe('time_match');
+      expect(stage.focus).toBe('full_hour');
+      expect(problem.minutes).toBe(0);
       expect(problem.minutes % stage.stepMinutes).toBe(0);
       expect(problem.options).toHaveLength(stage.optionCount);
       expect(problem.options).toContain(problem.answer);
     });
 
-    it('should move to five-minute precision at later levels', () => {
+    it('should use constrained before/after-hour minute choices at level 8', () => {
       const rng = createRng(54321);
       const generator = Generators.time_match;
       if (!generator) throw new Error('time_match generator not found');
-      const problem = generator(7, rng, 'advanced') as TimeMatchProblem;
-      const stage = getTimeReadingStage(MATH_TIME_READING_PACK.items, 7);
+      const problem = generator(8, rng, 'advanced') as TimeMatchProblem;
+      const stage = getTimeReadingStage(MATH_TIME_READING_PACK.items, 8);
 
+      expect(stage.focus).toBe('near_hour');
+      expect(stage.allowedMinutes).toContain(problem.minutes);
+      expect(problem.options).toHaveLength(stage.optionCount);
+    });
+
+    it('should move to dense digital options at later levels', () => {
+      const rng = createRng(54321);
+      const generator = Generators.time_match;
+      if (!generator) throw new Error('time_match generator not found');
+      const problem = generator(10, rng, 'advanced') as TimeMatchProblem;
+      const stage = getTimeReadingStage(MATH_TIME_READING_PACK.items, 10);
+
+      expect(stage.focus).toBe('digital_24h');
       expect(stage.stepMinutes).toBe(5);
       expect(problem.minutes % stage.stepMinutes).toBe(0);
       expect(problem.options).toHaveLength(stage.optionCount);

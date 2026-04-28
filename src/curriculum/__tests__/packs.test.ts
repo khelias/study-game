@@ -403,15 +403,32 @@ describe('curriculum', () => {
       expect(level12.maxValue).toBe(100);
     });
 
-    it('time reading pack defines minute precision and option count stages', () => {
+    it('time reading pack defines learning outcomes, minute precision, and option stages', () => {
       const level1 = getTimeReadingStage(MATH_TIME_READING_PACK.items, 1);
+      const level2 = getTimeReadingStage(MATH_TIME_READING_PACK.items, 2);
+      const level3 = getTimeReadingStage(MATH_TIME_READING_PACK.items, 3);
       const level5 = getTimeReadingStage(MATH_TIME_READING_PACK.items, 5);
-      const level7 = getTimeReadingStage(MATH_TIME_READING_PACK.items, 7);
+      const level6 = getTimeReadingStage(MATH_TIME_READING_PACK.items, 6);
+      const level8 = getTimeReadingStage(MATH_TIME_READING_PACK.items, 8);
+      const level10 = getTimeReadingStage(MATH_TIME_READING_PACK.items, 10);
+      const level13 = getTimeReadingStage(MATH_TIME_READING_PACK.items, 13);
 
-      expect(level1).toMatchObject({ stepMinutes: 30, optionCount: 3 });
-      expect(level5).toMatchObject({ stepMinutes: 10, optionCount: 4 });
-      expect(level7).toMatchObject({ stepMinutes: 5, optionCount: 6 });
+      expect(MATH_TIME_READING_PACK.items).toHaveLength(8);
+      expect(level1).toMatchObject({ focus: 'full_hour', stepMinutes: 60, optionCount: 3 });
+      expect(level2).toMatchObject({ focus: 'half_hour', stepMinutes: 30, optionCount: 3 });
+      expect(level3).toMatchObject({ focus: 'quarter_hour', stepMinutes: 15, optionCount: 4 });
+      expect(level5).toMatchObject({ focus: 'ten_minutes', stepMinutes: 10, optionCount: 4 });
+      expect(level6).toMatchObject({ focus: 'five_minutes', stepMinutes: 5, optionCount: 5 });
+      expect(level8).toMatchObject({ focus: 'near_hour', stepMinutes: 5, optionCount: 5 });
+      expect(level10).toMatchObject({ focus: 'digital_24h', stepMinutes: 5, optionCount: 6 });
+      expect(level13).toMatchObject({ focus: 'mixed_review', stepMinutes: 5, optionCount: 6 });
       expect(MATH_TIME_READING_PACK.items.every((item) => 60 % item.stepMinutes === 0)).toBe(true);
+      expect(
+        MATH_TIME_READING_PACK.items.every((item) => item.distractorMinuteOffsets.length > 0),
+      ).toBe(true);
+      expect(MATH_TIME_READING_PACK.items.every((item) => item.learningOutcome.et.length > 0)).toBe(
+        true,
+      );
     });
 
     it('balance equation pack defines level stages and distractor settings', () => {

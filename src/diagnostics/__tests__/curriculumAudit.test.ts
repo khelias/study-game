@@ -65,4 +65,18 @@ describe('curriculum audit report', () => {
       { gameId: 'balance_scale', mechanic: 'balance_scale', mode: 'direct-pack' },
     ]);
   });
+
+  it('tracks the expanded time reading stage pack as level-ranged content', () => {
+    const report = buildCurriculumAuditReport();
+    const time = report.packs.find((row) => row.packId === 'math.time_reading.core');
+
+    expect(time).toBeDefined();
+    expect(time?.itemCount).toBe(8);
+    expect(time?.itemKinds).toEqual({ stage: 8 });
+    expect(time?.difficultySignals).toContain('levels=1-open-ended');
+    expect(time?.warnings).not.toContain('shallow_item_count<6');
+    expect(time?.consumers).toEqual([
+      { gameId: 'time_match', mechanic: 'time_match', mode: 'direct-pack' },
+    ]);
+  });
 });

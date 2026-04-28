@@ -1265,18 +1265,30 @@ export const Generators: Record<string, GeneratorFunction> = {
       getPackItems<TimeReadingStageItem>(MATH_TIME_READING_PACK.id),
       level,
     );
+    const minuteCandidates =
+      stage.allowedMinutes ??
+      Array.from({ length: 60 / stage.stepMinutes }, (_, index) => index * stage.stepMinutes);
     const hour24 = Math.floor(rng() * 24);
-    const minute = Math.floor(rng() * (60 / stage.stepMinutes)) * stage.stepMinutes;
+    const minute = getRandom(minuteCandidates, rng) ?? 0;
     const toLabel = (h24: number, m: number) =>
       `${h24.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`;
+    const toWrappedLabel = (totalMinutes: number) => {
+      const wrapped = ((totalMinutes % 1440) + 1440) % 1440;
+      return toLabel(Math.floor(wrapped / 60), wrapped % 60);
+    };
     const correct = toLabel(hour24, minute);
     const opts = new Set([correct]);
-    while (opts.size < stage.optionCount) {
-      const delta = (Math.floor(rng() * 3) + 1) * stage.stepMinutes;
+    let safety = 0;
+    while (opts.size < stage.optionCount && safety < 50) {
+      safety++;
+      const delta = getRandom(stage.distractorMinuteOffsets, rng) ?? stage.stepMinutes;
       const sign = rng() > 0.5 ? 1 : -1;
-      const m2 = (minute + sign * delta + 60) % 60;
-      const h2 = (hour24 + (minute + sign * delta < 0 ? -1 : 0) + 24) % 24;
-      opts.add(toLabel(h2, m2));
+      opts.add(toWrappedLabel(hour24 * 60 + minute + sign * delta));
+    }
+    while (opts.size < stage.optionCount) {
+      const fallbackHour = Math.floor(rng() * 24);
+      const fallbackMinute = getRandom(minuteCandidates, rng) ?? 0;
+      opts.add(toLabel(fallbackHour, fallbackMinute));
     }
     return {
       type: 'time_match',
