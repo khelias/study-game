@@ -135,18 +135,48 @@ test.describe('smart games — focused interaction QA', () => {
     expect(failures.pageErrors).toEqual([]);
   });
 
-  test('shape_dash: jump input runs without runtime errors', async ({ page }) => {
+  test('shape_dash: mobile jump input is reachable and unobscured', async ({ page }) => {
     const failures = attachRuntimeFailureCapture(page);
+    await page.setViewportSize({ width: 320, height: 568 });
 
     await page.goto('/study/games/shape-dash?seed=2');
     await waitForGameReady(page);
 
-    const runner = page.getByRole('button', { name: 'Hüppa' });
+    const runner = page.getByTestId('shape-dash-jump-button');
     await expect(runner).toBeVisible();
+    const runnerBox = await runner.boundingBox();
+    expect(runnerBox).not.toBeNull();
+    if (!runnerBox) return;
+
+    const rightEdgeHitsJump = await page.evaluate(
+      ({ x, y }) =>
+        document.elementFromPoint(x, y)?.closest('[data-testid="shape-dash-jump-button"]') !== null,
+      {
+        x: runnerBox.x + runnerBox.width - 24,
+        y: runnerBox.y + runnerBox.height / 2,
+      },
+    );
+    expect(rightEdgeHitsJump).toBe(true);
     await runner.click();
     await page.waitForTimeout(300);
 
     await expect(page.locator('canvas')).toBeVisible();
+    expect(failures.consoleErrors).toEqual([]);
+    expect(failures.pageErrors).toEqual([]);
+  });
+
+  test('shape_dash: short landscape viewport can reach jump controls', async ({ page }) => {
+    const failures = attachRuntimeFailureCapture(page);
+    await page.setViewportSize({ width: 568, height: 320 });
+
+    await page.goto('/study/games/shape-dash?seed=2');
+    await waitForGameReady(page);
+
+    const runner = page.getByTestId('shape-dash-jump-button');
+    await runner.scrollIntoViewIfNeeded();
+    await expect(runner).toBeInViewport();
+    await runner.click();
+
     expect(failures.consoleErrors).toEqual([]);
     expect(failures.pageErrors).toEqual([]);
   });

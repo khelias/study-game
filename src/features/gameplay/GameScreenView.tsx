@@ -98,6 +98,12 @@ export const GameScreenView: React.FC<GameScreenViewProps> = ({
 }) => {
   const t = useTranslation();
   const { formatText } = useProfileText();
+  const baseGameType = gameType.replace('_adv', '');
+  const tipPlacement = baseGameType === 'shape_dash' ? 'inline' : 'fixed';
+  const gameAndTipClassName =
+    tipPlacement === 'inline'
+      ? 'w-full flex flex-col items-center gap-3 pb-8'
+      : 'w-full flex justify-center pb-8';
   const sessionObjective: GameHeaderObjective | null =
     problem?.type === 'battlelearn'
       ? (() => {
@@ -116,7 +122,7 @@ export const GameScreenView: React.FC<GameScreenViewProps> = ({
 
   return (
     <div
-      className={`flex h-full min-h-0 flex-col overflow-hidden font-sans ${bgClass} select-none transition-colors duration-500`}
+      className={`flex h-full min-h-0 flex-col overflow-y-auto overflow-x-hidden overscroll-contain font-sans ${bgClass} select-none transition-colors duration-500`}
     >
       {confetti && <Confetti />}
       {enhancedConfetti && (
@@ -147,11 +153,11 @@ export const GameScreenView: React.FC<GameScreenViewProps> = ({
         {settingsMenuSlot}
       </GameHeader>
 
-      <div className="flex-1 flex flex-col items-center p-4 max-w-2xl mx-auto w-full relative pt-3 sm:pt-4">
+      <div className="flex-1 flex flex-col items-center p-3 max-w-2xl mx-auto w-full relative pb-24 pt-3 sm:p-4 sm:pb-24">
         {!problem ? (
           <Loader2 className="animate-spin mt-20 text-slate-400" size={48} />
         ) : (
-          <div key={problem.uid} className="w-full flex justify-center pb-8">
+          <div key={problem.uid} className={gameAndTipClassName}>
             <GameRenderer
               key={`${problem.type}-${problem.uid}-${'target' in problem ? problem.target : ''}`}
               gameType={gameType}
@@ -166,7 +172,12 @@ export const GameScreenView: React.FC<GameScreenViewProps> = ({
               endGame={endGame}
             />
 
-            <TipButton onTip={onTipReplay} soundEnabled={soundEnabled} disabled={!canReopenTip} />
+            <TipButton
+              onTip={onTipReplay}
+              soundEnabled={soundEnabled}
+              disabled={!canReopenTip}
+              placement={tipPlacement}
+            />
           </div>
         )}
       </div>

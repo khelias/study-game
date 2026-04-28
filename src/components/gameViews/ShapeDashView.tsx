@@ -63,6 +63,8 @@ const CANVAS_HEIGHT_BASE = 400;
 
 const GROUND_Y = CANVAS_HEIGHT_BASE - 90;
 const PLAYER_X = 140;
+const PLAYER_MIN_X = 76;
+const PLAYER_SMALL_SCREEN_RATIO = 0.24;
 const PLAYER_SIZE = 42;
 
 // Animation constants
@@ -248,6 +250,13 @@ function updateParticles(particles: Particle[], dt: number): Particle[] {
       return newP;
     })
     .filter((p) => p.life > 0);
+}
+
+function getPlayerX(canvasWidth: number): number {
+  return Math.min(
+    PLAYER_X,
+    Math.max(PLAYER_MIN_X, Math.floor(canvasWidth * PLAYER_SMALL_SCREEN_RATIO)),
+  );
 }
 
 // Rendering functions
@@ -1228,6 +1237,7 @@ export const ShapeDashView: React.FC<ShapeDashViewProps> = ({
 
       // V4: Calculate dynamic ground Y based on canvas height (for portrait mode support)
       const groundY = canvasHeight - 90;
+      const playerX = getPlayerX(canvasWidth);
 
       // V4: Check for slow time effect
       const isSlowTime = time < state.slowTimeUntil;
@@ -1237,7 +1247,7 @@ export const ShapeDashView: React.FC<ShapeDashViewProps> = ({
       const collectibleStars = prob.stars ?? [];
       const jumpPads = prob.jumpPads ?? [];
       const boostZones = prob.boostZones ?? [];
-      const inBoostZone = checkBoostZone(PLAYER_X, boostZones, state.scroll);
+      const inBoostZone = checkBoostZone(playerX, boostZones, state.scroll);
       const speedMultiplier = inBoostZone ? BOOST_ZONE_MULTIPLIER : 1;
 
       const nextScroll = state.scroll + prob.scrollSpeed * speedMultiplier * timeScale * dt;
@@ -1246,7 +1256,7 @@ export const ShapeDashView: React.FC<ShapeDashViewProps> = ({
 
       // V3: Check jump pad contact (auto-bounce when landing on pad)
       const jumpPadId = checkJumpPadContact(
-        { x: PLAYER_X, y: py, velocityY: pvy, isOnGround: state.isOnGround },
+        { x: playerX, y: py, velocityY: pvy, isOnGround: state.isOnGround },
         jumpPads,
         nextScroll,
       );
@@ -1286,7 +1296,7 @@ export const ShapeDashView: React.FC<ShapeDashViewProps> = ({
         // Landing detection
         if (!wasGrounded) {
           state.squashStretch = LANDING_STRETCH;
-          state.particles.push(...createLandParticles(PLAYER_X, groundY));
+          state.particles.push(...createLandParticles(playerX, groundY));
         }
         lastGroundedRef.current = true;
       } else {
@@ -1315,7 +1325,7 @@ export const ShapeDashView: React.FC<ShapeDashViewProps> = ({
       state.pulsePhase += dt;
 
       const playerEngineState = {
-        x: PLAYER_X,
+        x: playerX,
         y: py + PLAYER_SIZE,
         velocityY: pvy,
         isOnGround: state.isOnGround,
@@ -1357,7 +1367,7 @@ export const ShapeDashView: React.FC<ShapeDashViewProps> = ({
       }
 
       // Update trail
-      state.trailPoints.push({ x: PLAYER_X, y: py });
+      state.trailPoints.push({ x: playerX, y: py });
       if (state.trailPoints.length > 12) state.trailPoints.shift();
 
       // Update particles
@@ -1367,8 +1377,8 @@ export const ShapeDashView: React.FC<ShapeDashViewProps> = ({
       state.playerVelY = pvy;
       state.scroll = nextScroll;
 
-      const playerLeft = PLAYER_X;
-      const playerRight = PLAYER_X + PLAYER_SIZE;
+      const playerLeft = playerX;
+      const playerRight = playerX + PLAYER_SIZE;
       const playerTop = py;
       const playerBottom = py + PLAYER_SIZE;
 
@@ -1412,11 +1422,7 @@ export const ShapeDashView: React.FC<ShapeDashViewProps> = ({
         if (state.hasShield) {
           state.hasShield = false;
           state.particles.push(
-            ...createExplosionParticles(
-              PLAYER_X + PLAYER_SIZE / 2,
-              py + PLAYER_SIZE / 2,
-              '#00ffcc',
-            ),
+            ...createExplosionParticles(playerX + PLAYER_SIZE / 2, py + PLAYER_SIZE / 2, '#00ffcc'),
           );
           playSound('tap', soundEnabledRef.current);
           // Reset combo but don't crash
@@ -1425,11 +1431,7 @@ export const ShapeDashView: React.FC<ShapeDashViewProps> = ({
         } else {
           state.screenShake = SCREEN_SHAKE_INTENSITY;
           state.particles.push(
-            ...createExplosionParticles(
-              PLAYER_X + PLAYER_SIZE / 2,
-              py + PLAYER_SIZE / 2,
-              '#00ff88',
-            ),
+            ...createExplosionParticles(playerX + PLAYER_SIZE / 2, py + PLAYER_SIZE / 2, '#00ff88'),
           );
           setDisplayScore(state.score);
           setDisplayAttempt(state.attemptCount);
@@ -1447,7 +1449,7 @@ export const ShapeDashView: React.FC<ShapeDashViewProps> = ({
         if (!obs) continue;
         const obsScreenX = obs.x - nextScroll;
         // If obstacle is behind player and not yet counted as passed
-        if (obsScreenX + SPIKE_WIDTH < PLAYER_X && !state.passedObstacleIndices.has(i)) {
+        if (obsScreenX + SPIKE_WIDTH < playerX && !state.passedObstacleIndices.has(i)) {
           state.passedObstacleIndices.add(i);
           state.comboCount += 1;
           if (state.comboCount >= 3 && state.combo < 3) {
@@ -1483,10 +1485,10 @@ export const ShapeDashView: React.FC<ShapeDashViewProps> = ({
             playSound('correct', soundEnabledRef.current);
             // Create sparkle particles at player position
             state.particles.push(
-              ...createSparkleParticles(PLAYER_X + PLAYER_SIZE / 2, py + PLAYER_SIZE / 2),
+              ...createSparkleParticles(playerX + PLAYER_SIZE / 2, py + PLAYER_SIZE / 2),
             );
             state.particles.push(
-              ...createScorePopup(PLAYER_X + PLAYER_SIZE / 2, py - 20, 200, state.combo),
+              ...createScorePopup(playerX + PLAYER_SIZE / 2, py - 20, 200, state.combo),
             );
           } else {
             // Wrong gate
@@ -1497,7 +1499,7 @@ export const ShapeDashView: React.FC<ShapeDashViewProps> = ({
               state.screenShake = SCREEN_SHAKE_INTENSITY;
               state.particles.push(
                 ...createExplosionParticles(
-                  PLAYER_X + PLAYER_SIZE / 2,
+                  playerX + PLAYER_SIZE / 2,
                   py + PLAYER_SIZE / 2,
                   '#ff3366',
                 ),
@@ -1514,7 +1516,7 @@ export const ShapeDashView: React.FC<ShapeDashViewProps> = ({
                 state.hasShield = false;
                 state.particles.push(
                   ...createExplosionParticles(
-                    PLAYER_X + PLAYER_SIZE / 2,
+                    playerX + PLAYER_SIZE / 2,
                     py + PLAYER_SIZE / 2,
                     '#00ffcc',
                   ),
@@ -1627,7 +1629,7 @@ export const ShapeDashView: React.FC<ShapeDashViewProps> = ({
       // Player
       drawPlayer(
         ctx,
-        PLAYER_X,
+        playerX,
         py,
         PLAYER_SIZE,
         state.playerRotation,
@@ -1657,7 +1659,7 @@ export const ShapeDashView: React.FC<ShapeDashViewProps> = ({
 
       // V4: Draw gate warning if approaching
       const approachingGateIndex = getApproachingGateIndex(
-        PLAYER_X,
+        playerX,
         shapeGates,
         nextScroll,
         state.passedGateIds,
@@ -1747,7 +1749,7 @@ export const ShapeDashView: React.FC<ShapeDashViewProps> = ({
   const playAreaLabel = shapeDashText.playAreaLabel ?? shapeDashText.title ?? 'Shape Dash';
 
   return (
-    <div className="flex flex-col items-center gap-3 w-full max-w-4xl relative">
+    <div className="flex flex-col items-center gap-2 w-full max-w-4xl relative sm:gap-3">
       <div
         ref={containerRef}
         className="relative rounded-2xl overflow-hidden border-2 border-emerald-400 shadow-xl bg-slate-900 cursor-pointer focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 w-full"
@@ -1813,7 +1815,7 @@ export const ShapeDashView: React.FC<ShapeDashViewProps> = ({
       <button
         type="button"
         data-testid="shape-dash-jump-button"
-        className="flex min-h-[52px] w-full max-w-xs items-center justify-center gap-2 rounded-xl border border-emerald-300 bg-emerald-400 px-5 py-3 text-base font-black text-slate-950 shadow-lg shadow-emerald-500/20 transition-transform active:scale-95 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-500"
+        className="flex min-h-[48px] w-full max-w-xs items-center justify-center gap-2 rounded-xl border border-emerald-300 bg-emerald-400 px-5 py-2.5 text-base font-black text-slate-950 shadow-lg shadow-emerald-500/20 transition-transform active:scale-95 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-500 sm:min-h-[52px] sm:py-3"
         onClick={handleJumpButtonClick}
       >
         <ArrowUp size={22} strokeWidth={3} aria-hidden="true" />
@@ -1834,6 +1836,7 @@ export const ShapeDashView: React.FC<ShapeDashViewProps> = ({
         stars={stars}
         onHintClick={handlePaidHint}
         disabled={gameState !== 'playing'}
+        placement="inline"
       />
     </div>
   );

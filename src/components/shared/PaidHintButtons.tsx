@@ -14,6 +14,7 @@ interface PaidHintButtonsProps {
   stars: number;
   onHintClick: (hintId: string) => void;
   disabled?: boolean;
+  placement?: 'fixed' | 'inline';
 }
 
 export const PaidHintButtons: React.FC<PaidHintButtonsProps> = ({
@@ -21,6 +22,7 @@ export const PaidHintButtons: React.FC<PaidHintButtonsProps> = ({
   stars,
   onHintClick,
   disabled = false,
+  placement = 'fixed',
 }) => {
   const t = useTranslation();
 
@@ -40,8 +42,14 @@ export const PaidHintButtons: React.FC<PaidHintButtonsProps> = ({
     return typeof current === 'string' ? current : undefined;
   };
 
+  const containerClass =
+    placement === 'inline'
+      ? 'flex flex-wrap justify-center gap-3'
+      : 'fixed bottom-4 right-4 flex flex-col gap-3';
+  const containerStyle = placement === 'fixed' ? { zIndex: Z_INDEX.HINTS } : undefined;
+
   return (
-    <div className="fixed bottom-4 right-4 flex flex-col gap-3" style={{ zIndex: Z_INDEX.HINTS }}>
+    <div className={containerClass} style={containerStyle}>
       {hints.map((hint) => {
         const isDisabled = disabled || stars < hint.cost;
         const rawLabel = getNestedValue(t, hint.labelKey);
