@@ -104,6 +104,11 @@ mängukaardid, mechanic pack picker, enim mängitud mängud ja kõrgeimad taseme
 näitavad sama kokkuvõtet (`pack title · item count · difficulty · focus count`)
 ning aria/title tekstis on ka fookuste pikemad learning-outcome nimed.
 
+Progress UI pind on nüüd ühemõtteline: vanad kasutamata `LearningProgress` ja
+`GameProgression` komponendid eemaldati, sest neid ei importinud ega renderdanud
+ükski aktiivne vaade. Edasine progress/mastery töö peaks jätkama nähtaval
+`StatsModal` / `StatsDashboard` pinnal või looma uue pinna teadliku disainiotsusena.
+
 Kõige praktilisem järgmine slice on otsustada, kas authored-content töö jätkub
 veel ühe pildikeskse packi smoke'iga või viiakse metadata kasutamine järgmisse
 adaptiivse valiku/mastery sammu:
