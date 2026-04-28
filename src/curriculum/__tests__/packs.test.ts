@@ -10,6 +10,7 @@ import {
 } from '../packs/astronomy/visibleFromEstonia';
 import { ASTRONOMY_VISIBLE_CONSTELLATIONS_SKILL } from '../skills/astronomy';
 import {
+  LANGUAGE_LONG_VOCABULARY_SKILL,
   LANGUAGE_SPATIAL_SENTENCES_SKILL,
   LANGUAGE_SYLLABIFICATION_SKILL,
   LANGUAGE_VOCABULARY_SKILL,
@@ -25,8 +26,11 @@ import {
 } from '../packs/language/spatialSentences';
 import {
   getVocabularyWordsAvailableForLevel,
+  getVocabularyWordsForLength,
   getVocabularyWordsForLevel,
   groupWordsByLength,
+  LANGUAGE_LONG_VOCABULARY_EN_PACK,
+  LANGUAGE_LONG_VOCABULARY_ET_PACK,
   LANGUAGE_VOCABULARY_EN_PACK,
   LANGUAGE_VOCABULARY_ET_PACK,
 } from '../packs/language/vocabulary';
@@ -140,6 +144,19 @@ describe('curriculum', () => {
       const enPack = contentPackRegistry.findBySkillAndLocale(LANGUAGE_VOCABULARY_SKILL.id, 'en');
       expect(etPack?.id).toBe(LANGUAGE_VOCABULARY_ET_PACK.id);
       expect(enPack?.id).toBe(LANGUAGE_VOCABULARY_EN_PACK.id);
+    });
+
+    it('registers long vocabulary packs per locale', () => {
+      const etPack = contentPackRegistry.findBySkillAndLocale(
+        LANGUAGE_LONG_VOCABULARY_SKILL.id,
+        'et',
+      );
+      const enPack = contentPackRegistry.findBySkillAndLocale(
+        LANGUAGE_LONG_VOCABULARY_SKILL.id,
+        'en',
+      );
+      expect(etPack?.id).toBe(LANGUAGE_LONG_VOCABULARY_ET_PACK.id);
+      expect(enPack?.id).toBe(LANGUAGE_LONG_VOCABULARY_EN_PACK.id);
     });
 
     it('getPackItemsForLocale returns locale-specific items', () => {
@@ -396,6 +413,26 @@ describe('curriculum', () => {
       expect(en).toBe(LANGUAGE_VOCABULARY_EN_PACK.items);
       expect(et.some((word) => /[ÕÄÖÜŠŽ]/.test(word.w))).toBe(true);
       expect(en.every((word) => /^[A-Z]+$/.test(word.w))).toBe(true);
+    });
+
+    it('keeps long vocabulary packs scoped to longer word lengths from level 1', () => {
+      for (const pack of [LANGUAGE_LONG_VOCABULARY_ET_PACK, LANGUAGE_LONG_VOCABULARY_EN_PACK]) {
+        expect(pack.skillId).toBe(LANGUAGE_LONG_VOCABULARY_SKILL.id);
+        expect(pack.items.length).toBeGreaterThanOrEqual(20);
+        expect(pack.items.every((word) => word.w.length >= 8 && word.w.length <= 11)).toBe(true);
+        expect(pack.items.every((word) => word.focus === 'longer_words')).toBe(true);
+        expect(pack.items.every((word) => word.minLevel === 1)).toBe(true);
+
+        const levelOneLongWords = getVocabularyWordsForLength(
+          pack.items,
+          9,
+          'starter',
+          1,
+          { fallbackLengths: [10, 8] },
+        );
+        expect(levelOneLongWords.length).toBeGreaterThan(0);
+        expect(levelOneLongWords.every((word) => word.w.length >= 8)).toBe(true);
+      }
     });
   });
 

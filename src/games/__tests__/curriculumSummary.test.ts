@@ -39,6 +39,18 @@ describe('game curriculum summaries', () => {
     expect(enSummary?.title).toContain('Read short 3-4 letter words');
   });
 
+  it('summarizes the long word cascade binding from the long vocabulary packs', () => {
+    const summary = getGameCurriculumSummary('word_cascade_long', 'et');
+
+    expect(summary).toMatchObject({
+      packId: 'language.vocabulary.long_words.et',
+      packTitle: 'Pikad sõnad',
+      itemCount: 20,
+      difficultyLabels: ['raske'],
+      focusLabels: ['Pikemate 8-11-täheliste sõnade lugemine Sõnakoses'],
+    });
+  });
+
   it('keeps small DSL-spec packs visible without inventing difficulty metadata', () => {
     const summary = getGameCurriculumSummary('addition_snake', 'et');
 

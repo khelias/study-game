@@ -20,6 +20,7 @@ import '../curriculum';
 import { ASTRONOMY_VISIBLE_CONSTELLATIONS_SKILL } from '../curriculum/skills/astronomy';
 import { ASTRONOMY_VISIBLE_FROM_ESTONIA_PACK } from '../curriculum/packs/astronomy/visibleFromEstonia';
 import {
+  LANGUAGE_LONG_VOCABULARY_SKILL,
   LANGUAGE_SPATIAL_SENTENCES_SKILL,
   LANGUAGE_SYLLABIFICATION_SKILL,
   LANGUAGE_VOCABULARY_SKILL,
@@ -133,6 +134,21 @@ function registerAllGames(): void {
       validator: validateWordCascade,
       allowedProfiles: wordCascadeConfig.allowedProfiles,
       skillIds: [LANGUAGE_VOCABULARY_SKILL.id],
+    });
+  }
+
+  // Word Cascade: long-word pack binding (same mechanic/view as Sõnakosk).
+  const wordCascadeLongConfig = GAME_CONFIG.word_cascade_long;
+  const wordCascadeLongGenerator = Generators.word_cascade_long;
+  if (wordCascadeLongConfig && wordCascadeLongGenerator) {
+    gameRegistry.register({
+      id: 'word_cascade_long',
+      component: WordCascadeView,
+      generator: wordCascadeLongGenerator,
+      config: wordCascadeLongConfig,
+      validator: validateWordCascade,
+      allowedProfiles: wordCascadeLongConfig.allowedProfiles,
+      skillIds: [LANGUAGE_LONG_VOCABULARY_SKILL.id],
     });
   }
 

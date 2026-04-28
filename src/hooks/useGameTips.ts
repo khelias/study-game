@@ -72,6 +72,8 @@ export function useGameTips(
           return [...t.gameScreen.tips.star_mapper];
         case 'word_cascade':
           return [...t.gameScreen.tips.word_cascade];
+        case 'word_cascade_long':
+          return [...t.gameScreen.tips.word_cascade_long];
         case 'shape_dash':
           return [...t.gameScreen.tips.shape_dash];
         default:

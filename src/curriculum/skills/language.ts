@@ -48,3 +48,17 @@ export const LANGUAGE_VOCABULARY_SKILL: Skill = {
     topic: 'language.vocabulary.words',
   },
 };
+
+export const LANGUAGE_LONG_VOCABULARY_SKILL: Skill = {
+  id: 'language.vocabulary.long_words',
+  name: {
+    et: 'Pikad sõnad',
+    en: 'Long words',
+  },
+  taxonomy: {
+    subject: 'emakeel',
+    grade: 1,
+    level: 'intermediate',
+    topic: 'language.vocabulary.long_words',
+  },
+};

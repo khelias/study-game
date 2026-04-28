@@ -22,15 +22,6 @@ const levelProgress = (stats: Stats, gameType: string, target: number): Achievem
   target,
 });
 
-const gamesPlayedProgress = (
-  stats: Stats,
-  gameType: string,
-  target: number,
-): AchievementProgress => ({
-  current: stats.gamesByType[gameType] || 0,
-  target,
-});
-
 const getAchievementProgress = (id: string, stats: Stats): AchievementProgress => {
   switch (id) {
     case 'first_game':
@@ -92,9 +83,18 @@ const getAchievementProgress = (id: string, stats: Stats): AchievementProgress =
     case 'clock_master':
       return levelProgress(stats, 'time_match', 5);
     case 'cascade_master':
-      return levelProgress(stats, 'word_cascade', 5);
+      return {
+        current: Math.max(
+          stats.maxLevels.word_cascade || 0,
+          stats.maxLevels.word_cascade_long || 0,
+        ),
+        target: 5,
+      };
     case 'cascade_perfect_10':
-      return gamesPlayedProgress(stats, 'word_cascade', 10);
+      return {
+        current: (stats.gamesByType.word_cascade || 0) + (stats.gamesByType.word_cascade_long || 0),
+        target: 10,
+      };
     default:
       return { current: 0, target: 1 };
   }

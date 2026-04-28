@@ -5,6 +5,7 @@ import {
   ASTRONOMY_VISIBLE_FROM_ESTONIA_PACK,
 } from '../curriculum/packs/astronomy/visibleFromEstonia';
 import {
+  LANGUAGE_LONG_VOCABULARY_SKILL,
   LANGUAGE_SYLLABIFICATION_SKILL,
   LANGUAGE_VOCABULARY_SKILL,
 } from '../curriculum/skills/language';
@@ -481,6 +482,37 @@ export const Generators: Record<string, GeneratorFunction> = {
       target,
       emoji: chosen.e,
       columns: level < 6 ? 4 : 5,
+    };
+  },
+
+  word_cascade_long: (
+    level: number,
+    rng: RngFunction = Math.random,
+    profile: ProfileType = 'starter',
+  ): WordCascadeProblem => {
+    const locale = getLocale();
+    const words = getPackItemsForLocale<VocabularyWord>(
+      LANGUAGE_LONG_VOCABULARY_SKILL.id,
+      locale,
+    );
+
+    const desiredLen = level <= 3 ? 9 : 10;
+    const bucket = getVocabularyWordsForLength(words, desiredLen, profile, level, {
+      fallbackLengths: [desiredLen + 1, desiredLen - 1, 11, 10, 9, 8],
+    });
+    const chosen = (bucket.length > 0 ? getRandom(bucket, rng) : null) ?? {
+      w: locale === 'en' ? 'TELESCOPE' : 'TELESKOOP',
+      e: '🔭',
+    };
+
+    const target = applyLetterCase(chosen.w, level, rng);
+
+    return {
+      type: 'word_cascade',
+      uid: uid(rng),
+      target,
+      emoji: chosen.e,
+      columns: 5,
     };
   },
 

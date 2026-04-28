@@ -1,5 +1,6 @@
 import { ASTRONOMY_VISIBLE_CONSTELLATIONS_SKILL } from '../curriculum/skills/astronomy';
 import {
+  LANGUAGE_LONG_VOCABULARY_SKILL,
   LANGUAGE_SPATIAL_SENTENCES_SKILL,
   LANGUAGE_SYLLABIFICATION_SKILL,
   LANGUAGE_VOCABULARY_SKILL,
@@ -30,6 +31,7 @@ type LegacyGameLevels = Record<string, number>;
 export const LEGACY_GAME_SKILL_IDS: Record<string, readonly SkillId[]> = {
   word_builder: [LANGUAGE_VOCABULARY_SKILL.id],
   word_cascade: [LANGUAGE_VOCABULARY_SKILL.id],
+  word_cascade_long: [LANGUAGE_LONG_VOCABULARY_SKILL.id],
   picture_pairs: [LANGUAGE_VOCABULARY_SKILL.id],
   letter_match: [LANGUAGE_VOCABULARY_SKILL.id],
   syllable_builder: [LANGUAGE_SYLLABIFICATION_SKILL.id],

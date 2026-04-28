@@ -360,6 +360,10 @@ export const et = {
       title: 'NUMBRIMADU',
       desc: 'Söö õunu, lahenda tehe',
     },
+    word_cascade: {
+      title: 'SÕNAKOSK',
+      desc: 'Püüa tähti ja lao sõnu',
+    },
   },
 
   // Tutorial
@@ -622,6 +626,11 @@ export const et = {
         'Puuduta tähti järjekorras, et sõna kirjutada. Otsi järgmiseks vajalikku tähte!',
         'Puuduta tähti, südameid ja kilpe boonuste saamiseks! Tähed annavad ⭐, südamed annavad ❤️, kilbid eemaldavad veamärgi.',
       ],
+      word_cascade_long: [
+        'Pikk sõna on sama reegel: otsi ainult järgmist tähte ja liigu vasakult paremale.',
+        'Kui sõna on pikk, kasuta vihjet järgmise tähe näitamiseks.',
+        'Ütle sõna enne alustamist valjusti läbi ja püüa siis tähed järjekorras kinni.',
+      ],
       shape_dash: [
         'Vajuta tühikuklahvi või puuduta ekraani, et hüpata!',
         'Vältida tuleb kolmnurkseid okkaid ja kollaseid plokke.',
@@ -749,10 +758,16 @@ export const et = {
     },
     word_cascade: {
       title: 'SÕNAKOSK',
-      desc: 'Püüa tähti ja lao sõnu kiiresti',
+      desc: 'Tavalised sõnad',
       gameDescription:
         'Tähed kukuvad alla – puuduta neid õiges järjekorras, et kirjutada sihtsõna. Kui täht jõuab punase jooneni, saad veamärgi. Koguda võid tähti ⭐, südameid ❤️ ja kilpe, mis eemaldavad veamärgi.',
       hintRevealNextCost: 'Näita järgmist tähte ({cost}⭐)',
+    },
+    word_cascade_long: {
+      title: 'PIKAD SÕNAD',
+      desc: 'Pikemad Sõnakose sõnad',
+      gameDescription:
+        'See on Sõnakose pikemate sõnade pakk. Puuduta langevaid tähti õiges järjekorras ja ehita 8-11 tähega sõna lõpuni valmis. Kui läheb keeruliseks, kasuta järgmise tähe vihjet.',
     },
     syllable_builder: {
       title: 'SILBIMEISTER',

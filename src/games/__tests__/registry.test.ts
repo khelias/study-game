@@ -19,6 +19,7 @@ import {
   MATH_MIXED_PROBLEM_SOLVING_SKILL,
 } from '../../curriculum/skills/math';
 import {
+  LANGUAGE_LONG_VOCABULARY_SKILL,
   LANGUAGE_SPATIAL_SENTENCES_SKILL,
   LANGUAGE_VOCABULARY_SKILL,
 } from '../../curriculum/skills/language';
@@ -142,6 +143,12 @@ describe('GameRegistry', () => {
       expect(game).toBeDefined();
       expect(game?.skillIds).toEqual([LANGUAGE_VOCABULARY_SKILL.id]);
     }
+  });
+
+  it('should bind the long word cascade pack to the long vocabulary skill', () => {
+    const game = gameRegistry.get('word_cascade_long');
+    expect(game).toBeDefined();
+    expect(game?.skillIds).toEqual([LANGUAGE_LONG_VOCABULARY_SKILL.id]);
   });
 
   it('should return undefined for unknown game', () => {

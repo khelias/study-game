@@ -6,7 +6,10 @@
  */
 
 import type { ContentPack } from '../../types';
-import { LANGUAGE_VOCABULARY_SKILL } from '../../skills/language';
+import {
+  LANGUAGE_LONG_VOCABULARY_SKILL,
+  LANGUAGE_VOCABULARY_SKILL,
+} from '../../skills/language';
 import type {
   VocabularyWord,
   VocabularyWordBase,
@@ -369,6 +372,52 @@ const RAW_ENGLISH_WORDS: readonly VocabularyWordBase[] = [
   { w: 'PRETZEL', e: '🥨' },
 ];
 
+const RAW_LONG_ESTONIAN_WORDS: readonly VocabularyWordBase[] = [
+  { w: 'VIKERKAAR', e: '🌈' },
+  { w: 'KAELKIRJAK', e: '🦒' },
+  { w: 'KROKODILL', e: '🐊' },
+  { w: 'MOTORRATAS', e: '🏍️' },
+  { w: 'KÕRVAKLAPP', e: '🎧' },
+  { w: 'TELESKOOP', e: '🔭' },
+  { w: 'MIKROSKOOP', e: '🔬' },
+  { w: 'AKVAARIUM', e: '🐠' },
+  { w: 'KOOLIMAJA', e: '🏫' },
+  { w: 'HAMBAHARI', e: '🪥' },
+  { w: 'RULLUISUD', e: '🛼' },
+  { w: 'PÄEVALILL', e: '🌻' },
+  { w: 'VIHMAPILV', e: '🌧️' },
+  { w: 'RONGIJAAM', e: '🚉' },
+  { w: 'LENNUJAAM', e: '🛫' },
+  { w: 'KAHEKSAJALG', e: '🐙' },
+  { w: 'SÜLEARVUTI', e: '💻' },
+  { w: 'PRÜGIKAST', e: '🗑️' },
+  { w: 'JALGPALLUR', e: '⚽' },
+  { w: 'JALGRATAS', e: '🚲' },
+];
+
+const RAW_LONG_ENGLISH_WORDS: readonly VocabularyWordBase[] = [
+  { w: 'ELEPHANT', e: '🐘' },
+  { w: 'DINOSAUR', e: '🦖' },
+  { w: 'CROCODILE', e: '🐊' },
+  { w: 'BUTTERFLY', e: '🦋' },
+  { w: 'WATERMELON', e: '🍉' },
+  { w: 'STRAWBERRY', e: '🍓' },
+  { w: 'CHOCOLATE', e: '🍫' },
+  { w: 'NOTEBOOK', e: '📓' },
+  { w: 'COMPUTER', e: '💻' },
+  { w: 'TELEPHONE', e: '☎️' },
+  { w: 'TELESCOPE', e: '🔭' },
+  { w: 'MICROSCOPE', e: '🔬' },
+  { w: 'AMBULANCE', e: '🚑' },
+  { w: 'FIRETRUCK', e: '🚒' },
+  { w: 'MOTORCYCLE', e: '🏍️' },
+  { w: 'SKATEBOARD', e: '🛹' },
+  { w: 'HELICOPTER', e: '🚁' },
+  { w: 'SUNFLOWER', e: '🌻' },
+  { w: 'RAINCLOUD', e: '🌧️' },
+  { w: 'AQUARIUM', e: '🐠' },
+];
+
 const VOCABULARY_METADATA_BY_FOCUS: Record<
   'short_words' | 'core_words' | 'longer_words',
   VocabularyWordMetadata
@@ -442,6 +491,19 @@ export function withVocabularyWordMetadata(
   return words.map((word) => ({
     ...word,
     ...getVocabularyMetadata(word),
+  }));
+}
+
+export function withLongVocabularyWordMetadata(
+  words: readonly VocabularyWordBase[],
+): readonly VocabularyWord[] {
+  return withVocabularyWordMetadata(words).map((word) => ({
+    ...word,
+    minLevel: 1,
+    learningOutcome: {
+      et: 'Pikemate 8-11-täheliste sõnade lugemine Sõnakoses',
+      en: 'Read longer 8-11 letter words in Word Cascade',
+    },
   }));
 }
 
@@ -531,6 +593,8 @@ export function getVocabularyWordsAvailableForLevel(
 
 const ESTONIAN_WORDS = withVocabularyWordMetadata(RAW_ESTONIAN_WORDS);
 const ENGLISH_WORDS = withVocabularyWordMetadata(RAW_ENGLISH_WORDS);
+const LONG_ESTONIAN_WORDS = withLongVocabularyWordMetadata(RAW_LONG_ESTONIAN_WORDS);
+const LONG_ENGLISH_WORDS = withLongVocabularyWordMetadata(RAW_LONG_ENGLISH_WORDS);
 
 export const LANGUAGE_VOCABULARY_ET_PACK: ContentPack<VocabularyWord> = {
   id: 'language.vocabulary.et',
@@ -554,4 +618,28 @@ export const LANGUAGE_VOCABULARY_EN_PACK: ContentPack<VocabularyWord> = {
     en: 'English vocabulary',
   },
   items: ENGLISH_WORDS,
+};
+
+export const LANGUAGE_LONG_VOCABULARY_ET_PACK: ContentPack<VocabularyWord> = {
+  id: 'language.vocabulary.long_words.et',
+  skillId: LANGUAGE_LONG_VOCABULARY_SKILL.id,
+  locale: 'et',
+  version: '1.0.0',
+  title: {
+    et: 'Pikad sõnad',
+    en: 'Long Estonian words',
+  },
+  items: LONG_ESTONIAN_WORDS,
+};
+
+export const LANGUAGE_LONG_VOCABULARY_EN_PACK: ContentPack<VocabularyWord> = {
+  id: 'language.vocabulary.long_words.en',
+  skillId: LANGUAGE_LONG_VOCABULARY_SKILL.id,
+  locale: 'en',
+  version: '1.0.0',
+  title: {
+    et: 'Pikad inglise sõnad',
+    en: 'Long English words',
+  },
+  items: LONG_ENGLISH_WORDS,
 };

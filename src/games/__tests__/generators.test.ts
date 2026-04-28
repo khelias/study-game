@@ -35,6 +35,7 @@ import {
 import { LANGUAGE_SYLLABIFICATION_ET_PACK } from '../../curriculum/packs/language/syllables_et';
 import { getSyllableWordsForLevel } from '../../curriculum/packs/language/types';
 import {
+  LANGUAGE_LONG_VOCABULARY_ET_PACK,
   LANGUAGE_VOCABULARY_ET_PACK,
   getVocabularyWordsAvailableForLevel,
   getVocabularyWordsForLevel,
@@ -425,6 +426,21 @@ describe('Generators', () => {
 
       expect(problem.type).toBe('word_cascade');
       expect(source).toBeDefined();
+      expect(problem.emoji).toBe(source?.e);
+    });
+
+    it('should source long target words from the long vocabulary pack', () => {
+      const rng = createRng(12345);
+      const generator = Generators.word_cascade_long;
+      if (!generator) throw new Error('word_cascade_long generator not found');
+      const problem = generator(1, rng, 'starter') as WordCascadeProblem;
+      const source = LANGUAGE_LONG_VOCABULARY_ET_PACK.items.find(
+        (item) => item.w === problem.target.toUpperCase(),
+      );
+
+      expect(problem.type).toBe('word_cascade');
+      expect(source).toBeDefined();
+      expect(problem.target.length).toBeGreaterThanOrEqual(8);
       expect(problem.emoji).toBe(source?.e);
     });
   });

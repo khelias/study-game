@@ -360,6 +360,10 @@ export const en = {
       title: 'NUMBER SNAKE',
       desc: 'Eat apples, solve the equation',
     },
+    word_cascade: {
+      title: 'WORD CASCADE',
+      desc: 'Catch letters and build words',
+    },
   },
 
   // Tutorial
@@ -622,6 +626,11 @@ export const en = {
         'Tap letters in order to spell the word. Watch for the letter you need next!',
         'Tap stars, hearts and shields to get bonuses! Stars give ⭐, hearts give ❤️, shields remove a strike.',
       ],
+      word_cascade_long: [
+        'Long words use the same rule: find the next letter and move from left to right.',
+        'Use the next-letter hint when the word gets crowded.',
+        'Say the whole word first, then catch the letters in order.',
+      ],
       shape_dash: [
         'Press Space or tap the screen to jump!',
         'Avoid the triangular spikes and yellow blocks.',
@@ -749,10 +758,16 @@ export const en = {
     },
     word_cascade: {
       title: 'WORD CASCADE',
-      desc: 'Catch letters and build words fast',
+      desc: 'Core words',
       gameDescription:
         'Letters fall from the top – tap them in the right order to spell the target word. If a letter reaches the red line, you get a strike. Collect stars ⭐, hearts ❤️, and shields that remove a strike.',
       hintRevealNextCost: 'Reveal next letter ({cost}⭐)',
+    },
+    word_cascade_long: {
+      title: 'LONG WORDS',
+      desc: 'Longer Word Cascade words',
+      gameDescription:
+        'This is the longer-word pack for Word Cascade. Tap falling letters in the right order and finish an 8-11 letter word. Use the next-letter hint when it gets tricky.',
     },
     syllable_builder: {
       title: 'SYLLABLE MASTER',

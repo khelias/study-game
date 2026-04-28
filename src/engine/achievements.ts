@@ -162,12 +162,14 @@ export const ACHIEVEMENTS: Record<string, Achievement> = {
   cascade_master: {
     id: 'cascade_master',
     icon: '🌊',
-    check: (stats: Stats) => (stats.maxLevels.word_cascade || 0) >= 5,
+    check: (stats: Stats) =>
+      Math.max(stats.maxLevels.word_cascade || 0, stats.maxLevels.word_cascade_long || 0) >= 5,
   },
   cascade_perfect_10: {
     id: 'cascade_perfect_10',
     icon: '✨',
-    check: (stats: Stats) => (stats.gamesByType.word_cascade || 0) >= 10,
+    check: (stats: Stats) =>
+      (stats.gamesByType.word_cascade || 0) + (stats.gamesByType.word_cascade_long || 0) >= 10,
   },
 };
 

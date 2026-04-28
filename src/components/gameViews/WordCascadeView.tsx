@@ -152,6 +152,8 @@ export const WordCascadeView: React.FC<WordCascadeViewProps> = ({
   const baseType = gameType?.replace('_adv', '') ?? 'word_cascade';
   const paidHints = GAME_CONFIG[baseType]?.paidHints ?? [];
   const target = problem.target;
+  const isLongWord = target.length >= 9;
+  const isVeryLongWord = target.length >= 10;
 
   const [progress, setProgress] = useState('');
   const [status, setStatus] = useState<'idle' | 'correct' | 'wrong'>('idle');
@@ -239,9 +241,19 @@ export const WordCascadeView: React.FC<WordCascadeViewProps> = ({
     ],
   );
 
-  const gameTitle = (t.games['word_cascade' as keyof typeof t.games]?.title ??
+  const gameTitle = (t.games[baseType as keyof typeof t.games]?.title ??
+    t.games['word_cascade' as keyof typeof t.games]?.title ??
     'Word Cascade') as string;
   const stripHeightPx = LETTERS_PER_CYCLE * LETTER_TILE_PX * CYCLE_COPIES;
+  const cascadeGapClass = isLongWord ? 'gap-0.5 sm:gap-1' : 'gap-1 sm:gap-2';
+  const cascadePaddingClass = isLongWord ? 'p-1.5 sm:p-2' : 'p-2 sm:p-3';
+  const columnMaxWidth = isVeryLongWord ? 54 : isLongWord ? 60 : 72;
+  const lockedLetterClass = isVeryLongWord
+    ? 'text-3xl sm:text-4xl'
+    : isLongWord
+      ? 'text-4xl sm:text-5xl'
+      : 'text-5xl sm:text-6xl';
+  const streamLetterClass = isVeryLongWord ? 'text-base sm:text-lg' : 'text-xl';
 
   const feedbackMessage =
     status === 'wrong'
@@ -277,7 +289,7 @@ export const WordCascadeView: React.FC<WordCascadeViewProps> = ({
       )}
 
       <div
-        className="w-full flex justify-center gap-1 sm:gap-2 rounded-3xl border-2 border-slate-200 bg-slate-50/50 p-2 sm:p-3 shadow-lg"
+        className={`w-full flex justify-center ${cascadeGapClass} rounded-3xl border-2 border-slate-200 bg-slate-50/50 ${cascadePaddingClass} shadow-lg`}
         aria-label={gameTitle}
       >
         {target.split('').map((_, colIndex) => {
@@ -300,12 +312,12 @@ export const WordCascadeView: React.FC<WordCascadeViewProps> = ({
                     ? 'border-pink-300 bg-pink-50'
                     : 'border-slate-200 bg-slate-100/80 opacity-60',
               ].join(' ')}
-              style={{ maxWidth: 72 }}
+              style={{ maxWidth: columnMaxWidth }}
             >
               {isDone ? (
                 <div
                   key={`locked-${colIndex}-${lockedLetter}`}
-                  className="w-full flex-1 flex items-center justify-center min-h-[200px] bg-pink-100 text-pink-800 font-black text-5xl sm:text-6xl rounded-b-xl"
+                  className={`w-full flex-1 flex items-center justify-center min-h-[200px] bg-pink-100 text-pink-800 font-black ${lockedLetterClass} rounded-b-xl`}
                   aria-hidden="true"
                 >
                   {lockedLetter}
@@ -336,7 +348,7 @@ export const WordCascadeView: React.FC<WordCascadeViewProps> = ({
                             disabled={!isActive || status === 'correct'}
                             onClick={() => handleLetterTap(colIndex, letter)}
                             className={[
-                              'wc-stream-letter shrink-0 flex items-center justify-center rounded-lg border-2 text-xl font-black touch-manipulation',
+                              `wc-stream-letter w-full min-w-0 shrink-0 flex items-center justify-center rounded-lg border-2 ${streamLetterClass} font-black touch-manipulation`,
                               highlight
                                 ? 'bg-amber-200 border-amber-500 text-amber-900 ring-2 ring-amber-400 z-10'
                                 : 'bg-white/95 border-purple-200 text-purple-800 shadow-sm',

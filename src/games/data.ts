@@ -103,6 +103,16 @@ export const MECHANICS: Record<string, MechanicConfig> = {
     category: 'math',
     allowedProfiles: ['starter', 'advanced'],
   },
+  word_cascade: {
+    id: 'word_cascade',
+    title: 'WORD CASCADE',
+    desc: 'Catch letters and build words fast',
+    theme: THEME.pink!,
+    icon: 'Layers',
+    emoji: '🌊',
+    category: 'language',
+    allowedProfiles: ['starter', 'advanced'],
+  },
 };
 
 // Paid hints: only add game-specific hints that give a real advantage in that game.
@@ -126,14 +136,30 @@ export const GAME_CONFIG: Record<string, GameConfig> = {
   },
   word_cascade: {
     id: 'word_cascade',
-    title: 'WORD CASCADE',
+    title: 'WORD CASCADE: CORE',
     theme: THEME.pink!,
     icon: 'Layers',
     emoji: '🌊',
-    desc: 'Catch letters and build words fast',
+    desc: 'Short and familiar words',
     allowedProfiles: ['starter', 'advanced'],
     difficulty: 'medium',
     category: 'language',
+    mechanic: 'word_cascade',
+    paidHints: [
+      { id: 'reveal_next', icon: '🔤', cost: 1, labelKey: 'games.word_cascade.hintRevealNextCost' },
+    ],
+  },
+  word_cascade_long: {
+    id: 'word_cascade_long',
+    title: 'WORD CASCADE: LONG',
+    theme: THEME.indigo!,
+    icon: 'Layers',
+    emoji: '🌊',
+    desc: 'Longer word challenge',
+    allowedProfiles: ['starter', 'advanced'],
+    difficulty: 'hard',
+    category: 'language',
+    mechanic: 'word_cascade',
     paidHints: [
       { id: 'reveal_next', icon: '🔤', cost: 1, labelKey: 'games.word_cascade.hintRevealNextCost' },
     ],

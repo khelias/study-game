@@ -134,10 +134,9 @@ export function processStandardAnswer(context: AnswerHandlerContext): AnswerResu
  * Points scale with word length (stronger high-score chase).
  */
 export function processWordCascadeAnswer(context: AnswerHandlerContext): AnswerResult {
-  const { isCorrect, problem, gameType } = context;
-  const baseGameType = gameType.replace('_adv', '');
+  const { isCorrect, problem } = context;
 
-  if (baseGameType !== 'word_cascade' || problem.type !== 'word_cascade') {
+  if (problem.type !== 'word_cascade') {
     throw new Error('processWordCascadeAnswer called for non-word-cascade game');
   }
 
@@ -181,13 +180,12 @@ export function processWordCascadeAnswer(context: AnswerHandlerContext): AnswerR
  */
 export function processAnswer(context: AnswerHandlerContext): AnswerResult {
   const { gameType, problem } = context;
-  const baseGameType = gameType.replace('_adv', '');
 
   if (isSnakeGameType(gameType) && problem.type === 'math_snake') {
     return processMathSnakeAnswer(context);
   }
 
-  if (baseGameType === 'word_cascade' && problem.type === 'word_cascade') {
+  if (problem.type === 'word_cascade') {
     return processWordCascadeAnswer(context);
   }
 
