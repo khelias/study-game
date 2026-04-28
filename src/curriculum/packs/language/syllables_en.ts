@@ -6,10 +6,10 @@
  */
 
 import type { ContentPack } from '../../types';
-import type { SyllableWord } from './types';
+import { withSyllableWordMetadata, type SyllableWord, type SyllableWordBase } from './types';
 import { LANGUAGE_SYLLABIFICATION_SKILL } from '../../skills/language';
 
-const ITEMS: readonly SyllableWord[] = [
+const RAW_ITEMS: readonly SyllableWordBase[] = [
   // 2 syllables
   { syllables: ['AP', 'PLE'], emoji: '🍎' },
   { syllables: ['TA', 'BLE'], emoji: '🪑' },
@@ -52,11 +52,13 @@ const ITEMS: readonly SyllableWord[] = [
   { syllables: ['HE', 'LI', 'COP', 'TER'], emoji: '🚁' },
 ];
 
+const ITEMS = withSyllableWordMetadata(RAW_ITEMS);
+
 export const LANGUAGE_SYLLABIFICATION_EN_PACK: ContentPack<SyllableWord> = {
   id: 'language.syllabification.en',
   skillId: LANGUAGE_SYLLABIFICATION_SKILL.id,
   locale: 'en',
-  version: '1.0.0',
+  version: '1.1.0',
   title: {
     et: 'Inglise silbid',
     en: 'English syllables',

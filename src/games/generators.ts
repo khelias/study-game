@@ -8,7 +8,11 @@ import {
   LANGUAGE_SYLLABIFICATION_SKILL,
   LANGUAGE_VOCABULARY_SKILL,
 } from '../curriculum/skills/language';
-import type { SyllableWord, VocabularyWord } from '../curriculum/packs/language/types';
+import {
+  getSyllableWordsForLevel,
+  type SyllableWord,
+  type VocabularyWord,
+} from '../curriculum/packs/language/types';
 import { ALPHABET, groupWordsByLength } from '../curriculum/packs/language/vocabulary';
 import {
   LANGUAGE_SPATIAL_SENTENCES_PACK,
@@ -1211,25 +1215,7 @@ export const Generators: Record<string, GeneratorFunction> = {
   ): SyllableBuilderProblem => {
     const locale = getLocale();
     const words = getPackItemsForLocale<SyllableWord>(LANGUAGE_SYLLABIFICATION_SKILL.id, locale);
-    // Filter by level - higher levels have longer words
-    const meta = profileMeta(profile);
-    // Smoother progression: Level 1-2 = 2 syllables, Level 3-5 = 3 syllables, Level 6+ = 3-4 syllables
-    const targetParts = level <= 2 ? 2 : level <= 5 ? 3 : level <= 7 ? 3 : 4;
-    const isAdvanced = meta.difficultyOffset > 0;
-    const minParts = isAdvanced ? Math.max(2, targetParts - (level > 3 ? 1 : 0)) : 2;
-    const maxParts = isAdvanced ? targetParts + 1 : targetParts;
-    let filtered = words.filter((item) => {
-      const partsCount = item.syllables.length;
-      return partsCount >= minParts && partsCount <= maxParts;
-    });
-    if (filtered.length === 0) {
-      const smallestDiff = Math.min(
-        ...words.map((item) => Math.abs(item.syllables.length - targetParts)),
-      );
-      filtered = words.filter(
-        (item) => Math.abs(item.syllables.length - targetParts) === smallestDiff,
-      );
-    }
+    const filtered = getSyllableWordsForLevel(words, profile, level);
     const wordObj = getRandom(filtered, rng);
     if (!wordObj) {
       throw new Error('No word found for syllable_builder game');

@@ -16,6 +16,7 @@ import {
 } from '../skills/language';
 import { LANGUAGE_SYLLABIFICATION_ET_PACK } from '../packs/language/syllables_et';
 import { LANGUAGE_SYLLABIFICATION_EN_PACK } from '../packs/language/syllables_en';
+import { getSyllableWordsForLevel } from '../packs/language/types';
 import type { SyllableWord, VocabularyWord } from '../packs/language/types';
 import {
   LANGUAGE_SPATIAL_SENTENCES_PACK,
@@ -214,6 +215,10 @@ describe('curriculum', () => {
         for (const w of pack.items) {
           expect(w.syllables.length).toBeGreaterThanOrEqual(2);
           expect(w.emoji.length).toBeGreaterThan(0);
+          expect(['easy', 'medium', 'hard']).toContain(w.difficulty);
+          expect(w.minLevel).toBeGreaterThanOrEqual(1);
+          expect(w.learningOutcome.et).not.toBe('');
+          expect(w.learningOutcome.en).not.toBe('');
         }
       }
     });
@@ -225,6 +230,29 @@ describe('curriculum', () => {
         expect(counts.has(3)).toBe(true);
         expect(counts.has(4)).toBe(true);
       }
+    });
+
+    it('selects syllable words by locale, profile, and level metadata', () => {
+      const starterLevel1 = getSyllableWordsForLevel(
+        LANGUAGE_SYLLABIFICATION_ET_PACK.items,
+        'starter',
+        1,
+      );
+      const starterLevel3 = getSyllableWordsForLevel(
+        LANGUAGE_SYLLABIFICATION_ET_PACK.items,
+        'starter',
+        3,
+      );
+      const advancedLevel2 = getSyllableWordsForLevel(
+        LANGUAGE_SYLLABIFICATION_EN_PACK.items,
+        'advanced',
+        2,
+      );
+
+      expect(starterLevel1.every((word) => word.syllables.length === 2)).toBe(true);
+      expect(starterLevel1.every((word) => word.difficulty === 'easy')).toBe(true);
+      expect(starterLevel3.every((word) => word.syllables.length === 3)).toBe(true);
+      expect(new Set(advancedLevel2.map((word) => word.syllables.length))).toEqual(new Set([2, 3]));
     });
   });
 

@@ -19,6 +19,7 @@ import type {
   TimeMatchProblem,
   MemoryMathProblem,
   RoboPathProblem,
+  SyllableBuilderProblem,
 } from '../../types/game';
 import {
   MATH_GEOMETRY_SHAPES_PACK,
@@ -30,6 +31,8 @@ import {
   LANGUAGE_SPATIAL_SENTENCES_PACK,
   getSpatialSentenceScenesForLevel,
 } from '../../curriculum/packs/language/spatialSentences';
+import { LANGUAGE_SYLLABIFICATION_ET_PACK } from '../../curriculum/packs/language/syllables_et';
+import { getSyllableWordsForLevel } from '../../curriculum/packs/language/types';
 import { LANGUAGE_VOCABULARY_ET_PACK } from '../../curriculum/packs/language/vocabulary';
 import {
   MATH_PATTERN_SEQUENCES_PACK,
@@ -406,6 +409,39 @@ describe('Generators', () => {
       expect(problem.type).toBe('word_cascade');
       expect(source).toBeDefined();
       expect(problem.emoji).toBe(source?.e);
+    });
+  });
+
+  describe('syllable_builder', () => {
+    it('should generate syllable words from the locale syllabification pack', () => {
+      const rng = createRng(12345);
+      const generator = Generators.syllable_builder;
+      if (!generator) throw new Error('syllable_builder generator not found');
+      const problem = generator(1, rng, 'starter') as SyllableBuilderProblem;
+      const source = LANGUAGE_SYLLABIFICATION_ET_PACK.items.find(
+        (item) => item.syllables.join('') === problem.target,
+      );
+
+      expect(problem.type).toBe('syllable_builder');
+      expect(source).toBeDefined();
+      expect(problem.emoji).toBe(source?.emoji);
+      expect(problem.syllables).toEqual(source?.syllables);
+    });
+
+    it('should use syllable level metadata for word length progression', () => {
+      const generator = Generators.syllable_builder;
+      if (!generator) throw new Error('syllable_builder generator not found');
+      const level1 = generator(1, createRng(12345), 'starter') as SyllableBuilderProblem;
+      const level6 = generator(6, createRng(54321), 'starter') as SyllableBuilderProblem;
+      const allowedLevel6Targets = new Set(
+        getSyllableWordsForLevel(LANGUAGE_SYLLABIFICATION_ET_PACK.items, 'starter', 6).map((word) =>
+          word.syllables.join(''),
+        ),
+      );
+
+      expect(level1.syllables).toHaveLength(2);
+      expect(allowedLevel6Targets.has(level6.target)).toBe(true);
+      expect([3, 4]).toContain(level6.syllables.length);
     });
   });
 

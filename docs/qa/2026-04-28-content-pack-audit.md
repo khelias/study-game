@@ -32,8 +32,8 @@ kasutamata.
 
 Peamine product-risk ei ole enam item count üksinda. Arithmetic snake'i packid
 on teadlikult väikesed DSL-spec poolid ja audit loeb need kaetuks, kui operation
-family, range'id ja unlockid on olemas. Alles on sisu-meta risk sõnavara ja
-silbitamise packides, kus puudub explicit difficulty/learning-outcome signaal.
+family, range'id ja unlockid on olemas. Alles on sisu-meta risk
+sõnavarapackides, kus puudub explicit difficulty/learning-outcome signaal.
 
 ## Packide Tabel
 
@@ -41,8 +41,8 @@ silbitamise packides, kus puudub explicit difficulty/learning-outcome signaal.
 | ------------------------------------------ | --------------------------- | ------ | --------------------------------------------------------------- | ---------------------------------------------------- | ------------------------------------- |
 | `astronomy.visible_from_estonia`           | Tähtkujud                   | 16     | `star_mapper`                                                   | `difficulty=easy/hard/medium`                        | OK                                    |
 | `language.spatial_sentences.scene_pack`    | Asukohalaused               | 8      | `sentence_logic`                                                | `difficulty=easy/hard/medium`, `levels=1-open-ended` | OK                                    |
-| `language.syllabification.en`              | Silbitamine                 | 35     | `syllable_builder`                                              | puudub                                               | Locale OK; lisa raskusmeta            |
-| `language.syllabification.et`              | Silbitamine                 | 51     | `syllable_builder`                                              | puudub                                               | Locale OK; lisa raskusmeta            |
+| `language.syllabification.en`              | Silbitamine                 | 35     | `syllable_builder`                                              | `difficulty=easy/hard/medium`, `levels=1-open-ended` | OK                                    |
+| `language.syllabification.et`              | Silbitamine                 | 51     | `syllable_builder`                                              | `difficulty=easy/hard/medium`, `levels=1-open-ended` | OK                                    |
 | `language.vocabulary.en`                   | Sõnavara                    | 92     | `letter_match`, `picture_pairs`, `word_builder`, `word_cascade` | puudub                                               | Maht OK; lisa vanuse/difficulty tagid |
 | `language.vocabulary.et`                   | Sõnavara                    | 223    | `letter_match`, `picture_pairs`, `word_builder`, `word_cascade` | puudub                                               | Maht OK; vajab copy review + tagid    |
 | `math.addition_memory.core`                | Liitmistehete meeldejätmine | 8      | `memory_math`                                                   | `levels=1-open-ended`, `stage:8`                     | OK                                    |
@@ -64,10 +64,9 @@ silbitamise packides, kus puudub explicit difficulty/learning-outcome signaal.
 
 ## Prioriteedid
 
-1. **Lisa difficulty/meta tagid ülejäänud keelepackidele.**
-   `language.vocabulary.*` ja `language.syllabification.*` on mahult
-   kasutatavad, kuid neil puudub selge raskus või õpitulemuse tag. See takistab
-   päriselt adaptiivset valikut.
+1. **Lisa difficulty/meta tagid sõnavarapackidele.** `language.vocabulary.*`
+   on mahult kasutatav, kuid seal puudub selge raskus või õpitulemuse tag. See
+   takistab päriselt adaptiivset valikut.
 2. **Tee Estonian copy review.** Sõnavara, laused, saavutused ja game title'id
    peaksid läbima ühe keeletoimetuse ringi koos vanuse sobivuse kontrolliga.
 3. **Hoia authored-content kvaliteedi järjekord nähtaval.** Shape Shift ja
@@ -76,16 +75,17 @@ silbitamise packides, kus puudub explicit difficulty/learning-outcome signaal.
 
 ## Soovitatud Järgmine Slice
 
-`math_snake` DSL-spec packid, `math.unit_conversions.core` ja
-`language.spatial_sentences.scene_pack` on nüüd auditiloogikas kaetud. Kõige
-praktilisem järgmine slice on `language.syllabification.*`:
+`math_snake` DSL-spec packid, `math.unit_conversions.core`,
+`language.spatial_sentences.scene_pack` ja `language.syllabification.*` on nüüd
+auditiloogikas kaetud. Kõige praktilisem järgmine slice on
+`language.vocabulary.*`:
 
-- lisada silbitamise sõnadele difficulty või level/focus metadata;
-- katta lühikesed CV-sõnad, liitsilbid ja pikemad sõnad eraldi õppesisu
+- lisada sõnadele difficulty või level/focus metadata;
+- katta 3-4 tähe sõnad, 5-6 tähe sõnad ja pikemad sõnad eraldi õppesisu
   signaalidega;
-- uuendada generatori ja packi teste, et valik kasutab metadata põhiseid
-  tasemeid;
-- pärast seda jätkata `language.vocabulary.*` tagidega.
+- siduda `word_builder`, `word_cascade`, `picture_pairs` ja `letter_match`
+  valikud metadata põhiste tasemetega;
+- teha samas lõigus vähemalt kerge Estonian copy sanity check.
 
 See annab väikese, hästi testitava muudatuse ning tõstab kohe ühe standardmängu
 sisulist kvaliteeti.
