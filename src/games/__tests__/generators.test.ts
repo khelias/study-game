@@ -79,6 +79,8 @@ import { SPIKE_WIDTH } from '../../engine/shapeDash';
 
 beforeEach(() => {
   setLocale('et');
+  // @ts-expect-error -- Shape Shift keeps a session-level repeat buffer on globalThis
+  delete globalThis._shapeShiftHistory;
 });
 
 describe('Generators', () => {
@@ -1317,6 +1319,24 @@ describe('Generators', () => {
           expect(piece.currentRotation).toBe(piece.correctRotation);
         }
       });
+    });
+
+    it('should avoid immediate repeats when persisted Shape Shift history is exhausted', () => {
+      const easyPuzzleIds = SHAPE_SHIFT_PUZZLES_PACK.items
+        .filter((puzzle) => puzzle.difficulty === 'easy')
+        .map((puzzle) => puzzle.id);
+      const rng = createRng(1);
+      const generator = Generators.shape_shift;
+      if (!generator) throw new Error('shape_shift generator not found');
+
+      const firstProblem = generator(1, rng, 'starter', {
+        avoidContentIds: easyPuzzleIds,
+      }) as ShapeShiftProblem;
+      const secondProblem = generator(1, rng, 'starter', {
+        avoidContentIds: easyPuzzleIds,
+      }) as ShapeShiftProblem;
+
+      expect(secondProblem.puzzle.id).not.toBe(firstProblem.puzzle.id);
     });
   });
 

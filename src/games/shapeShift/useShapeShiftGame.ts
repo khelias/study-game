@@ -11,13 +11,20 @@ import type { ShapeShiftProblem, PieceState } from '../../types/game';
 // Constants for interaction
 const TAP_THRESHOLD_PX = 10;
 
+const getInitialPieces = (problem: ShapeShiftProblem): PieceState[] =>
+  problem.pieces.map((p) => ({
+    ...p,
+    currentPosition: null,
+    currentRotation: p.currentRotation ?? p.correctRotation,
+  }));
+
 export function useShapeShiftGame(
   problem: ShapeShiftProblem,
   onAnswer: (isCorrect: boolean) => void,
   soundEnabled: boolean,
   boardWidthPx: number,
 ) {
-  const [pieces, setPieces] = useState<PieceState[]>(() => problem.pieces.map((p) => ({ ...p })));
+  const [pieces, setPieces] = useState<PieceState[]>(() => getInitialPieces(problem));
   const [status, setStatus] = useState<'idle' | 'correct' | 'wrong'>('idle');
   const [isDragging, setIsDragging] = useState(false);
 
@@ -34,20 +41,16 @@ export function useShapeShiftGame(
 
   const lastCheckedHash = useRef<string>('');
 
-  // Reset state when problem changes (render-time sync avoids cascading effect renders)
+  // Reset state when problem changes. React allows this previous-prop pattern
+  // during render, and it avoids showing stale pieces for a paint.
   const [prevUid, setPrevUid] = useState(problem.uid);
   if (prevUid !== problem.uid) {
     setPrevUid(problem.uid);
-    setPieces(
-      problem.pieces.map((p) => ({
-        ...p,
-        currentPosition: null,
-        currentRotation: p.currentRotation ?? p.correctRotation,
-      })),
-    );
+    setPieces(getInitialPieces(problem));
     setStatus('idle');
+    setIsDragging(false);
   }
-  // Ref updates must happen outside render; reset the hash when uid changes
+  // Ref updates must happen outside render; reset the hash when uid changes.
   useEffect(() => {
     lastCheckedHash.current = '';
   }, [problem.uid]);

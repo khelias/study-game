@@ -1524,25 +1524,22 @@ export const Generators: Record<string, GeneratorFunction> = {
     // @ts-expect-error -- dynamic property on globalThis for session-scoped history
     if (!globalThis._shapeShiftHistory) globalThis._shapeShiftHistory = [];
     // @ts-expect-error -- dynamic property on globalThis for session-scoped history
-    const history = globalThis._shapeShiftHistory as string[];
+    let history = globalThis._shapeShiftHistory as string[];
 
-    // First avoid persisted content-pack history, then session history. If the
-    // difficulty tier is exhausted, fall back to the session-only filter.
-    const persistentAvailablePuzzles = suitablePuzzles.filter((p) => !persistentAvoidIds.has(p.id));
-    const availablePuzzles = persistentAvailablePuzzles.filter((p) => !history.includes(p.id));
-
-    const pool =
-      availablePuzzles.length > 0
-        ? availablePuzzles
-        : persistentAvailablePuzzles.length > 0
-          ? persistentAvailablePuzzles
-          : suitablePuzzles;
-    if (availablePuzzles.length === 0) {
+    // Avoid the current session first so an exhausted persisted history cannot
+    // make the just-solved puzzle appear to stay on screen.
+    let sessionAvailablePuzzles = suitablePuzzles.filter((p) => !history.includes(p.id));
+    if (sessionAvailablePuzzles.length === 0) {
       // @ts-expect-error -- dynamic property on globalThis for session-scoped history
       globalThis._shapeShiftHistory = history.filter(
         (id) => !suitablePuzzles.find((p) => p.id === id),
       );
+      // @ts-expect-error -- dynamic property on globalThis for session-scoped history
+      history = globalThis._shapeShiftHistory as string[];
+      sessionAvailablePuzzles = suitablePuzzles;
     }
+    const freshPuzzles = sessionAvailablePuzzles.filter((p) => !persistentAvoidIds.has(p.id));
+    const pool = freshPuzzles.length > 0 ? freshPuzzles : sessionAvailablePuzzles;
 
     const puzzleIndex = Math.floor(rng() * pool.length);
     const puzzle = (pool[puzzleIndex] ?? puzzles[0])!;

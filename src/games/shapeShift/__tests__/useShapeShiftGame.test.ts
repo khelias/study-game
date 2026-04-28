@@ -163,4 +163,54 @@ describe('useShapeShiftGame', () => {
     expect(result.current.pieces[0]!.currentPosition).toEqual({ x: 0, y: 0 });
     // Should trigger completion logic if it was the last piece, but that involves timeouts
   });
+
+  it('should clear placed pieces when a new puzzle problem arrives', () => {
+    const nextProblem: ShapeShiftProblem = {
+      ...mockProblem,
+      uid: 'next-uid',
+      puzzle: {
+        ...mockProblem.puzzle,
+        id: 'next-puzzle',
+        pieces: [
+          {
+            id: 'p2',
+            type: 'triangle',
+            color: 'blue',
+            correctPosition: { x: 4, y: 4 },
+            correctRotation: 0,
+            size: 2,
+          },
+        ],
+      },
+      pieces: [
+        {
+          id: 'p2',
+          type: 'triangle',
+          color: 'blue',
+          correctPosition: { x: 4, y: 4 },
+          correctRotation: 0,
+          isDecoy: false,
+          currentPosition: null,
+          currentRotation: 0,
+          size: 2,
+        },
+      ],
+    };
+    const { result, rerender } = renderHook(
+      ({ problem }) => useShapeShiftGame(problem, mockOnAnswer, true, 500),
+      { initialProps: { problem: mockProblem } },
+    );
+
+    act(() => {
+      expect(result.current.placeHintPiece()).toBe(true);
+    });
+    expect(result.current.pieces[0]!.currentPosition).toEqual({ x: 0, y: 0 });
+
+    rerender({ problem: nextProblem });
+
+    expect(result.current.status).toBe('idle');
+    expect(result.current.pieces).toHaveLength(1);
+    expect(result.current.pieces[0]!.id).toBe('p2');
+    expect(result.current.pieces[0]!.currentPosition).toBeNull();
+  });
 });
