@@ -32,13 +32,13 @@ describe('curriculum audit report', () => {
 
   it('flags shallow procedural packs without losing their direct consumers', () => {
     const report = buildCurriculumAuditReport();
-    const additionMemory = report.packs.find((row) => row.packId === 'math.addition_memory.core');
+    const addition = report.packs.find((row) => row.packId === 'math.addition_within_20');
 
-    expect(additionMemory).toBeDefined();
-    expect(additionMemory?.itemCount).toBe(2);
-    expect(additionMemory?.warnings).toContain('shallow_item_count<6');
-    expect(additionMemory?.consumers).toEqual([
-      { gameId: 'memory_math', mechanic: 'memory_math', mode: 'direct-pack' },
+    expect(addition).toBeDefined();
+    expect(addition?.itemCount).toBe(2);
+    expect(addition?.warnings).toContain('shallow_item_count<6');
+    expect(addition?.consumers).toEqual([
+      { gameId: 'addition_snake', mechanic: 'math_snake', mode: 'direct-pack' },
     ]);
   });
 
@@ -77,6 +77,20 @@ describe('curriculum audit report', () => {
     expect(time?.warnings).not.toContain('shallow_item_count<6');
     expect(time?.consumers).toEqual([
       { gameId: 'time_match', mechanic: 'time_match', mode: 'direct-pack' },
+    ]);
+  });
+
+  it('tracks the expanded addition memory stage pack as level-ranged content', () => {
+    const report = buildCurriculumAuditReport();
+    const additionMemory = report.packs.find((row) => row.packId === 'math.addition_memory.core');
+
+    expect(additionMemory).toBeDefined();
+    expect(additionMemory?.itemCount).toBe(8);
+    expect(additionMemory?.itemKinds).toEqual({ stage: 8 });
+    expect(additionMemory?.difficultySignals).toContain('levels=1-open-ended');
+    expect(additionMemory?.warnings).not.toContain('shallow_item_count<6');
+    expect(additionMemory?.consumers).toEqual([
+      { gameId: 'memory_math', mechanic: 'memory_math', mode: 'direct-pack' },
     ]);
   });
 });

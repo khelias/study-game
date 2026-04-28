@@ -23,7 +23,7 @@ item count'i, locale'i, skilli õpitargetit ja lihtsaid difficulty signaale
 | Packid ilma tarbijata  | 0       |
 | Skillid ilma packita   | 0       |
 | Skillid ilma tarbijata | 0       |
-| Packid alla 6 itemi    | 7       |
+| Packid alla 6 itemi    | 6       |
 
 Hea uudis: Phase 1 migratsioon on struktuurselt seotud. Igal skillil on pack,
 igal packil on vähemalt üks game consumer ja ükski pack ei vedele registris
@@ -43,7 +43,7 @@ Peamine product-risk: osa packe on endiselt progression-specid, mitte sisukad
 | `language.syllabification.et`              | Silbitamine                 | 51     | `syllable_builder`                                              | puudub                                 | Locale OK; lisa raskusmeta                   |
 | `language.vocabulary.en`                   | Sõnavara                    | 92     | `letter_match`, `picture_pairs`, `word_builder`, `word_cascade` | puudub                                 | Maht OK; lisa vanuse/difficulty tagid        |
 | `language.vocabulary.et`                   | Sõnavara                    | 223    | `letter_match`, `picture_pairs`, `word_builder`, `word_cascade` | puudub                                 | Maht OK; vajab copy review + tagid           |
-| `math.addition_memory.core`                | Liitmistehete meeldejätmine | 2      | `memory_math`                                                   | puudub                                 | Õhuke progression spec                       |
+| `math.addition_memory.core`                | Liitmistehete meeldejätmine | 8      | `memory_math`                                                   | `levels=1-open-ended`, `stage:8`       | OK                                           |
 | `math.addition_within_100`                 | Liitmine kuni 100           | 2      | `addition_big_snake`                                            | `valueRange 10-100`                    | Õhuke spec; generator teeb töö               |
 | `math.addition_within_20`                  | Liitmine kuni 20            | 2      | `addition_snake`                                                | `valueRange 4-20`                      | Õhuke spec; generator teeb töö               |
 | `math.balance_equations.core`              | Tasakaaluvõrrandid          | 6      | `balance_scale`                                                 | `levels=1-open-ended`                  | OK                                           |
@@ -66,10 +66,10 @@ Peamine product-risk: osa packe on endiselt progression-specid, mitte sisukad
    `language.syllabification.*` ja `language.spatial_sentences.scene_pack`
    on mahult kasutatavad, kuid neil puudub selge raskus või õpitulemuse tag.
    See takistab päriselt adaptiivset valikut.
-2. **Laienda kõige õhemaid procedural packe.** Järgmine järjekord:
-   `math.addition_memory.core`, seejärel otsustada arithmetic snake'i specide
-   auditikriteerium. Need annavad standardmängudele kiireima
-   product-kvaliteedi tõusu.
+2. **Otsusta arithmetic snake'i specide auditikriteerium.** Allesjäänud alla
+   6-itemi packid on kõik `math_snake` DSL-specid (`add/sub/mul`), mitte
+   klassikalised authored content pangad. Nende puhul on mõistlik mõõta spec
+   coverage'it, mitte ainult item count'i.
 3. **Otsusta arithmetic specide sihttase.** Snake'i `add/sub/mul` packid on
    teadlikult DSL-specid, mitte ülesandepangad. Kui see jääb nii, peaks nende
    auditikriteerium olema "spec coverage", mitte item count.
@@ -78,15 +78,16 @@ Peamine product-risk: osa packe on endiselt progression-specid, mitte sisukad
 
 ## Soovitatud Järgmine Slice
 
-`math.balance_equations.core` on laiendatud 6 level-stage'iks ja
-`math.time_reading.core` 8 õppesisu stage'iks. Kõige praktilisem järgmine slice
-on `math.addition_memory.core`:
+`math.balance_equations.core`, `math.time_reading.core` ja
+`math.addition_memory.core` on nüüd stage-põhised. Kõige praktilisem järgmine
+slice on arithmetic snake'i packide auditireegli täpsustamine:
 
-- jagada starter/advanced kaks globaalset progression configut level-stage'ideks;
-- lisada selged answer-sum range'id ja card-count progression;
-- testida, et starter/advanced stage valik säilib;
-- pärast seda otsustada, kas snake'i arithmetic packide kriteerium on item count
-  või spec coverage.
+- lisada `spec coverage` eristus auditisse;
+- märkida `math.addition_*`, `math.subtraction_*` ja `math.multiplication_*`
+  packid DSL-spec packideks;
+- võtta shallow-warning ära packidelt, mille spec katab kõik vajaliku:
+  operation kind, value/factor range ja variantide arv;
+- pärast seda jätkata keelepackide difficulty/meta tagidega.
 
 See annab väikese, hästi testitava muudatuse ning tõstab kohe ühe standardmängu
 sisulist kvaliteeti.

@@ -167,17 +167,13 @@ describe('Generators', () => {
       const generator = Generators.memory_math;
       if (!generator) throw new Error('memory_math generator not found');
       const problem = generator(1, rng, 'starter') as MemoryMathProblem;
-      const progression = getMemoryMathProgression(MATH_ADDITION_MEMORY_PACK.items, 'starter');
-      const maxSum = Math.min(
-        progression.baseMaxSum + Math.floor(1 * progression.sumGrowthMultiplier),
-        progression.maxSum,
-      );
+      const progression = getMemoryMathProgression(MATH_ADDITION_MEMORY_PACK.items, 'starter', 1);
 
       expect(problem.type).toBe('memory_math');
-      expect(problem.cards).toHaveLength(progression.baseCards);
-      expect(problem.pairs).toHaveLength(progression.baseCards / 2);
+      expect(problem.cards).toHaveLength(progression.cardCount);
+      expect(problem.pairs).toHaveLength(progression.cardCount / 2);
       expect(problem.pairs.every((pair) => pair.ans >= progression.minAnswerSum)).toBe(true);
-      expect(problem.pairs.every((pair) => pair.ans < maxSum)).toBe(true);
+      expect(problem.pairs.every((pair) => pair.ans <= progression.maxAnswerSum)).toBe(true);
     });
 
     it('should use the advanced memory progression for advanced profile', () => {
@@ -185,10 +181,23 @@ describe('Generators', () => {
       const generator = Generators.memory_math;
       if (!generator) throw new Error('memory_math generator not found');
       const problem = generator(1, rng, 'advanced') as MemoryMathProblem;
-      const progression = getMemoryMathProgression(MATH_ADDITION_MEMORY_PACK.items, 'advanced');
+      const progression = getMemoryMathProgression(MATH_ADDITION_MEMORY_PACK.items, 'advanced', 1);
 
-      expect(problem.cards).toHaveLength(progression.baseCards);
-      expect(problem.pairs).toHaveLength(progression.baseCards / 2);
+      expect(problem.cards).toHaveLength(progression.cardCount);
+      expect(problem.pairs).toHaveLength(progression.cardCount / 2);
+    });
+
+    it('should select later memory stages by profile and level', () => {
+      const rng = createRng(54321);
+      const generator = Generators.memory_math;
+      if (!generator) throw new Error('memory_math generator not found');
+      const problem = generator(10, rng, 'advanced') as MemoryMathProblem;
+      const progression = getMemoryMathProgression(MATH_ADDITION_MEMORY_PACK.items, 'advanced', 10);
+
+      expect(progression.focus).toBe('sums_within_35');
+      expect(problem.cards).toHaveLength(progression.cardCount);
+      expect(problem.pairs.every((pair) => pair.ans >= progression.minAnswerSum)).toBe(true);
+      expect(problem.pairs.every((pair) => pair.ans <= progression.maxAnswerSum)).toBe(true);
     });
   });
 

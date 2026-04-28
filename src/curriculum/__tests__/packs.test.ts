@@ -457,15 +457,29 @@ describe('curriculum', () => {
       }
     });
 
-    it('addition memory pack defines starter and advanced progression', () => {
-      const starter = getMemoryMathProgression(MATH_ADDITION_MEMORY_PACK.items, 'starter');
-      const advanced = getMemoryMathProgression(MATH_ADDITION_MEMORY_PACK.items, 'advanced');
+    it('addition memory pack defines starter and advanced level stages', () => {
+      const starter1 = getMemoryMathProgression(MATH_ADDITION_MEMORY_PACK.items, 'starter', 1);
+      const starter8 = getMemoryMathProgression(MATH_ADDITION_MEMORY_PACK.items, 'starter', 8);
+      const advanced1 = getMemoryMathProgression(MATH_ADDITION_MEMORY_PACK.items, 'advanced', 1);
+      const advanced10 = getMemoryMathProgression(MATH_ADDITION_MEMORY_PACK.items, 'advanced', 10);
 
-      expect(starter).toMatchObject({ baseCards: 6, maxCards: 12, baseMaxSum: 10 });
-      expect(advanced).toMatchObject({ baseCards: 8, maxCards: 14, baseMaxSum: 15 });
-      expect(MATH_ADDITION_MEMORY_PACK.items.every((item) => item.cardGrowthStep % 2 === 0)).toBe(
-        true,
-      );
+      expect(MATH_ADDITION_MEMORY_PACK.items).toHaveLength(8);
+      expect(starter1).toMatchObject({
+        focus: 'first_pairs',
+        cardCount: 6,
+        minAnswerSum: 3,
+        maxAnswerSum: 8,
+      });
+      expect(starter8).toMatchObject({ focus: 'sums_within_20', cardCount: 12 });
+      expect(advanced1).toMatchObject({ focus: 'advanced_warmup', cardCount: 8 });
+      expect(advanced10).toMatchObject({ focus: 'sums_within_35', cardCount: 14 });
+      expect(MATH_ADDITION_MEMORY_PACK.items.every((item) => item.kind === 'stage')).toBe(true);
+      expect(MATH_ADDITION_MEMORY_PACK.items.every((item) => item.cardCount % 2 === 0)).toBe(true);
+      expect(
+        MATH_ADDITION_MEMORY_PACK.items.every(
+          (item) => item.maxAnswerSum >= item.minAnswerSum && item.learningOutcome.et.length > 0,
+        ),
+      ).toBe(true);
     });
 
     it('grid navigation pack defines robo path grid and obstacle progression', () => {

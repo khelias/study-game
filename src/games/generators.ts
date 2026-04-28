@@ -579,25 +579,24 @@ export const Generators: Record<string, GeneratorFunction> = {
     const progression = getMemoryMathProgression(
       getPackItems<MemoryMathProgressionItem>(MATH_ADDITION_MEMORY_PACK.id),
       harder ? 'advanced' : 'starter',
+      level,
     );
-    // Improved card count progression - smoother
-    const cardGrowth = Math.floor(level / progression.cardGrowthDivisor); // Smoother growth
-    const cardCount = Math.min(
-      progression.baseCards + cardGrowth * progression.cardGrowthStep,
-      progression.maxCards,
-    );
-    // Improved maxSum progression - smoother
-    const sumGrowth = Math.floor(level * progression.sumGrowthMultiplier); // Slower growth
-    const maxSum = Math.min(progression.baseMaxSum + sumGrowth, progression.maxSum);
+    const cardCount = progression.cardCount;
     const pairs: Array<{ eq: string; ans: number }> = [];
     const cards: Array<{ id: string; content: string; matched?: boolean }> = [];
+    const sumSpan = progression.maxAnswerSum - progression.minAnswerSum + 1;
 
+    let safety = 0;
     while (pairs.length < cardCount / 2) {
-      const sum =
-        Math.floor(rng() * (maxSum - progression.minAnswerSum)) + progression.minAnswerSum;
+      safety++;
+      if (safety > 200) {
+        throw new Error('Could not generate unique memory math pairs');
+      }
+      const sum = Math.floor(rng() * sumSpan) + progression.minAnswerSum;
       if (pairs.some((p) => p.ans === sum)) continue;
 
-      const a = Math.floor(rng() * (sum - 1)) + 1;
+      const maxAddend = Math.max(progression.minAddend, sum - progression.minAddend);
+      const a = Math.floor(rng() * (maxAddend - progression.minAddend + 1)) + progression.minAddend;
       const eq = `${a} + ${sum - a}`;
       const id = pairs.length;
       const matchId = `pair-${id}`;
