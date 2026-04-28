@@ -206,7 +206,7 @@ GameScreen.tsx (container, ≤ ~230 LOC)
                                       Shop / LevelSelector / GameDescription
 ```
 
-Child components in the same folder: `GameRenderer` (looks up the view from the registry), `GameOverlayBadges`, `GameDescriptionModal`, `GameOverScreen`, `GameResultScreen`.
+Child components in the same folder: `GameRenderer` (looks up the view from the registry), `GameDescriptionModal`, `GameResultScreen`, and mechanic-specific result details such as `SnakeSessionSummary`.
 
 This layout is the template for any future screen-level refactor: container owns wiring, views take props, modal orchestration is isolated, and heavy side-effect orchestration goes into named hooks.
 
@@ -328,7 +328,7 @@ are listed here as the next natural slice boundaries.
 ### Fixed in the medium-severity follow-up (Phase 1 Slice 3c)
 
 - **Growth model no longer rewards wrong answers.** Math apples are now challenge triggers, not food: `moveMathSnake` does not grow the snake on math-apple consumption. `resolveMathSnakeAnswer` is the only growth source for math interactions — correct answer +2 segments, wrong answer 0 (hearts still tick down). Net per math apple: +2 if right, 0 if wrong. No more "farming" length by guessing.
-- **End-of-session summary added.** `SnakeSessionSummary` (rendered by `GameOverScreen` for any `*_snake` binding) shows max length, accuracy, best in-session streak, and the top 3 hardest facts (most wrong attempts). Per-fact tracking lives in `playSessionStore.snakeSessionStats.factHistory` and is the precursor to the Phase 1 mastery tracker.
+- **End-of-session summary added.** `SnakeSessionSummary` (rendered by `GameResultScreen` for any `*_snake` game-over state) shows max length, accuracy, best in-session streak, and the top 3 hardest facts (most wrong attempts). Per-fact tracking lives in `playSessionStore.snakeSessionStats.factHistory` and is the precursor to the Phase 1 mastery tracker.
 - **Theme-aware snake palette.** `VisualTheme.snakePalette: 'emerald' | 'teal' | 'orange' | 'pink' | 'indigo' | 'purple'` drives head, body (alternating), tail, glow ring, and `+N` text colour via the `SNAKE_PALETTES` token table in `MathSnakeView`. Each of the six snake bindings now picks its own family (additsioon → emerald, suur liitmine → teal, lahutamine → orange, suur lahutamine → pink, korrutus → indigo, suur korrutus → purple).
 - **In-session progression.** Grid starts at `SNAKE_MIN_GRID_SIZE` (7) and expands by one every `SNAKE_STREAK_MILESTONE` (5) correct answers, capped at `SNAKE_MAX_GRID_SIZE` (10). `expandSnakeGrid` is invoked from `useAnswerHandler` after a correct snake answer when the new streak hits the milestone. Speed remains one-step-per-input (no autoadvance) — kid-friendly.
 - **Walls now kill (no wraparound).** `moveMathSnake` returns `collision: true` when the next head leaves the grid; `wrapPosition` removed. Solves the unfair "tail appears from nowhere" case that touch input made worse.

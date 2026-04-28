@@ -6,7 +6,7 @@
  * - perfect: Player achieved perfect score (e.g., RoboPath optimal path)
  * - gameOver: Player ran out of hearts
  *
- * Replaces the old GameOverScreen with a more flexible, reusable approach.
+ * Supersedes the old dedicated game-over screen with a reusable result surface.
  */
 
 import React, { useState } from 'react';
@@ -19,6 +19,7 @@ import { useGameAudio } from '../../hooks/useGameAudio';
 import { ShopModal } from '../modals/ShopModal';
 import { GAME_CONFIG } from '../../games/data';
 import { isSnakeGameType } from '../../engine/mathSnake';
+import { SnakeSessionSummary } from './SnakeSessionSummary';
 
 export type GameResultType = 'victory' | 'perfect' | 'gameOver';
 
@@ -44,6 +45,7 @@ export const GameResultScreen: React.FC<GameResultScreenProps> = ({
   const returnToMenu = usePlaySessionStore((state) => state.returnToMenu);
   const resumeGame = usePlaySessionStore((state) => state.resumeGame);
   const setProblem = usePlaySessionStore((state) => state.setProblem);
+  const snakeSessionStats = usePlaySessionStore((state) => state.snakeSessionStats);
   const getHighScore = useGameStore((state) => state.getHighScore);
   const hearts = useGameStore((state) => state.hearts);
   const { playClick } = useGameAudio(soundEnabled);
@@ -51,6 +53,7 @@ export const GameResultScreen: React.FC<GameResultScreenProps> = ({
 
   const highScore = gameType ? getHighScore(gameType) : 0;
   const isNewRecord = gameType && score > 0 && score >= highScore;
+  const showSnakeSessionSummary = type === 'gameOver' && gameType && isSnakeGameType(gameType);
 
   const baseType = gameType ? gameType.replace('_adv', '') : null;
   const gameConfig = baseType ? GAME_CONFIG[baseType] : undefined;
@@ -195,6 +198,8 @@ export const GameResultScreen: React.FC<GameResultScreenProps> = ({
               </p>
             </div>
           )}
+
+          {showSnakeSessionSummary && <SnakeSessionSummary stats={snakeSessionStats} />}
 
           {/* Score + high score */}
           {currentConfig.showScore && (
