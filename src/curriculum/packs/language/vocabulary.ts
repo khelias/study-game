@@ -25,7 +25,6 @@ const RAW_ESTONIAN_WORDS: readonly VocabularyWordBase[] = [
   { w: 'METS', e: '🌲' },
   { w: 'MÄGI', e: '⛰️' },
   { w: 'JÕGI', e: '🏞️' },
-  { w: 'LOODUS', e: '🏞️' },
   { w: 'MERI', e: '🌊' },
   { w: 'RAND', e: '🏖️' },
   { w: 'KIVI', e: '🪨' },
@@ -37,7 +36,6 @@ const RAW_ESTONIAN_WORDS: readonly VocabularyWordBase[] = [
   { w: 'LUMI', e: '❄️' },
   { w: 'JÄÄ', e: '🧊' },
   { w: 'TUUL', e: '🌬️' },
-  { w: 'VIKERKAAR', e: '🌈' },
   { w: 'VESI', e: '💧' },
 
   // animals
@@ -53,7 +51,6 @@ const RAW_ESTONIAN_WORDS: readonly VocabularyWordBase[] = [
   { w: 'TIIGER', e: '🐯' },
   { w: 'PANDA', e: '🐼' },
   { w: 'ELEVANT', e: '🐘' },
-  { w: 'KAELKIRJAK', e: '🦒' },
   { w: 'HOBUNE', e: '🐎' },
   { w: 'LAMMAS', e: '🐑' },
   { w: 'KITS', e: '🐐' },
@@ -75,11 +72,10 @@ const RAW_ESTONIAN_WORDS: readonly VocabularyWordBase[] = [
   { w: 'PAPAGOI', e: '🦜' }, // parrot
 
   // food and drinks
-  { w: 'SAI', e: '🍞' },
-  { w: 'LEIB', e: '🥖' },
+  { w: 'SAI', e: '🥖' },
+  { w: 'LEIB', e: '🍞' },
   { w: 'JUUST', e: '🧀' },
   { w: 'PIIM', e: '🥛' },
-  { w: 'ÕIS', e: '🌸' }, // flower - 3 letters
   { w: 'PITSA', e: '🍕' },
   { w: 'BURGER', e: '🍔' },
   { w: 'LIHA', e: '🥩' },
@@ -90,11 +86,10 @@ const RAW_ESTONIAN_WORDS: readonly VocabularyWordBase[] = [
   { w: 'KURK', e: '🥒' },
   { w: 'KIRSS', e: '🍒' },
   { w: 'ÕUN', e: '🍎' },
-  { w: 'PLOOM', e: '🍑' },
+  { w: 'VIRSIK', e: '🍑' },
   { w: 'MAASIKAS', e: '🍓' },
   { w: 'ARBUUS', e: '🍉' },
   { w: 'SIDRUN', e: '🍋' },
-  { w: 'VIINAMARI', e: '🍇' },
   { w: 'PÄHKEL', e: '🌰' },
   { w: 'KOMM', e: '🍬' },
   { w: 'JÄÄTIS', e: '🍦' },
@@ -104,11 +99,9 @@ const RAW_ESTONIAN_WORDS: readonly VocabularyWordBase[] = [
   { w: 'KOHV', e: '☕' },
   { w: 'TEE', e: '🫖' },
   { w: 'KAPSAS', e: '🥬' }, // cabbage
-  { w: 'KAKAO', e: '☕' }, // cocoa
   { w: 'ŠOKOLAAD', e: '🍫' }, // chocolate
-  { w: 'PIPAR', e: '🌶️' }, // pepper
+  { w: 'PAPRIKA', e: '🫑' }, // bell pepper
   { w: 'SOOL', e: '🧂' }, // salt
-  { w: 'SUHKUR', e: '🍬' }, // sugar
 
   // home and items
   { w: 'KODU', e: '🏡' },
@@ -133,13 +126,10 @@ const RAW_ESTONIAN_WORDS: readonly VocabularyWordBase[] = [
   { w: 'STOPPER', e: '⏱️' },
   { w: 'ÕHUPALL', e: '🎈' },
   { w: 'PUSLE', e: '🧩' },
-  { w: 'KLOTSID', e: '🧱' },
   { w: 'LUSIKAS', e: '🥄' },
-  { w: 'NUGA', e: '🔪' },
-  { w: 'KORK', e: '🍾' }, // cork/bottle cap
+  { w: 'KAHVEL', e: '🍴' },
   { w: 'KÄRU', e: '🛒' }, // cart
   { w: 'KÜÜNAL', e: '🕯️' }, // candle
-  { w: 'TÕRU', e: '🌰' }, // pine cone
 
   // transport
   { w: 'AUTO', e: '🚗' },
@@ -172,7 +162,7 @@ const RAW_ESTONIAN_WORDS: readonly VocabularyWordBase[] = [
 
   // sports and games
   { w: 'PALL', e: '⚽' },
-  { w: 'KORV', e: '🏀' },
+  { w: 'KORV', e: '🧺' },
   { w: 'TENNIS', e: '🎾' },
   { w: 'GOLF', e: '⛳' },
   { w: 'MALE', e: '♟️' },
@@ -184,8 +174,7 @@ const RAW_ESTONIAN_WORDS: readonly VocabularyWordBase[] = [
 
   // school and learning
   { w: 'KOOL', e: '🏫' },
-  { w: 'KLASS', e: '🏫' },
-  { w: 'KIRJUTUS', e: '✍️' },
+  { w: 'KIRI', e: '✉️' },
   { w: 'NUMBRID', e: '🔢' },
   { w: 'TÄHED', e: '🔤' },
   { w: 'ÕPIK', e: '📘' },
@@ -202,7 +191,6 @@ const RAW_ESTONIAN_WORDS: readonly VocabularyWordBase[] = [
   // animals (added)
   { w: 'KANA', e: '🐔' },
   { w: 'KALKUN', e: '🦃' },
-  { w: 'KROKODILL', e: '🐊' },
   { w: 'KILPKONN', e: '🐢' },
   { w: 'HAMSTER', e: '🐹' },
   { w: 'KAAMEL', e: '🐫' },
@@ -226,14 +214,11 @@ const RAW_ESTONIAN_WORDS: readonly VocabularyWordBase[] = [
   { w: 'SEIN', e: '🧱' },
   { w: 'PANN', e: '🍳' },
   { w: 'VANN', e: '🛁' },
-  { w: 'RIIUL', e: '🗄️' },
-  { w: 'TELEVIISOR', e: '📺' },
+  { w: 'TELER', e: '📺' },
 
   // transportation (added)
   { w: 'MOPEED', e: '🛵' },
-  { w: 'MOTORRATAS', e: '🏍️' },
   { w: 'VEOK', e: '🚚' },
-  { w: 'TROLLIBUSS', e: '🚎' },
 
   // people (added)
   { w: 'TÜDRUK', e: '👧' },
@@ -246,7 +231,7 @@ const RAW_ESTONIAN_WORDS: readonly VocabularyWordBase[] = [
   // sports (added) - keeping specific terms for variety
   { w: 'VÕRKPALL', e: '🏐' },
   { w: 'JÕUSAAL', e: '🏋️' },
-  { w: 'JOOKSMINE', e: '🏃' },
+  { w: 'JOOKS', e: '🏃' },
   { w: 'UJUMINE', e: '🏊' },
 
   // colors and shapes

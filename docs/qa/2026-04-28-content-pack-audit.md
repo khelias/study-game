@@ -34,8 +34,8 @@ Peamine product-risk ei ole enam registri või metadata puudujääk. Arithmetic
 snake'i packid on teadlikult väikesed DSL-spec poolid ja audit loeb need
 kaetuks, kui operation family, range'id ja unlockid on olemas. Kõigil packidel
 on nüüd consumer ja explicit difficulty või progression signaal. Järgmine risk
-on authored content'i kvaliteet: sõnavara vanusesobivus, pikkus ja copy
-toimetamine.
+on authored content'i kvaliteet: inglise sõnavara sama range pildiankru kontroll,
+sõnamängude UI smoke ning laiem copy-toimetus.
 
 ## Packide Tabel
 
@@ -46,7 +46,7 @@ toimetamine.
 | `language.syllabification.en`              | Silbitamine                 | 35     | `syllable_builder`                                              | `difficulty=easy/hard/medium`, `levels=1-open-ended` | OK                       |
 | `language.syllabification.et`              | Silbitamine                 | 51     | `syllable_builder`                                              | `difficulty=easy/hard/medium`, `levels=1-open-ended` | OK                       |
 | `language.vocabulary.en`                   | Sõnavara                    | 90     | `letter_match`, `picture_pairs`, `word_builder`, `word_cascade` | `difficulty=easy/hard/medium`, `levels=1-open-ended` | OK                       |
-| `language.vocabulary.et`                   | Sõnavara                    | 222    | `letter_match`, `picture_pairs`, `word_builder`, `word_cascade` | `difficulty=easy/hard/medium`, `levels=1-open-ended` | OK; vajab copy review    |
+| `language.vocabulary.et`                   | Sõnavara                    | 207    | `letter_match`, `picture_pairs`, `word_builder`, `word_cascade` | `difficulty=easy/hard/medium`, `levels=1-open-ended` | OK; copy-reviewed        |
 | `math.addition_memory.core`                | Liitmistehete meeldejätmine | 8      | `memory_math`                                                   | `levels=1-open-ended`, `stage:8`                     | OK                       |
 | `math.addition_within_100`                 | Liitmine kuni 100           | 2      | `addition_big_snake`                                            | `arithmetic-spec=covered`                            | DSL-spec OK              |
 | `math.addition_within_20`                  | Liitmine kuni 20            | 2      | `addition_snake`                                                | `arithmetic-spec=covered`                            | DSL-spec OK              |
@@ -66,26 +66,33 @@ toimetamine.
 
 ## Prioriteedid
 
-1. **Tee Estonian copy review.** Sõnavara, laused, saavutused ja game title'id
-   peaksid läbima ühe keeletoimetuse ringi koos vanuse sobivuse kontrolliga.
-2. **Hoia authored-content kvaliteedi järjekord nähtaval.** Shape Shift ja
+1. **Tee sõnamängude UI smoke.** `picture_pairs`, `letter_match`,
+   `word_builder` ja `word_cascade` peaksid pärast ET sõnavara copy review'd
+   läbima ühe eestikeelse mänguvooru, et uued pildiankrud oleksid päris UI-s
+   loetavad.
+2. **Rakenda sama range pildiankru kontroll inglise sõnavarale.** EN pack on
+   struktuurselt korras, kuid vajab sama duplicate-emoji ja age-fit pass'i.
+3. **Hoia authored-content kvaliteedi järjekord nähtaval.** Shape Shift ja
    vocabulary on mahult korras, kuid järgmine kvaliteedihüpe tuleb sisulise
    rühmituse ja toimetamise, mitte registri migratsiooni kaudu.
-3. **Kasuta metadata't adaptiivses valikus järjekindlalt.** Sõnamängud on nüüd
+4. **Kasuta metadata't adaptiivses valikus järjekindlalt.** Sõnamängud on nüüd
    metadata külge seotud; järgmine samalaadne töö peaks olema UI või mastery
    vaates selle info nähtavaks tegemine.
 
 ## Soovitatud Järgmine Slice
 
-Kõik content-pack metadata warningud ja vocabulary duplikaadid on nüüd kaetud.
-Kõige praktilisem järgmine slice on `language.vocabulary.et` vanusesobivuse ja
-pikkuse audit:
+Kõik content-pack metadata warningud, vocabulary duplikaadid ja
+`language.vocabulary.et` vanusesobivuse/pildiankru esmased riskid on nüüd
+kaetud. ET packi copy review eemaldas 9-10 tähega või nõrga visuaalse vastega
+sõnad, asendas mitu täpsema eestikeelse vastega ning lisas regressioonikaitse:
+ET vocabulary sõnad peavad olema kuni 8 tähte, kasutama ainult eesti suurtähti,
+vältima duplicate emoji vasteid ja hoidma reviewed-out sõnad väljas.
 
-- märkida või eemaldada vanuse mõttes nõrgad sõnad;
-- kontrollida Estonian diakriitikuid ja liiga pikki sõnu 5+ vanuserühma jaoks;
-- vaadata üle mitmetähenduslikud emoji vasted;
-- lisada väike test või diagnostika, mis raporteerib liiga pikki ja kahtlase
-  kategooriaga sõnu.
+Kõige praktilisem järgmine slice on inglise vocabulary copy/emoji audit:
 
-See annab väikese, hästi testitava muudatuse ning tõstab kohe ühe standardmängu
-sisulist kvaliteeti.
+- kontrollida duplicate või liiga üldised emoji vasted;
+- eemaldada või asendada nõrga pildiankruga sõnad;
+- lisada EN vocabulary'le sama pildipaaride turvatest, mida ET pack nüüd kasutab.
+
+See annab väikese, hästi testitava muudatuse ning vähendab `picture_pairs`
+valevastete riski mõlemas locale'is.

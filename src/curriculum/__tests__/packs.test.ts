@@ -305,6 +305,48 @@ describe('curriculum', () => {
       }
     });
 
+    it('keeps Estonian vocabulary age-appropriate and picture-pair safe', () => {
+      const reviewedOutWords = new Set([
+        'JOOKSMINE',
+        'KAELKIRJAK',
+        'KAKAO',
+        'KIRJUTUS',
+        'KLASS',
+        'KLOTSID',
+        'KORK',
+        'KROKODILL',
+        'LOODUS',
+        'MOTORRATAS',
+        'NUGA',
+        'PIPAR',
+        'PLOOM',
+        'RIIUL',
+        'SUHKUR',
+        'TELEVIISOR',
+        'TROLLIBUSS',
+        'TÕRU',
+        'VIKERKAAR',
+        'VIINAMARI',
+        'ÕIS',
+      ]);
+      const emojiToWords = new Map<string, string[]>();
+
+      for (const word of LANGUAGE_VOCABULARY_ET_PACK.items) {
+        const wordsForEmoji = emojiToWords.get(word.e) ?? [];
+        wordsForEmoji.push(word.w);
+        emojiToWords.set(word.e, wordsForEmoji);
+
+        expect(word.w.length).toBeLessThanOrEqual(8);
+        expect(word.w).toMatch(/^[A-ZÕÄÖÜŠŽ]+$/);
+        expect(reviewedOutWords.has(word.w)).toBe(false);
+      }
+
+      const duplicateEmojiAnchors = Array.from(emojiToWords.entries())
+        .filter(([, words]) => words.length > 1)
+        .map(([emoji, words]) => `${emoji}:${words.join(',')}`);
+      expect(duplicateEmojiAnchors).toEqual([]);
+    });
+
     it('selects vocabulary words by profile and level metadata', () => {
       const starterLevel1 = getVocabularyWordsForLevel(
         LANGUAGE_VOCABULARY_ET_PACK.items,
