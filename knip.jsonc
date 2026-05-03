@@ -14,4 +14,10 @@
     "src/monetization/**",
     "src/services/persistence/**",
   ],
+  "ignoreDependencies": [
+    // Tailwind v4 is loaded via `@import "tailwindcss"` in src/index.css.
+    // Knip scans TS/JS, not CSS, so it sees this as unused. The
+    // @tailwindcss/vite plugin requires tailwindcss as a peer.
+    "tailwindcss",
+  ],
 }
