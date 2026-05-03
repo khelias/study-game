@@ -235,8 +235,11 @@ export const MathSnakeView: React.FC<MathSnakeViewProps> = ({
     eliminatedRef.current = eliminatedOptions;
   }, [eliminatedOptions]);
 
-  // Reset status and eliminated options when problem or math challenge changes
+  // Reset status and eliminated options when problem or math challenge changes.
+  // React 19's react-hooks/set-state-in-effect rule prefers render-time prop comparison
+  // for "reset on prop change" patterns; deferred to a separate refactor PR.
   React.useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setStatus('idle');
     setSelectedOption(null);
     setEliminatedOptions([]);
