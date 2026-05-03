@@ -26,7 +26,8 @@
     /* Type checking */
     "allowSyntheticDefaultImports": true,
     "esModuleInterop": true,
-    "resolveJsonModule": true
+    "resolveJsonModule": true,
+    "types": ["node"]
   },
   "include": ["src", "e2e", "playwright.config.ts"],
   "exclude": ["node_modules", "dist"]
