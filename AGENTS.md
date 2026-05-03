@@ -11,7 +11,7 @@ follow the ADR direction, not the older shape implied by some legacy modules.
 ## Tech stack
 
 - React 19, TypeScript 5.9 (strict, `noUncheckedIndexedAccess`, no implicit `any`)
-- Vite 7
+- Vite 8
 - Tailwind CSS v3. The sibling `khe-ai-adventure` repo runs v4, so don't auto-port utilities across without checking syntax compatibility.
 - Zustand 4 (`gameStore` for persistence, `playSessionStore` for session state)
 - React Router 7
