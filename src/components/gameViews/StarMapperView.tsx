@@ -634,6 +634,7 @@ export const StarMapperView: React.FC<StarMapperViewProps> = ({
                       e.preventDefault();
                       e.stopPropagation();
                       if (e.button !== 0 && e.pointerType !== 'touch') return;
+                      // eslint-disable-next-line react-hooks/refs -- called from pointer event, not render
                       handleIdentifyClick(optionId);
                     }}
                     onClick={(e) => {

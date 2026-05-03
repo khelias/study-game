@@ -177,24 +177,26 @@ export const EnhancedConfetti: React.FC<EnhancedConfettiProps> = ({ active, onCo
   const [particles, setParticles] = React.useState<Particle[]>([]);
 
   React.useEffect(() => {
-    if (active) {
-      const newParticles: Particle[] = Array.from({ length: 50 }, (_, i) => ({
-        id: i,
-        emoji: ['🎉', '🎊', '⭐', '🌟', '✨', '🎈', '🎁'][Math.floor(Math.random() * 7)] as string,
-        left: Math.random() * 100,
-        delay: Math.random() * 2,
-        duration: 2 + Math.random() * 2,
-      }));
-      setParticles(newParticles);
+    if (!active) return undefined;
 
-      const timer = setTimeout(() => {
-        setParticles([]);
-        if (onComplete) onComplete();
-      }, 4000);
+    const newParticles: Particle[] = Array.from({ length: 50 }, (_, i) => ({
+      id: i,
+      emoji: ['🎉', '🎊', '⭐', '🌟', '✨', '🎈', '🎁'][Math.floor(Math.random() * 7)] as string,
+      left: Math.random() * 100,
+      delay: Math.random() * 2,
+      duration: 2 + Math.random() * 2,
+    }));
 
-      return () => clearTimeout(timer);
-    }
-    return undefined;
+    const showTimer = setTimeout(() => setParticles(newParticles), 0);
+    const clearTimer = setTimeout(() => {
+      setParticles([]);
+      if (onComplete) onComplete();
+    }, 4000);
+
+    return () => {
+      clearTimeout(showTimer);
+      clearTimeout(clearTimer);
+    };
   }, [active, onComplete]);
 
   if (!active || particles.length === 0) return null;

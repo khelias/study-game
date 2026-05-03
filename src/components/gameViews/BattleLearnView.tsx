@@ -96,12 +96,15 @@ export const BattleLearnView: React.FC<BattleLearnViewProps> = ({
 
   // Only reset game state when it's a brand new game (different UID AND empty revealed array)
   // Update question when parent provides new question (after answering)
-  // Sync board state from problem if it has been updated externally
+  // Sync board state from problem if it has been updated externally.
+  // React 19's react-hooks/set-state-in-effect rule prefers render-time prop comparison
+  // for "sync state with prop change" patterns; deferred to a separate refactor PR.
   useEffect(() => {
     const isNewGame = problem.uid !== currentUid && problem.revealed.length === 0;
 
     if (isNewGame) {
       // Complete reset for new game
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setGameState({
         gridSize: problem.gridSize,
         cellGrid: problem.cellGrid,
