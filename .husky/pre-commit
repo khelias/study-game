@@ -1,0 +1,2 @@
+[ -d "/c/Program Files/nodejs" ] && export PATH="/c/Program Files/nodejs:$PATH"
+lint-staged

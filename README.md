@@ -1,5 +1,9 @@
 # Smart Games
 
+[![CI](https://github.com/khelias/khe-study/actions/workflows/ci.yml/badge.svg)](https://github.com/khelias/khe-study/actions/workflows/ci.yml)
+[![CodeQL](https://github.com/khelias/khe-study/actions/workflows/codeql.yml/badge.svg)](https://github.com/khelias/khe-study/actions/workflows/codeql.yml)
+[![Deploy](https://github.com/khelias/khe-study/actions/workflows/deploy.yml/badge.svg)](https://github.com/khelias/khe-study/actions/workflows/deploy.yml)
+
 Learning platform built around the idea that a single engine can serve both a 7-year-old practicing multiplication and an adult practicing Estonian river names — one codebase, one account model, two UX registers. Today the catalog is 18 small games in Estonian curriculum areas (reading, math, logic, memory) with adaptive difficulty. The next milestones are decoupling skill/mechanic/content, adding a backend, and activating an adult UX register. See [`ROADMAP.md`](./ROADMAP.md) for phases and scope; see [`ARCHITECTURE.md`](./ARCHITECTURE.md) for current structure; see [`docs/adr/`](./docs/adr/) for the bounded-context and learner-profile decisions that supersede parts of the older architecture as they land.
 
 Live at [games.khe.ee/study/](https://games.khe.ee/study/).
