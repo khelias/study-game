@@ -13,7 +13,7 @@ follow the ADR direction, not the older shape implied by some legacy modules.
 - React 19, TypeScript 6.0 (strict, `noUncheckedIndexedAccess`, no implicit `any`)
 - Vite 8
 - Tailwind CSS v3. The sibling `khe-ai-adventure` repo runs v4, so don't auto-port utilities across without checking syntax compatibility.
-- Zustand 4 (`gameStore` for persistence, `playSessionStore` for session state)
+- Zustand 5 (`gameStore` for persistence, `playSessionStore` for session state)
 - React Router 7
 - Vitest + Testing Library + happy-dom
 - Playwright (E2E)
