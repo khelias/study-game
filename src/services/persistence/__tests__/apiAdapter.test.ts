@@ -34,7 +34,7 @@ describe('ApiAdapter', () => {
 
   describe('save', () => {
     it('should save data via API client', async () => {
-      vi.mocked(putFn).mockResolvedValue({} as never);
+      vi.mocked(putFn).mockResolvedValue({});
 
       await adapter.save(testKey, testData);
 

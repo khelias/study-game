@@ -258,7 +258,7 @@ export const useGameStore = create<GameStore>()(
         if (profile in PROFILES) {
           const state = get();
           set({
-            profile: profile as ProfileType,
+            profile: profile,
             activeLearnerProfile: createActiveLearnerProfile(profile, state.levels),
           });
         }

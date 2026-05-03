@@ -39,7 +39,7 @@ export const LevelSelectorModal: React.FC<LevelSelectorModalProps> = ({
   const baseType = gameType.replace('_adv', '');
   const gameConfig = GAME_CONFIG[baseType];
   const gameTitle: string = gameConfig
-    ? ((t.games[gameConfig.id as keyof typeof t.games]?.title ?? gameConfig.title) as string)
+    ? ((t.games[gameConfig.id as keyof typeof t.games]?.title ?? gameConfig.title))
     : gameType;
 
   // Generate level options (1-20, or reasonable range)

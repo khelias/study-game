@@ -120,8 +120,8 @@ export const MemoryGameView: React.FC<MemoryGameViewProps> = ({
           setTimeout(() => {
             const solvedCards = [...newCards];
             if (solvedCards[i1] && solvedCards[i2]) {
-              solvedCards[i1] = { ...solvedCards[i1], solved: true } as (typeof solvedCards)[0];
-              solvedCards[i2] = { ...solvedCards[i2], solved: true } as (typeof solvedCards)[0];
+              solvedCards[i1] = { ...solvedCards[i1], solved: true };
+              solvedCards[i2] = { ...solvedCards[i2], solved: true };
             }
             setCards(solvedCards);
             setFlipped([]);
@@ -140,8 +140,8 @@ export const MemoryGameView: React.FC<MemoryGameViewProps> = ({
           setTimeout(() => {
             const resetCards = [...newCards];
             if (resetCards[i1] && resetCards[i2]) {
-              resetCards[i1] = { ...resetCards[i1], flipped: false } as (typeof resetCards)[0];
-              resetCards[i2] = { ...resetCards[i2], flipped: false } as (typeof resetCards)[0];
+              resetCards[i1] = { ...resetCards[i1], flipped: false };
+              resetCards[i2] = { ...resetCards[i2], flipped: false };
             }
             setCards(resetCards);
             setFlipped([]);
