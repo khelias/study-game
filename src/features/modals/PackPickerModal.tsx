@@ -37,7 +37,7 @@ export const PackPickerModal: React.FC<PackPickerModalProps> = ({
   const { formatText } = useProfileText();
 
   const mechanicCopy = t.mechanics[mechanicConfig.id as keyof typeof t.mechanics];
-  const mechanicTitle: string = (mechanicCopy?.title ?? mechanicConfig.title) as string;
+  const mechanicTitle: string = (mechanicCopy?.title ?? mechanicConfig.title);
   const heading = formatText(mechanicTitle);
 
   return (
@@ -56,11 +56,11 @@ export const PackPickerModal: React.FC<PackPickerModalProps> = ({
             const { config, iconComponent, level, highScore, isNew, curriculumSummary } = binding;
             const Icon = iconComponent || Type;
             const title: string = (t.games[config.id as keyof typeof t.games]?.title ??
-              config.title) as string;
+              config.title);
             const desc: string = (t.games[config.id as keyof typeof t.games]?.desc ??
-              config.desc) as string;
+              config.desc);
             const difficultyText = config.difficulty
-              ? ((t.difficulty[config.difficulty as keyof typeof t.difficulty] ??
+              ? ((t.difficulty[config.difficulty] ??
                   config.difficulty) as string)
               : null;
 

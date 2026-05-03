@@ -50,7 +50,7 @@ global.Audio = vi.fn().mockImplementation(
     duration: 0,
     src: '',
   }),
-) as unknown as typeof Audio;
+);
 
 // Mock matchMedia
 Object.defineProperty(window, 'matchMedia', {

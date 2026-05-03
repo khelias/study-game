@@ -272,7 +272,7 @@ function addDistractorLetters(
           distractor = randomLetter;
         }
       } else {
-        const similar = similarLetters[targetChar] as string[] | undefined;
+        const similar = similarLetters[targetChar];
         if (similar && similar.length > 0) {
           distractor = similar[Math.floor(rng() * similar.length)] as string;
         } else {

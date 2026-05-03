@@ -50,7 +50,7 @@ class ContentPackRegistry {
     if (this.packs.has(pack.id)) {
       console.warn(`[ContentPackRegistry] Pack "${pack.id}" already registered. Overwriting.`);
     }
-    this.packs.set(pack.id, pack as AnyContentPack);
+    this.packs.set(pack.id, pack);
   }
 
   get(id: ContentPackId): AnyContentPack | undefined {

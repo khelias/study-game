@@ -74,7 +74,7 @@ export const StatsModal: React.FC<StatsModalProps> = ({ stats, unlockedAchieveme
                 const config = GAME_CONFIG[gameType];
                 if (!config) return null;
                 const gameTitle: string = (t.games[config.id as keyof typeof t.games]?.title ??
-                  config.title) as string;
+                  config.title);
                 const curriculumSummary = getGameCurriculumSummary(gameType, locale);
                 return (
                   <div
@@ -116,7 +116,7 @@ export const StatsModal: React.FC<StatsModalProps> = ({ stats, unlockedAchieveme
                   const config = GAME_CONFIG[gameType];
                   if (!config) return null;
                   const gameTitle: string = (t.games[config.id as keyof typeof t.games]?.title ??
-                    config.title) as string;
+                    config.title);
                   const curriculumSummary = getGameCurriculumSummary(gameType, locale);
                   return (
                     <div

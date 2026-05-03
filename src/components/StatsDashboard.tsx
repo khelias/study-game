@@ -141,7 +141,7 @@ export const GameTypeStats: React.FC<GameTypeStatsProps> = ({ stats }) => {
         const percentage: number = (count / totalGames) * 100;
         const baseType = type.replace('_adv', '');
         const gameLabel: string = (t.games[baseType as keyof typeof t.games]?.title ??
-          type.replace(/_/g, ' ')) as string;
+          type.replace(/_/g, ' '));
         const curriculumSummary = getGameCurriculumSummary(baseType, locale);
         return (
           <div key={type} className="space-y-1">
