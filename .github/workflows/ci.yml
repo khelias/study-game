@@ -26,6 +26,11 @@ jobs:
 
       - name: Dependency review
         if: github.event_name == 'pull_request'
+        # Soft-fail: requires "Dependency graph" enabled in repo Settings →
+        # Security & analysis. While that is off, this step warns instead of
+        # blocking CI. Re-tighten by removing continue-on-error once the
+        # feature is enabled.
+        continue-on-error: true
         uses: actions/dependency-review-action@v4
         with:
           fail-on-severity: moderate
