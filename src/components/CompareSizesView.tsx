@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useState } from 'react';
 import type { CompareSizesProblem } from '../types/game';
 import { useTranslation } from '../i18n/useTranslation';
 import { playSound } from '../engine/audio';
@@ -59,10 +59,12 @@ export const CompareSizesView: React.FC<CompareSizesViewProps> = ({
   const [selectedAnswer, setSelectedAnswer] = useState<CompareOption | null>(null);
   const [eliminatedOptions, setEliminatedOptions] = useState<CompareOption[]>([]);
 
-  useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- reset UI when problem.uid changes
+  // Reset state when problem changes (render-time prop comparison).
+  const [lastSyncedUid, setLastSyncedUid] = useState<string>(problem.uid);
+  if (lastSyncedUid !== problem.uid) {
+    setLastSyncedUid(problem.uid);
     setEliminatedOptions([]);
-  }, [problem.uid]);
+  }
 
   const handlePaidHint = useCallback(
     (hintId: string) => {

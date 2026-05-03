@@ -4,7 +4,7 @@
  * Game view for sentence_logic and letter_match games.
  */
 
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { ArrowRight } from 'lucide-react';
 import { playSound } from '../../engine/audio';
 import { useTranslation } from '../../i18n/useTranslation';
@@ -39,12 +39,13 @@ export const StandardGameView: React.FC<StandardGameViewProps> = ({
   const [hasAnswered, setHasAnswered] = useState(false);
   const problemUid: string = problem.uid;
 
-  useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
+  // Reset state when problem changes (render-time prop comparison).
+  const [lastSyncedUid, setLastSyncedUid] = useState<string>(problemUid);
+  if (lastSyncedUid !== problemUid) {
+    setLastSyncedUid(problemUid);
     setDisabled([]);
-
     setHasAnswered(false);
-  }, [problemUid]);
+  }
 
   const handleChoice = (
     opt: string | { text: string; pos?: string; answer?: boolean; id?: string },

@@ -4,7 +4,7 @@
  * Game view for balance scale problems. Flat pans, weights on top, red left / blue right (selection).
  */
 
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useState } from 'react';
 import { playSound } from '../../engine/audio';
 import type { BalanceScaleProblem } from '../../types/game';
 import { SvgWeight } from '../shared/SvgWeight';
@@ -55,12 +55,14 @@ export const BalanceScaleView: React.FC<BalanceScaleViewProps> = ({
   const [eliminatedIndices, setEliminatedIndices] = useState<number[]>([]);
   const [tilt, setTilt] = useState<number>(-10);
 
-  useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- reset UI when problem changes
+  // Reset state when problem changes (render-time prop comparison).
+  const [lastSyncedUid, setLastSyncedUid] = useState<string>(problemUid);
+  if (lastSyncedUid !== problemUid) {
+    setLastSyncedUid(problemUid);
     setDisabled([]);
     setEliminatedIndices([]);
     setTilt(-10);
-  }, [problemUid]);
+  }
 
   const handlePaidHint = useCallback(
     (hintId: string) => {

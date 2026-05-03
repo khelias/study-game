@@ -5,7 +5,7 @@
  * correct one to lock it. Stream starts pre-filled (no blank), loops seamlessly.
  * Level scales speed and difficulty.
  */
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import { playSound } from '../../engine/audio';
 import { useTranslation } from '../../i18n/useTranslation';
 import { useWrongStrikes } from '../../hooks/useWrongStrikes';
@@ -178,14 +178,16 @@ export const WordCascadeView: React.FC<WordCascadeViewProps> = ({
     [target, level],
   );
 
-  useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- reset UI when problem changes
+  // Reset state when problem changes (render-time prop comparison).
+  const [lastSyncedUid, setLastSyncedUid] = useState<string>(problem.uid);
+  if (lastSyncedUid !== problem.uid) {
+    setLastSyncedUid(problem.uid);
     setProgress('');
     setStatus('idle');
     resetStrikes();
     setRevealedNextLetter(false);
     setGameEnded(false);
-  }, [problem.uid, problem.target, resetStrikes]);
+  }
 
   const handlePaidHint = useCallback(
     (hintId: string) => {

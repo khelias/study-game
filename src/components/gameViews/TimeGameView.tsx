@@ -40,14 +40,23 @@ export const TimeGameView: React.FC<TimeGameViewProps> = ({
   const [feedback, setFeedback] = useState<'correct' | 'wrong' | null>(null);
   const feedbackTimeoutsRef = useRef<ReturnType<typeof setTimeout>[]>([]);
 
-  useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- reset UI when problem.uid changes
+  // Reset state when problem changes (render-time prop comparison).
+  const [lastSyncedUid, setLastSyncedUid] = useState<string>(problem.uid);
+  if (lastSyncedUid !== problem.uid) {
+    setLastSyncedUid(problem.uid);
     setDisabled([]);
     setEliminatedIndices([]);
     setFeedback(null);
+  }
+
+  // Clear pending feedback timers when the problem changes or on unmount.
+  // No setState in here, so the set-state-in-effect rule doesn't apply, and
+  // the ref is touched only inside the effect cleanup, not during render.
+  useEffect(() => {
+    const timeouts = feedbackTimeoutsRef;
     return () => {
-      feedbackTimeoutsRef.current.forEach(clearTimeout);
-      feedbackTimeoutsRef.current = [];
+      timeouts.current.forEach(clearTimeout);
+      timeouts.current = [];
     };
   }, [problem.uid]);
 

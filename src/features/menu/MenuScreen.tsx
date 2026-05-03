@@ -115,7 +115,14 @@ export const MenuScreen: React.FC = () => {
 
   const [showStats, setShowStats] = useState(false);
   const [showAchievements, setShowAchievements] = useState(false);
-  const [showShop, setShowShop] = useState(false);
+  // Initialize from the ?openShop=true URL hint set by GameResultScreen.
+  // The effect below strips the hint from the URL after mount; reading the
+  // hint in the initializer avoids a setState-in-effect.
+  const [showShop, setShowShop] = useState(
+    () =>
+      typeof window !== 'undefined' &&
+      new URLSearchParams(window.location.search).get('openShop') === 'true',
+  );
   const [showTutorial, setShowTutorial] = useState(!hasSeenTutorial);
   const [activeMechanicId, setActiveMechanicId] = useState<string | null>(null);
   const [expandedCategories, setExpandedCategories] = useState<Record<string, boolean>>({});
@@ -126,12 +133,12 @@ export const MenuScreen: React.FC = () => {
   const settingsMenuRef = useRef<HTMLDivElement>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
-  // Check for openShop query parameter (from GameResultScreen)
+  // Strip the ?openShop=true hint from the URL after the initial state has
+  // already absorbed it (see useState initializer above). Pure URL side-effect,
+  // no setState here.
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     if (params.get('openShop') === 'true') {
-      // eslint-disable-next-line react-hooks/set-state-in-effect -- sync from URL on mount
-      setShowShop(true);
       window.history.replaceState({}, '', '/');
     }
   }, []);
