@@ -54,7 +54,7 @@ Requires **Node.js 24+** and **npm**.
 
 ```bash
 git clone <your-fork-url>
-cd study-game
+cd khe-study
 npm install
 npm run dev       # http://localhost:5173
 ```
