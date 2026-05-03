@@ -78,22 +78,31 @@ export const StarMapperView: React.FC<StarMapperViewProps> = ({
 
   const touchTargetR = isSmallScreen ? TOUCH_TARGET_R_SMALL : TOUCH_TARGET_R_DEFAULT;
 
-  // Reset state when problem changes
-  /* eslint-disable react-hooks/set-state-in-effect -- reset all state when problem.uid changes */
-  useEffect(() => {
+  // Reset state when problem changes (render-time prop comparison; replaces
+  // a setState-in-effect block).
+  const [lastSyncedUid, setLastSyncedUid] = useState<string>(problem.uid);
+  if (lastSyncedUid !== problem.uid) {
+    setLastSyncedUid(problem.uid);
     setSelectedStar(null);
     setDrawnLines([]);
     setStatus('idle');
     setSelectedOption(null);
     setDragStartStarId(null);
     setShowHintGuide(false);
-    identifyHandlingRef.current = false;
-    if (wrongAnswerTimeoutRef.current) {
-      clearTimeout(wrongAnswerTimeoutRef.current);
-      wrongAnswerTimeoutRef.current = null;
-    }
+  }
+
+  // Reset internal refs and clear pending timers when the problem changes
+  // (or on unmount). Refs cannot be touched during render, so this lives
+  // in an effect.
+  useEffect(() => {
+    return () => {
+      identifyHandlingRef.current = false;
+      if (wrongAnswerTimeoutRef.current) {
+        clearTimeout(wrongAnswerTimeoutRef.current);
+        wrongAnswerTimeoutRef.current = null;
+      }
+    };
   }, [problem.uid]);
-  /* eslint-enable react-hooks/set-state-in-effect */
 
   // Hints logic
   const handleHintClick = (hintId: string) => {

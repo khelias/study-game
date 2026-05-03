@@ -235,16 +235,19 @@ export const MathSnakeView: React.FC<MathSnakeViewProps> = ({
     eliminatedRef.current = eliminatedOptions;
   }, [eliminatedOptions]);
 
-  // Reset status and eliminated options when problem or math challenge changes.
-  // React 19's react-hooks/set-state-in-effect rule prefers render-time prop comparison
-  // for "reset on prop change" patterns; deferred to a separate refactor PR.
-  React.useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
+  // Reset status and eliminated options when problem or math challenge changes
+  // (render-time prop comparison; replaces a setState-in-effect block). The
+  // mirror-into-ref effect above will catch up the empty eliminatedOptions
+  // before any non-render code reads the ref.
+  const [lastSyncedUid, setLastSyncedUid] = useState<string>(problem.uid);
+  const [lastSyncedMath, setLastSyncedMath] = useState(problem.math);
+  if (lastSyncedUid !== problem.uid || lastSyncedMath !== problem.math) {
+    setLastSyncedUid(problem.uid);
+    setLastSyncedMath(problem.math);
     setStatus('idle');
     setSelectedOption(null);
     setEliminatedOptions([]);
-    eliminatedRef.current = [];
-  }, [problem.uid, problem.math]);
+  }
 
   // Detect when snake eats and trigger animation. Capture the actual delta
   // so the +N popover renders accurately (normal apple = +1, correct math

@@ -4,7 +4,7 @@
  * Game view for word builder games.
  */
 
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import { playSound } from '../../engine/audio';
 import { useTranslation } from '../../i18n/useTranslation';
 import { GAME_CONFIG } from '../../games/data';
@@ -53,45 +53,52 @@ export const WordGameView: React.FC<WordGameViewProps> = ({
   const t = useTranslation();
   const baseType = gameType?.replace('_adv', '') ?? 'word_builder';
   const paidHints = GAME_CONFIG[baseType]?.paidHints ?? [];
-  const [userWord, setUserWord] = useState<Array<{ char: string; id: string } | null>>([]);
-  const [pool, setPool] = useState<Array<{ char: string; id: string }>>(problem.shuffled || []);
-  const [eliminatedLetterIds, setEliminatedLetterIds] = useState<string[]>([]);
 
-  // Reset state when problem changes
-  useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- reset UI when problem changes
-    setEliminatedLetterIds([]);
-    // Build initial word state
-    const next: Array<{ char: string; id: string } | null> = [];
-    for (let i = 0; i < problem.target.length; i++) {
-      if (problem.preFilledPositions?.includes(i)) {
-        const char = problem.target[i];
-        if (char) {
-          next[i] = { char, id: `prefilled-${i}` };
-        } else {
-          next[i] = null;
-        }
+  // Builds the slate of empty/prefilled slots and the matching letter pool
+  // (with prefilled letters removed) for the current problem.
+  const buildInitialState = (
+    p: WordBuilderProblem,
+  ): {
+    word: Array<{ char: string; id: string } | null>;
+    pool: Array<{ char: string; id: string }>;
+  } => {
+    const word: Array<{ char: string; id: string } | null> = [];
+    for (let i = 0; i < p.target.length; i++) {
+      if (p.preFilledPositions?.includes(i)) {
+        const char = p.target[i];
+        word[i] = char ? { char, id: `prefilled-${i}` } : null;
       } else {
-        next[i] = null;
+        word[i] = null;
       }
     }
-
-    // Build initial pool (remaining letters after pre-filled)
-    const remainingPool = [...(problem.shuffled || [])];
-    problem.preFilledPositions?.forEach((idx) => {
-      const char = problem.target[idx];
+    const pool = [...(p.shuffled || [])];
+    p.preFilledPositions?.forEach((idx) => {
+      const char = p.target[idx];
       if (char) {
-        const indexInPool = remainingPool.findIndex(
-          (l) => l.char.toUpperCase() === char.toUpperCase(),
-        );
-        if (indexInPool !== -1) {
-          remainingPool.splice(indexInPool, 1);
-        }
+        const indexInPool = pool.findIndex((l) => l.char.toUpperCase() === char.toUpperCase());
+        if (indexInPool !== -1) pool.splice(indexInPool, 1);
       }
     });
-    setUserWord(next);
-    setPool(remainingPool);
-  }, [problem.uid, problem.target, problem.shuffled, problem.preFilledPositions]);
+    return { word, pool };
+  };
+
+  const [userWord, setUserWord] = useState<Array<{ char: string; id: string } | null>>(
+    () => buildInitialState(problem).word,
+  );
+  const [pool, setPool] = useState<Array<{ char: string; id: string }>>(
+    () => buildInitialState(problem).pool,
+  );
+  const [eliminatedLetterIds, setEliminatedLetterIds] = useState<string[]>([]);
+
+  // Reset state when problem changes (render-time prop comparison).
+  const [lastSyncedUid, setLastSyncedUid] = useState<string>(problem.uid);
+  if (lastSyncedUid !== problem.uid) {
+    setLastSyncedUid(problem.uid);
+    const { word, pool: nextPool } = buildInitialState(problem);
+    setEliminatedLetterIds([]);
+    setUserWord(word);
+    setPool(nextPool);
+  }
 
   const isPreFilled = useCallback(
     (index: number): boolean => problem.preFilledPositions?.includes(index) ?? false,

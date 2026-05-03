@@ -50,19 +50,26 @@ export const PatternTrainView: React.FC<PatternTrainViewProps> = ({
   const config = GAME_CONFIG[baseType];
   const paidHints = config?.paidHints ?? [];
 
-  // Reset and enter animation when problem changes (key on parent may not remount this view)
-  /* eslint-disable react-hooks/set-state-in-effect -- intentional reset on problem change */
-  useEffect(() => {
+  // Reset state when problem changes (render-time prop comparison).
+  // The mirror-into-ref effect above will catch up the empty eliminatedOptions
+  // before any non-render code reads the ref.
+  const [lastSyncedUid, setLastSyncedUid] = useState<string>(problemUid);
+  if (lastSyncedUid !== problemUid) {
+    setLastSyncedUid(problemUid);
     setDisabled([]);
     setTrainState('enter');
     setSelectedOption(null);
     setFeedbackChoice(null);
     setEliminatedOptions([]);
-    eliminatedRef.current = [];
+  }
+
+  // After the reset above sets trainState to 'enter', schedule the
+  // transition to 'idle'. Fires every time trainState becomes 'enter'.
+  useEffect(() => {
+    if (trainState !== 'enter') return;
     const timer = setTimeout(() => setTrainState('idle'), 600);
     return () => clearTimeout(timer);
-  }, [problemUid]);
-  /* eslint-enable react-hooks/set-state-in-effect */
+  }, [trainState]);
 
   const handlePaidHint = useCallback(
     (hintId: string) => {

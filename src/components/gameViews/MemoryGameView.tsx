@@ -4,7 +4,7 @@
  * Game view for memory math matching games.
  */
 
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useState } from 'react';
 import { playSound } from '../../engine/audio';
 import { useTranslation } from '../../i18n/useTranslation';
 import { useProfileText } from '../../hooks/useProfileText';
@@ -50,13 +50,15 @@ export const MemoryGameView: React.FC<MemoryGameViewProps> = ({
   const [showCelebration, setShowCelebration] = useState<boolean>(false);
   const problemUid: string = problem.uid;
 
-  useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- reset UI when problem changes
+  // Reset state when problem changes (render-time prop comparison).
+  const [lastSyncedUid, setLastSyncedUid] = useState<string>(problemUid);
+  if (lastSyncedUid !== problemUid) {
+    setLastSyncedUid(problemUid);
     setCards(problem.cards);
     setFlipped([]);
     setMatchedPairs(0);
     setShowCelebration(false);
-  }, [problemUid, problem.cards]);
+  }
 
   const handlePaidHint = useCallback(
     (hintId: string) => {

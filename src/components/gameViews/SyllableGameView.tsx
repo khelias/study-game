@@ -4,7 +4,7 @@
  * Game view for syllable builder games.
  */
 
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useState } from 'react';
 import { playSound } from '../../engine/audio';
 import { useTranslation } from '../../i18n/useTranslation';
 import { useProfileText } from '../../hooks/useProfileText';
@@ -53,14 +53,14 @@ export const SyllableGameView: React.FC<SyllableGameViewProps> = ({
     'bg-pink-100 text-pink-700 border-pink-300',
   ];
 
-  useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
+  // Reset state when problem changes (render-time prop comparison).
+  const [lastSyncedUid, setLastSyncedUid] = useState<string>(problem.uid);
+  if (lastSyncedUid !== problem.uid) {
+    setLastSyncedUid(problem.uid);
     setCurrent([]);
-
     setPool(poolFromProblem());
-
     setGhost(false);
-  }, [problem.uid, poolFromProblem]);
+  }
 
   const handleSelect = (item: SyllablePart): void => {
     playSound('click', soundEnabled);

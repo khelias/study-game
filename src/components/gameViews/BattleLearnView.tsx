@@ -6,7 +6,7 @@
  * - Wrong answer in the modal costs one heart (standard).
  */
 
-import React, { useCallback, useState, useEffect } from 'react';
+import React, { useCallback, useState } from 'react';
 import { Target } from 'lucide-react';
 import { playSound } from '../../engine/audio';
 import { useTranslation } from '../../i18n/useTranslation';
@@ -94,17 +94,16 @@ export const BattleLearnView: React.FC<BattleLearnViewProps> = ({
   /** Indices of options eliminated in the problem modal (only visible while modal is open); reset per question */
   const [eliminatedIndices, setEliminatedIndices] = useState<number[]>([]);
 
-  // Only reset game state when it's a brand new game (different UID AND empty revealed array)
-  // Update question when parent provides new question (after answering)
-  // Sync board state from problem if it has been updated externally.
-  // React 19's react-hooks/set-state-in-effect rule prefers render-time prop comparison
-  // for "sync state with prop change" patterns; deferred to a separate refactor PR.
-  useEffect(() => {
+  // Sync state from the problem prop (render-time prop comparison).
+  // - Brand new game (different uid AND empty revealed array) -> full reset.
+  // - Same game session, new question -> update question + sync board state.
+  const [lastSyncedQuestion, setLastSyncedQuestion] = useState(problem.question);
+  if (problem.uid !== currentUid || problem.question !== lastSyncedQuestion) {
     const isNewGame = problem.uid !== currentUid && problem.revealed.length === 0;
+    setCurrentUid(problem.uid);
+    setLastSyncedQuestion(problem.question);
 
     if (isNewGame) {
-      // Complete reset for new game
-      // eslint-disable-next-line react-hooks/set-state-in-effect
       setGameState({
         gridSize: problem.gridSize,
         cellGrid: problem.cellGrid,
@@ -115,7 +114,6 @@ export const BattleLearnView: React.FC<BattleLearnViewProps> = ({
         gameWon: problem.gameWon,
       });
       setQuestion(problem.question);
-      setCurrentUid(problem.uid);
       setSelectedOption(null);
       setEliminatedIndices([]);
       setAnsweredProblemCells([]);
@@ -123,11 +121,8 @@ export const BattleLearnView: React.FC<BattleLearnViewProps> = ({
       resetStrikes();
       setGamePhase('shooting');
     } else {
-      // Same game session, new question - update question and sync board state from problem
       setQuestion(problem.question);
-      setCurrentUid(problem.uid);
       setEliminatedIndices([]);
-      // Sync board state to ensure any external updates are reflected
       setGameState((prev) => ({
         ...prev,
         cellGrid: problem.cellGrid,
@@ -138,8 +133,7 @@ export const BattleLearnView: React.FC<BattleLearnViewProps> = ({
         gameWon: problem.gameWon,
       }));
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [problem.uid, problem.question]);
+  }
 
   const handlePaidHint = useCallback(
     (hintId: string) => {

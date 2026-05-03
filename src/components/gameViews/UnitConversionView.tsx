@@ -4,7 +4,7 @@
  * Game view for unit conversion games.
  */
 
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import { playSound } from '../../engine/audio';
 import { useTranslation } from '../../i18n/useTranslation';
 import { useProfileText } from '../../hooks/useProfileText';
@@ -43,11 +43,13 @@ export const UnitConversionView: React.FC<UnitConversionViewProps> = ({
     [t, problem.value, problem.fromUnit, problem.toUnit],
   );
 
-  useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- reset UI when problem.uid changes
+  // Reset state when problem changes (render-time prop comparison).
+  const [lastSyncedUid, setLastSyncedUid] = useState<string>(problem.uid);
+  if (lastSyncedUid !== problem.uid) {
+    setLastSyncedUid(problem.uid);
     setDisabled([]);
     setEliminatedIndices([]);
-  }, [problem.uid]);
+  }
 
   const handlePaidHint = useCallback(
     (hintId: string) => {

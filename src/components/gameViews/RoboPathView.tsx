@@ -50,9 +50,10 @@ export const RoboPathView: React.FC<RoboPathViewProps> = ({
   const maxCommands = problem.maxCommands ?? 8;
   const commandCount = commands.length;
 
-  // Reset state when problem changes
-  /* eslint-disable react-hooks/set-state-in-effect */
-  useEffect(() => {
+  // Reset state when problem changes (render-time prop comparison).
+  const [lastSyncedUid, setLastSyncedUid] = useState<string>(problem.uid);
+  if (lastSyncedUid !== problem.uid) {
+    setLastSyncedUid(problem.uid);
     setCommands([]);
     setRobotPos(problem.start);
     setRobotDirection('DOWN');
@@ -61,8 +62,7 @@ export const RoboPathView: React.FC<RoboPathViewProps> = ({
     setShowHintMarker(false);
     setShowRetryModal(false);
     setFinalMoves(0);
-  }, [problem.uid, problem.start]);
-  /* eslint-enable react-hooks/set-state-in-effect */
+  }
 
   const addCommand = useCallback(
     (cmd: string): void => {
