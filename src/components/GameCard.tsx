@@ -51,13 +51,11 @@ export const GameCard: React.FC<GameCardProps> = ({
   );
 
   // Get translated title and description (assert string for i18n key access)
-  const gameTitle: string = (t.games[gameConfig.id as keyof typeof t.games]?.title ??
-    gameConfig.title);
-  const gameDesc: string = (t.games[gameConfig.id as keyof typeof t.games]?.desc ??
-    gameConfig.desc);
+  const gameTitle: string =
+    t.games[gameConfig.id as keyof typeof t.games]?.title ?? gameConfig.title;
+  const gameDesc: string = t.games[gameConfig.id as keyof typeof t.games]?.desc ?? gameConfig.desc;
   const difficultyText = gameConfig.difficulty
-    ? ((t.difficulty[gameConfig.difficulty] ??
-        gameConfig.difficulty) as string)
+    ? ((t.difficulty[gameConfig.difficulty] ?? gameConfig.difficulty) as string)
     : null;
   const levelLabel = formatText(t.game.level);
   const ariaLabel = `${formatText(gameTitle)} - ${formatText(gameDesc)}${

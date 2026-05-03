@@ -112,7 +112,7 @@ export const WordGameView: React.FC<WordGameViewProps> = ({
 
       // Check if all positions are filled (defer onAnswer to avoid setState-during-render)
       if (newWord.every((l) => l !== null)) {
-        const userString = newWord.map((l) => (l).char).join('');
+        const userString = newWord.map((l) => l.char).join('');
         const isCorrect = userString.toLowerCase() === problem.target.toLowerCase();
         if (isCorrect) {
           setTimeout(() => onAnswer(true), 0);
@@ -198,7 +198,7 @@ export const WordGameView: React.FC<WordGameViewProps> = ({
         setUserWord(nextWord);
         setPool((prev) => prev.filter((l) => l.id !== letterInPool.id));
         if (nextWord.every((l) => l !== null)) {
-          const userString = nextWord.map((l) => (l).char).join('');
+          const userString = nextWord.map((l) => l.char).join('');
           const isCorrect = userString.toLowerCase() === problem.target.toLowerCase();
           const { resetWord, resetPool } = getResetState();
           const delay = isCorrect ? 0 : 500;

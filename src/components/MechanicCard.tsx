@@ -32,8 +32,8 @@ export const MechanicCard: React.FC<MechanicCardProps> = ({
   );
 
   const mechanicCopy = t.mechanics[mechanicConfig.id as keyof typeof t.mechanics];
-  const title: string = (mechanicCopy?.title ?? mechanicConfig.title);
-  const desc: string = (mechanicCopy?.desc ?? mechanicConfig.desc);
+  const title: string = mechanicCopy?.title ?? mechanicConfig.title;
+  const desc: string = mechanicCopy?.desc ?? mechanicConfig.desc;
 
   const countTemplate =
     packCount === 1 ? t.menuSpecific.packCount_one : t.menuSpecific.packCount_other;

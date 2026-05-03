@@ -441,8 +441,8 @@ export const MenuScreen: React.FC = () => {
                       </div>
                       {categoryGames.map(([key, conf]) => {
                         const isChecked = editFavouritesDraft.includes(key);
-                        const gameName: string = (t.games[key as keyof typeof t.games]?.title ??
-                          conf.title);
+                        const gameName: string =
+                          t.games[key as keyof typeof t.games]?.title ?? conf.title;
                         const GameIcon = ICON_MAP[conf.icon as keyof typeof ICON_MAP] || Type;
                         return (
                           <label

@@ -60,7 +60,7 @@ export const GameResultScreen: React.FC<GameResultScreenProps> = ({
 
   const headerTitle: string =
     baseType && t.games[baseType as keyof typeof t.games]
-      ? (t.games[baseType as keyof typeof t.games].title)
+      ? t.games[baseType as keyof typeof t.games].title
       : formatText(t.game.gameOver);
 
   const themeBorder = gameConfig?.theme.border ?? 'border-slate-200';
@@ -84,10 +84,10 @@ export const GameResultScreen: React.FC<GameResultScreenProps> = ({
       icon: '⭐',
       iconGradient: 'from-yellow-300 via-yellow-400 to-amber-400',
       iconShadow: 'shadow-[0_0_28px_rgba(250,204,21,0.6)]',
-      title: formatText((t.roboPath?.perfect ?? 'Perfect!')),
+      title: formatText(t.roboPath?.perfect ?? 'Perfect!'),
       message:
         customMessage ||
-        formatText((t.roboPath?.perfectMessage ?? 'You found the optimal solution!')),
+        formatText(t.roboPath?.perfectMessage ?? 'You found the optimal solution!'),
       primaryButton: formatText(t.roboPath?.continueButton || 'Next Level'),
       primaryAction: onContinue,
       primaryGradient: 'from-sky-400 via-blue-500 to-indigo-500',
@@ -152,9 +152,7 @@ export const GameResultScreen: React.FC<GameResultScreenProps> = ({
   const handleSecondaryAction = () => {
     playClick();
     const secAction: ActionFn | undefined =
-      'secondaryAction' in currentConfig
-        ? (currentConfig.secondaryAction)
-        : undefined;
+      'secondaryAction' in currentConfig ? currentConfig.secondaryAction : undefined;
     if (secAction) void secAction();
     else {
       void navigate('/', { replace: true });
